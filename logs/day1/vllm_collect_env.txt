@@ -1,0 +1,154 @@
+Collecting environment information...
+==============================
+        System Info
+==============================
+OS                           : Ubuntu 26.04 LTS (x86_64)
+GCC version                  : (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+Clang version                : Could not collect
+CMake version                : Could not collect
+Libc version                 : glibc-2.43
+
+==============================
+       PyTorch Info
+==============================
+PyTorch version              : 2.11.0+cu130
+Is debug build               : False
+CUDA used to build PyTorch   : 13.0
+ROCM used to build PyTorch   : N/A
+XPU used to build PyTorch    : N/A
+
+==============================
+      Python Environment
+==============================
+Python version               : 3.12.13 (main, Jun 23 2026, 15:18:55) [Clang 22.1.3 ] (64-bit runtime)
+Python platform              : Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43
+    
+==============================
+       CUDA / GPU Info
+==============================
+Is CUDA available            : True
+CUDA runtime version         : Could not collect
+CUDA_MODULE_LOADING set to   : 
+GPU models and configuration : GPU 0: NVIDIA GeForce RTX 5080
+Nvidia driver version        : Could not collect
+cuDNN version                : Could not collect
+HIP runtime version          : N/A
+MIOpen runtime version       : N/A
+Is XNNPACK available         : True
+
+==============================
+          CPU Info
+==============================
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           46 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  24
+On-line CPU(s) list:                     0-23
+Vendor ID:                               GenuineIntel
+Model name:                              Intel(R) Core(TM) Ultra 9 285K
+CPU family:                              6
+Model:                                   198
+Thread(s) per core:                      1
+Core(s) per socket:                      24
+Socket(s):                               1
+Stepping:                                2
+BogoMIPS:                                7372.79
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities
+Virtualization:                          VT-x
+Hypervisor vendor:                       Microsoft
+Virtualization type:                     full
+L1d cache:                               1.1 MiB (24 instances)
+L1i cache:                               1.5 MiB (24 instances)
+L2 cache:                                72 MiB (24 instances)
+L3 cache:                                36 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-23
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; Enhanced IBRS
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+==============================
+Versions of relevant libraries
+==============================
+[pip3] flashinfer-python==0.6.12
+[pip3] numpy==2.3.5
+[pip3] nvidia-cublas==13.1.0.3
+[pip3] nvidia-cuda-cccl==13.3.3.4.1
+[pip3] nvidia-cuda-crt==13.3.73
+[pip3] nvidia-cuda-cupti==13.0.85
+[pip3] nvidia-cuda-nvcc==13.2.78
+[pip3] nvidia-cuda-nvrtc==13.0.88
+[pip3] nvidia-cuda-runtime==13.0.96
+[pip3] nvidia-cuda-tileiras==13.2.78
+[pip3] nvidia-cudnn-cu13==9.19.0.56
+[pip3] nvidia-cudnn-frontend==1.26.0
+[pip3] nvidia-cufft==12.0.0.61
+[pip3] nvidia-cufile==1.15.1.6
+[pip3] nvidia-curand==10.4.0.35
+[pip3] nvidia-cusolver==12.0.4.66
+[pip3] nvidia-cusparse==12.6.3.3
+[pip3] nvidia-cusparselt-cu13==0.8.0
+[pip3] nvidia-cutlass-dsl==4.5.2
+[pip3] nvidia-cutlass-dsl-libs-base==4.5.2
+[pip3] nvidia-cutlass-dsl-libs-cu13==4.5.2
+[pip3] nvidia-ml-py==13.610.43
+[pip3] nvidia-nccl-cu13==2.28.9
+[pip3] nvidia-nvjitlink==13.0.88
+[pip3] nvidia-nvshmem-cu13==3.4.5
+[pip3] nvidia-nvtx==13.0.85
+[pip3] nvidia-nvvm==13.2.78
+[pip3] pyzmq==27.1.0
+[pip3] tokenspeed-triton==3.8.10.post20260709
+[pip3] torch==2.11.0+cu130
+[pip3] torch_c_dlpack_ext==0.1.5
+[pip3] torchaudio==2.11.0+cu130
+[pip3] torchvision==0.26.0+cu130
+[pip3] transformers==5.13.1
+[pip3] triton==3.6.0
+[conda] Could not collect
+
+==============================
+         vLLM Info
+==============================
+ROCM Version                 : Could not collect
+vLLM Version                 : 0.24.1.dev0+gee0da84ab.d20260714 (git sha: ee0da84ab, date: 20260714)
+vLLM Build Flags:
+  CUDA Archs: Not Set; ROCm: Disabled; XPU: Disabled
+GPU Topology:
+  	[4mGPU0	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 				N/A
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+==============================
+     Environment Variables
+==============================
+PYTORCH_NVML_BASED_CUDA_CHECK=1
+TORCHINDUCTOR_COMPILE_THREADS=1
+TORCHINDUCTOR_CACHE_DIR=/tmp/claude-1000/torchinductor_ciaran
+

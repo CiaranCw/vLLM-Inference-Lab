@@ -1,0 +1,155 @@
+DEBUG 07-14 11:40:45 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:36] Checking if TPU platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:55] TPU platform is not available because: No module named 'libtpu'
+DEBUG 07-14 11:40:45 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:112] Checking if ROCm platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:126] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 07-14 11:40:45 [platforms/__init__.py:133] Checking if XPU platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:164] Checking if CPU platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:61] Checking if CUDA platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:84] Confirmed CUDA platform is available.
+DEBUG 07-14 11:40:45 [platforms/__init__.py:245] Automatically detected platform cuda.
+================================================================================
+[day1_baseline] env: {"sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python", "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py", "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714", "torch_version": "2.11.0+cu130", "torch_cuda": "13.0", "cuda_available": true, "gpu_name": "NVIDIA GeForce RTX 5080", "env": {"VLLM_ENABLE_V1_MULTIPROCESSING": "0", "VLLM_LOGGING_LEVEL": "DEBUG", "VLLM_LAB_TRACE": "1", "VLLM_ATTENTION_BACKEND": null, "VLLM_USE_FLASHINFER_SAMPLER": "0"}}
+[day1_baseline] config: {"model": "Qwen/Qwen2.5-0.5B-Instruct", "prompt": "请用一句话解释大模型推理中的 KV Cache。", "max_model_len": 2048, "max_tokens": 2, "gpu_memory_utilization": 0.5, "tensor_parallel_size": 1, "temperature": 0.0, "seed": 0, "enforce_eager": true, "dtype": "auto"}
+================================================================================
+DEBUG 07-14 11:40:48 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 07-14 11:40:48 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 07-14 11:40:48 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 07-14 11:40:48 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 07-14 11:40:48 [entrypoints/.../utils/api_utils.py:273] non-default args: {'max_model_len': 2048, 'gpu_memory_utilization': 0.5, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen2.5-0.5B-Instruct'}
+WARNING 07-14 11:40:48 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE
+WARNING 07-14 11:40:48 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_LAYER
+WARNING 07-14 11:40:48 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_MAX_STEPS
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-14 11:40:48 [engine/arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+DEBUG 07-14 11:40:50 [model_executor/models/registry.py:920] Loaded model info for class vllm.model_executor.models.qwen2.Qwen2ForCausalLM from cache
+DEBUG 07-14 11:40:50 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 0.0002965 secs
+INFO 07-14 11:40:50 [config/model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 07-14 11:40:50 [config/model.py:1725] Using max model len 2048
+DEBUG 07-14 11:40:50 [config/model.py:1790] Generative models support chunked prefill.
+DEBUG 07-14 11:40:50 [config/model.py:1848] Generative models support prefix caching.
+DEBUG 07-14 11:40:50 [engine/arg_utils.py:2467] Enabling chunked prefill by default
+DEBUG 07-14 11:40:50 [engine/arg_utils.py:2495] Enabling prefix caching by default
+DEBUG 07-14 11:40:50 [engine/arg_utils.py:2643] Defaulting max_num_batched_tokens to 8192 for LLM_CLASS usage context.
+DEBUG 07-14 11:40:50 [engine/arg_utils.py:2653] Defaulting max_num_seqs to 256 for LLM_CLASS usage context.
+INFO 07-14 11:40:50 [config/scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 07-14 11:40:50 [config/vllm.py:1006] Asynchronous scheduling is enabled.
+WARNING 07-14 11:40:50 [config/vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-14 11:40:50 [config/vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+DEBUG 07-14 11:40:50 [config/kernel.py:258] Setting platform-specific IR op priority defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), user-defined: IrOpPriorityConfig(rms_norm=[], fused_add_rms_norm=[])
+INFO 07-14 11:40:50 [config/kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 07-14 11:40:50 [config/vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 07-14 11:40:50 [config/compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+DEBUG 07-14 11:40:51 [tokenizers/registry.py:70] Loading CachedHfTokenizer for tokenizer_mode='hf'
+DEBUG 07-14 11:40:52 [renderers/registry.py:57] Loading HfRenderer for renderer_mode='hf'
+INFO 07-14 11:40:54 [v1/engine/core.py:258] Initializing a V1 LLM engine (v0.24.1.dev0+gee0da84ab.d20260714) with config: model='Qwen/Qwen2.5-0.5B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-0.5B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen2.5-0.5B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': True, 'alignment_asserts': True, 'scalar_asserts': True, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+DEBUG 07-14 11:40:54 [utils/import_utils.py:73] Loading module triton_kernels from /home/ciaran/projects/vllm-src/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 07-14 11:40:54 [config/kernel.py:85] Setting IR op priority for rms_norm to ['vllm_c', 'native']
+DEBUG 07-14 11:40:54 [ir/op.py:422] Priority for vllm.ir.rms_norm set to ['vllm_c', 'native']
+DEBUG 07-14 11:40:54 [config/kernel.py:85] Setting IR op priority for fused_add_rms_norm to ['vllm_c', 'native']
+DEBUG 07-14 11:40:54 [ir/op.py:422] Priority for vllm.ir.fused_add_rms_norm set to ['vllm_c', 'native']
+DEBUG 07-14 11:40:54 [distributed/parallel_state.py:1544] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:54789 backend=nccl
+INFO 07-14 11:40:54 [distributed/parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:54789 backend=nccl
+DEBUG 07-14 11:40:54 [distributed/parallel_state.py:1670] Detected 1 nodes in the distributed environment
+INFO 07-14 11:40:54 [distributed/parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+DEBUG 07-14 11:40:54 [v1/worker/gpu_worker.py:343] worker init memory snapshot: torch_peak=0.0GiB, free_memory=14.6GiB, total_memory=15.92GiB, cuda_memory=1.32GiB, torch_memory=0.0GiB, non_torch_memory=1.32GiB, timestamp=1784000454.619319, auto_measure=True
+DEBUG 07-14 11:40:54 [v1/worker/gpu_worker.py:344] worker requested memory: 7.96GiB
+DEBUG 07-14 11:40:54 [compilation/decorators.py:221] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 07-14 11:40:54 [compilation/decorators.py:221] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_eagle3.DeepseekV2Eagle3Model'>: ['input_ids', 'positions', 'hidden_states', 'input_embeds']
+DEBUG 07-14 11:40:54 [compilation/decorators.py:221] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.qwen3_dflash.DFlashQwen3Model'>: ['input_ids', 'positions', 'input_embeds']
+DEBUG 07-14 11:40:54 [compilation/decorators.py:221] Inferred dynamic dimensions for forward method of <class 'vllm.v1.spec_decode.ngram_proposer_gpu.NgramGPUKernel'>: ['num_tokens_no_spec', 'token_ids_gpu', 'combined_mask']
+INFO 07-14 11:40:54 [v1/sample/ops/topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+DEBUG 07-14 11:40:54 [v1/sample/logits_processor/__init__.py:63] No logitsprocs plugins installed (group vllm.logits_processors).
+DEBUG 07-14 11:40:54 [model_executor/offloader/base.py:121] Offloader set to NoopOffloader (no offloading).
+INFO 07-14 11:40:54 [v1/worker/gpu_model_runner.py:5330] Starting to load model Qwen/Qwen2.5-0.5B-Instruct...
+DEBUG 07-14 11:40:55 [platforms/cuda.py:439] Some attention backends are not valid for cuda with AttentionSelectorConfig(head_size=64, dtype=torch.bfloat16, kv_cache_dtype=auto, block_size=None, use_mla=False, has_sink=False, use_sparse=False, use_mm_prefix=False, use_per_head_quant_scales=False, attn_type=AttentionType.DECODER, use_non_causal=False, use_batch_invariant=False, use_kv_connector=False). Reasons: {TURBOQUANT: [kv_cache_dtype not supported]}.
+INFO 07-14 11:40:55 [platforms/cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+INFO 07-14 11:40:55 [v1/attention/backends/flash_attn.py:673] Using FlashAttention version 2
+DEBUG 07-14 11:40:55 [config/compilation.py:1275] enabled custom ops: Counter({'rms_norm': 49, 'silu_and_mul': 24, 'rotary_embedding': 1, 'apply_rotary_emb': 1})
+DEBUG 07-14 11:40:55 [config/compilation.py:1276] disabled custom ops: Counter()
+DEBUG 07-14 11:40:55 [model_executor/model_loader/base_loader.py:63] Loading weights on cuda ...
+DEBUG 07-14 11:40:55 [model_executor/model_loader/weight_utils.py:506] Using model weights format ['*.safetensors']
+INFO 07-14 11:40:56 [model_executor/model_loader/weight_utils.py:574] No model.safetensors.index.json found in remote.
+INFO 07-14 11:40:56 [model_executor/model_loader/weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 0.92 GiB. Available RAM: 58.75 GiB.
+INFO 07-14 11:40:56 [model_executor/model_loader/weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  5.13it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  5.13it/s]
+
+INFO 07-14 11:40:56 [model_executor/model_loader/default_loader.py:430] Loading weights took 0.20 seconds
+DEBUG 07-14 11:40:56 [model_executor/model_loader/base_loader.py:70] Peak GPU memory after loading weights: 0.94 GiB
+INFO 07-14 11:40:56 [v1/worker/gpu_model_runner.py:5425] Model loading took 0.93 GiB memory and 1.613467 seconds
+DEBUG 07-14 11:40:57 [v1/worker/gpu_model_runner.py:5988] ubatch_slices: None, ubatch_slices_padded: None
+[VLLM_LAB_TRACE] pid=239545 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(8192, 896):bfloat16 key=T(8192, 128):bfloat16 value=T(8192, 128):bfloat16
+DEBUG 07-14 11:40:58 [v1/worker/gpu_worker.py:496] Initial free memory: 14.6 GiB; Requested memory: 0.500000 (util), 7.96 GiB
+DEBUG 07-14 11:40:58 [v1/worker/gpu_worker.py:502] Free memory after profiling: 13.46 GiB (total), 6.82 GiB (within requested)
+DEBUG 07-14 11:40:58 [v1/worker/gpu_worker.py:507] Memory profiling takes 0.93 seconds. Total non KV cache memory: 1.59GiB; torch peak memory increase: 0.58GiB; non-torch forward increase memory: 0.08GiB; weights memory: 0.93GiB.
+INFO 07-14 11:40:58 [v1/worker/gpu_worker.py:508] Available KV cache memory: 6.37 GiB
+INFO 07-14 11:40:58 [v1/core/kv_cache_utils.py:2158] GPU KV cache size: 556,816 tokens
+INFO 07-14 11:40:58 [v1/core/kv_cache_utils.py:2159] Maximum concurrency for 2,048 tokens per request: 271.88x
+WARNING 07-14 11:40:58 [utils/import_utils.py:408] Module vllm.third_party.deep_gemm was found but failed to import
+WARNING 07-14 11:40:58 [utils/import_utils.py:408] Traceback (most recent call last):
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "/home/ciaran/projects/vllm-src/vllm/utils/import_utils.py", line 406, in _has_module
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]     importlib.import_module(module_name)
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "/home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py", line 90, in import_module
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]     return _bootstrap._gcd_import(name[level:], package, level)
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "/home/ciaran/projects/vllm-src/vllm/third_party/deep_gemm/__init__.py", line 123, in <module>
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]     _find_cuda_home()                           # CUDA home
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]     ^^^^^^^^^^^^^^^^^
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]   File "/home/ciaran/projects/vllm-src/vllm/third_party/deep_gemm/__init__.py", line 117, in _find_cuda_home
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]     assert cuda_home is not None
+WARNING 07-14 11:40:58 [utils/import_utils.py:408]            ^^^^^^^^^^^^^^^^^^^^^
+WARNING 07-14 11:40:58 [utils/import_utils.py:408] AssertionError
+2026-07-14 11:40:58,304 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:5988] ubatch_slices: None, ubatch_slices_padded: None
+[VLLM_LAB_TRACE] pid=239545 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(8192, 896):bfloat16 key=T(8192, 128):bfloat16 value=T(8192, 128):bfloat16
+2026-07-14 11:40:58,320 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+DEBUG 07-14 11:40:58 [v1/worker/gpu_worker.py:731] Free memory on device (14.6/15.92 GiB) on startup. Desired GPU memory utilization is (0.5, 7.96 GiB). Actual usage is 0.93 GiB for weight, 0.58 GiB for peak activation, 0.08 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=6685005312` (6.23 GiB) to fit into requested memory, or `--kv-cache-memory=13817124352` (12.87 GiB) to fully utilize gpu memory. Current kv cache memory in use is 6.37 GiB.
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:5988] ubatch_slices: None, ubatch_slices_padded: None
+[VLLM_LAB_TRACE] pid=239545 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(256, 896):bfloat16 key=T(256, 128):bfloat16 value=T(256, 128):bfloat16
+INFO 07-14 11:40:58 [triton_utils/jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+DEBUG 07-14 11:40:58 [utils/gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+INFO 07-14 11:40:58 [v1/engine/core.py:495] init engine (profile, create kv cache, warmup model) took 1.70 s
+DEBUG 07-14 11:40:58 [v1/engine/core.py:349] Batch queue is enabled with size 2
+DEBUG 07-14 11:40:58 [utils/gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+Rendering prompts:   0%|          | 0/1 [00:00<?, ?it/s]DEBUG 07-14 11:40:58 [v1/sample/logits_processor/__init__.py:63] No logitsprocs plugins installed (group vllm.logits_processors).
+Rendering prompts: 100%|██████████| 1/1 [00:00<00:00, 161.01it/s]
+Processed prompts:   0%|          | 0/1 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s][VLLM_LAB_TRACE] pid=239545 step=1 scheduler/schedule total_scheduled=11 n_new=1 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={'0-865a10c6': {'scheduled': 11, 'computed_before': 0, 'num_prompt': 11, 'phase': 'prefill'}}
+WARNING 07-14 11:40:58 [triton_utils/jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[VLLM_LAB_TRACE] pid=239545 step=1 model_runner/prepare_inputs num_reqs=1 total_scheduled=11 num_scheduled_tokens=[11] query_start_loc=[0, 11] seq_lens=[11] positions=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] input_ids_len=11
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:4328] Running batch with cudagraph_mode: NONE, batch_descriptor: BatchDescriptor(num_tokens=11, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0), should_ubatch: False, num_tokens_across_dp: None
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:4349] ubatch_slices: None, ubatch_slices_padded: None
+[VLLM_LAB_TRACE] pid=239545 step=1 model_runner/model_forward input_ids=T(11,):int32 positions=T(11,):int64 num_tokens_padded=11 cudagraph_mode=NONE
+[VLLM_LAB_TRACE] pid=239545 step=1 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(11, 896):bfloat16 key=T(11, 128):bfloat16 value=T(11, 128):bfloat16
+[VLLM_LAB_TRACE] pid=239545 step=1 flash_attn_impl/forward layer_name=model.layers.0.self_attn.attn query=T(11, 14, 64):bfloat16 key=T(11, 2, 64):bfloat16 value=T(11, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 num_actual_tokens=11 max_query_len=11 max_seq_len=11 query_start_loc=T(2,):int32 seq_lens=T(1,):int32 block_table=T(1, 128):int32 slot_mapping=T(11,):int64 fa_version=2 phase=prefill
+[VLLM_LAB_TRACE] pid=239545 step=2 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'0-865a10c6': {'scheduled': 1, 'computed_before': 11, 'num_prompt': 11, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=239545 step=2 model_runner/prepare_inputs num_reqs=1 total_scheduled=1 num_scheduled_tokens=[1] query_start_loc=[0, 1] seq_lens=[12] positions=[11] input_ids_len=1
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:4328] Running batch with cudagraph_mode: NONE, batch_descriptor: BatchDescriptor(num_tokens=1, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0), should_ubatch: False, num_tokens_across_dp: None
+DEBUG 07-14 11:40:58 [v1/worker/gpu_model_runner.py:4349] ubatch_slices: None, ubatch_slices_padded: None
+[VLLM_LAB_TRACE] pid=239545 step=2 model_runner/model_forward input_ids=T(1,):int32 positions=T(1,):int64 num_tokens_padded=1 cudagraph_mode=NONE
+[VLLM_LAB_TRACE] pid=239545 step=2 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(1, 896):bfloat16 key=T(1, 128):bfloat16 value=T(1, 128):bfloat16
+[VLLM_LAB_TRACE] pid=239545 step=2 flash_attn_impl/forward layer_name=model.layers.0.self_attn.attn query=T(1, 14, 64):bfloat16 key=T(1, 2, 64):bfloat16 value=T(1, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 num_actual_tokens=1 max_query_len=1 max_seq_len=12 query_start_loc=T(2,):int32 seq_lens=T(1,):int32 block_table=T(1, 128):int32 slot_mapping=T(1,):int64 fa_version=2 phase=decode
+[VLLM_LAB_TRACE] pid=239545 step=2 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'0-865a10c6': 12}
+[VLLM_LAB_TRACE] pid=239545 step=3 scheduler/schedule total_scheduled=0 n_new=0 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={}
+[VLLM_LAB_TRACE] pid=239545 step=3 scheduler/update_from_output n_sampled_tokens=1 running=0 waiting=0 computed_after={}
+Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  2.87it/s, est. speed input: 31.60 toks/s, output: 5.74 toks/s]Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  2.87it/s, est. speed input: 31.60 toks/s, output: 5.74 toks/s]Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  2.87it/s, est. speed input: 31.60 toks/s, output: 5.74 toks/s]
+================================================================================
+[day1_baseline] num_prompt_tokens = 11
+[day1_baseline] num_output_tokens = 2
+[day1_baseline] output_token_ids  = [84648, 19479]
+[day1_baseline] output_text       = ' KV Cache'
+[day1_baseline] finish_reason     = length
+[day1_baseline] timings_s         = {'engine_init': 10.2567, 'generate': 0.3551, 'total': 10.6118}
+[day1_baseline] mem after_init    = {'device_free_MiB': 6651.0, 'device_total_MiB': 16302.6, 'device_used_MiB': 9651.6, 'proc_allocated_MiB': 7550.2, 'proc_reserved_MiB': 8218.0}
+[day1_baseline] saved -> outputs/day1/trace_result.json
+================================================================================
+[rank0]:[W714 11:40:59.349906580 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

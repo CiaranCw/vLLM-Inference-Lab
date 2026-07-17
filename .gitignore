@@ -1,0 +1,15 @@
+# Python 环境与缓存
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 会话 / 临时 / 密钥
+.claude/
+*.tmp
+.env
+
+# 本地回退备份（vLLM 上游文件副本，随 patches/ 可重建，不入库）
+backups/

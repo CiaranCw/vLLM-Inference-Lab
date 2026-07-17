@@ -1,0 +1,80 @@
+================================================================================
+[day2] scenario=E5 max_num_seqs=2 max_num_batched_tokens=64 async_scheduling=False
+[day2] arrivals (arrive_at_step, req_id, prompt_len_chars, max_tokens):
+        step  0  D         chars=41    max_tokens=20
+        step  2  P         chars=492   max_tokens=4
+================================================================================
+WARNING 07-17 14:47:14 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE
+WARNING 07-17 14:47:14 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_BLOCK
+WARNING 07-17 14:47:14 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_JSONL
+WARNING 07-17 14:47:14 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_MAX_STEPS
+WARNING 07-17 14:47:14 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_COMPONENTS
+WARNING 07-17 14:47:14 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-17 14:47:16 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-17 14:47:16 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.70it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.69it/s]
+
+2026-07-17 14:47:23,640 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-07-17 14:47:23,652 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+WARNING 07-17 14:47:23 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+[VLLM_LAB_TRACE] pid=919231 step=1 scheduler/schedule total_scheduled=24 n_new=1 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 24, 'computed_before': 0, 'num_prompt': 24, 'phase': 'prefill'}}
+[day2] >>> step 0: add_request ['D']
+WARNING 07-17 14:47:24 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[VLLM_LAB_TRACE] pid=919231 step=1 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 24}
+[VLLM_LAB_TRACE] pid=919231 step=2 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 24, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=2 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 25}
+[VLLM_LAB_TRACE] pid=919231 step=3 scheduler/blocked_skip req_id=D-9e83cb9f
+[VLLM_LAB_TRACE] pid=919231 step=3 scheduler/schedule total_scheduled=64 n_new=1 n_cached=0 running=2 waiting=0 preempted=0 finished=0 per_req={'P-bf1a69ca': {'scheduled': 64, 'computed_before': 0, 'num_prompt': 288, 'phase': 'prefill'}}
+[VLLM_LAB_TRACE] pid=919231 step=3 scheduler/update_from_output n_sampled_tokens=0 running=2 waiting=0 computed_after={'P-bf1a69ca': 64}
+[VLLM_LAB_TRACE] pid=919231 step=4 scheduler/schedule total_scheduled=64 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 25, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 63, 'computed_before': 64, 'num_prompt': 288, 'phase': 'prefill'}}
+[VLLM_LAB_TRACE] pid=919231 step=4 scheduler/update_from_output n_sampled_tokens=1 running=2 waiting=0 computed_after={'D-9e83cb9f': 26, 'P-bf1a69ca': 127}
+[VLLM_LAB_TRACE] pid=919231 step=5 scheduler/schedule total_scheduled=64 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 26, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 63, 'computed_before': 127, 'num_prompt': 288, 'phase': 'prefill'}}
+[VLLM_LAB_TRACE] pid=919231 step=5 scheduler/update_from_output n_sampled_tokens=1 running=2 waiting=0 computed_after={'D-9e83cb9f': 27, 'P-bf1a69ca': 190}
+[VLLM_LAB_TRACE] pid=919231 step=6 scheduler/schedule total_scheduled=64 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 27, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 63, 'computed_before': 190, 'num_prompt': 288, 'phase': 'prefill'}}
+[VLLM_LAB_TRACE] pid=919231 step=6 scheduler/update_from_output n_sampled_tokens=1 running=2 waiting=0 computed_after={'D-9e83cb9f': 28, 'P-bf1a69ca': 253}
+[VLLM_LAB_TRACE] pid=919231 step=7 scheduler/schedule total_scheduled=36 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 28, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 35, 'computed_before': 253, 'num_prompt': 288, 'phase': 'prefill'}}
+[VLLM_LAB_TRACE] pid=919231 step=7 scheduler/update_from_output n_sampled_tokens=2 running=2 waiting=0 computed_after={'D-9e83cb9f': 29, 'P-bf1a69ca': 288}
+[VLLM_LAB_TRACE] pid=919231 step=8 scheduler/schedule total_scheduled=2 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 29, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 1, 'computed_before': 288, 'num_prompt': 288, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=8 scheduler/update_from_output n_sampled_tokens=2 running=2 waiting=0 computed_after={'D-9e83cb9f': 30, 'P-bf1a69ca': 289}
+[VLLM_LAB_TRACE] pid=919231 step=9 scheduler/schedule total_scheduled=2 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 30, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 1, 'computed_before': 289, 'num_prompt': 288, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=9 scheduler/update_from_output n_sampled_tokens=2 running=2 waiting=0 computed_after={'D-9e83cb9f': 31, 'P-bf1a69ca': 290}
+[VLLM_LAB_TRACE] pid=919231 step=10 scheduler/schedule total_scheduled=2 n_new=0 n_cached=2 running=2 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 31, 'num_prompt': 24, 'phase': 'decode'}, 'P-bf1a69ca': {'scheduled': 1, 'computed_before': 290, 'num_prompt': 288, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=10 scheduler/update_from_output n_sampled_tokens=2 running=1 waiting=0 computed_after={'D-9e83cb9f': 32}
+[VLLM_LAB_TRACE] pid=919231 step=11 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=1 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 32, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=11 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 33}
+[VLLM_LAB_TRACE] pid=919231 step=12 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 33, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=12 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 34}
+[VLLM_LAB_TRACE] pid=919231 step=13 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 34, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=13 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 35}
+[VLLM_LAB_TRACE] pid=919231 step=14 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 35, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=14 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 36}
+[VLLM_LAB_TRACE] pid=919231 step=15 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 36, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=15 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 37}
+[VLLM_LAB_TRACE] pid=919231 step=16 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 37, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=16 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 38}
+[VLLM_LAB_TRACE] pid=919231 step=17 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 38, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=17 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 39}
+[VLLM_LAB_TRACE] pid=919231 step=18 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 39, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=18 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 40}
+[VLLM_LAB_TRACE] pid=919231 step=19 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 40, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=19 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 41}
+[VLLM_LAB_TRACE] pid=919231 step=20 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 41, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=20 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'D-9e83cb9f': 42}
+[VLLM_LAB_TRACE] pid=919231 step=21 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'D-9e83cb9f': {'scheduled': 1, 'computed_before': 42, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=919231 step=21 scheduler/update_from_output n_sampled_tokens=1 running=0 waiting=0 computed_after={}
+[day2] driver_summary=[{"step": 0, "injected": ["D"], "finished_this_step": [], "num_unfinished": 1}, {"step": 1, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 2, "injected": ["P"], "finished_this_step": [], "num_unfinished": 2}, {"step": 3, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 4, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 5, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 6, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 7, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 8, "injected": [], "finished_this_step": [], "num_unfinished": 2}, {"step": 9, "injected": [], "finished_this_step": ["P"], "num_unfinished": 1}, {"step": 10, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 11, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 12, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 13, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 14, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 15, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 16, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 17, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 18, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 19, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 20, "injected": [], "finished_this_step": ["D"], "num_unfinished": 0}]
+[day2] step 0: injected=['D'] finished=[] unfinished=1
+[day2] >>> step 2: add_request ['P']
+[day2] >>> step 2: BLOCK ['D-9e83cb9f'] (需 VLLM_LAB_BLOCK=1 生效)
+[day2] step 2: injected=['P'] finished=[] unfinished=2
+[day2] step 9: injected=[] finished=['P'] unfinished=1
+[day2] step 20: injected=[] finished=['D'] unfinished=0
+================================================================================
+[day2] done. total_reqs=2 finished=['D', 'P'] driver_steps=21
+================================================================================
+[rank0]:[W717 14:47:24.040836639 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

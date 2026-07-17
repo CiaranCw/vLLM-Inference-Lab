@@ -1,0 +1,47 @@
+================================================================================
+[day2] scenario=E1 max_num_seqs=2 max_num_batched_tokens=None async_scheduling=False
+[day2] arrivals (arrive_at_step, req_id, prompt_len_chars, max_tokens):
+        step  0  R0        chars=41    max_tokens=8
+================================================================================
+WARNING 07-17 14:41:34 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE
+WARNING 07-17 14:41:34 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_JSONL
+WARNING 07-17 14:41:34 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_MAX_STEPS
+WARNING 07-17 14:41:34 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_COMPONENTS
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-17 14:41:34 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+WARNING 07-17 14:41:36 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-17 14:41:36 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.60it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.60it/s]
+
+2026-07-17 14:41:44,766 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-07-17 14:41:44,785 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+WARNING 07-17 14:41:45 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+[VLLM_LAB_TRACE] pid=917664 step=1 scheduler/schedule total_scheduled=24 n_new=1 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 24, 'computed_before': 0, 'num_prompt': 24, 'phase': 'prefill'}}
+[day2] >>> step 0: add_request ['R0']
+WARNING 07-17 14:41:45 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[VLLM_LAB_TRACE] pid=917664 step=1 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 24}
+[VLLM_LAB_TRACE] pid=917664 step=2 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 24, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=2 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 25}
+[VLLM_LAB_TRACE] pid=917664 step=3 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 25, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=3 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 26}
+[VLLM_LAB_TRACE] pid=917664 step=4 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 26, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=4 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 27}
+[VLLM_LAB_TRACE] pid=917664 step=5 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 27, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=5 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 28}
+[VLLM_LAB_TRACE] pid=917664 step=6 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 28, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=6 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 29}
+[VLLM_LAB_TRACE] pid=917664 step=7 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 29, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=7 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R0-ba2bc7b6': 30}
+[VLLM_LAB_TRACE] pid=917664 step=8 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R0-ba2bc7b6': {'scheduled': 1, 'computed_before': 30, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=917664 step=8 scheduler/update_from_output n_sampled_tokens=1 running=0 waiting=0 computed_after={}
+[day2] driver_summary=[{"step": 0, "injected": ["R0"], "finished_this_step": [], "num_unfinished": 1}, {"step": 1, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 2, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 3, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 4, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 5, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 6, "injected": [], "finished_this_step": [], "num_unfinished": 1}, {"step": 7, "injected": [], "finished_this_step": ["R0"], "num_unfinished": 0}]
+[day2] step 0: injected=['R0'] finished=[] unfinished=1
+[day2] step 7: injected=[] finished=['R0'] unfinished=0
+================================================================================
+[day2] done. total_reqs=1 finished=['R0'] driver_steps=8
+================================================================================
+[rank0]:[W717 14:41:45.231347838 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

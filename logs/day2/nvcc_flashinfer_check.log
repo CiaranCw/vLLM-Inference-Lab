@@ -1,0 +1,276 @@
+================================================================================
+[day1_baseline] env: {"sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python", "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py", "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714", "torch_version": "2.11.0+cu130", "torch_cuda": "13.0", "cuda_available": true, "gpu_name": "NVIDIA GeForce RTX 5080", "env": {"VLLM_ENABLE_V1_MULTIPROCESSING": "0", "VLLM_LOGGING_LEVEL": "INFO", "VLLM_LAB_TRACE": null, "VLLM_ATTENTION_BACKEND": null, "VLLM_USE_FLASHINFER_SAMPLER": null}}
+[day1_baseline] config: {"model": "Qwen/Qwen2.5-0.5B-Instruct", "prompt": "请用一句话解释大模型推理中的 KV Cache。", "max_model_len": 2048, "max_tokens": 1, "gpu_memory_utilization": 0.5, "tensor_parallel_size": 1, "temperature": 0.0, "seed": 0, "enforce_eager": true, "dtype": "auto"}
+================================================================================
+INFO 07-17 11:02:59 [api_utils.py:273] non-default args: {'max_model_len': 2048, 'gpu_memory_utilization': 0.5, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen2.5-0.5B-Instruct'}
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-17 11:03:00 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 07-17 11:03:02 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 07-17 11:03:02 [model.py:1725] Using max model len 2048
+INFO 07-17 11:03:02 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 07-17 11:03:02 [vllm.py:1006] Asynchronous scheduling is enabled.
+WARNING 07-17 11:03:02 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-17 11:03:02 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 07-17 11:03:02 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 07-17 11:03:02 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 07-17 11:03:02 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+INFO 07-17 11:03:05 [core.py:258] Initializing a V1 LLM engine (v0.24.1.dev0+gee0da84ab.d20260714) with config: model='Qwen/Qwen2.5-0.5B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-0.5B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen2.5-0.5B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+INFO 07-17 11:03:06 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:39475 backend=nccl
+INFO 07-17 11:03:06 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+INFO 07-17 11:03:06 [topk_topp_sampler.py:55] Using FlashInfer for top-p & top-k sampling.
+INFO 07-17 11:03:06 [gpu_model_runner.py:5330] Starting to load model Qwen/Qwen2.5-0.5B-Instruct...
+INFO 07-17 11:03:07 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+INFO 07-17 11:03:07 [flash_attn.py:673] Using FlashAttention version 2
+INFO 07-17 11:03:08 [weight_utils.py:574] No model.safetensors.index.json found in remote.
+INFO 07-17 11:03:08 [weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 0.92 GiB. Available RAM: 58.19 GiB.
+INFO 07-17 11:03:08 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.73it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.73it/s]
+
+INFO 07-17 11:03:09 [default_loader.py:430] Loading weights took 0.58 seconds
+INFO 07-17 11:03:09 [gpu_model_runner.py:5425] Model loading took 0.93 GiB memory and 1.936723 seconds
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/scripts/day1_baseline.py", line 180, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/scripts/day1_baseline.py", line 115, in main
+[rank0]:     llm = LLM(
+[rank0]:           ^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/entrypoints/llm.py", line 396, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/llm_engine.py", line 229, in from_engine_args
+[rank0]:     return cls(
+[rank0]:            ^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/llm_engine.py", line 155, in __init__
+[rank0]:     self.engine_core = EngineCoreClient.make_client(
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core_client.py", line 133, in make_client
+[rank0]:     return InprocClient(vllm_config, executor_class, log_stats)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core_client.py", line 315, in __init__
+[rank0]:     self.engine_core = EngineCore(*args, **kwargs)
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core.py", line 280, in __init__
+[rank0]:     kv_cache_config = self._initialize_kv_caches(vllm_config)
+[rank0]:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/tracing/otel.py", line 178, in sync_wrapper
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core.py", line 433, in _initialize_kv_caches
+[rank0]:     available_gpu_memory = self.model_executor.determine_available_memory()
+[rank0]:                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/executor/abstract.py", line 147, in determine_available_memory
+[rank0]:     return self.collective_rpc("determine_available_memory")
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/executor/uniproc_executor.py", line 92, in collective_rpc
+[rank0]:     result = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/serial_utils.py", line 510, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_worker.py", line 438, in determine_available_memory
+[rank0]:     self.model_runner.profile_run()
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6476, in profile_run
+[rank0]:     output = self._dummy_sampler_run(last_hidden_states)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6288, in _dummy_sampler_run
+[rank0]:     raise e
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6256, in _dummy_sampler_run
+[rank0]:     sampler_output = self.sampler(
+[rank0]:                      ^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/sampler.py", line 102, in forward
+[rank0]:     sampled, processed_logprobs = self.sample(logits, sampling_metadata)
+[rank0]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/sampler.py", line 286, in sample
+[rank0]:     random_sampled, processed_logprobs = self.topk_topp_sampler(
+[rank0]:                                          ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/ops/topk_topp_sampler.py", line 174, in forward_cuda
+[rank0]:     return flashinfer_sample(logits.contiguous(), k, p, generators), None
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/ops/topk_topp_sampler.py", line 504, in flashinfer_sample
+[rank0]:     next_token_ids = flashinfer.sampling.top_k_top_p_sampling_from_logits(
+[rank0]:                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+[rank0]:     return _inner(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 1414, in top_k_top_p_sampling_from_logits
+[rank0]:     masked_logits = top_k_mask_logits(logits, top_k)
+[rank0]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+[rank0]:     return _inner(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 1820, in top_k_mask_logits
+[rank0]:     return get_sampling_module().top_k_mask_logits(
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 68, in get_sampling_module
+[rank0]:     module = gen_sampling_module().build_and_load()
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/sampling.py", line 22, in gen_sampling_module
+[rank0]:     return gen_jit_spec(
+[rank0]:            ^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/core.py", line 413, in gen_jit_spec
+[rank0]:     check_cuda_arch()
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/core.py", line 108, in check_cuda_arch
+[rank0]:     raise RuntimeError("FlashInfer requires GPUs with sm75 or higher")
+[rank0]: RuntimeError: FlashInfer requires GPUs with sm75 or higher
+[rank0]:[W717 11:03:10.242190443 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+### retry with TORCH_CUDA_ARCH_LIST=12.0 started: 2026-07-17T11:04:13+08:00
+================================================================================
+[day1_baseline] env: {"sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python", "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py", "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714", "torch_version": "2.11.0+cu130", "torch_cuda": "13.0", "cuda_available": true, "gpu_name": "NVIDIA GeForce RTX 5080", "env": {"VLLM_ENABLE_V1_MULTIPROCESSING": "0", "VLLM_LOGGING_LEVEL": "INFO", "VLLM_LAB_TRACE": null, "VLLM_ATTENTION_BACKEND": null, "VLLM_USE_FLASHINFER_SAMPLER": null}}
+[day1_baseline] config: {"model": "Qwen/Qwen2.5-0.5B-Instruct", "prompt": "请用一句话解释大模型推理中的 KV Cache。", "max_model_len": 2048, "max_tokens": 1, "gpu_memory_utilization": 0.5, "tensor_parallel_size": 1, "temperature": 0.0, "seed": 0, "enforce_eager": true, "dtype": "auto"}
+================================================================================
+INFO 07-17 11:04:17 [api_utils.py:273] non-default args: {'max_model_len': 2048, 'gpu_memory_utilization': 0.5, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen2.5-0.5B-Instruct'}
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-17 11:04:17 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 07-17 11:04:19 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 07-17 11:04:19 [model.py:1725] Using max model len 2048
+INFO 07-17 11:04:19 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 07-17 11:04:19 [vllm.py:1006] Asynchronous scheduling is enabled.
+WARNING 07-17 11:04:19 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-17 11:04:19 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 07-17 11:04:19 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 07-17 11:04:19 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 07-17 11:04:19 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+INFO 07-17 11:04:22 [core.py:258] Initializing a V1 LLM engine (v0.24.1.dev0+gee0da84ab.d20260714) with config: model='Qwen/Qwen2.5-0.5B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-0.5B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen2.5-0.5B-Instruct, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+INFO 07-17 11:04:22 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:48811 backend=nccl
+INFO 07-17 11:04:23 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+INFO 07-17 11:04:23 [topk_topp_sampler.py:55] Using FlashInfer for top-p & top-k sampling.
+INFO 07-17 11:04:23 [gpu_model_runner.py:5330] Starting to load model Qwen/Qwen2.5-0.5B-Instruct...
+INFO 07-17 11:04:23 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+INFO 07-17 11:04:23 [flash_attn.py:673] Using FlashAttention version 2
+INFO 07-17 11:04:24 [weight_utils.py:574] No model.safetensors.index.json found in remote.
+INFO 07-17 11:04:24 [weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 0.92 GiB. Available RAM: 58.21 GiB.
+INFO 07-17 11:04:24 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.76it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.76it/s]
+
+INFO 07-17 11:04:25 [default_loader.py:430] Loading weights took 0.37 seconds
+INFO 07-17 11:04:25 [gpu_model_runner.py:5425] Model loading took 0.93 GiB memory and 1.518752 seconds
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/scripts/day1_baseline.py", line 180, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/scripts/day1_baseline.py", line 115, in main
+[rank0]:     llm = LLM(
+[rank0]:           ^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/entrypoints/llm.py", line 396, in __init__
+[rank0]:     self.llm_engine = LLMEngine.from_engine_args(
+[rank0]:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/llm_engine.py", line 229, in from_engine_args
+[rank0]:     return cls(
+[rank0]:            ^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/llm_engine.py", line 155, in __init__
+[rank0]:     self.engine_core = EngineCoreClient.make_client(
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core_client.py", line 133, in make_client
+[rank0]:     return InprocClient(vllm_config, executor_class, log_stats)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core_client.py", line 315, in __init__
+[rank0]:     self.engine_core = EngineCore(*args, **kwargs)
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core.py", line 280, in __init__
+[rank0]:     kv_cache_config = self._initialize_kv_caches(vllm_config)
+[rank0]:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/tracing/otel.py", line 178, in sync_wrapper
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/engine/core.py", line 433, in _initialize_kv_caches
+[rank0]:     available_gpu_memory = self.model_executor.determine_available_memory()
+[rank0]:                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/executor/abstract.py", line 147, in determine_available_memory
+[rank0]:     return self.collective_rpc("determine_available_memory")
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/executor/uniproc_executor.py", line 92, in collective_rpc
+[rank0]:     result = run_method(self.driver_worker, method, args, kwargs)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/serial_utils.py", line 510, in run_method
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_worker.py", line 438, in determine_available_memory
+[rank0]:     self.model_runner.profile_run()
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6476, in profile_run
+[rank0]:     output = self._dummy_sampler_run(last_hidden_states)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6288, in _dummy_sampler_run
+[rank0]:     raise e
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/worker/gpu_model_runner.py", line 6256, in _dummy_sampler_run
+[rank0]:     sampler_output = self.sampler(
+[rank0]:                      ^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/sampler.py", line 102, in forward
+[rank0]:     sampled, processed_logprobs = self.sample(logits, sampling_metadata)
+[rank0]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/sampler.py", line 286, in sample
+[rank0]:     random_sampled, processed_logprobs = self.topk_topp_sampler(
+[rank0]:                                          ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/ops/topk_topp_sampler.py", line 174, in forward_cuda
+[rank0]:     return flashinfer_sample(logits.contiguous(), k, p, generators), None
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-src/vllm/v1/sample/ops/topk_topp_sampler.py", line 504, in flashinfer_sample
+[rank0]:     next_token_ids = flashinfer.sampling.top_k_top_p_sampling_from_logits(
+[rank0]:                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+[rank0]:     return _inner(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 1414, in top_k_top_p_sampling_from_logits
+[rank0]:     masked_logits = top_k_mask_logits(logits, top_k)
+[rank0]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/api_logging.py", line 2333, in _auto_dump_wrapper
+[rank0]:     return _inner(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 1820, in top_k_mask_logits
+[rank0]:     return get_sampling_module().top_k_mask_logits(
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/sampling.py", line 68, in get_sampling_module
+[rank0]:     module = gen_sampling_module().build_and_load()
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/sampling.py", line 22, in gen_sampling_module
+[rank0]:     return gen_jit_spec(
+[rank0]:            ^^^^^^^^^^^^^
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/core.py", line 413, in gen_jit_spec
+[rank0]:     check_cuda_arch()
+[rank0]:   File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/flashinfer/jit/core.py", line 108, in check_cuda_arch
+[rank0]:     raise RuntimeError("FlashInfer requires GPUs with sm75 or higher")
+[rank0]: RuntimeError: FlashInfer requires GPUs with sm75 or higher
+[rank0]:[W717 11:04:26.255018430 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+### retry pipeline_rc=1 finished: 2026-07-17T11:04:27+08:00
