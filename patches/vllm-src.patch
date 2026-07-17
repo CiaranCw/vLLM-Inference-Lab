@@ -392,7 +392,7 @@ index 5d63553..c3a1b3c 100644
  from functools import cache
  from typing import NamedTuple, cast, get_args
 diff --git a/vllm/v1/core/block_pool.py b/vllm/v1/core/block_pool.py
-index 81ac05f..411cb47 100644
+index 81ac05f..fa87615 100644
 --- a/vllm/v1/core/block_pool.py
 +++ b/vllm/v1/core/block_pool.py
 @@ -1,5 +1,53 @@
@@ -526,7 +526,22 @@ index 81ac05f..411cb47 100644
          if block.block_hash is None:
              block.set_block_hash(block_hash_with_group_id, num_tokens=num_tokens)
          else:
-@@ -573,6 +639,8 @@ class BlockPool:
+@@ -569,10 +635,23 @@ class BlockPool:
+                 block.ref_cnt += 1
+                 if self.metrics_collector:
+                     self.metrics_collector.on_block_allocated(block)
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            if _lt.enabled():
++                _lt.trace_event("kv", "get_new_blocks", {
++                    "num_blocks": num_blocks,
++                    "block_ids": [b.block_id for b in ret],
++                    "ref_cnts": [b.ref_cnt for b in ret],
++                })
++        except Exception:
++            pass
+         return ret
  
      def _maybe_evict_cached_block(self, block: KVCacheBlock) -> bool:
          """
@@ -535,7 +550,37 @@ index 81ac05f..411cb47 100644
          If a block is cached in `cached_block_hash_to_block`, we reset its hash
          metadata and evict it from the cache.
  
-@@ -605,6 +673,8 @@ class BlockPool:
+@@ -582,6 +661,12 @@ class BlockPool:
+         Returns:
+             True if the block is evicted, False otherwise.
+         """
++        # VLLM_INFERENCE_LAB_TRACE: 在 _remove_cached_block_hashes(→reset_hash) 之前，
++        # 捕获该块 hash 覆盖的累计 token 数（尾部逻辑块该值更大），用于判断驱逐顺序。
++        try:
++            _lab_cov = getattr(block, "block_hash_num_tokens", None)
++        except Exception:
++            _lab_cov = None
+         # Clean up metrics tracking first to prevent leaks
+         if self.metrics_collector:
+             self.metrics_collector.on_block_evicted(block)
+@@ -592,6 +677,16 @@ class BlockPool:
+             return False
+ 
+         self._emit_block_removed_events(evicted_hashes)
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            _lt.trace_event("kv", "evict_cached_block", {
++                "block_id": block.block_id,
++                "num_evicted_hashes": len(evicted_hashes),
++                "block_hash_num_tokens": _lab_cov,
++            })
++        except Exception:
++            pass
+         return True
+ 
+     def touch(self, blocks: Sequence[KVCacheBlock]) -> None:
+@@ -605,6 +700,8 @@ class BlockPool:
          for block in blocks:
              # ref_cnt=0 means this block is in the free list (i.e. eviction
              # candidate), so remove it.
@@ -544,7 +589,7 @@ index 81ac05f..411cb47 100644
              if block.ref_cnt == 0 and not block.is_null:
                  self.free_block_queue.remove(block)
              block.ref_cnt += 1
-@@ -623,10 +693,13 @@ class BlockPool:
+@@ -623,13 +720,27 @@ class BlockPool:
          blocks_with_hash = []
          blocks_without_hash = []
          for block in ordered_blocks:
@@ -558,6 +603,20 @@ index 81ac05f..411cb47 100644
                  else:
                      blocks_with_hash.append(block)
  
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            if _lt.enabled() and (blocks_with_hash or blocks_without_hash):
++                _lt.trace_event("kv", "free_blocks", {
++                    "freed_cached_tail": [b.block_id for b in blocks_with_hash],
++                    "freed_evict_first": [b.block_id for b in blocks_without_hash],
++                })
++        except Exception:
++            pass
++
+         # Blocks without hash always get evicted first - prepend them last to the tail
+         self.free_block_queue.prepend_n(blocks_without_hash)
+         self.free_block_queue.append_n(blocks_with_hash)
 diff --git a/vllm/v1/core/kv_cache_coordinator.py b/vllm/v1/core/kv_cache_coordinator.py
 index 48f597e..7c2f7d5 100644
 --- a/vllm/v1/core/kv_cache_coordinator.py
@@ -767,7 +826,7 @@ index 48f597e..7c2f7d5 100644
              blocks if blocks is not None else [] for blocks in hit_blocks_by_group
          ), hit_length
 diff --git a/vllm/v1/core/kv_cache_manager.py b/vllm/v1/core/kv_cache_manager.py
-index b0f6655..4e39309 100644
+index b0f6655..b96f525 100644
 --- a/vllm/v1/core/kv_cache_manager.py
 +++ b/vllm/v1/core/kv_cache_manager.py
 @@ -1,6 +1,52 @@
@@ -904,7 +963,7 @@ index b0f6655..4e39309 100644
          Note that the computed blocks must be full.
  
          Args:
-@@ -215,6 +288,9 @@ class KVCacheManager:
+@@ -215,7 +288,21 @@ class KVCacheManager:
          # disabled or the request is marked as skipping kv cache read
          # (which happens when the request requires prompt logprobs
          # or calls a pooling model with all pooling).
@@ -912,9 +971,21 @@ index b0f6655..4e39309 100644
 +        # 或者这个 request 明确不能读 prefix cache，
 +        # 那么命中 token 数就是 0，直接返回空
          if not self.enable_caching or request.skip_reading_prefix_cache:
++            # VLLM_INFERENCE_LAB_TRACE
++            try:
++                from vllm import _lab_trace as _lt
++                _lt.trace_event("kv", "get_computed_blocks", {
++                    "req_id": request.request_id,
++                    "num_new_computed_tokens": 0,
++                    "num_prompt_tokens": request.num_prompt_tokens,
++                    "prefix_caching": self.enable_caching,
++                })
++            except Exception:
++                pass
              return self.empty_kv_cache_blocks, 0
  
-@@ -224,7 +300,18 @@ class KVCacheManager:
+         # NOTE: When all tokens hit the cache, we must recompute the last token
+@@ -224,7 +311,18 @@ class KVCacheManager:
          # the single last token, because allocate_slots() requires
          # num_computed_tokens to be block-size aligned. Removing this limitation
          # could slightly improve performance in the future.
@@ -933,7 +1004,33 @@ index b0f6655..4e39309 100644
          computed_blocks, num_new_computed_tokens = (
              self.coordinator.find_longest_cache_hit(
                  request.block_hashes, max_cache_hit_length
-@@ -256,6 +343,11 @@ class KVCacheManager:
+@@ -239,6 +337,25 @@ class KVCacheManager:
+                 preempted=request.num_preemptions > 0,
+             )
+ 
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            if _lt.enabled():
++                _bids = None
++                try:
++                    _bids = [b.block_id for _grp in computed_blocks for b in _grp]
++                except Exception:
++                    _bids = None
++                _lt.trace_event("kv", "get_computed_blocks", {
++                    "req_id": request.request_id,
++                    "num_new_computed_tokens": num_new_computed_tokens,
++                    "num_prompt_tokens": request.num_prompt_tokens,
++                    "hit_block_ids": _bids,
++                    "prefix_caching": True,
++                })
++        except Exception:
++            pass
++
+         return self.create_kv_cache_blocks(computed_blocks), num_new_computed_tokens
+ 
+     def allocate_slots(
+@@ -256,6 +373,11 @@ class KVCacheManager:
          has_scheduled_reqs: bool = True,
      ) -> KVCacheBlocks | None:
          """Add slots for a request with new tokens to append.
@@ -945,7 +1042,7 @@ index b0f6655..4e39309 100644
  
          Args:
              request: The request to allocate slots.
-@@ -313,12 +405,12 @@ class KVCacheManager:
+@@ -313,12 +435,12 @@ class KVCacheManager:
          Abbrivations:
  
          ```
@@ -963,7 +1060,7 @@ index b0f6655..4e39309 100644
          ```
  
          NOTE: for new tokens which include both verified and unverified draft
-@@ -352,9 +444,11 @@ class KVCacheManager:
+@@ -352,9 +474,11 @@ class KVCacheManager:
  
          # The number of computed tokens is the number of computed tokens plus
          # the new prefix caching hits
@@ -975,7 +1072,7 @@ index b0f6655..4e39309 100644
          total_computed_tokens = min(
              num_local_computed_tokens + num_external_computed_tokens,
              self.max_model_len,
-@@ -363,12 +457,16 @@ class KVCacheManager:
+@@ -363,12 +487,16 @@ class KVCacheManager:
          watermark_blocks = 0
          # The watermark is applied to waiting/preempted requests only, and only
          # when there's at least one request already scheduled.
@@ -992,7 +1089,7 @@ index b0f6655..4e39309 100644
          if full_sequence_must_fit:
              # First check and fail if the full request sequence won't fit.
              full_num_tokens = min(request.num_tokens, self.max_model_len)
-@@ -386,6 +484,7 @@ class KVCacheManager:
+@@ -386,6 +514,7 @@ class KVCacheManager:
              if required_blocks > self.block_pool.get_num_free_blocks():
                  return None
  
@@ -1000,7 +1097,7 @@ index b0f6655..4e39309 100644
          num_tokens_main_model = total_computed_tokens + num_new_tokens
          num_tokens_need_slot = min(
              num_tokens_main_model + num_lookahead_tokens, self.max_model_len
-@@ -397,10 +496,12 @@ class KVCacheManager:
+@@ -397,10 +526,12 @@ class KVCacheManager:
          # insufficient free blocks.
          # Should call this function before allocating new blocks to reduce
          # the number of evicted blocks.
@@ -1013,20 +1110,31 @@ index b0f6655..4e39309 100644
          num_blocks_to_allocate = self.coordinator.get_num_blocks_to_allocate(
              request_id=request.request_id,
              num_tokens=num_tokens_need_slot,
-@@ -415,10 +516,12 @@ class KVCacheManager:
+@@ -415,10 +546,23 @@ class KVCacheManager:
          # additional watermark of headroom for waiting/preempted admissions.
          available_blocks = self.block_pool.get_num_free_blocks() - reserved_blocks
          required_blocks = num_blocks_to_allocate + watermark_blocks
 +        # 需求的大于可用的，说明不够，返回None
          if required_blocks > available_blocks:
              # Cannot allocate new blocks
++            # VLLM_INFERENCE_LAB_TRACE
++            try:
++                from vllm import _lab_trace as _lt
++                _lt.trace_event("kv", "allocate_slots_FAILED", {
++                    "req_id": request.request_id,
++                    "num_new_tokens": num_new_tokens,
++                    "required_blocks": required_blocks,
++                    "available_blocks": available_blocks,
++                })
++            except Exception:
++                pass
              return None
  
 +        # 如果有本地prefix cache命中或外部computed tokens，则接到这个请求的block映射上
          if (
              new_computed_block_list is not self.empty_kv_cache_blocks.blocks
              or num_external_computed_tokens > 0
-@@ -432,6 +535,7 @@ class KVCacheManager:
+@@ -432,6 +576,7 @@ class KVCacheManager:
                  num_external_computed_tokens=num_external_computed_tokens,
              )
  
@@ -1034,15 +1142,35 @@ index b0f6655..4e39309 100644
          new_blocks = self.coordinator.allocate_new_blocks(
              request.request_id,
              num_tokens_need_slot,
-@@ -441,6 +545,7 @@ class KVCacheManager:
+@@ -439,8 +584,27 @@ class KVCacheManager:
+             num_encoder_tokens,
+         )
  
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            if _lt.enabled():
++                _new = None
++                try:
++                    _new = [b.block_id for _grp in new_blocks for b in _grp]
++                except Exception:
++                    _new = None
++                _lt.trace_event("kv", "allocate_slots", {
++                    "req_id": request.request_id,
++                    "num_new_tokens": num_new_tokens,
++                    "new_block_ids": _new,
++                    "free_blocks_after": self.block_pool.get_num_free_blocks(),
++                })
++        except Exception:
++            pass
++
          # P/D: delay caching blocks if we have to recv from
          # remote. Update state for locally cached blocks.
 +        # 如果没有开启 prefix caching，或者这批 blocks 是远程 KV transfer 暂时延迟缓存，就直接返回，不把它们加入 prefix cache
          if not self.enable_caching or delay_cache_blocks:
              return self.create_kv_cache_blocks(new_blocks)
  
-@@ -449,6 +554,7 @@ class KVCacheManager:
+@@ -449,6 +613,7 @@ class KVCacheManager:
          # "non-committable" tokens (e.g., draft tokens that could be rejected).
          # Therefore, we cap the number at `request.num_tokens`, ensuring only
          # "finalized" tokens are cached.
@@ -1050,7 +1178,7 @@ index b0f6655..4e39309 100644
          num_tokens_to_cache = min(
              total_computed_tokens + num_new_tokens,
              request.num_tokens,
-@@ -458,7 +564,9 @@ class KVCacheManager:
+@@ -458,13 +623,31 @@ class KVCacheManager:
          return self.create_kv_cache_blocks(new_blocks)
  
      def free(self, request: Request) -> None:
@@ -1061,7 +1189,29 @@ index b0f6655..4e39309 100644
          We free the blocks in reverse order so that the tail blocks are evicted
          first when caching is enabled.
  
-@@ -506,6 +614,8 @@ class KVCacheManager:
+         Args:
+             request: The request to free the blocks.
+         """
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            if _lt.enabled():
++                _bids = None
++                try:
++                    _bids = self.get_block_ids(request.request_id)
++                except Exception:
++                    _bids = None
++                _lt.trace_event("kv", "free", {
++                    "req_id": request.request_id,
++                    "block_ids": _bids,
++                    "free_blocks_before": self.block_pool.get_num_free_blocks(),
++                })
++        except Exception:
++            pass
+         self.coordinator.free(request.request_id)
+ 
+     def remove_skipped_blocks(
+@@ -506,6 +689,8 @@ class KVCacheManager:
          flows to invalidate prefix caching after the weights are updated,
          or used for resetting prefix caching status for benchmarking.
  
@@ -1193,7 +1343,7 @@ index b13c23d..eff8238 100644
  
  
 diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
-index 90d93a1..dcc9f4e 100644
+index 90d93a1..60343e4 100644
 --- a/vllm/v1/core/sched/scheduler.py
 +++ b/vllm/v1/core/sched/scheduler.py
 @@ -1,5 +1,89 @@
@@ -1475,7 +1625,7 @@ index 90d93a1..dcc9f4e 100644
              if request.spec_token_ids:
                  num_scheduled_spec_tokens = (
                      num_new_tokens
-@@ -623,13 +781,17 @@ class Scheduler(SchedulerInterface):
+@@ -623,20 +781,50 @@ class Scheduler(SchedulerInterface):
              assert len(scheduled_loras) <= self.lora_config.max_loras
  
          # Next, schedule the WAITING requests.
@@ -1494,9 +1644,23 @@ index 90d93a1..dcc9f4e 100644
                  request_queue = self._select_waiting_queue_for_scheduling()
                  assert request_queue is not None
  
-@@ -637,6 +799,18 @@ class Scheduler(SchedulerInterface):
+                 request = request_queue.peek_request()
                  request_id = request.request_id
  
++                # VLLM_INFERENCE_LAB_EXPERIMENT: 实验性阻止指定请求从 waiting 被重新准入，
++                # 使被抢占请求保持 cached-free（以观察其 block 被驱逐）。仅 VLLM_LAB_BLOCK=1
++                # 且 id 命中时生效；默认关闭 → 零影响。仿照下方 skipped_waiting 模式。
++                try:
++                    from vllm import _lab_trace as _lt
++                    if request.request_id in _lt.blocked_ids():
++                        _lt.trace_event("scheduler", "waiting_skip_blocked",
++                                        {"req_id": request.request_id})
++                        request_queue.pop_request()
++                        step_skipped_waiting.prepend_request(request)
++                        continue
++                except Exception:
++                    pass
++
                  # try to promote blocked statuses while traversing skipped queue.
 +                # 尝试恢复blocked状态：
 +                """
@@ -1513,7 +1677,7 @@ index 90d93a1..dcc9f4e 100644
                  if self._is_blocked_waiting_status(
                      request.status
                  ) and not self._try_promote_blocked_waiting_request(request):
-@@ -670,6 +844,7 @@ class Scheduler(SchedulerInterface):
+@@ -670,6 +858,7 @@ class Scheduler(SchedulerInterface):
                  num_uncached_common_prefix_tokens = 0
  
                  # Get already-cached tokens.
@@ -1521,7 +1685,7 @@ index 90d93a1..dcc9f4e 100644
                  if request.num_computed_tokens == 0:
                      # Get locally-cached tokens.
                      if (
-@@ -794,12 +969,14 @@ class Scheduler(SchedulerInterface):
+@@ -794,12 +983,14 @@ class Scheduler(SchedulerInterface):
                      # `request.num_prompt_tokens` to consider the resumed
                      # requests, which have output tokens.
                      num_new_tokens = request.num_tokens - num_computed_tokens
@@ -1536,7 +1700,7 @@ index 90d93a1..dcc9f4e 100644
                      if (
                          not self.scheduler_config.enable_chunked_prefill
                          and num_new_tokens > token_budget
-@@ -807,7 +984,8 @@ class Scheduler(SchedulerInterface):
+@@ -807,7 +998,8 @@ class Scheduler(SchedulerInterface):
                          # If chunked_prefill is disabled,
                          # we can stop the scheduling here.
                          break
@@ -1546,7 +1710,7 @@ index 90d93a1..dcc9f4e 100644
                      num_new_tokens = min(num_new_tokens, token_budget)
                      assert num_new_tokens > 0
  
-@@ -871,6 +1049,7 @@ class Scheduler(SchedulerInterface):
+@@ -871,6 +1063,7 @@ class Scheduler(SchedulerInterface):
                      # avoid deadlock and predictable preemptions.
                      reserved_blocks = self._inflight_prefill_reserved_blocks()
  
@@ -1554,7 +1718,7 @@ index 90d93a1..dcc9f4e 100644
                  new_blocks = self.kv_cache_manager.allocate_slots(
                      request,
                      num_new_tokens,
-@@ -885,6 +1064,7 @@ class Scheduler(SchedulerInterface):
+@@ -885,6 +1078,7 @@ class Scheduler(SchedulerInterface):
                      has_scheduled_reqs=bool(self.running),
                  )
  
@@ -1562,7 +1726,7 @@ index 90d93a1..dcc9f4e 100644
                  if new_blocks is None:
                      # The request cannot be scheduled.
  
-@@ -914,7 +1094,20 @@ class Scheduler(SchedulerInterface):
+@@ -914,7 +1108,20 @@ class Scheduler(SchedulerInterface):
                              preempted=request.num_preemptions > 0,
                          )
  
@@ -1584,7 +1748,7 @@ index 90d93a1..dcc9f4e 100644
                  if load_kv_async:
                      # If loading async, allocate memory and put request
                      # into the WAITING_FOR_REMOTE_KV state.
-@@ -937,27 +1130,27 @@ class Scheduler(SchedulerInterface):
+@@ -937,27 +1144,27 @@ class Scheduler(SchedulerInterface):
                      self._inflight_prefills.add(request)
                      continue
  
@@ -1620,7 +1784,7 @@ index 90d93a1..dcc9f4e 100644
                  # Only track requests that will still be prefilling after this chunk.
                  if num_computed_tokens + num_new_tokens < request.num_tokens:
                      self._inflight_prefills.add(request)
-@@ -987,6 +1180,12 @@ class Scheduler(SchedulerInterface):
+@@ -987,6 +1194,12 @@ class Scheduler(SchedulerInterface):
                  self.prefill_capacity_bound = bool(self.waiting)
  
          # Check if the scheduling constraints are satisfied.
@@ -1633,7 +1797,7 @@ index 90d93a1..dcc9f4e 100644
          total_num_scheduled_tokens = sum(num_scheduled_tokens.values())
          assert total_num_scheduled_tokens <= self.max_num_scheduled_tokens
  
-@@ -1056,9 +1255,21 @@ class Scheduler(SchedulerInterface):
+@@ -1056,9 +1269,21 @@ class Scheduler(SchedulerInterface):
                  len(num_scheduled_tokens)
              ]
  
@@ -1657,7 +1821,7 @@ index 90d93a1..dcc9f4e 100644
              num_scheduled_tokens=num_scheduled_tokens,
              total_num_scheduled_tokens=total_num_scheduled_tokens,
              scheduled_spec_decode_tokens=scheduled_spec_decode_tokens,
-@@ -1095,6 +1306,36 @@ class Scheduler(SchedulerInterface):
+@@ -1095,6 +1320,36 @@ class Scheduler(SchedulerInterface):
          if self.defer_block_free and total_num_scheduled_tokens > 0:
              self.sched_step_seq += 1
  
@@ -1694,7 +1858,7 @@ index 90d93a1..dcc9f4e 100644
          with record_function_or_nullcontext("schedule: update_after_schedule"):
              self._update_after_schedule(scheduler_output)
          return scheduler_output
-@@ -1109,6 +1350,15 @@ class Scheduler(SchedulerInterface):
+@@ -1109,6 +1364,15 @@ class Scheduler(SchedulerInterface):
  
          NOTE: The request should be popped from the running queue outside of this
          method.
@@ -1710,7 +1874,26 @@ index 90d93a1..dcc9f4e 100644
          """
          assert request.status == RequestStatus.RUNNING, (
              "Only running requests can be preempted"
-@@ -1137,6 +1387,13 @@ class Scheduler(SchedulerInterface):
+@@ -1124,6 +1388,18 @@ class Scheduler(SchedulerInterface):
+         if self.log_stats:
+             request.record_event(EngineCoreEventType.PREEMPTED, timestamp)
+ 
++        # VLLM_INFERENCE_LAB_TRACE
++        try:
++            from vllm import _lab_trace as _lt
++            _lt.trace_event("scheduler", "preempt", {
++                "victim_id": request.request_id,
++                "num_preemptions": request.num_preemptions,
++                "status": "PREEMPTED",
++                "num_computed_tokens_after_reset": request.num_computed_tokens,
++            })
++        except Exception:
++            pass
++
+         # Put the request back to the waiting queue.
+         self.waiting.prepend_request(request)
+ 
+@@ -1137,6 +1413,13 @@ class Scheduler(SchedulerInterface):
          #    scheduling step.
          # 3. If some tokens (e.g. spec tokens) are rejected later, the number of
          #    computed tokens will be adjusted in update_from_output.
@@ -1724,7 +1907,7 @@ index 90d93a1..dcc9f4e 100644
          num_scheduled_tokens = scheduler_output.num_scheduled_tokens
          for req_id, num_scheduled_token in num_scheduled_tokens.items():
              request = self.requests[req_id]
-@@ -1463,13 +1720,23 @@ class Scheduler(SchedulerInterface):
+@@ -1463,13 +1746,23 @@ class Scheduler(SchedulerInterface):
  
      def update_from_output(
          self,
@@ -1752,7 +1935,7 @@ index 90d93a1..dcc9f4e 100644
          pooler_outputs = model_runner_output.pooler_output
          num_nans_in_logits = model_runner_output.num_nans_in_logits
          kv_connector_output = model_runner_output.kv_connector_output
-@@ -1524,6 +1791,7 @@ class Scheduler(SchedulerInterface):
+@@ -1524,6 +1817,7 @@ class Scheduler(SchedulerInterface):
          # to avoid expensive operations inside the loop.
          stopped_running_reqs: set[Request] = set()
          stopped_preempted_reqs: set[Request] = set()
@@ -1760,7 +1943,7 @@ index 90d93a1..dcc9f4e 100644
          for req_id, num_tokens_scheduled in num_scheduled_tokens.items():
              assert num_tokens_scheduled > 0
              if failed_kv_load_req_ids and req_id in failed_kv_load_req_ids:
-@@ -1588,6 +1856,8 @@ class Scheduler(SchedulerInterface):
+@@ -1588,6 +1882,8 @@ class Scheduler(SchedulerInterface):
  
              # Check for stop and update request status.
              if new_token_ids:
@@ -1769,7 +1952,7 @@ index 90d93a1..dcc9f4e 100644
                  new_token_ids, stopped = self._update_request_with_output(
                      request, new_token_ids
                  )
-@@ -1800,6 +2070,27 @@ class Scheduler(SchedulerInterface):
+@@ -1800,6 +2096,27 @@ class Scheduler(SchedulerInterface):
                  engine_core_outputs[0] = eco = EngineCoreOutputs()
              eco.scheduler_stats = stats
  
@@ -1797,7 +1980,7 @@ index 90d93a1..dcc9f4e 100644
          return engine_core_outputs
  
      @staticmethod
-@@ -1811,7 +2102,7 @@ class Scheduler(SchedulerInterface):
+@@ -1811,7 +2128,7 @@ class Scheduler(SchedulerInterface):
          )
  
      def _enqueue_waiting_request(self, request: Request) -> None:
@@ -1806,7 +1989,7 @@ index 90d93a1..dcc9f4e 100644
              self.skipped_waiting.add_request(request)
          else:
              self.waiting.add_request(request)
-@@ -1988,7 +2279,7 @@ class Scheduler(SchedulerInterface):
+@@ -1988,7 +2305,7 @@ class Scheduler(SchedulerInterface):
      def finish_requests(
          self, request_ids: str | Iterable[str] | None, finished_status: RequestStatus
      ) -> list[tuple[str, int]]:
@@ -1815,7 +1998,7 @@ index 90d93a1..dcc9f4e 100644
  
          For example, the API server can abort a request when the client
          disconnects.
-@@ -2012,6 +2303,12 @@ class Scheduler(SchedulerInterface):
+@@ -2012,6 +2329,12 @@ class Scheduler(SchedulerInterface):
          valid_requests = []
  
          # First pass: collect requests to remove from queues

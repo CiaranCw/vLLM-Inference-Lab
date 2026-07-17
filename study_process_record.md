@@ -42,6 +42,30 @@
 - 结论：decode 与 chunked prefill 的"共存"发生在**同一 running 集合的 token 预算分配**层面；能否共存取决于 **max_num_seqs 是否允许二者同时 running**。
 - 产出：`scripts/day2_engine_driver.py`(+E5/E5b)、`outputs/day2/{E5,E5b}.jsonl`、`{E5,E5b}_timeline.md`、`notes/day2/e5_blocked_decode_vs_prefill.md`、备份 `backups/day2/*.pre_e5`。
 
+## ✅ 第一周 Day 3 —— KV Cache 与 Block 管理（2026-07-17）
+
+**方法**：手动驱动 V1 引擎（`scripts/day3_kv_driver.py`，支持 `num_gpu_blocks_override` / `enable_prefix_caching`），在 `kv_cache_manager` / `block_pool` / `scheduler._preempt_request` 加**被动只读** trace（component `kv`；E1 回归验证零副作用）。基本事实：block_size=16、物理块 id 从 1 起（块 0 为 null）。
+
+- **K1 块分配/block_table/跨块边界**：prompt=24 → prefill 分配 2 块 `[1,2]`；decode 到 `computed_before=32`（跨入逻辑块 2）那步新分配物理块 `[3]`。逻辑→物理 = `[1,2,3]`。
+- **K2 prefix 命中 vs 关闭**：B（与 A 同 prompt）`get_computed_blocks` 命中 **32 token、hit_block_ids=[1,2]（A 的物理块，共享）**，只 prefill 剩余 16。命中 32≠48 因 `max_cache_hit_length=num_tokens-1` + 整块对齐（解释 Day2 的 16）。OFF 命中 0。
+- **K3 释放→cached-free→复用**：A 结束 `free`，带 hash 整块 `freed_cached_tail=[3,2,1]` 保留、无 hash `freed_evict_first=[4]`；B（相同 prompt）命中复用 A 释放但仍 cached 的 `[1,2]`。
+- **K4 KV 不足→抢占**（`num_gpu_blocks_override=48`, `max_model_len=512`, 4 请求）：step26 `allocate_slots_FAILED(available=0)` → `free` victim D → `preempt D, num_computed_tokens=0`。**prefix OFF**：D 恢复 `get_computed_blocks=0` → 从头重算；**prefix ON**：D 恢复命中自己 cached 的 176 token → 几乎不重算。两条不变量验证成立（活跃请求块不被 free；恢复不 append 失效 block_table）。
+- **要点**：block_table=逻辑→物理映射；prefix 命中=整块 hash+共享物理块(ref_cnt++)；释放的 cached 块可复用；抢占 victim 归零重算，而 prefix caching 能让抢占-恢复几乎免重算。
+
+**产出**：`scripts/day3_kv_driver.py`；`logs/day3/K{1,2,3,4}.log`、`K2_off/K4_on.log`；`outputs/day3/K*.jsonl`、`trace_changes_manifest.md`；`notes/day3/kv_cache_block_management.md`；`backups/day3/*.pre_day3`。
+
+**下一步（待确认）**：Day 4 —— Attention Backend（自动选择逻辑、Prefill/Decode shape、GQA、block_table/slot_mapping 如何被 backend 消费、Python 层与 kernel 边界）。
+
+### ✅ Day 3 追加 · K5 —— 抢占后 block chain 尾部优先淘汰、前缀优先保留（2026-07-17）
+
+问题：请求被抢占后，其 cached-free 的 block chain 是否尾部先被驱逐、从而保留最长连续前缀？为此新增两个可控机制（`VLLM_LAB_BLOCK` 门控、默认关、回归零副作用）：**priority 调度**让持块多的 D 成为抢占 victim；**waiting 准入循环实验性 skip**（`# VLLM_INFERENCE_LAB_EXPERIMENT`）在 D 被抢占后阻止其重新准入，使其块保持 cached-free；并给 evict 钩子补记 `block_hash_num_tokens`（覆盖 token 数）。
+
+- D 抢占前链 `[1..13,34,37]`（15 块），`free()` 逆序释放 → `freed_cached_tail=[37,34,...,1]`（尾块进队头）。
+- **驱逐严格按 `block_hash_num_tokens` 递减：37(240)→34(224)→…→1(16)**（K5_full 全 15 块单调），即**逻辑块从尾到头**。
+- 抢占尾部 M=8 块后放行 D → **恢复命中前 N−M=7 个连续头部块 `[1..7]`，`num_new_computed_tokens=112=7×16`**（K5）。
+- 结论：**"尾部优先淘汰、前缀优先保留"成立**；命中恒为从头连续前缀，无"头部先驱逐却命中后部"。机制：`free` 逆序 + `popleft` 取块使尾块先被 `_maybe_evict_cached_block`；prefix 命中要求从头连续整块。
+- 产出：`scripts/day3_kv_driver.py`(+run_k5)；`logs/day3/K5.log`、`K5_full.log`；`outputs/day3/K5.jsonl`、`K5_full.jsonl`；`notes/day3/k5_eviction_order.md`；备份 `backups/day3/*.pre_k5`。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

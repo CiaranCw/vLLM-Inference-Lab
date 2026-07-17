@@ -1,0 +1,125 @@
+================================================================================
+[day3] scenario=K1 max_num_seqs=2 num_gpu_blocks_override=None enable_prefix_caching=False
+        step  0  R     prompt_chars=41    max_tokens=30
+================================================================================
+WARNING 07-17 15:34:16 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE
+WARNING 07-17 15:34:16 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_JSONL
+WARNING 07-17 15:34:16 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_MAX_STEPS
+WARNING 07-17 15:34:16 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_COMPONENTS
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-17 15:34:16 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+WARNING 07-17 15:34:18 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-17 15:34:18 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  9.19it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  9.17it/s]
+
+2026-07-17 15:34:25,720 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-07-17 15:34:25,732 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+WARNING 07-17 15:34:25 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+[VLLM_LAB_TRACE] pid=934521 step=1 kv/get_computed_blocks req_id=R-bb7ea01f num_new_computed_tokens=0 num_prompt_tokens=24 prefix_caching=False
+[VLLM_LAB_TRACE] pid=934521 step=1 kv/get_new_blocks num_blocks=2 block_ids=[1, 2] ref_cnts=[1, 1]
+[VLLM_LAB_TRACE] pid=934521 step=1 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=24 new_block_ids=[1, 2] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=1 scheduler/schedule total_scheduled=24 n_new=1 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 24, 'computed_before': 0, 'num_prompt': 24, 'phase': 'prefill'}}
+[day3] >>> step 0: add_request ['R']
+WARNING 07-17 15:34:26 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[VLLM_LAB_TRACE] pid=934521 step=1 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 24}
+[VLLM_LAB_TRACE] pid=934521 step=2 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=2 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 24, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=2 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 25}
+[VLLM_LAB_TRACE] pid=934521 step=3 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=3 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 25, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=3 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 26}
+[VLLM_LAB_TRACE] pid=934521 step=4 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=4 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 26, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=4 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 27}
+[VLLM_LAB_TRACE] pid=934521 step=5 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=5 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 27, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=5 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 28}
+[VLLM_LAB_TRACE] pid=934521 step=6 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=6 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 28, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=6 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 29}
+[VLLM_LAB_TRACE] pid=934521 step=7 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=7 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 29, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=7 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 30}
+[VLLM_LAB_TRACE] pid=934521 step=8 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=8 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 30, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=8 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 31}
+[VLLM_LAB_TRACE] pid=934521 step=9 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37612
+[VLLM_LAB_TRACE] pid=934521 step=9 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 31, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=9 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 32}
+[VLLM_LAB_TRACE] pid=934521 step=10 kv/get_new_blocks num_blocks=1 block_ids=[3] ref_cnts=[1]
+[VLLM_LAB_TRACE] pid=934521 step=10 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[3] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=10 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 32, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=10 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 33}
+[VLLM_LAB_TRACE] pid=934521 step=11 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=11 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 33, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=11 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 34}
+[VLLM_LAB_TRACE] pid=934521 step=12 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=12 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 34, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=12 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 35}
+[VLLM_LAB_TRACE] pid=934521 step=13 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=13 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 35, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=13 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 36}
+[VLLM_LAB_TRACE] pid=934521 step=14 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=14 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 36, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=14 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 37}
+[VLLM_LAB_TRACE] pid=934521 step=15 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=15 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 37, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=15 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 38}
+[VLLM_LAB_TRACE] pid=934521 step=16 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=16 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 38, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=16 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 39}
+[VLLM_LAB_TRACE] pid=934521 step=17 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=17 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 39, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=17 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 40}
+[VLLM_LAB_TRACE] pid=934521 step=18 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=18 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 40, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=18 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 41}
+[VLLM_LAB_TRACE] pid=934521 step=19 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=19 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 41, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=19 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 42}
+[VLLM_LAB_TRACE] pid=934521 step=20 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=20 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 42, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=20 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 43}
+[VLLM_LAB_TRACE] pid=934521 step=21 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=21 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 43, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=21 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 44}
+[VLLM_LAB_TRACE] pid=934521 step=22 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=22 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 44, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=22 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 45}
+[VLLM_LAB_TRACE] pid=934521 step=23 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=23 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 45, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=23 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 46}
+[VLLM_LAB_TRACE] pid=934521 step=24 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=24 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 46, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=24 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 47}
+[VLLM_LAB_TRACE] pid=934521 step=25 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37611
+[VLLM_LAB_TRACE] pid=934521 step=25 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 47, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=25 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 48}
+[VLLM_LAB_TRACE] pid=934521 step=26 kv/get_new_blocks num_blocks=1 block_ids=[4] ref_cnts=[1]
+[VLLM_LAB_TRACE] pid=934521 step=26 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[4] free_blocks_after=37610
+[VLLM_LAB_TRACE] pid=934521 step=26 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 48, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=26 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 49}
+[VLLM_LAB_TRACE] pid=934521 step=27 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37610
+[VLLM_LAB_TRACE] pid=934521 step=27 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 49, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=27 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 50}
+[VLLM_LAB_TRACE] pid=934521 step=28 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37610
+[VLLM_LAB_TRACE] pid=934521 step=28 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 50, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=28 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 51}
+[VLLM_LAB_TRACE] pid=934521 step=29 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37610
+[VLLM_LAB_TRACE] pid=934521 step=29 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 51, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=29 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'R-bb7ea01f': 52}
+[VLLM_LAB_TRACE] pid=934521 step=30 kv/allocate_slots req_id=R-bb7ea01f num_new_tokens=1 new_block_ids=[] free_blocks_after=37610
+[VLLM_LAB_TRACE] pid=934521 step=30 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'R-bb7ea01f': {'scheduled': 1, 'computed_before': 52, 'num_prompt': 24, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=934521 step=30 kv/free req_id=R-bb7ea01f block_ids=([1, 2, 3, 4],) free_blocks_before=37610
+[VLLM_LAB_TRACE] pid=934521 step=30 kv/free_blocks freed_cached_tail=[] freed_evict_first=[4, 3, 2, 1]
+[VLLM_LAB_TRACE] pid=934521 step=30 scheduler/update_from_output n_sampled_tokens=1 running=0 waiting=0 computed_after={}
+[day3] driver_summary=[{"step": 0, "injected": ["R"], "finished": []}, {"step": 1, "injected": [], "finished": []}, {"step": 2, "injected": [], "finished": []}, {"step": 3, "injected": [], "finished": []}, {"step": 4, "injected": [], "finished": []}, {"step": 5, "injected": [], "finished": []}, {"step": 6, "injected": [], "finished": []}, {"step": 7, "injected": [], "finished": []}, {"step": 8, "injected": [], "finished": []}, {"step": 9, "injected": [], "finished": []}, {"step": 10, "injected": [], "finished": []}, {"step": 11, "injected": [], "finished": []}, {"step": 12, "injected": [], "finished": []}, {"step": 13, "injected": [], "finished": []}, {"step": 14, "injected": [], "finished": []}, {"step": 15, "injected": [], "finished": []}, {"step": 16, "injected": [], "finished": []}, {"step": 17, "injected": [], "finished": []}, {"step": 18, "injected": [], "finished": []}, {"step": 19, "injected": [], "finished": []}, {"step": 20, "injected": [], "finished": []}, {"step": 21, "injected": [], "finished": []}, {"step": 22, "injected": [], "finished": []}, {"step": 23, "injected": [], "finished": []}, {"step": 24, "injected": [], "finished": []}, {"step": 25, "injected": [], "finished": []}, {"step": 26, "injected": [], "finished": []}, {"step": 27, "injected": [], "finished": []}, {"step": 28, "injected": [], "finished": []}, {"step": 29, "injected": [], "finished": ["R"]}]
+[day3] step 29: finished=['R'] unfinished=0
+================================================================================
+[day3] done. finished=['R'] steps=30
+================================================================================
+[rank0]:[W717 15:34:26.182748841 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

@@ -1,0 +1,30 @@
+{"pid": 935223, "step": 1, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "A-9dc7a4d7", "num_new_computed_tokens": 0, "num_prompt_tokens": 48, "prefix_caching": false}}
+{"pid": 935223, "step": 1, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 3, "block_ids": [1, 2, 3], "ref_cnts": [1, 1, 1]}}
+{"pid": 935223, "step": 1, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9dc7a4d7", "num_new_tokens": 48, "new_block_ids": [1, 2, 3], "free_blocks_after": 37611}}
+{"pid": 935223, "step": 1, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 48, "n_new": 1, "n_cached": 0, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9dc7a4d7": {"scheduled": 48, "computed_before": 0, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935223, "step": 1, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-9dc7a4d7": 48}}}
+{"pid": 935223, "step": 2, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [4], "ref_cnts": [1]}}
+{"pid": 935223, "step": 2, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9dc7a4d7", "num_new_tokens": 1, "new_block_ids": [4], "free_blocks_after": 37610}}
+{"pid": 935223, "step": 2, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9dc7a4d7": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935223, "step": 2, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-9dc7a4d7": 49}}}
+{"pid": 935223, "step": 3, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9dc7a4d7", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935223, "step": 3, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "B-af5571e9", "num_new_computed_tokens": 0, "num_prompt_tokens": 48, "prefix_caching": false}}
+{"pid": 935223, "step": 3, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 3, "block_ids": [5, 6, 7], "ref_cnts": [1, 1, 1]}}
+{"pid": 935223, "step": 3, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-af5571e9", "num_new_tokens": 48, "new_block_ids": [5, 6, 7], "free_blocks_after": 37607}}
+{"pid": 935223, "step": 3, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 49, "n_new": 1, "n_cached": 1, "running": 2, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9dc7a4d7": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}, "B-af5571e9": {"scheduled": 48, "computed_before": 0, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935223, "step": 3, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 2, "running": 2, "waiting": 0, "computed_after": {"A-9dc7a4d7": 50, "B-af5571e9": 48}}}
+{"pid": 935223, "step": 4, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9dc7a4d7", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37607}}
+{"pid": 935223, "step": 4, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [8], "ref_cnts": [1]}}
+{"pid": 935223, "step": 4, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-af5571e9", "num_new_tokens": 1, "new_block_ids": [8], "free_blocks_after": 37606}}
+{"pid": 935223, "step": 4, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 2, "n_new": 0, "n_cached": 2, "running": 2, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9dc7a4d7": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}, "B-af5571e9": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935223, "step": 4, "component": "kv", "event": "free", "fields": {"req_id": "A-9dc7a4d7", "block_ids": [[1, 2, 3, 4]], "free_blocks_before": 37606}}
+{"pid": 935223, "step": 4, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [], "freed_evict_first": [4, 3, 2, 1]}}
+{"pid": 935223, "step": 4, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 2, "running": 1, "waiting": 0, "computed_after": {"B-af5571e9": 49}}}
+{"pid": 935223, "step": 5, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-af5571e9", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935223, "step": 5, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 1, "per_req": {"B-af5571e9": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935223, "step": 5, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"B-af5571e9": 50}}}
+{"pid": 935223, "step": 6, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-af5571e9", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935223, "step": 6, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-af5571e9": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935223, "step": 6, "component": "kv", "event": "free", "fields": {"req_id": "B-af5571e9", "block_ids": [[5, 6, 7, 8]], "free_blocks_before": 37610}}
+{"pid": 935223, "step": 6, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [], "freed_evict_first": [8, 7, 6, 5]}}
+{"pid": 935223, "step": 6, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 0, "waiting": 0, "computed_after": {}}}

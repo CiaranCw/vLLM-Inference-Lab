@@ -1,0 +1,30 @@
+{"pid": 935032, "step": 1, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "A-b17bb641", "num_new_computed_tokens": 0, "num_prompt_tokens": 48, "hit_block_ids": [], "prefix_caching": true}}
+{"pid": 935032, "step": 1, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 3, "block_ids": [1, 2, 3], "ref_cnts": [1, 1, 1]}}
+{"pid": 935032, "step": 1, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-b17bb641", "num_new_tokens": 48, "new_block_ids": [1, 2, 3], "free_blocks_after": 37611}}
+{"pid": 935032, "step": 1, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 48, "n_new": 1, "n_cached": 0, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-b17bb641": {"scheduled": 48, "computed_before": 0, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935032, "step": 1, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-b17bb641": 48}}}
+{"pid": 935032, "step": 2, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [4], "ref_cnts": [1]}}
+{"pid": 935032, "step": 2, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-b17bb641", "num_new_tokens": 1, "new_block_ids": [4], "free_blocks_after": 37610}}
+{"pid": 935032, "step": 2, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-b17bb641": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935032, "step": 2, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-b17bb641": 49}}}
+{"pid": 935032, "step": 3, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-b17bb641", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935032, "step": 3, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "B-a8161f92", "num_new_computed_tokens": 32, "num_prompt_tokens": 48, "hit_block_ids": [1, 2], "prefix_caching": true}}
+{"pid": 935032, "step": 3, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [5], "ref_cnts": [1]}}
+{"pid": 935032, "step": 3, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-a8161f92", "num_new_tokens": 16, "new_block_ids": [5], "free_blocks_after": 37609}}
+{"pid": 935032, "step": 3, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 17, "n_new": 1, "n_cached": 1, "running": 2, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-b17bb641": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}, "B-a8161f92": {"scheduled": 16, "computed_before": 32, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935032, "step": 3, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 2, "running": 2, "waiting": 0, "computed_after": {"A-b17bb641": 50, "B-a8161f92": 48}}}
+{"pid": 935032, "step": 4, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-b17bb641", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37609}}
+{"pid": 935032, "step": 4, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [6], "ref_cnts": [1]}}
+{"pid": 935032, "step": 4, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-a8161f92", "num_new_tokens": 1, "new_block_ids": [6], "free_blocks_after": 37608}}
+{"pid": 935032, "step": 4, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 2, "n_new": 0, "n_cached": 2, "running": 2, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-b17bb641": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}, "B-a8161f92": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935032, "step": 4, "component": "kv", "event": "free", "fields": {"req_id": "A-b17bb641", "block_ids": [[1, 2, 3, 4]], "free_blocks_before": 37608}}
+{"pid": 935032, "step": 4, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [3], "freed_evict_first": [4]}}
+{"pid": 935032, "step": 4, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 2, "running": 1, "waiting": 0, "computed_after": {"B-a8161f92": 49}}}
+{"pid": 935032, "step": 5, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-a8161f92", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935032, "step": 5, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 1, "per_req": {"B-a8161f92": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935032, "step": 5, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"B-a8161f92": 50}}}
+{"pid": 935032, "step": 6, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-a8161f92", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935032, "step": 6, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-a8161f92": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935032, "step": 6, "component": "kv", "event": "free", "fields": {"req_id": "B-a8161f92", "block_ids": [[1, 2, 5, 6]], "free_blocks_before": 37610}}
+{"pid": 935032, "step": 6, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [5, 2, 1], "freed_evict_first": [6]}}
+{"pid": 935032, "step": 6, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 0, "waiting": 0, "computed_after": {}}}

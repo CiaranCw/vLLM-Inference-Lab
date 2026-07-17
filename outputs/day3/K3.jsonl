@@ -1,0 +1,36 @@
+{"pid": 935461, "step": 1, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "A-9b9a0da0", "num_new_computed_tokens": 0, "num_prompt_tokens": 48, "hit_block_ids": [], "prefix_caching": true}}
+{"pid": 935461, "step": 1, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 3, "block_ids": [1, 2, 3], "ref_cnts": [1, 1, 1]}}
+{"pid": 935461, "step": 1, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9b9a0da0", "num_new_tokens": 48, "new_block_ids": [1, 2, 3], "free_blocks_after": 37611}}
+{"pid": 935461, "step": 1, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 48, "n_new": 1, "n_cached": 0, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9b9a0da0": {"scheduled": 48, "computed_before": 0, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935461, "step": 1, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-9b9a0da0": 48}}}
+{"pid": 935461, "step": 2, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [4], "ref_cnts": [1]}}
+{"pid": 935461, "step": 2, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9b9a0da0", "num_new_tokens": 1, "new_block_ids": [4], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 2, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9b9a0da0": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 2, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-9b9a0da0": 49}}}
+{"pid": 935461, "step": 3, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9b9a0da0", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 3, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9b9a0da0": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 3, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"A-9b9a0da0": 50}}}
+{"pid": 935461, "step": 4, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "A-9b9a0da0", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 4, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"A-9b9a0da0": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 4, "component": "kv", "event": "free", "fields": {"req_id": "A-9b9a0da0", "block_ids": [[1, 2, 3, 4]], "free_blocks_before": 37610}}
+{"pid": 935461, "step": 4, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [3, 2, 1], "freed_evict_first": [4]}}
+{"pid": 935461, "step": 4, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 0, "waiting": 0, "computed_after": {}}}
+{"pid": 935461, "step": 5, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 0, "n_new": 0, "n_cached": 0, "running": 0, "waiting": 0, "preempted": 0, "finished": 1, "per_req": {}}}
+{"pid": 935461, "step": 5, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 0, "running": 0, "waiting": 0, "computed_after": {}}}
+{"pid": 935461, "step": 6, "component": "kv", "event": "get_computed_blocks", "fields": {"req_id": "B-9795852a", "num_new_computed_tokens": 32, "num_prompt_tokens": 48, "hit_block_ids": [1, 2], "prefix_caching": true}}
+{"pid": 935461, "step": 6, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [4], "ref_cnts": [1]}}
+{"pid": 935461, "step": 6, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-9795852a", "num_new_tokens": 16, "new_block_ids": [4], "free_blocks_after": 37611}}
+{"pid": 935461, "step": 6, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 16, "n_new": 1, "n_cached": 0, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-9795852a": {"scheduled": 16, "computed_before": 32, "num_prompt": 48, "phase": "prefill"}}}}
+{"pid": 935461, "step": 6, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"B-9795852a": 48}}}
+{"pid": 935461, "step": 7, "component": "kv", "event": "get_new_blocks", "fields": {"num_blocks": 1, "block_ids": [5], "ref_cnts": [1]}}
+{"pid": 935461, "step": 7, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-9795852a", "num_new_tokens": 1, "new_block_ids": [5], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 7, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-9795852a": {"scheduled": 1, "computed_before": 48, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 7, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"B-9795852a": 49}}}
+{"pid": 935461, "step": 8, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-9795852a", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 8, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-9795852a": {"scheduled": 1, "computed_before": 49, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 8, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 1, "waiting": 0, "computed_after": {"B-9795852a": 50}}}
+{"pid": 935461, "step": 9, "component": "kv", "event": "allocate_slots", "fields": {"req_id": "B-9795852a", "num_new_tokens": 1, "new_block_ids": [], "free_blocks_after": 37610}}
+{"pid": 935461, "step": 9, "component": "scheduler", "event": "schedule", "fields": {"total_scheduled": 1, "n_new": 0, "n_cached": 1, "running": 1, "waiting": 0, "preempted": 0, "finished": 0, "per_req": {"B-9795852a": {"scheduled": 1, "computed_before": 50, "num_prompt": 48, "phase": "decode"}}}}
+{"pid": 935461, "step": 9, "component": "kv", "event": "free", "fields": {"req_id": "B-9795852a", "block_ids": [[1, 2, 4, 5]], "free_blocks_before": 37610}}
+{"pid": 935461, "step": 9, "component": "kv", "event": "free_blocks", "fields": {"freed_cached_tail": [4, 2, 1], "freed_evict_first": [5]}}
+{"pid": 935461, "step": 9, "component": "scheduler", "event": "update_from_output", "fields": {"n_sampled_tokens": 1, "running": 0, "waiting": 0, "computed_after": {}}}
