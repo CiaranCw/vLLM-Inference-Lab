@@ -303,7 +303,7 @@ index 4745237..be1231e 100644
      requires_alibi: bool = False,
      head_size: int | None = None,
 diff --git a/vllm/v1/attention/backends/flash_attn.py b/vllm/v1/attention/backends/flash_attn.py
-index 9e33c0d..7ee5dec 100755
+index 9e33c0d..9573c3a 100755
 --- a/vllm/v1/attention/backends/flash_attn.py
 +++ b/vllm/v1/attention/backends/flash_attn.py
 @@ -93,7 +93,7 @@ class FlashAttentionBackend(AttentionBackend):
@@ -366,6 +366,51 @@ index 9e33c0d..7ee5dec 100755
          attn_type = self.attn_type
  
          # IMPORTANT!
+@@ -867,6 +893,24 @@ class FlashAttentionImpl(AttentionImpl):
+                     dynamic_causal = causal
+                     causal = False
+ 
++                # VLLM_INFERENCE_LAB_TRACE: 证明 block_table 驱动 attention 读取（仅 layer 0）
++                try:
++                    from vllm import _lab_trace as _lt
++                    _ln = getattr(layer, "layer_name", None)
++                    _lt.trace_event("attention", "attn_read", {
++                        "layer_name": _ln,
++                        "q": query[:num_actual_tokens],
++                        "k_cache": key_cache,
++                        "v_cache": value_cache,
++                        "block_table": block_table,
++                        "cu_seqlens_q": cu_seqlens_q,
++                        "seqused_k": seqused_k,
++                        "max_seqlen_q": max_seqlen_q,
++                        "max_seqlen_k": max_seqlen_k,
++                    }, layer=_ln)
++                except Exception:
++                    pass
++
+                 flash_attn_varlen_func(
+                     q=query[:num_actual_tokens],
+                     k=key_cache,
+@@ -948,6 +992,19 @@ class FlashAttentionImpl(AttentionImpl):
+         # and value[:num_actual_tokens] because the reshape_and_cache_flash
+         # op uses the slot_mapping's shape to determine the number of
+         # actual tokens.
++        # VLLM_INFERENCE_LAB_TRACE: 证明 slot_mapping 驱动 KV 写入（仅 layer 0）
++        try:
++            from vllm import _lab_trace as _lt
++            _ln = getattr(layer, "layer_name", None)
++            _lt.trace_event("attention", "kv_write", {
++                "layer_name": _ln,
++                "key": key,
++                "value": value,
++                "kv_cache": kv_cache,
++                "slot_mapping": slot_mapping,
++            }, layer=_ln)
++        except Exception:
++            pass
+         reshape_and_cache_flash(
+             key,
+             value,
 diff --git a/vllm/v1/attention/backends/registry.py b/vllm/v1/attention/backends/registry.py
 index 5bbabc1..93b3e04 100644
 --- a/vllm/v1/attention/backends/registry.py

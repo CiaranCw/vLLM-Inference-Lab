@@ -66,6 +66,22 @@
 - 结论：**"尾部优先淘汰、前缀优先保留"成立**；命中恒为从头连续前缀，无"头部先驱逐却命中后部"。机制：`free` 逆序 + `popleft` 取块使尾块先被 `_maybe_evict_cached_block`；prefix 命中要求从头连续整块。
 - 产出：`scripts/day3_kv_driver.py`(+run_k5)；`logs/day3/K5.log`、`K5_full.log`；`outputs/day3/K5.jsonl`、`K5_full.jsonl`；`notes/day3/k5_eviction_order.md`；备份 `backups/day3/*.pre_k5`。
 
+## ✅ M4 —— Attention Backend：SchedulerOutput→KV写入→Attention读取 闭环（2026-07-18）
+
+（进入模块制后第一个模块；进度/覆盖以 `ROADMAP.md` 为准，本文件仅记流水。）
+
+在 `flash_attn.py` 加 2 处只读钩子（`attention/kv_write` 在 `do_kv_cache_update`、`attention/attn_read` 在 `forward` 的 `flash_attn_varlen_func` 前，均 layer0；E1 回归零副作用），一次运行串起完整闭环：
+
+- backend：本机自动选中 **FLASH_ATTN / FlashAttentionImpl / FA2**（未主动指定）。
+- Q/K/V：通用层 `T(N,896)/T(N,128)` → backend `T(N,14,64)/T(N,2,64)`（GQA 14 q / 2 kv / head_dim 64）。
+- KV cache：`T(34801,2,16,2,64)`=[blocks,K&V,block_size16,kv_heads2,head_dim64]；unbind 后 key/value_cache=`T(34801,16,2,64)`。
+- **写**：`reshape_and_cache_flash` 用 `slot_mapping`（prefill T(11,)/decode T(1,)）把新 K/V 散写进 cache。
+- **读**：`flash_attn_varlen_func` 用 `block_table`（T(1,128)）从 cache 取历史 K/V；Prefill `max_seqlen_k=11`、Decode `max_seqlen_k=12`（读全历史）。
+- Python↔kernel 边界：Python 造张量+metadata；两个 CUDA 算子（写=reshape_and_cache_flash、读=flash_attn_varlen_func）是边界。
+- 产出：`notes/m4_attention_backend.md`、`notes/evidence_index.md`(新建证据索引)、`outputs/m4/*`、`logs/m4/*`、`backups/m4/flash_attn.py.pre_m4`。
+
+**下一步（待确认）**：M5 —— 执行模式（本机实际启用哪种：enforce_eager 改了什么、是否 torch.compile、CUDA Graph FULL/PIECEWISE/NONE、capture/replay/非图区），只验证执行路径，性能结论留到 M6/M7。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

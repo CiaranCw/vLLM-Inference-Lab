@@ -14,8 +14,9 @@
 |---|---|
 | Scheduler / Continuous Batching | **能证** ✅ |
 | KV Cache / Block 管理 | **能证** ✅ |
-| Attention Backend / 执行模式 | **能串，待能证** 🔄 |
-| 端到端主链路（入口→输出闭环） | **能证进行中**（各段已证，尚未串成一条端到端闭环证据） |
+| Attention Backend | **能证** ✅（M4 闭环 trace） |
+| 执行模式（eager / compile / CUDA Graph） | **能串，待能证** 🔄（M5） |
+| 端到端主链路（入口→输出闭环） | **能证** ✅（M4 已把单请求整条链串成一次运行的证据） |
 | 能改 / 能优 | **尚未完成**（第一阶段后半段目标） |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
@@ -24,7 +25,7 @@
 
 ## 持续维护任务（贯穿所有模块，不是单独模块）
 - **`contribution_candidates.md`（待建）**：从现在起持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。M13 只负责把其中一个**正式提交**，而非到 M13 才开始找。
-- **`notes/evidence_index.md`（待建）**：证据索引，汇总"每个模块结论 → 对应 trace/log/jsonl/图 文件"，便于随时核查。
+- **`notes/evidence_index.md`（已建，持续维护）**：证据索引，汇总"每个模块结论 → 对应 trace/log/jsonl/图 文件"，便于随时核查。
 - **每完成一个模块**：同步更新 `ROADMAP.md`、`README.md`、`evidence_index.md`，并做一次 git commit（保持仓库与进度一致）。
 - **项目整理不积压**：README、图表、复现说明随做随更新，M16 只做最终删减、重组、简历与面试表达。
 
@@ -40,7 +41,7 @@
 - 🔄 待补（据实标记，尚未落地）：
   - 统一**复现入口**（目前分散在各 notes 的复现命令；`scripts/smoke_import.py` 仅做导入自检）。
   - **正式 correctness invariants + 回归脚本**（目前 E1 回归是内联 bash 的 ad-hoc 比对，未固化为脚本）。
-  - `notes/evidence_index.md`、`contribution_candidates.md`（见"持续维护任务"，待建）。
+  - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（见"持续维护任务"，待建）。
   - 目录/命名当前为 `dayN` 制（M1–M3 沿用）；后续模块建议改为**主题命名**，此不一致待统一。
 
 ### M1 单请求推理主链路 + Prefill/Decode 运行时 Trace　✅
@@ -55,10 +56,11 @@
 - 覆盖：block 分配 / block_table 逻辑→物理 / 跨块边界；prefix 命中(hash/ref_cnt/共享/对齐)；释放→cached-free→复用；KV 不足→抢占→重算(prefix on/off)；K5 追加抢占后尾部优先淘汰、前缀优先保留。
 - 产出：`scripts/day3_kv_driver.py`、`notes/day3/{kv_cache_block_management,k5_eviction_order}.md`、`outputs/day3/*`。
 
-### M4 Attention Backend　⬜
+### M4 Attention Backend　✅
 - **必做（当前真实 backend 主线）**：当前机器最终选中的 backend；Q/K/V reshape；KV Cache tensor shape；slot_mapping 如何进入 KV cache update；block_table 如何进入 attention kernel；Prefill/Decode 如何通过 metadata 表达；Python 层与底层 kernel 的边界。
 - **可选（不作退出条件）**：穷举所有 backend、强制多 backend 完整性能对照、深挖 FlashInfer 与 sm_120 兼容、其他平台/量化 Query/KV sharing 等支线。
-- **退出标准**：能以真实 Trace 证明 **SchedulerOutput → KV 写入 → Attention 读取** 的完整闭环。
+- **退出标准（已达成）**：以真实 Trace 证明 **SchedulerOutput → KV 写入(slot_mapping) → Attention 读取(block_table)** 的完整闭环。
+- 产出：在 `flash_attn.py` 加 2 处只读钩子（`attention/kv_write`、`attention/attn_read`，layer0，回归零副作用）；`notes/m4_attention_backend.md`、`outputs/m4/m4_closed_loop.jsonl`、`logs/m4/m4_closed_loop.log`；备份 `backups/m4/flash_attn.py.pre_m4`。
 
 ### M5 执行模式（本机实际路径验证）　⬜
 - 覆盖：确认当前 commit + 当前硬件**实际启用**的执行模式；`enforce_eager` 具体改变了什么；是否使用 torch.compile；CUDA Graph 是 FULL / PIECEWISE / NONE；观察 capture、padding、replay 与非图区域；**只对本环境实际可运行的模式提供证据**。
@@ -135,7 +137,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M3 完成、M0 进行中（能力停在"能证"）；核心验收 2/9。第一阶段主线优先级：M4 → M5 → M6 → M7 →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M4 完成、M0 进行中（能力已到"能证"，含端到端单请求闭环）；核心验收 2/9。第一阶段主线优先级：~~M4~~ → **M5（下一步）** → M6 → M7 →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 

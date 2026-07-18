@@ -1,0 +1,62 @@
+================================================================================
+[day1_baseline] env: {"sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python", "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py", "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714", "torch_version": "2.11.0+cu130", "torch_cuda": "13.0", "cuda_available": true, "gpu_name": "NVIDIA GeForce RTX 5080", "env": {"VLLM_ENABLE_V1_MULTIPROCESSING": "0", "VLLM_LOGGING_LEVEL": "WARNING", "VLLM_LAB_TRACE": "1", "VLLM_ATTENTION_BACKEND": null, "VLLM_USE_FLASHINFER_SAMPLER": "0"}}
+[day1_baseline] config: {"model": "Qwen/Qwen2.5-0.5B-Instruct", "prompt": "请用一句话解释大模型推理中的 KV Cache。", "max_model_len": 2048, "max_tokens": 2, "gpu_memory_utilization": 0.5, "tensor_parallel_size": 1, "temperature": 0.0, "seed": 0, "enforce_eager": true, "dtype": "auto"}
+================================================================================
+WARNING 07-18 15:32:47 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE
+WARNING 07-18 15:32:47 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_LAYER
+WARNING 07-18 15:32:47 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_JSONL
+WARNING 07-18 15:32:47 [envs.py:2004] Unknown vLLM environment variable detected: VLLM_LAB_TRACE_MAX_STEPS
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 07-18 15:32:48 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+WARNING 07-18 15:32:50 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 07-18 15:32:50 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.90it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.89it/s]
+
+[VLLM_LAB_TRACE] pid=969930 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(8192, 896):bfloat16 key=T(8192, 128):bfloat16 value=T(8192, 128):bfloat16
+2026-07-18 15:32:57,418 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[VLLM_LAB_TRACE] pid=969930 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(8192, 896):bfloat16 key=T(8192, 128):bfloat16 value=T(8192, 128):bfloat16
+[VLLM_LAB_TRACE] pid=969930 step=0 attention/kv_write layer_name=model.layers.0.self_attn.attn key=T(8192, 2, 64):bfloat16 value=T(8192, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 slot_mapping=T(8192,):int64
+2026-07-18 15:32:57,435 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[VLLM_LAB_TRACE] pid=969930 step=0 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(256, 896):bfloat16 key=T(256, 128):bfloat16 value=T(256, 128):bfloat16
+[VLLM_LAB_TRACE] pid=969930 step=0 attention/kv_write layer_name=model.layers.0.self_attn.attn key=T(256, 2, 64):bfloat16 value=T(256, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 slot_mapping=T(256,):int64
+Rendering prompts:   0%|          | 0/1 [00:00<?, ?it/s]Rendering prompts: 100%|██████████| 1/1 [00:00<00:00, 162.77it/s]
+Processed prompts:   0%|          | 0/1 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s][VLLM_LAB_TRACE] pid=969930 step=1 kv/get_computed_blocks req_id=0-b0f868f0 num_new_computed_tokens=0 num_prompt_tokens=11 hit_block_ids=[] prefix_caching=True
+[VLLM_LAB_TRACE] pid=969930 step=1 kv/get_new_blocks num_blocks=1 block_ids=[1] ref_cnts=[1]
+[VLLM_LAB_TRACE] pid=969930 step=1 kv/allocate_slots req_id=0-b0f868f0 num_new_tokens=11 new_block_ids=[1] free_blocks_after=34799
+[VLLM_LAB_TRACE] pid=969930 step=1 scheduler/schedule total_scheduled=11 n_new=1 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={'0-b0f868f0': {'scheduled': 11, 'computed_before': 0, 'num_prompt': 11, 'phase': 'prefill'}}
+WARNING 07-18 15:32:57 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[VLLM_LAB_TRACE] pid=969930 step=1 model_runner/prepare_inputs num_reqs=1 total_scheduled=11 num_scheduled_tokens=[11] query_start_loc=[0, 11] seq_lens=[11] positions=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] input_ids_len=11
+[VLLM_LAB_TRACE] pid=969930 step=1 model_runner/model_forward input_ids=T(11,):int32 positions=T(11,):int64 num_tokens_padded=11 cudagraph_mode=NONE
+[VLLM_LAB_TRACE] pid=969930 step=1 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(11, 896):bfloat16 key=T(11, 128):bfloat16 value=T(11, 128):bfloat16
+[VLLM_LAB_TRACE] pid=969930 step=1 attention/kv_write layer_name=model.layers.0.self_attn.attn key=T(11, 2, 64):bfloat16 value=T(11, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 slot_mapping=T(11,):int64
+[VLLM_LAB_TRACE] pid=969930 step=1 flash_attn_impl/forward layer_name=model.layers.0.self_attn.attn query=T(11, 14, 64):bfloat16 key=T(11, 2, 64):bfloat16 value=T(11, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 num_actual_tokens=11 max_query_len=11 max_seq_len=11 query_start_loc=T(2,):int32 seq_lens=T(1,):int32 block_table=T(1, 128):int32 slot_mapping=T(11,):int64 fa_version=2 phase=prefill
+[VLLM_LAB_TRACE] pid=969930 step=1 attention/attn_read layer_name=model.layers.0.self_attn.attn q=T(11, 14, 64):bfloat16 k_cache=T(34801, 16, 2, 64):bfloat16 v_cache=T(34801, 16, 2, 64):bfloat16 block_table=T(1, 128):int32 cu_seqlens_q=T(2,):int32 seqused_k=T(1,):int32 max_seqlen_q=11 max_seqlen_k=11
+[VLLM_LAB_TRACE] pid=969930 step=2 kv/allocate_slots req_id=0-b0f868f0 num_new_tokens=1 new_block_ids=[] free_blocks_after=34799
+[VLLM_LAB_TRACE] pid=969930 step=2 scheduler/schedule total_scheduled=1 n_new=0 n_cached=1 running=1 waiting=0 preempted=0 finished=0 per_req={'0-b0f868f0': {'scheduled': 1, 'computed_before': 11, 'num_prompt': 11, 'phase': 'decode'}}
+[VLLM_LAB_TRACE] pid=969930 step=2 model_runner/prepare_inputs num_reqs=1 total_scheduled=1 num_scheduled_tokens=[1] query_start_loc=[0, 1] seq_lens=[12] positions=[11] input_ids_len=1
+[VLLM_LAB_TRACE] pid=969930 step=2 model_runner/model_forward input_ids=T(1,):int32 positions=T(1,):int64 num_tokens_padded=1 cudagraph_mode=NONE
+[VLLM_LAB_TRACE] pid=969930 step=2 attention_layer/forward_in layer_name=model.layers.0.self_attn.attn num_heads=14 num_kv_heads=2 head_size=64 query=T(1, 896):bfloat16 key=T(1, 128):bfloat16 value=T(1, 128):bfloat16
+[VLLM_LAB_TRACE] pid=969930 step=2 attention/kv_write layer_name=model.layers.0.self_attn.attn key=T(1, 2, 64):bfloat16 value=T(1, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 slot_mapping=T(1,):int64
+[VLLM_LAB_TRACE] pid=969930 step=2 flash_attn_impl/forward layer_name=model.layers.0.self_attn.attn query=T(1, 14, 64):bfloat16 key=T(1, 2, 64):bfloat16 value=T(1, 2, 64):bfloat16 kv_cache=T(34801, 2, 16, 2, 64):bfloat16 num_actual_tokens=1 max_query_len=1 max_seq_len=12 query_start_loc=T(2,):int32 seq_lens=T(1,):int32 block_table=T(1, 128):int32 slot_mapping=T(1,):int64 fa_version=2 phase=decode
+[VLLM_LAB_TRACE] pid=969930 step=2 attention/attn_read layer_name=model.layers.0.self_attn.attn q=T(1, 14, 64):bfloat16 k_cache=T(34801, 16, 2, 64):bfloat16 v_cache=T(34801, 16, 2, 64):bfloat16 block_table=T(1, 128):int32 cu_seqlens_q=T(2,):int32 seqused_k=T(1,):int32 max_seqlen_q=1 max_seqlen_k=12
+[VLLM_LAB_TRACE] pid=969930 step=2 scheduler/update_from_output n_sampled_tokens=1 running=1 waiting=0 computed_after={'0-b0f868f0': 12}
+[VLLM_LAB_TRACE] pid=969930 step=3 scheduler/schedule total_scheduled=0 n_new=0 n_cached=0 running=1 waiting=0 preempted=0 finished=0 per_req={}
+[VLLM_LAB_TRACE] pid=969930 step=3 kv/free req_id=0-b0f868f0 block_ids=([1],) free_blocks_before=34799
+[VLLM_LAB_TRACE] pid=969930 step=3 kv/free_blocks freed_cached_tail=[] freed_evict_first=[1]
+[VLLM_LAB_TRACE] pid=969930 step=3 scheduler/update_from_output n_sampled_tokens=1 running=0 waiting=0 computed_after={}
+Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  3.27it/s, est. speed input: 35.98 toks/s, output: 6.54 toks/s]Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  3.27it/s, est. speed input: 35.98 toks/s, output: 6.54 toks/s]Processed prompts: 100%|██████████| 1/1 [00:00<00:00,  3.27it/s, est. speed input: 35.98 toks/s, output: 6.54 toks/s]
+================================================================================
+[day1_baseline] num_prompt_tokens = 11
+[day1_baseline] num_output_tokens = 2
+[day1_baseline] output_token_ids  = [84648, 19479]
+[day1_baseline] output_text       = ' KV Cache'
+[day1_baseline] finish_reason     = length
+[day1_baseline] timings_s         = {'engine_init': 9.8821, 'generate': 0.3127, 'total': 10.1948}
+[day1_baseline] mem after_init    = {'device_free_MiB': 6619.0, 'device_total_MiB': 16302.6, 'device_used_MiB': 9683.6, 'proc_allocated_MiB': 7582.2, 'proc_reserved_MiB': 8250.0}
+[day1_baseline] saved -> outputs/m4/m4_baseline.json
+================================================================================
+[rank0]:[W718 15:32:58.100504364 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
