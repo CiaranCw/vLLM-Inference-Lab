@@ -13,3 +13,7 @@ __pycache__/
 
 # 本地回退备份（vLLM 上游文件副本，随 patches/ 可重建，不入库）
 backups/
+
+# 本地阅读向导（用户个人用，不入库）
+vllm_stage_reading_guide.md
+*:Zone.Identifier

@@ -15,7 +15,7 @@
 | Scheduler / Continuous Batching | **能证** ✅ |
 | KV Cache / Block 管理 | **能证** ✅ |
 | Attention Backend | **能证** ✅（M4 闭环 trace） |
-| 执行模式（eager / compile / CUDA Graph） | **能串，待能证** 🔄（M5） |
+| 执行模式（eager / compile / CUDA Graph） | **能证** ✅（M5：eager=NONE；默认 O2=VLLM_COMPILE+FULL_AND_PIECEWISE，实测捕获/回放/padding） |
 | 端到端主链路（入口→输出闭环） | **能证** ✅（M4 已把单请求整条链串成一次运行的证据） |
 | 能改 / 能优 | **尚未完成**（第一阶段后半段目标） |
 
@@ -62,9 +62,11 @@
 - **退出标准（已达成）**：以真实 Trace 证明 **SchedulerOutput → KV 写入(slot_mapping) → Attention 读取(block_table)** 的完整闭环。
 - 产出：在 `flash_attn.py` 加 2 处只读钩子（`attention/kv_write`、`attention/attn_read`，layer0，回归零副作用）；`notes/m4_attention_backend.md`、`outputs/m4/m4_closed_loop.jsonl`、`logs/m4/m4_closed_loop.log`；备份 `backups/m4/flash_attn.py.pre_m4`。
 
-### M5 执行模式（本机实际路径验证）　⬜
+### M5 执行模式（本机实际路径验证）　✅
 - 覆盖：确认当前 commit + 当前硬件**实际启用**的执行模式；`enforce_eager` 具体改变了什么；是否使用 torch.compile；CUDA Graph 是 FULL / PIECEWISE / NONE；观察 capture、padding、replay 与非图区域；**只对本环境实际可运行的模式提供证据**。
 - **边界**：M5 只验证执行路径；正式性能结论放到 M6/M7。
+- **实测结论（本机 sm_120）**：`enforce_eager=True`（基线）→ `mode=NONE / cudagraph_mode=NONE`（纯 eager，`vllm/config/vllm.py:1061` 一票否决 + WARNING）；`enforce_eager=False`（vLLM 默认 O2）→ `mode=VLLM_COMPILE`(inductor) + `cudagraph_mode=FULL_AND_PIECEWISE`，**sm_120 上真实跑通未降级**：torch.compile 9.44s（Dynamo 3.09+Inductor 4.36，AOT 磁盘缓存）；捕获 **51 PIECEWISE(mixed)+35 FULL(decode)**、0.22 GiB；运行时 **prefill→PIECEWISE(pad 11→16, attn 图外) / decode→FULL(pad_attn=True, 整步含 attn 入图)**；compiled 与 eager 贪心输出第 5 token 起分叉（编译数值差异，非 bug）。
+- 产出：`gpu_model_runner.py` 加 2 处只读钩子（`exec/dispatch`、`exec/capture`，回归零副作用）；`scripts/m5_exec_mode.py`；`notes/m5/execution_mode.md`、`outputs/m5/*`、`logs/m5/*`；备份 `backups/m5/gpu_model_runner.py.pre_m5`。
 
 ---
 
@@ -137,7 +139,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M4 完成、M0 进行中（能力已到"能证"，含端到端单请求闭环）；核心验收 2/9。第一阶段主线优先级：~~M4~~ → **M5（下一步）** → M6 → M7 →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M5 完成、M0 进行中（能力已到"能证"，含端到端单请求闭环 + 执行模式路径）；核心验收 2/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → **M6（下一步）** → M7 →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 

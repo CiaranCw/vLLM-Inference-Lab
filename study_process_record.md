@@ -82,6 +82,21 @@
 
 **下一步（待确认）**：M5 —— 执行模式（本机实际启用哪种：enforce_eager 改了什么、是否 torch.compile、CUDA Graph FULL/PIECEWISE/NONE、capture/replay/非图区），只验证执行路径，性能结论留到 M6/M7。
 
+## ✅ M5 —— 执行模式（本机实际路径验证）（2026-07-20）
+
+（笔记规范化：本模块起每阶段独立目录 `notes/mN/`；`notes/evidence_index.md` 仍为跨模块索引置于 `notes/` 根。）
+
+方法：`scripts/m5_exec_mode.py` 用**同一单请求**分别以 `enforce_eager=True/False` 运行，从**存活引擎**读出解析后的 `compilation_config`（真相来源），并在 `gpu_model_runner.py` 加 2 处只读钩子（`exec/dispatch` 每步模式+padding、`exec/capture` 捕获描述符；E1 回归零副作用）。
+
+- **eager（基线，enforce_eager=True）**：`mode=NONE / cudagraph_mode=NONE`，纯 eager；`vllm/config/vllm.py:1061-1067` 一票否决并打印 "Enforce eager set..." WARNING；无编译、无捕获（capture_sizes=[]）；每步 dispatch=NONE、pad0。
+- **compiled（vLLM 默认 O2，enforce_eager=False）**：`mode=VLLM_COMPILE`(inductor) + `cudagraph_mode=FULL_AND_PIECEWISE`，**sm_120 上真实跑通、未降级**。启动链：torch.compile 9.44s（Dynamo 3.09+Inductor 4.36，AOT 磁盘缓存，只编一张按 attention 切过的图）→ 捕获 **51 PIECEWISE(mixed prefill-decode)+35 FULL(decode)**、0.22 GiB、约 2s（init 合计≈26.6s）。
+- **运行时每步实测**：**prefill(11 token,非均匀)→PIECEWISE**，token pad 11→16（num_paddings=5），`pad_attn=False`（attention 在图外走 eager varlen）；**decode(1 token,均匀)→FULL**，无 pad，`pad_attn=True`（整步含 attention 入图 replay）。对上 `FULL_AND_PIECEWISE`=规整 decode 用 FULL、其它用 PIECEWISE。
+- **非图区**：`splitting_ops`（attention 系列 + `unified_kv_cache_update`，16 个）= piecewise 的图边界，attention 留在图外。
+- **如实记录**：compiled 与 eager 贪心输出**第 5 token 起分叉**（`custom_ops` all→none + Inductor 融合 + CUDA Graph 的浮点数值细微差异，非 bug）；跨模式不能用逐 token 相等做正确性判据。回归：trace 关时 eager 输出与 Day1 基线逐 token 一致（IDENTICAL）。
+- 产出：`scripts/m5_exec_mode.py`；`notes/m5/execution_mode.md`；`outputs/m5/{eager,compiled}_config.json`、`{eager,compiled}.jsonl`、`regress_eager.json`；`logs/m5/{eager,compiled,regress_eager}.log`；备份 `backups/m5/gpu_model_runner.py.pre_m5`。
+
+**下一步（待确认）**：M6 —— 离线/闭环引擎 Benchmark（★核心验收）：Prefill/Decode latency、throughput、显存/KV 容量，对照 batch/长度/prefix，预热与正式分离、重复≥3 次报方差/中位数/P95。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

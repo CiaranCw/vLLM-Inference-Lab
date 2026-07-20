@@ -1,0 +1,94 @@
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 512, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 496, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 480, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 464, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 448, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 432, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 416, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 400, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 384, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 368, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 352, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 336, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 320, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 304, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 288, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 272, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 256, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 248, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 240, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 232, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 224, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 216, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 208, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 200, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 192, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 184, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 176, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 168, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 160, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 152, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 144, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 136, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 128, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 120, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 112, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 104, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 96, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 88, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 80, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 72, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 64, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 56, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 48, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 40, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 32, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 24, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 16, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 8, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 4, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 2, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "PIECEWISE", "num_tokens": 1, "uniform_decode": false}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 256, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 248, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 240, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 232, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 224, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 216, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 208, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 200, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 192, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 184, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 176, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 168, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 160, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 152, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 144, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 136, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 128, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 120, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 112, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 104, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 96, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 88, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 80, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 72, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 64, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 56, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 48, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 40, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 32, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 24, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 16, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 8, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 4, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 2, "uniform_decode": true}}
+{"pid": 1028815, "step": 0, "component": "exec", "event": "capture", "fields": {"runtime_mode": "FULL", "num_tokens": 1, "uniform_decode": true}}
+{"pid": 1028815, "step": 1, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 11, "num_tokens_padded": 16, "num_paddings": 5, "cudagraph_mode": "PIECEWISE", "uniform_decode": false, "pad_attn": false}}
+{"pid": 1028815, "step": 2, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 3, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 4, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 5, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 6, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 7, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}
+{"pid": 1028815, "step": 8, "component": "exec", "event": "dispatch", "fields": {"num_reqs": 1, "num_reqs_padded": 1, "num_tokens_unpadded": 1, "num_tokens_padded": 1, "num_paddings": 0, "cudagraph_mode": "FULL", "uniform_decode": true, "pad_attn": true}}

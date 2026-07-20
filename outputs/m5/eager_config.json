@@ -1,0 +1,40 @@
+{
+  "requested_enforce_eager": true,
+  "resolved": {
+    "optimization_level": "O2",
+    "model_config.enforce_eager": true,
+    "compilation": {
+      "mode": "NONE",
+      "cudagraph_mode": "NONE",
+      "backend": "inductor",
+      "use_inductor_graph_partition": false,
+      "ir_enable_torch_wrap": false,
+      "custom_ops": [
+        "all"
+      ],
+      "splitting_ops": [],
+      "cudagraph_capture_sizes": [],
+      "max_capture_size": 0,
+      "cudagraph_num_of_warmups": 0
+    }
+  },
+  "num_prompt_tokens": 11,
+  "output_token_ids": [
+    84648,
+    19479,
+    54851,
+    101053,
+    100751,
+    18493,
+    111390,
+    15946
+  ],
+  "num_output_tokens": 8,
+  "output_text": " KV Cache 是一种用于在内存中",
+  "finish_reason": "length",
+  "timings_s": {
+    "engine_init": 10.2373,
+    "generate": 0.3568
+  },
+  "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py"
+}

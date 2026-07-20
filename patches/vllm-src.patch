@@ -3096,7 +3096,7 @@ index 28d1a04..fd600b1 100644
          Any consecutive empty indices at the very end of the list are not
          filled.
 diff --git a/vllm/v1/worker/gpu_model_runner.py b/vllm/v1/worker/gpu_model_runner.py
-index 74938a8..0e8c053 100644
+index 74938a8..0570d1a 100644
 --- a/vllm/v1/worker/gpu_model_runner.py
 +++ b/vllm/v1/worker/gpu_model_runner.py
 @@ -1,5 +1,89 @@
@@ -3448,7 +3448,31 @@ index 74938a8..0e8c053 100644
  
          Args:
              num_tokens_padded: Total number of tokens (padded)
-@@ -4329,6 +4487,17 @@ class GPUModelRunner(
+@@ -4207,6 +4365,23 @@ class GPUModelRunner(
+             )
+             pad_attn = cudagraph_mode == CUDAGraphMode.FULL
+ 
++            # VLLM_INFERENCE_LAB_TRACE
++            try:
++                from vllm import _lab_trace as _lt
++                if _lt.enabled():
++                    _lt.trace_event("exec", "dispatch", {
++                        "num_reqs": num_reqs,
++                        "num_reqs_padded": num_reqs_padded,
++                        "num_tokens_unpadded": int(num_tokens_unpadded),
++                        "num_tokens_padded": int(num_tokens_padded),
++                        "num_paddings": int(num_tokens_padded - num_tokens_unpadded),
++                        "cudagraph_mode": str(cudagraph_mode),
++                        "uniform_decode": bool(batch_desc.uniform),
++                        "pad_attn": bool(pad_attn),
++                    })
++            except Exception:
++                pass
++
+             if self.cache_config.mamba_cache_mode == "align":
+                 # preprocess_mamba reads req_state.num_computed_tokens (CPU)
+                 # to decide copy operations, so we must apply deferred
+@@ -4329,6 +4504,17 @@ class GPUModelRunner(
                  defer_finalize=defer_kv_connector_finalize,
              ) as kv_connector_output,
          ):
@@ -3466,7 +3490,7 @@ index 74938a8..0e8c053 100644
              model_output = self._model_forward(
                  input_ids=input_ids,
                  positions=positions,
-@@ -4462,6 +4631,7 @@ class GPUModelRunner(
+@@ -4462,6 +4648,7 @@ class GPUModelRunner(
          self.execute_model_state = None
  
          # Apply structured output bitmasks if present.
@@ -3474,6 +3498,24 @@ index 74938a8..0e8c053 100644
          if grammar_output is not None:
              apply_grammar_bitmask(
                  scheduler_output, grammar_output, self.input_batch, logits
+@@ -6723,6 +6910,17 @@ class GPUModelRunner(
+ 
+         # We skip EPLB here since we don't want to record dummy metrics
+         for batch_desc in batch_descriptors:
++            # VLLM_INFERENCE_LAB_TRACE
++            try:
++                from vllm import _lab_trace as _lt
++                if _lt.enabled():
++                    _lt.trace_event("exec", "capture", {
++                        "runtime_mode": cudagraph_runtime_mode.name,
++                        "num_tokens": int(batch_desc.num_tokens),
++                        "uniform_decode": bool(uniform_decode),
++                    })
++            except Exception:
++                pass
+             # We currently only capture ubatched graphs when its a FULL
+             # cudagraph, a uniform decode batch, and the number of tokens
+             # is above the threshold. Otherwise we just capture a non-ubatched
 diff --git a/vllm/v1/worker/utils.py b/vllm/v1/worker/utils.py
 index c0f44b6..facf673 100644
 --- a/vllm/v1/worker/utils.py
