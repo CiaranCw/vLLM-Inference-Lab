@@ -97,6 +97,21 @@
 
 **下一步（待确认）**：M6 —— 离线/闭环引擎 Benchmark（★核心验收）：Prefill/Decode latency、throughput、显存/KV 容量，对照 batch/长度/prefix，预热与正式分离、重复≥3 次报方差/中位数/P95。
 
+## ✅ M6 —— 离线/闭环引擎 Benchmark（★核心验收 #3）（2026-07-20）
+
+先出《M6 最终方案审查报告》（对 ee0da84 逐条核查接口后定稿，见批准计划），再实现。**本模块零 vLLM 源码改动**（纯 driver + 引擎自省 + 只读 wrapper）；trace 全程关闭以保证计时干净。
+
+方法：进程内手动 `LLMEngine`+`step()`；`torch.cuda.synchronize()` 夹 `perf_counter()` 计时（进程内闭环 engine 指标，非在线 TTFT）；精确 token（绕 chat template + 断言 actual==target）；只读包裹 `scheduler.schedule` 在计时区外读校验；每种 (mode,prefix) **独立子进程**（防显存/编译缓存污染）；预热与正式分离、重复≥15、报 median/mean/stdev/P95/min。共 730 样本，660 有效 measure，70 dropped 全为 prefill warmup，0 无效。
+
+- **decode（vs batch，seq_len=38）**：单步 latency 近平（eager 7.5→8.3ms、compiled 2.5→3.7ms，batch 1→64），吞吐近线性（compiled 401→17,432 tok/s）；compiled 全 batch 快 **2.3–3.0×**（decode 走 **FULL CUDA Graph**）。
+- **prefill（vs 长度）**：eager ≤512 近平（~7.3ms 固定开销地板），>512 才增长（1024→12、2000→22ms）；compiled 仅 **≤128 提速 ~2×**（走 PIECEWISE 图），**≥256 因超本配置捕获上限 128 回退 NONE**（诊断实测）→ ≈eager。
+- **prefix（eager on，独立前缀族）**：命中把 computed token **256→16（省 94%，240=15整块×16）**，但 first-token latency 仅 **7.20→6.80ms（降 6%）** —— 短 prompt 被开销地板主导，**省计算≠省延迟**。
+- **KV/显存**：`num_gpu_blocks=45737, block_size=16, kv_size_tokens=731,792, max_concurrency=357×`；**KV≈12,288 B/token（实测 tensor-sum = 理论 2×24×2×64×2）**；naive 配置公式(×page_size_bytes)踩"per-layer"坑偏小 24×，已弃用；权重 0.93 GiB、CUDA Graph 池 0.10 GiB（日志）。
+- **结论按"观察→机制→证据强度→M7 待验证"**表达，不预设 compute/memory-bound、不写死 O(n²)。**"~7ms 开销地板=CPU/launch?"、"decode 是否达带宽上限" 留 M7 profiler。**
+- 产出：`scripts/m6_{benchmark,run_all,summarize}.py`；`notes/m6/benchmark.md`；`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/,summary/}`；`logs/m6/*`。
+
+**下一步（待确认）**：M7 —— Profiler 定位瓶颈（★核心验收，≥2 类 workload：decode-heavy 小 batch / prefill-heavy 长输入），用 PyTorch Profiler + Nsight 拆开 M6 观察到的"开销地板"与 decode 访存假设，每份形成"现象→证据→假设→单变量实验→结论"。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

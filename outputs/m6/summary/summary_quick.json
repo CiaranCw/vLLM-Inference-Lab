@@ -1,0 +1,93 @@
+{
+  "dropped_invalid_or_warmup": 4,
+  "groups": [
+    {
+      "experiment": "decode",
+      "mode": "compiled",
+      "prefix_caching": "off",
+      "dim": 1,
+      "latency_ms_sample_count": 3,
+      "latency_ms_median": 2.6451,
+      "latency_ms_mean": 2.6768,
+      "latency_ms_stdev": 0.2145,
+      "latency_ms_p95": 2.923,
+      "latency_ms_min": 2.4314,
+      "latency_ms_max": 2.9539,
+      "throughput_tok_s_median": 378.06,
+      "throughput_tok_s_p95": 407.967,
+      "seq_len": 38
+    },
+    {
+      "experiment": "decode",
+      "mode": "eager",
+      "prefix_caching": "off",
+      "dim": 1,
+      "latency_ms_sample_count": 3,
+      "latency_ms_median": 11.4129,
+      "latency_ms_mean": 10.0551,
+      "latency_ms_stdev": 1.9296,
+      "latency_ms_p95": 11.4248,
+      "latency_ms_min": 7.3263,
+      "latency_ms_max": 11.4261,
+      "throughput_tok_s_median": 87.62,
+      "throughput_tok_s_p95": 131.612,
+      "seq_len": 38
+    },
+    {
+      "experiment": "prefill",
+      "mode": "compiled",
+      "prefix_caching": "off",
+      "dim": 32,
+      "latency_ms_sample_count": 3,
+      "latency_ms_median": 2.9708,
+      "latency_ms_mean": 3.0088,
+      "latency_ms_stdev": 0.1189,
+      "latency_ms_p95": 3.1498,
+      "latency_ms_min": 2.8859,
+      "latency_ms_max": 3.1697
+    },
+    {
+      "experiment": "prefill",
+      "mode": "eager",
+      "prefix_caching": "off",
+      "dim": 32,
+      "latency_ms_sample_count": 3,
+      "latency_ms_median": 8.0842,
+      "latency_ms_mean": 7.8837,
+      "latency_ms_stdev": 0.4708,
+      "latency_ms_p95": 8.3083,
+      "latency_ms_min": 7.2336,
+      "latency_ms_max": 8.3332
+    },
+    {
+      "experiment": "prefix",
+      "mode": "eager",
+      "prefix_caching": "on",
+      "dim": "cold",
+      "latency_ms_sample_count": 1,
+      "latency_ms_median": 9.2474,
+      "latency_ms_mean": 9.2474,
+      "latency_ms_stdev": 0.0,
+      "latency_ms_p95": 9.2474,
+      "latency_ms_min": 9.2474,
+      "latency_ms_max": 9.2474,
+      "prefix_hit_tokens_median": 0,
+      "scheduled_tokens_median": 256
+    },
+    {
+      "experiment": "prefix",
+      "mode": "eager",
+      "prefix_caching": "on",
+      "dim": "hot",
+      "latency_ms_sample_count": 1,
+      "latency_ms_median": 6.761,
+      "latency_ms_mean": 6.761,
+      "latency_ms_stdev": 0.0,
+      "latency_ms_p95": 6.761,
+      "latency_ms_min": 6.761,
+      "latency_ms_max": 6.761,
+      "prefix_hit_tokens_median": 240,
+      "scheduled_tokens_median": 16
+    }
+  ]
+}

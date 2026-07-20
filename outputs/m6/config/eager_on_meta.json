@@ -1,0 +1,89 @@
+{
+  "config_tag": "eager_on",
+  "mode": "eager",
+  "prefix": "on",
+  "engine_init_s": 11.505,
+  "env": {
+    "sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
+    "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py",
+    "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714",
+    "torch_version": "2.11.0+cu130",
+    "torch_cuda": "13.0",
+    "gpu_name": "NVIDIA GeForce RTX 5080",
+    "env": {
+      "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
+      "VLLM_USE_FLASHINFER_SAMPLER": "0",
+      "VLLM_LAB_TRACE": null
+    }
+  },
+  "args": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "mode": "eager",
+    "prefix": "on",
+    "experiments": "mem,prefix",
+    "max_model_len": 2048,
+    "max_num_seqs": 64,
+    "max_num_batched_tokens": 4096,
+    "gpu_memory_utilization": 0.6,
+    "seed": 0,
+    "warmup": 5,
+    "repeats": 15,
+    "decode_warmup_steps": 4,
+    "decode_window": 2,
+    "quick": false,
+    "out_dir": "outputs/m6"
+  },
+  "runtime_mode_diag": {
+    "prefill": "NONE",
+    "decode": "NONE"
+  },
+  "mem_cap": {
+    "mode": "eager",
+    "prefix": "on",
+    "config": {
+      "num_gpu_blocks": 45737,
+      "block_size": 16,
+      "kv_cache_size_tokens": 731792,
+      "kv_cache_max_concurrency": 357.3203125,
+      "max_model_len": 2048,
+      "max_num_seqs": 64,
+      "gpu_memory_utilization": 0.6,
+      "_source": "config-direct"
+    },
+    "kv_per_token_config_derived": {
+      "_source": "config-derived",
+      "page_size_bytes_sum_over_groups": 8192,
+      "kv_total_bytes": 374677504,
+      "kv_total_GiB": 0.349,
+      "bytes_per_cached_token": 512.0
+    },
+    "kv_per_token_theory": {
+      "_source": "theory",
+      "num_hidden_layers": 24,
+      "num_key_value_heads": 2,
+      "head_dim": 64,
+      "dtype_bytes": 2,
+      "bytes_per_token_theory": 12288
+    },
+    "kv_tensor_measured": {
+      "_source": "kv-tensor-sum",
+      "kv_tensor_bytes": 8992260096,
+      "bytes_per_cached_token": 12288.0
+    },
+    "compilation": {
+      "mode": "NONE",
+      "cudagraph_mode": "NONE",
+      "backend": "inductor",
+      "cudagraph_capture_sizes_count": 0,
+      "max_cudagraph_capture_size": 0
+    },
+    "mem_snapshot_current": {
+      "device_total_MiB": 16302.6,
+      "device_free_MiB": 5035.0,
+      "device_used_MiB": 11267.6,
+      "torch_reserved_MiB": 9846.0,
+      "torch_allocated_MiB": 9626.0
+    },
+    "_note": "weights/cudagraph 显存拆分见运行日志(Model loading took / Graph capturing finished)；MemorySnapshot 只分 torch/non-torch"
+  }
+}

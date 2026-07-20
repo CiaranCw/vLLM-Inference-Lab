@@ -17,6 +17,7 @@
 | Attention Backend | **能证** ✅（M4 闭环 trace） |
 | 执行模式（eager / compile / CUDA Graph） | **能证** ✅（M5：eager=NONE；默认 O2=VLLM_COMPILE+FULL_AND_PIECEWISE，实测捕获/回放/padding） |
 | 端到端主链路（入口→输出闭环） | **能证** ✅（M4 已把单请求整条链串成一次运行的证据） |
+| 性能测量（latency / throughput / 显存·KV） | **能测量** ✅（M6：进程内闭环 benchmark，prefill/decode/吞吐/prefix/KV，warmup+重复+P95） |
 | 能改 / 能优 | **尚未完成**（第一阶段后半段目标） |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
@@ -72,9 +73,11 @@
 
 ## 阶段 B · 从"能解释"到"能测量 / 能改 / 能优"（对应 study_path 第六~七章，价值主体）
 
-### M6 离线 / 闭环引擎 Benchmark　⬜　★核心验收
-- 覆盖：Prefill latency、Decode step latency、token throughput、显存与 KV 容量；对照 batch size / 输入输出长度 / prefix cache 等；预热与正式分离、重复≥3 次、报方差 / 中位数 / P95、固定 model/commit/dtype/seed。
-- 产出：`baseline.csv`、`benchmark_config.yaml`、`benchmark_report.md`（待建）。
+### M6 离线 / 闭环引擎 Benchmark　✅　★核心验收
+- 覆盖：Prefill latency、Decode step latency、token throughput、显存与 KV 容量；对照 batch size / 输入长度 / prefix cache / eager-vs-compiled；预热与正式分离、重复≥15、报 median/mean/stdev/P95/min、固定 model/commit/dtype/seed。
+- **实测结论（本机，仅本配置成立）**：decode 单步 latency 近平、吞吐近线性（compiled 全 batch 快 2.3–3×，decode 走 FULL 图）；prefill ≤512 有 ~7ms 固定开销地板，compiled 仅 ≤128（PIECEWISE 图）提速 ~2×、≥256 超本配置捕获上限 128 回退 NONE≈eager；prefix 命中省 94% 计算 token 但短 prompt 下 TTFT 仅降 6%（省计算≠省延迟）；KV≈12 KiB/token（实测 tensor-sum = 理论），KV 池 73 万 token / 最大并发 357×。**"开销地板=CPU/launch?" 与 "decode 是否达带宽上限" 留 M7 profiler 证。**
+- **边界**：只测量+解释现象，不做 profiler 根因、不断言 compute/memory-bound、不下跨机结论；`engine_first_token_latency`≠在线 TTFT（在线留 M12）。
+- 产出：`scripts/m6_{benchmark,run_all,summarize}.py`、`notes/m6/benchmark.md`、`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/,summary/}`、`logs/m6/*`。**本模块零 vLLM 源码改动**（纯 driver + 引擎自省 + 只读 wrapper）。
 - 与 M12 区别：M6 = 离线闭环引擎基准；M12 = 在线开环 serving + SLO。**不重复做两遍相同压测。**
 
 ### M7 Profiler 定位瓶颈　⬜　★核心验收（≥2 类 workload）
@@ -131,7 +134,7 @@
 |---|---|---|---|
 | 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | 🔄 进行中 |
 | 2 | ≥5 个可复现实验 workload | M1–M3 | ✅ 已超额 |
-| 3 | 一套离线/闭环 Benchmark 数据 | M6 | ⬜ |
+| 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ⬜ |
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ⬜ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ⬜ |
@@ -139,7 +142,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M5 完成、M0 进行中（能力已到"能证"，含端到端单请求闭环 + 执行模式路径）；核心验收 2/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → **M6（下一步）** → M7 →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M6 完成、M0 进行中（能力已到"能证 + 能测量"）；核心验收 3/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → **M7（下一步）** →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 

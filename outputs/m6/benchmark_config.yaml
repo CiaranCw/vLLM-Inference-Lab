@@ -1,0 +1,31 @@
+# M6 离线/闭环引擎 Benchmark 固定配置指纹（手写 YAML，不引 pyyaml）
+env:
+  gpu: RTX 5080 (sm_120, 16 GiB)
+  torch: 2.11.0+cu130
+  vllm: ee0da84 (v0.24.0)
+  model: Qwen/Qwen2.5-0.5B-Instruct
+  dtype: bfloat16
+  seed: 0
+  temperature: 0.0
+  tensor_parallel_size: 1
+  in_process: true          # VLLM_ENABLE_V1_MULTIPROCESSING=0
+  async_scheduling: false
+  flashinfer_sampler: false # VLLM_USE_FLASHINFER_SAMPLER=0
+engine:
+  max_model_len: 2048
+  max_num_seqs: 64
+  max_num_batched_tokens: 4096
+  gpu_memory_utilization: 0.6
+matrix:
+  prefill_lengths: [32, 128, 256, 512, 1024, 1536, 2000]
+  decode_batches: [1, 2, 4, 8, 16, 32, 64]
+  decode_prompt_tokens: 32
+  decode_fixed_seq_len: 38
+  prefix_body_tokens: 256
+method:
+  prefill: {warmup: 5, samples_per_len: 15, max_tokens: 1, single_chunk: true}
+  decode: {scheme: A_independent_repeat, warmup_steps: 4, repeats: 15, window: 2, ignore_eos: true}
+  timing: cuda.synchronize + perf_counter around engine.step (in-process closed-loop)
+  trace_during_measure: false
+configs_independent_process: [eager+off, compiled+off, eager+on]
+boundary: "engine-internal metrics; NOT online TTFT; no profiler root-cause (see M7)"
