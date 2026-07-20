@@ -2,7 +2,7 @@
   "config_tag": "compiled_off",
   "mode": "compiled",
   "prefix": "off",
-  "engine_init_s": 13.905,
+  "engine_init_s": 13.645,
   "env": {
     "sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
     "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py",
@@ -20,7 +20,7 @@
     "model": "Qwen/Qwen2.5-0.5B-Instruct",
     "mode": "compiled",
     "prefix": "off",
-    "experiments": "mem,prefill,decode",
+    "experiments": "mem,prefill,decode,diag",
     "max_model_len": 2048,
     "max_num_seqs": 64,
     "max_num_batched_tokens": 4096,
@@ -29,7 +29,7 @@
     "warmup": 5,
     "repeats": 15,
     "decode_warmup_steps": 4,
-    "decode_window": 2,
+    "decode_window": 1,
     "quick": false,
     "out_dir": "outputs/m6"
   },
@@ -37,6 +37,106 @@
     "prefill": "PIECEWISE",
     "decode": "FULL"
   },
+  "diag_modes": [
+    {
+      "kind": "prefill",
+      "dim": 32,
+      "cudagraph_mode": "PIECEWISE",
+      "num_tokens_padded": 32,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 128,
+      "cudagraph_mode": "PIECEWISE",
+      "num_tokens_padded": 128,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 256,
+      "cudagraph_mode": "NONE",
+      "num_tokens_padded": 256,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 512,
+      "cudagraph_mode": "NONE",
+      "num_tokens_padded": 512,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 1024,
+      "cudagraph_mode": "NONE",
+      "num_tokens_padded": 1024,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 1536,
+      "cudagraph_mode": "NONE",
+      "num_tokens_padded": 1536,
+      "uniform_decode": false
+    },
+    {
+      "kind": "prefill",
+      "dim": 2000,
+      "cudagraph_mode": "NONE",
+      "num_tokens_padded": 2000,
+      "uniform_decode": false
+    },
+    {
+      "kind": "decode",
+      "dim": 1,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 1,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 2,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 2,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 4,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 4,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 8,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 8,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 16,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 16,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 32,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 32,
+      "uniform_decode": true
+    },
+    {
+      "kind": "decode",
+      "dim": 64,
+      "cudagraph_mode": "FULL",
+      "num_tokens_padded": 64,
+      "uniform_decode": true
+    }
+  ],
   "mem_cap": {
     "mode": "compiled",
     "prefix": "off",

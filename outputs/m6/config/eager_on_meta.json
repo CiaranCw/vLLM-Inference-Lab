@@ -2,7 +2,7 @@
   "config_tag": "eager_on",
   "mode": "eager",
   "prefix": "on",
-  "engine_init_s": 11.505,
+  "engine_init_s": 10.808,
   "env": {
     "sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
     "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py",
@@ -29,7 +29,7 @@
     "warmup": 5,
     "repeats": 15,
     "decode_warmup_steps": 4,
-    "decode_window": 2,
+    "decode_window": 1,
     "quick": false,
     "out_dir": "outputs/m6"
   },

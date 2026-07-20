@@ -217,6 +217,90 @@ def diagnose_runtime_mode(engine: LLMEngine, tf: "TokenFactory", tmp_jsonl: str)
     return result
 
 
+# ============================ E-diag：逐长度 / 逐 batch 的实际执行模式（正式入口） ============================
+def run_diag(engine, spy, tf, mode, prefix, prefill_lengths, decode_batches, out_dir, tag):
+    """正式诊断入口：临时开 exec trace，逐个 prefill 长度、逐个 decode batch 各跑 1 步，
+    读回真实 cudagraph_mode。用于回答“每个 prefill 长度走什么模式”“每个 decode batch 是否都走 FULL”。
+
+    这是**诊断相**（trace 开、throwaway、不进入任何计时样本），可复现地生成结构化结果文件。
+    """
+    sched = get_scheduler(engine)
+    raw = os.path.join(out_dir, "config", f"_diag_raw_{tag}.jsonl")
+    if os.path.exists(raw):
+        os.remove(raw)
+    saved = {k: os.environ.get(k) for k in
+             ("VLLM_LAB_TRACE", "VLLM_LAB_TRACE_COMPONENTS", "VLLM_LAB_TRACE_JSONL", "VLLM_LAB_TRACE_MAX_STEPS")}
+    os.environ.update({"VLLM_LAB_TRACE": "1", "VLLM_LAB_TRACE_COMPONENTS": "exec",
+                       "VLLM_LAB_TRACE_JSONL": raw, "VLLM_LAB_TRACE_MAX_STEPS": "999999"})
+    from vllm import _lab_trace as _lt
+    rows = []
+    try:
+        # —— prefill：每个长度加 1 个请求（max_tokens=1），单步即 prefill —— #
+        for n in prefill_lengths:
+            _lt.bump_step()
+            rid = f"diagpf-{n}"
+            engine.add_request(rid, {"prompt_token_ids": tf.ids(n)},
+                               SamplingParams(temperature=0.0, max_tokens=1, seed=0))
+            engine.step()
+            drain(engine)
+        # —— decode：每个 batch 加 B 个请求，推进到全 decode 后测 1 步 —— #
+        ids32 = tf.ids(32)
+        for B in decode_batches:
+            rids = [f"diagdec-{B}-{b}" for b in range(B)]
+            for rid in rids:
+                engine.add_request(rid, {"prompt_token_ids": ids32},
+                                   SamplingParams(temperature=0.0, max_tokens=100000, ignore_eos=True, seed=0))
+            guard = 0
+            while guard < 20:
+                so = spy.last
+                if so is not None and len(getattr(sched, "running", [])) == B \
+                        and int(so.total_num_scheduled_tokens) == B:
+                    break
+                engine.step()
+                guard += 1
+            _lt.bump_step()
+            engine.step()  # 这一步就是纯 decode（trace 记录其 cudagraph_mode）
+            engine.abort_request(rids)
+            drain(engine)
+    finally:
+        for k, v in saved.items():
+            os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+
+    # —— 解析：prefill 事件 num_reqs==1 且 num_tokens>1；decode 事件 num_reqs==B 且 num_tokens==B —— #
+    try:
+        events = [json.loads(l) for l in open(raw, encoding="utf-8")] if os.path.exists(raw) else []
+        pf_len = set(prefill_lengths)
+        dec_b = set(decode_batches)
+        seen_pf, seen_dec = set(), set()
+        for r in events:
+            if r.get("event") != "dispatch":
+                continue
+            f = r["fields"]
+            nr = f.get("num_reqs")
+            nt = f.get("num_tokens_unpadded", 0)
+            if nr == 1 and nt in pf_len and nt not in seen_pf:
+                seen_pf.add(nt)
+                rows.append({"kind": "prefill", "dim": nt, "cudagraph_mode": f["cudagraph_mode"],
+                             "num_tokens_padded": f.get("num_tokens_padded"), "uniform_decode": f.get("uniform_decode")})
+            elif nr in dec_b and nt == nr and nr not in seen_dec:
+                seen_dec.add(nr)
+                rows.append({"kind": "decode", "dim": nr, "cudagraph_mode": f["cudagraph_mode"],
+                             "num_tokens_padded": f.get("num_tokens_padded"), "uniform_decode": f.get("uniform_decode")})
+    except Exception as e:  # noqa
+        rows.append({"parse_error": repr(e)})
+
+    out_path = os.path.join(out_dir, "config", f"diag_modes_{tag}.jsonl")
+    with open(out_path, "w", encoding="utf-8") as fp:
+        for row in rows:
+            row2 = {"mode": mode, "prefix": prefix, **row}
+            fp.write(json.dumps(row2, ensure_ascii=False) + "\n")
+    print(f"[m6] diag modes -> {out_path}")
+    for row in rows:
+        print(f"    {row.get('kind')} dim={row.get('dim')} -> {row.get('cudagraph_mode')} "
+              f"(uniform={row.get('uniform_decode')})")
+    return rows
+
+
 # ============================ E-mem/cap ============================
 def dump_mem_cap(engine: LLMEngine, mode: str, prefix: str) -> dict:
     cc = engine.vllm_config.cache_config
@@ -457,7 +541,8 @@ def parse_args():
     p.add_argument("--warmup", type=int, default=5)
     p.add_argument("--repeats", type=int, default=15)
     p.add_argument("--decode-warmup-steps", type=int, default=4)
-    p.add_argument("--decode-window", type=int, default=2)
+    # window=1：每个 repeat 只测 1 个固定位置的 decode step，保证 seq_len 跨样本严格一致（方案 A 本意）
+    p.add_argument("--decode-window", type=int, default=1)
     p.add_argument("--quick", action="store_true")
     p.add_argument("--out-dir", default="outputs/m6")
     return p.parse_args()
@@ -520,6 +605,9 @@ def main():
         all_samples += measure_prefix(engine, spy, tf, args.mode, args.prefix,
                                       256, args.repeats, args.quick)
         print(f"[m6] prefix done: {sum(1 for s in all_samples if s['experiment']=='prefix')} samples")
+    if "diag" in exps:
+        meta["diag_modes"] = run_diag(engine, spy, tf, args.mode, args.prefix,
+                                      prefill_lengths, decode_batches, args.out_dir, tag)
 
     spy.restore()
 

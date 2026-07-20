@@ -21,8 +21,11 @@ import sys
 import time
 
 CONFIGS = [
-    ("eager", "off", "mem,prefill,decode"),
-    ("compiled", "off", "mem,prefill,decode"),
+    # eager + prefix off：主基线；顺带跑 prefix 的 OFF 对照 + 逐长度/逐 batch 执行模式诊断
+    ("eager", "off", "mem,prefill,decode,prefix,diag"),
+    # compiled + prefix off：编译/图对照；diag 给出逐 batch decode=FULL 与逐长度 prefill 模式证据
+    ("compiled", "off", "mem,prefill,decode,diag"),
+    # eager + prefix on：prefix cold/hot 命中实验
     ("eager", "on", "mem,prefix"),
 ]
 

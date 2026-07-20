@@ -1,0 +1,14 @@
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 32, "cudagraph_mode": "NONE", "num_tokens_padded": 32, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 128, "cudagraph_mode": "NONE", "num_tokens_padded": 128, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 256, "cudagraph_mode": "NONE", "num_tokens_padded": 256, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 512, "cudagraph_mode": "NONE", "num_tokens_padded": 512, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 1024, "cudagraph_mode": "NONE", "num_tokens_padded": 1024, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 1536, "cudagraph_mode": "NONE", "num_tokens_padded": 1536, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "prefill", "dim": 2000, "cudagraph_mode": "NONE", "num_tokens_padded": 2000, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 1, "cudagraph_mode": "NONE", "num_tokens_padded": 1, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 2, "cudagraph_mode": "NONE", "num_tokens_padded": 2, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 4, "cudagraph_mode": "NONE", "num_tokens_padded": 4, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 8, "cudagraph_mode": "NONE", "num_tokens_padded": 8, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 16, "cudagraph_mode": "NONE", "num_tokens_padded": 16, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 32, "cudagraph_mode": "NONE", "num_tokens_padded": 32, "uniform_decode": false}
+{"mode": "eager", "prefix": "off", "kind": "decode", "dim": 64, "cudagraph_mode": "NONE", "num_tokens_padded": 64, "uniform_decode": false}

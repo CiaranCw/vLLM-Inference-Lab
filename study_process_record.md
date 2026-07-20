@@ -103,12 +103,13 @@
 
 方法：进程内手动 `LLMEngine`+`step()`；`torch.cuda.synchronize()` 夹 `perf_counter()` 计时（进程内闭环 engine 指标，非在线 TTFT）；精确 token（绕 chat template + 断言 actual==target）；只读包裹 `scheduler.schedule` 在计时区外读校验；每种 (mode,prefix) **独立子进程**（防显存/编译缓存污染）；预热与正式分离、重复≥15、报 median/mean/stdev/P95/min。共 730 样本，660 有效 measure，70 dropped 全为 prefill warmup，0 无效。
 
-- **decode（vs batch，seq_len=38）**：单步 latency 近平（eager 7.5→8.3ms、compiled 2.5→3.7ms，batch 1→64），吞吐近线性（compiled 401→17,432 tok/s）；compiled 全 batch 快 **2.3–3.0×**（decode 走 **FULL CUDA Graph**）。
-- **prefill（vs 长度）**：eager ≤512 近平（~7.3ms 固定开销地板），>512 才增长（1024→12、2000→22ms）；compiled 仅 **≤128 提速 ~2×**（走 PIECEWISE 图），**≥256 因超本配置捕获上限 128 回退 NONE**（诊断实测）→ ≈eager。
-- **prefix（eager on，独立前缀族）**：命中把 computed token **256→16（省 94%，240=15整块×16）**，但 first-token latency 仅 **7.20→6.80ms（降 6%）** —— 短 prompt 被开销地板主导，**省计算≠省延迟**。
-- **KV/显存**：`num_gpu_blocks=45737, block_size=16, kv_size_tokens=731,792, max_concurrency=357×`；**KV≈12,288 B/token（实测 tensor-sum = 理论 2×24×2×64×2）**；naive 配置公式(×page_size_bytes)踩"per-layer"坑偏小 24×，已弃用；权重 0.93 GiB、CUDA Graph 池 0.10 GiB（日志）。
+- **decode（vs batch，seq_len 恒=38）**：单步 latency 近平（eager 7.1→8.4ms、compiled 2.5→3.4ms，batch 1→64），吞吐近线性（compiled 402→19,053 tok/s）；compiled 全 batch 快 **2.5–2.85×**（**逐 batch 1–64 实测全走 FULL 图**，非仅单请求）。
+- **prefill（vs 长度）**：eager ≤512 近平（~7ms 固定开销地板），>512 才增长（1024→11.9、2000→22ms）；compiled 仅 **≤128 提速 ~1.4–1.7×**（走 PIECEWISE 图），**≥256 因超本配置捕获上限 128 回退 NONE**（正式诊断入口逐长度实测）→ ≈eager。
+- **prefix（含 OFF 对照 + 配对分析）**：命中把 computed token **256→16（省 94%，240=15整块×16）**，但 first-token latency **配对差在噪声内**（cold−hot 均值 +0.03ms、hot 仅 8/15 更快）；prefix ON（cold 8.17/hot 7.88ms）短 prompt 下反**略慢于 OFF（7.00ms）**——**省计算≠省延迟**（簿记开销在 overhead-bound 时占上风）。
+- **KV/显存**：eager `num_gpu_blocks=45737`(731,792 tokens)、compiled `45118`(721,888，少因 cudagraph 占 0.10 GiB 显存)；**KV≈12,288 B/token（实测 tensor-sum = 理论）**；naive 配置公式(×page_size_bytes)踩"per-layer"坑偏小 24×，已弃用；**"最大并发 357×"是 KV 容量等价值，运行时并发由 max_num_seqs=64 限制**。
 - **结论按"观察→机制→证据强度→M7 待验证"**表达，不预设 compute/memory-bound、不写死 O(n²)。**"~7ms 开销地板=CPU/launch?"、"decode 是否达带宽上限" 留 M7 profiler。**
-- 产出：`scripts/m6_{benchmark,run_all,summarize}.py`；`notes/m6/benchmark.md`；`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/,summary/}`；`logs/m6/*`。
+- **审查修复（7 点，均据真实环境核实并修复）**：decode 改 window=1 使 seq_len 恒定；prefix 加配对分析（结论改为"噪声内"）+ 补 OFF 对照；新增正式诊断入口 `--experiments diag` 逐 batch/逐长度确认执行模式（补 decode 全 FULL 证据 + 取代临时手工 diag 文件）；澄清最大并发含义；补 compiled 块数。
+- 产出：`scripts/m6_{benchmark,run_all,summarize}.py`；`notes/m6/benchmark.md`；`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/(含 diag_modes_*.jsonl),summary/}`；`logs/m6/*`。
 
 **下一步（待确认）**：M7 —— Profiler 定位瓶颈（★核心验收，≥2 类 workload：decode-heavy 小 batch / prefill-heavy 长输入），用 PyTorch Profiler + Nsight 拆开 M6 观察到的"开销地板"与 decode 访存假设，每份形成"现象→证据→假设→单变量实验→结论"。
 

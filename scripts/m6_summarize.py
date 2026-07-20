@@ -79,17 +79,40 @@ def main():
             th = stats([r["throughput_tokens_per_s"] for r in rs if r.get("throughput_tokens_per_s")])
             row["throughput_tok_s_median"] = th.get("median")
             row["throughput_tok_s_p95"] = th.get("p95")
-            row["seq_len"] = rs[0].get("seq_len")
+            # seq_len 如实汇报为“实际出现的集合”（window=1 时应为单值）
+            row["seq_len"] = ",".join(str(x) for x in sorted({r.get("seq_len") for r in rs if r.get("seq_len") is not None}))
         if exp == "prefix":
             row["prefix_hit_tokens_median"] = int(np.median([r.get("prefix_hit_tokens") or 0 for r in rs]))
             row["scheduled_tokens_median"] = int(np.median([r.get("scheduled_tokens") or 0 for r in rs]))
         summary.append(row)
 
+    # —— prefix 配对分析（cold_i - hot_i，同 repeat 逐配对；判断命中是否真的降低了延迟）——
+    prefix_paired = None
+    cold = {r["repeat"]: r for r in valid if r.get("experiment") == "prefix" and r.get("prefix_kind") == "cold"}
+    hot = {r["repeat"]: r for r in valid if r.get("experiment") == "prefix" and r.get("prefix_kind") == "hot"}
+    common = sorted(set(cold) & set(hot))
+    if common:
+        diffs = [cold[i]["latency_ms"] - hot[i]["latency_ms"] for i in common]  # 正=hot 更快
+        prefix_paired = {
+            "n_pairs": len(diffs),
+            "cold_minus_hot_ms_mean": round(float(np.mean(diffs)), 4),
+            "cold_minus_hot_ms_median": round(float(np.median(diffs)), 4),
+            "cold_minus_hot_ms_stdev": round(float(statistics.pstdev(diffs)) if len(diffs) > 1 else 0.0, 4),
+            "cold_minus_hot_ms_min": round(float(min(diffs)), 4),
+            "cold_minus_hot_ms_max": round(float(max(diffs)), 4),
+            "pairs_hot_faster": sum(1 for d in diffs if d > 0),
+            "note": "均值≈0 且 min/max 跨零 → 命中减少计算 token 但未带来可测的延迟下降（落在噪声内）",
+        }
+
     os.makedirs(os.path.join(args.out_dir, "summary"), exist_ok=True)
     sfx = "_quick" if args.quick else ""
     sum_json = os.path.join(args.out_dir, "summary", f"summary{sfx}.json")
     with open(sum_json, "w", encoding="utf-8") as f:
-        json.dump({"dropped_invalid_or_warmup": dropped, "groups": summary}, f, ensure_ascii=False, indent=2)
+        json.dump({"dropped_invalid_or_warmup": dropped, "groups": summary,
+                   "prefix_paired": prefix_paired}, f, ensure_ascii=False, indent=2)
+    if prefix_paired:
+        print(f"[summarize] prefix paired cold-hot: mean={prefix_paired['cold_minus_hot_ms_mean']}ms "
+              f"hot_faster={prefix_paired['pairs_hot_faster']}/{prefix_paired['n_pairs']}")
 
     # baseline.csv（宽表）
     fields = ["experiment", "mode", "prefix_caching", "dim",

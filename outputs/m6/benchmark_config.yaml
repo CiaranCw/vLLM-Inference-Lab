@@ -20,12 +20,13 @@ matrix:
   prefill_lengths: [32, 128, 256, 512, 1024, 1536, 2000]
   decode_batches: [1, 2, 4, 8, 16, 32, 64]
   decode_prompt_tokens: 32
-  decode_fixed_seq_len: 38
+  decode_fixed_seq_len: 38   # window=1，严格恒定
   prefix_body_tokens: 256
 method:
   prefill: {warmup: 5, samples_per_len: 15, max_tokens: 1, single_chunk: true}
-  decode: {scheme: A_independent_repeat, warmup_steps: 4, repeats: 15, window: 2, ignore_eos: true}
+  decode: {scheme: A_independent_repeat, warmup_steps: 4, repeats: 15, window: 1, ignore_eos: true}  # window=1 使 seq_len 恒定
   timing: cuda.synchronize + perf_counter around engine.step (in-process closed-loop)
   trace_during_measure: false
-configs_independent_process: [eager+off, compiled+off, eager+on]
+configs_independent_process: [eager+off(含 prefix OFF 对照 + diag), compiled+off(含 diag), eager+on(prefix cold/hot)]
+diag: 正式入口 --experiments diag -> outputs/m6/config/diag_modes_*.jsonl（逐长度 prefill + 逐 batch decode 实际执行模式）
 boundary: "engine-internal metrics; NOT online TTFT; no profiler root-cause (see M7)"

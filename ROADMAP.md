@@ -75,7 +75,7 @@
 
 ### M6 离线 / 闭环引擎 Benchmark　✅　★核心验收
 - 覆盖：Prefill latency、Decode step latency、token throughput、显存与 KV 容量；对照 batch size / 输入长度 / prefix cache / eager-vs-compiled；预热与正式分离、重复≥15、报 median/mean/stdev/P95/min、固定 model/commit/dtype/seed。
-- **实测结论（本机，仅本配置成立）**：decode 单步 latency 近平、吞吐近线性（compiled 全 batch 快 2.3–3×，decode 走 FULL 图）；prefill ≤512 有 ~7ms 固定开销地板，compiled 仅 ≤128（PIECEWISE 图）提速 ~2×、≥256 超本配置捕获上限 128 回退 NONE≈eager；prefix 命中省 94% 计算 token 但短 prompt 下 TTFT 仅降 6%（省计算≠省延迟）；KV≈12 KiB/token（实测 tensor-sum = 理论），KV 池 73 万 token / 最大并发 357×。**"开销地板=CPU/launch?" 与 "decode 是否达带宽上限" 留 M7 profiler 证。**
+- **实测结论（本机，仅本配置成立）**：decode 单步 latency 近平、吞吐近线性（compiled 全 batch 快 2.5–2.85×，逐 batch 1–64 实测全走 FULL 图）；prefill ≤512 有 ~7ms 固定开销地板，compiled 仅 ≤128（PIECEWISE 图）提速 ~1.4–1.7×、≥256 超本配置捕获上限 128 回退 NONE≈eager；prefix 命中省 94% 计算 token 但首 token 延迟配对差在噪声内（+0.03ms）、prefix ON 短 prompt 反略慢于 OFF（省计算≠省延迟）；KV≈12 KiB/token（实测 tensor-sum = 理论），KV 池 eager 73.2 万 / compiled 72.2 万 token（compiled 少因 cudagraph 占显存），**"最大并发 357×"是 KV 容量等价值，运行时并发由 max_num_seqs=64 限制**。**"开销地板=CPU/launch?" 与 "decode 是否达带宽上限" 留 M7 profiler 证。**
 - **边界**：只测量+解释现象，不做 profiler 根因、不断言 compute/memory-bound、不下跨机结论；`engine_first_token_latency`≠在线 TTFT（在线留 M12）。
 - 产出：`scripts/m6_{benchmark,run_all,summarize}.py`、`notes/m6/benchmark.md`、`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/,summary/}`、`logs/m6/*`。**本模块零 vLLM 源码改动**（纯 driver + 引擎自省 + 只读 wrapper）。
 - 与 M12 区别：M6 = 离线闭环引擎基准；M12 = 在线开环 serving + SLO。**不重复做两遍相同压测。**
