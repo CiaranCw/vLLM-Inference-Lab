@@ -18,6 +18,7 @@
 | 执行模式（eager / compile / CUDA Graph） | **能证** ✅（M5：eager=NONE；默认 O2=VLLM_COMPILE+FULL_AND_PIECEWISE，实测捕获/回放/padding） |
 | 端到端主链路（入口→输出闭环） | **能证** ✅（M4 已把单请求整条链串成一次运行的证据） |
 | 性能测量（latency / throughput / 显存·KV） | **能测量** ✅（M6：进程内闭环 benchmark，prefill/decode/吞吐/prefix/KV，warmup+重复+P95） |
+| 瓶颈定位（profiler / CPU vs GPU / launch） | **能定位** ✅（M7：torch.profiler 拆 step，证实 decode=launch 受限 / 长 prefill=计算受限） |
 | 能改 / 能优 | **尚未完成**（第一阶段后半段目标） |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
@@ -80,12 +81,14 @@
 - 产出：`scripts/m6_{benchmark,run_all,summarize}.py`、`notes/m6/benchmark.md`、`outputs/m6/{baseline.csv,benchmark_config.yaml,raw/,config/,summary/}`、`logs/m6/*`。**本模块零 vLLM 源码改动**（纯 driver + 引擎自省 + 只读 wrapper）。
 - 与 M12 区别：M6 = 离线闭环引擎基准；M12 = 在线开环 serving + SLO。**不重复做两遍相同压测。**
 
-### M7 Profiler 定位瓶颈　⬜　★核心验收（≥2 类 workload）
+### M7 Profiler 定位瓶颈　✅　★核心验收（≥2 类 workload）
 - 覆盖两类不同 workload，各出一份分析：
   - **Decode-heavy / 小 batch**：CPU 开销、kernel launch gap、H2D、Sampler、CUDA Graph。
   - **Prefill-heavy / 长输入**：GEMM、Attention、GPU 利用率、带宽、大计算 kernel。
-  - 工具：PyTorch Profiler（CPU 栈 / shape / 算子 / metadata）+ Nsight Systems（时间线 / gap / 重叠 / replay）。
+  - 工具：PyTorch Profiler（CPU/GPU 时间、kernel、launch、chrome trace）。**Nsight Systems 在本 WSL2 无法采集 GPU kernel（已实测 CUPTI device-trace 不可用），如实记录并以 torch.profiler 替代覆盖时间线/gap。**
 - **每份分析必须形成**：现象 → Profiler 证据 → 原因假设 → 单变量对照实验 → 最终结论。**仅导出 timeline 不算完成。**
+- **实测结论（本机，仅本配置成立）**：① **decode 的 ~7ms 地板 = CPU kernel-launch 开销**——eager 每步 257 次 launch、`cudaLaunchKernel` 1.59ms 为头号 CPU 开销、gpu_frac 0.52；单变量对照 compiled(FULL 图) launch 257→14、wall 6.66→2.47ms、gap→0.35ms（M6 假设证实）。② **长 prefill = GPU 计算受限**——gpu_frac 1.75、cutlass tensor-core GEMM + flash attention 主导；compiled 砍 launch 161→62 而 wall 不变（证明 launch 非瓶颈）。③ decode 访存受限（GEMV 读权重、batch↑ launch 数不变而被摊销）为受支持假设，ncu 不可用故不下定论。
+- 产出：`scripts/m7_{profile,run_all}.py`、`notes/m7/profiling.md`、`outputs/m7/profile_{eager,compiled}.json`、`logs/m7/*`（chrome trace 体积大未入库、可复现）。**本模块零 vLLM 源码改动**（纯 profiler 外挂）。
 
 > **M7 之后分出两条并行能力线（M8 与 M9 无硬串行依赖）：**
 
@@ -135,14 +138,14 @@
 | 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | 🔄 进行中 |
 | 2 | ≥5 个可复现实验 workload | M1–M3 | ✅ 已超额 |
 | 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
-| 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ⬜ |
+| 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ⬜ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ⬜ |
 | 7 | 1 次开源 PR | M13 | ⬜ |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M6 完成、M0 进行中（能力已到"能证 + 能测量"）；核心验收 3/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → **M7（下一步）** →（M8 ∥ M9）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M7 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位"）；核心验收 4/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ →（**M8 ∥ M9**，下一步）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 

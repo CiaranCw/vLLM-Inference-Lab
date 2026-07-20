@@ -1,0 +1,517 @@
+{
+  "mode": "eager",
+  "records": [
+    {
+      "workload": "decode",
+      "mode": "eager",
+      "batch": 1,
+      "prompt_len": 32,
+      "seq_len": 43,
+      "clean_step_wall": {
+        "median_ms": 6.6625,
+        "mean_ms": 6.8536,
+        "min_ms": 6.3142,
+        "n": 20,
+        "samples_ms": [
+          7.177,
+          6.586,
+          7.302,
+          6.479,
+          6.491,
+          6.635,
+          6.422,
+          6.476,
+          6.509,
+          7.027,
+          6.535,
+          6.314,
+          7.119,
+          6.405,
+          7.312,
+          6.69,
+          8.232,
+          7.282,
+          7.202,
+          6.877
+        ]
+      },
+      "profiler": {
+        "n_profiled_steps": 20,
+        "gpu_busy_ms_per_step": 3.4558,
+        "cpu_time_ms_per_step": 6.5389,
+        "cuda_launches_per_step": 257.0,
+        "top_gpu_kernels": [
+          {
+            "name": "aten::mm",
+            "cuda_ms_per_step": 1.2286,
+            "calls": 1460
+          },
+          {
+            "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel",
+            "cuda_ms_per_step": 1.1414,
+            "calls": 980
+          },
+          {
+            "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel",
+            "cuda_ms_per_step": 0.223,
+            "calls": 960
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cuda_ms_per_step": 0.1377,
+            "calls": 480
+          },
+          {
+            "name": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits",
+            "cuda_ms_per_step": 0.1377,
+            "calls": 480
+          },
+          {
+            "name": "aten::addmm",
+            "cuda_ms_per_step": 0.1358,
+            "calls": 480
+          },
+          {
+            "name": "_C::fused_add_rms_norm",
+            "cuda_ms_per_step": 0.0752,
+            "calls": 960
+          },
+          {
+            "name": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16",
+            "cuda_ms_per_step": 0.0752,
+            "calls": 960
+          }
+        ],
+        "top_cpu_ops": [
+          {
+            "name": "cudaLaunchKernel",
+            "cpu_ms_per_step": 1.5909,
+            "calls": 5140
+          },
+          {
+            "name": "vllm::unified_attention_with_output",
+            "cpu_ms_per_step": 0.8236,
+            "calls": 480
+          },
+          {
+            "name": "aten::mm",
+            "cpu_ms_per_step": 0.602,
+            "calls": 1460
+          },
+          {
+            "name": "cudaMemcpyAsync",
+            "cpu_ms_per_step": 0.4232,
+            "calls": 700
+          },
+          {
+            "name": "vllm::unified_kv_cache_update",
+            "cpu_ms_per_step": 0.3503,
+            "calls": 480
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cpu_ms_per_step": 0.2988,
+            "calls": 480
+          },
+          {
+            "name": "aten::addmm",
+            "cpu_ms_per_step": 0.2639,
+            "calls": 480
+          },
+          {
+            "name": "aten::empty",
+            "cpu_ms_per_step": 0.2274,
+            "calls": 2440
+          }
+        ]
+      },
+      "inferred_cpu_gap_ms": 3.2067,
+      "gpu_busy_fraction": 0.519,
+      "chrome_trace": "outputs/m7/traces/decode_b1_eager.json"
+    },
+    {
+      "workload": "decode",
+      "mode": "eager",
+      "batch": 64,
+      "prompt_len": 32,
+      "seq_len": 43,
+      "clean_step_wall": {
+        "median_ms": 9.8068,
+        "mean_ms": 10.0384,
+        "min_ms": 8.9144,
+        "n": 20,
+        "samples_ms": [
+          11.444,
+          9.704,
+          11.309,
+          10.508,
+          9.284,
+          9.666,
+          9.196,
+          9.653,
+          10.053,
+          8.914,
+          9.91,
+          11.16,
+          10.148,
+          10.6,
+          10.997,
+          9.399,
+          9.423,
+          10.285,
+          9.573,
+          9.541
+        ]
+      },
+      "profiler": {
+        "n_profiled_steps": 20,
+        "gpu_busy_ms_per_step": 4.387,
+        "cpu_time_ms_per_step": 8.0198,
+        "cuda_launches_per_step": 279.0,
+        "top_gpu_kernels": [
+          {
+            "name": "aten::mm",
+            "cuda_ms_per_step": 1.3388,
+            "calls": 1460
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 0.5476,
+            "calls": 480
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 0.3084,
+            "calls": 20
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 0.2993,
+            "calls": 480
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cuda_ms_per_step": 0.2899,
+            "calls": 480
+          },
+          {
+            "name": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits",
+            "cuda_ms_per_step": 0.2899,
+            "calls": 480
+          },
+          {
+            "name": "aten::addmm",
+            "cuda_ms_per_step": 0.1759,
+            "calls": 480
+          },
+          {
+            "name": "aten::copy_",
+            "cuda_ms_per_step": 0.1678,
+            "calls": 1820
+          }
+        ],
+        "top_cpu_ops": [
+          {
+            "name": "cudaLaunchKernel",
+            "cpu_ms_per_step": 1.4691,
+            "calls": 4620
+          },
+          {
+            "name": "vllm::unified_attention_with_output",
+            "cpu_ms_per_step": 0.9106,
+            "calls": 480
+          },
+          {
+            "name": "aten::mm",
+            "cpu_ms_per_step": 0.853,
+            "calls": 1460
+          },
+          {
+            "name": "cuLaunchKernel",
+            "cpu_ms_per_step": 0.5693,
+            "calls": 1940
+          },
+          {
+            "name": "vllm::unified_kv_cache_update",
+            "cpu_ms_per_step": 0.3851,
+            "calls": 480
+          },
+          {
+            "name": "aten::copy_",
+            "cpu_ms_per_step": 0.3427,
+            "calls": 1820
+          },
+          {
+            "name": "aten::addmm",
+            "cpu_ms_per_step": 0.335,
+            "calls": 480
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cpu_ms_per_step": 0.3323,
+            "calls": 480
+          }
+        ]
+      },
+      "inferred_cpu_gap_ms": 5.4198,
+      "gpu_busy_fraction": 0.447,
+      "chrome_trace": "outputs/m7/traces/decode_b64_eager.json"
+    },
+    {
+      "workload": "prefill",
+      "mode": "eager",
+      "batch": 1,
+      "prompt_len": 32,
+      "seq_len": 32,
+      "clean_step_wall": {
+        "median_ms": 8.1913,
+        "mean_ms": 8.4925,
+        "min_ms": 7.5462,
+        "n": 20,
+        "samples_ms": [
+          7.925,
+          8.285,
+          9.963,
+          11.021,
+          9.626,
+          7.878,
+          8.703,
+          8.038,
+          8.547,
+          8.305,
+          7.684,
+          8.098,
+          9.375,
+          7.877,
+          7.596,
+          7.546,
+          8.083,
+          8.804,
+          7.673,
+          8.821
+        ]
+      },
+      "profiler": {
+        "n_profiled_steps": 20,
+        "gpu_busy_ms_per_step": 3.5535,
+        "cpu_time_ms_per_step": 6.2871,
+        "cuda_launches_per_step": 209.0,
+        "top_gpu_kernels": [
+          {
+            "name": "aten::mm",
+            "cuda_ms_per_step": 1.2592,
+            "calls": 1460
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616g",
+            "cuda_ms_per_step": 0.5039,
+            "calls": 480
+          },
+          {
+            "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel",
+            "cuda_ms_per_step": 0.2976,
+            "calls": 20
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_wmma_tensorop_s161616gemm_b",
+            "cuda_ms_per_step": 0.2798,
+            "calls": 480
+          },
+          {
+            "name": "aten::addmm",
+            "cuda_ms_per_step": 0.1511,
+            "calls": 480
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cuda_ms_per_step": 0.1511,
+            "calls": 480
+          },
+          {
+            "name": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits",
+            "cuda_ms_per_step": 0.1511,
+            "calls": 480
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616g",
+            "cuda_ms_per_step": 0.139,
+            "calls": 480
+          }
+        ],
+        "top_cpu_ops": [
+          {
+            "name": "cudaLaunchKernel",
+            "cpu_ms_per_step": 1.031,
+            "calls": 3220
+          },
+          {
+            "name": "vllm::unified_attention_with_output",
+            "cpu_ms_per_step": 0.8314,
+            "calls": 480
+          },
+          {
+            "name": "aten::mm",
+            "cpu_ms_per_step": 0.7007,
+            "calls": 1460
+          },
+          {
+            "name": "cuLaunchKernel",
+            "cpu_ms_per_step": 0.5584,
+            "calls": 1920
+          },
+          {
+            "name": "aten::addmm",
+            "cpu_ms_per_step": 0.3924,
+            "calls": 480
+          },
+          {
+            "name": "vllm::unified_kv_cache_update",
+            "cpu_ms_per_step": 0.3512,
+            "calls": 480
+          },
+          {
+            "name": "aten::empty",
+            "cpu_ms_per_step": 0.2274,
+            "calls": 2440
+          },
+          {
+            "name": "cudaMemcpyAsync",
+            "cpu_ms_per_step": 0.2197,
+            "calls": 220
+          }
+        ]
+      },
+      "inferred_cpu_gap_ms": 4.6378,
+      "gpu_busy_fraction": 0.434,
+      "chrome_trace": "outputs/m7/traces/prefill_len32_eager.json"
+    },
+    {
+      "workload": "prefill",
+      "mode": "eager",
+      "batch": 1,
+      "prompt_len": 2000,
+      "seq_len": 2000,
+      "clean_step_wall": {
+        "median_ms": 21.7034,
+        "mean_ms": 21.8976,
+        "min_ms": 21.2212,
+        "n": 20,
+        "samples_ms": [
+          21.234,
+          21.221,
+          21.551,
+          21.359,
+          22.483,
+          22.782,
+          21.857,
+          21.629,
+          22.283,
+          21.44,
+          22.23,
+          21.694,
+          22.282,
+          21.713,
+          21.803,
+          21.366,
+          21.498,
+          21.674,
+          22.373,
+          23.48
+        ]
+      },
+      "profiler": {
+        "n_profiled_steps": 20,
+        "gpu_busy_ms_per_step": 37.9778,
+        "cpu_time_ms_per_step": 17.5616,
+        "cuda_launches_per_step": 161.0,
+        "top_gpu_kernels": [
+          {
+            "name": "aten::mm",
+            "cuda_ms_per_step": 13.7049,
+            "calls": 1460
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 8.5585,
+            "calls": 480
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 3.9979,
+            "calls": 480
+          },
+          {
+            "name": "_vllm_fa2_C::varlen_fwd",
+            "cuda_ms_per_step": 2.936,
+            "calls": 480
+          },
+          {
+            "name": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits",
+            "cuda_ms_per_step": 2.936,
+            "calls": 480
+          },
+          {
+            "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_re",
+            "cuda_ms_per_step": 2.0538,
+            "calls": 960
+          },
+          {
+            "name": "aten::addmm",
+            "cuda_ms_per_step": 1.2292,
+            "calls": 480
+          },
+          {
+            "name": "_C::silu_and_mul",
+            "cuda_ms_per_step": 0.3868,
+            "calls": 480
+          }
+        ],
+        "top_cpu_ops": [
+          {
+            "name": "cudaMemcpyAsync",
+            "cpu_ms_per_step": 11.0177,
+            "calls": 220
+          },
+          {
+            "name": "cudaLaunchKernel",
+            "cpu_ms_per_step": 1.049,
+            "calls": 3220
+          },
+          {
+            "name": "vllm::unified_attention_with_output",
+            "cpu_ms_per_step": 0.8944,
+            "calls": 480
+          },
+          {
+            "name": "aten::mm",
+            "cpu_ms_per_step": 0.7714,
+            "calls": 1460
+          },
+          {
+            "name": "cuLaunchKernel",
+            "cpu_ms_per_step": 0.4733,
+            "calls": 1920
+          },
+          {
+            "name": "vllm::unified_kv_cache_update",
+            "cpu_ms_per_step": 0.3956,
+            "calls": 480
+          },
+          {
+            "name": "aten::addmm",
+            "cpu_ms_per_step": 0.3774,
+            "calls": 480
+          },
+          {
+            "name": "cudaMemsetAsync",
+            "cpu_ms_per_step": 0.2657,
+            "calls": 980
+          }
+        ]
+      },
+      "inferred_cpu_gap_ms": -16.2744,
+      "gpu_busy_fraction": 1.75,
+      "chrome_trace": "outputs/m7/traces/prefill_len2000_eager.json"
+    }
+  ]
+}

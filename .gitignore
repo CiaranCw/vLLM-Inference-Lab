@@ -17,3 +17,6 @@ backups/
 # 本地阅读向导（用户个人用，不入库）
 vllm_stage_reading_guide.md
 *:Zone.Identifier
+
+# M7 chrome trace 体积大且可由脚本复现，不入库
+outputs/m7/traces/

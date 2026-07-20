@@ -113,6 +113,20 @@
 
 **下一步（待确认）**：M7 —— Profiler 定位瓶颈（★核心验收，≥2 类 workload：decode-heavy 小 batch / prefill-heavy 长输入），用 PyTorch Profiler + Nsight 拆开 M6 观察到的"开销地板"与 decode 访存假设，每份形成"现象→证据→假设→单变量实验→结论"。
 
+## ✅ M7 —— Profiler 定位瓶颈（★核心验收 #4）（2026-07-20）
+
+**方法**：`scripts/m7_{profile,run_all}.py`，复用 M6 进程内引擎+step 基础设施，每 mode 独立子进程。**两相分离**：干净计时相（cuda.sync 夹 perf_counter）测 wall；torch.profiler 相取 CPU/GPU/launch 构成 + top kernel + chrome trace。预热 10、正式 20 步/点。单变量对照 = eager vs compiled（唯一差别是有无 CUDA Graph）。**本模块零 vLLM 源码改动**。
+
+**工具实测（如实记录）**：**nsys 在本 WSL2 无法采集 GPU kernel**（`cuda_gpu_kern_sum` 空，CUPTI device-trace 限制）；**torch.profiler 的 CUPTI 通道本机可正常取 CPU+CUDA**，故以其为主力，chrome trace 提供时间线/launch gap。
+
+- **分析一 decode-heavy 小 batch（现象→证据→假设→实验→结论）**：M6 现象=decode ~7ms 地板。证据(eager b=1)：wall 6.66ms 但 GPU 只忙 3.46ms(gpu_frac 0.52)，**每步 257 次 kernel launch、头号 CPU 开销就是 `cudaLaunchKernel` 1.59ms**，GPU 是一堆小 kernel(`gemvx` GEMV=矩阵×向量/batch1 典型 + 小 attention)。假设=CPU/launch 受限。单变量实验(→compiled FULL 图)：**launch 257→14、gap 3.21→0.35ms、wall 6.66→2.47ms**，GPU 忙碌基本不变。**结论：地板=CPU 逐 kernel 启动开销，CUDA Graph 一次回放抹掉之（M6 假设证实）**。
+- **分析二 prefill-heavy 长输入**：M6 现象=长 prefill eager≈compiled、随长度增长。证据(L=2000 eager)：GPU kernel 时间求和 37.98ms > wall 21.70ms(gpu_frac 1.75)，**大 cutlass tensor-core GEMM(8.6+4.0+2.1ms)+flash attention(2.9ms)主导**。假设=GPU 计算受限。单变量实验(→compiled)：**launch 161→62 但 wall 不变(21.7→22.0ms)**→launch 非瓶颈。**结论：长 prefill=GPU 计算受限，图化/编译无用（M6 假设证实）**。
+- **发散**：decode b=1 vs b=64——launch 数几乎不变(257→279，只取决于层/算子数)、GPU 忙碌略增(权重读取被 64 token 摊销)→印证 M6"单步近平/吞吐近线性"，侧面支持"decode 访存受限"(GEMV 读权重)，但缺 kernel 级带宽计数器(ncu 不可用)故仅列为**受支持假设**。
+- **局限**：nsys GPU 追踪不可用(WSL)；gpu_busy 是 kernel self-time 求和、多 stream 重叠会 >wall(仅方向判断)；ncu 不可用故访存受限不下定论；单卡单模型。
+- 产出：`scripts/m7_{profile,run_all}.py`、`notes/m7/profiling.md`（含 Profiler 概念讲解）、`outputs/m7/profile_{eager,compiled}.json`、`logs/m7/*`（chrome trace 体积大未入库、可复现）。
+
+**下一步（待确认）**：进入两条并行能力线 **M8（Triton kernel，slot-mapping 类）∥ M9（profiler 驱动的真实 vLLM 修改，热点由 M7 证据决定）**。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。
