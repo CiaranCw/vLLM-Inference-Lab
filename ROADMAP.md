@@ -87,7 +87,8 @@
   - **Prefill-heavy / 长输入**：GEMM、Attention、GPU 利用率、带宽、大计算 kernel。
   - 工具：PyTorch Profiler（CPU/GPU 时间、kernel、launch、chrome trace）。**Nsight Systems 在本 WSL2 无法采集 GPU kernel（已实测 CUPTI device-trace 不可用），如实记录并以 torch.profiler 替代覆盖时间线/gap。**
 - **每份分析必须形成**：现象 → Profiler 证据 → 原因假设 → 单变量对照实验 → 最终结论。**仅导出 timeline 不算完成。**
-- **实测结论（本机，仅本配置成立）**：① **decode 的 ~7ms 地板 = CPU kernel-launch 开销**——eager 每步 257 次 launch、`cudaLaunchKernel` 1.59ms 为头号 CPU 开销、gpu_frac 0.52；单变量对照 compiled(FULL 图) launch 257→14、wall 6.66→2.47ms、gap→0.35ms（M6 假设证实）。② **长 prefill = GPU 计算受限**——gpu_frac 1.75、cutlass tensor-core GEMM + flash attention 主导；compiled 砍 launch 161→62 而 wall 不变（证明 launch 非瓶颈）。③ decode 访存受限（GEMV 读权重、batch↑ launch 数不变而被摊销）为受支持假设，ncu 不可用故不下定论。
+- **实测结论（本机，仅本配置成立）**：① **decode 的 ~7ms 地板 = CPU kernel 提交开销**——eager gpu_frac 0.23（GPU 仅忙 1.70ms/7.44ms wall）、每步 257 次 CPU 提交、`cudaLaunchKernel` 1.77ms 为头号 CPU、GPU 头号是 GEMV；单变量对照 compiled(FULL 图) 总提交 257→15（含 1 次 graph 回放）、wall 7.44→2.50ms（M6 假设证实且更强）。② **长 prefill = GPU 计算受限**——gpu_frac 0.88、cutlass tensor-core GEMM 14.6ms + flash attention 主导；compiled 总提交 257→255 基本不变（只是 runtime↔driver API 转移，NONE 模式无图）而 wall 不变（证明提交非瓶颈）。③ decode 访存受限（GEMV 读权重、batch↑ GPU 仅微增）为受支持假设，ncu 不可用故不下定论。
+- **统计口径（经审查修订）**：GPU 时间取 chrome trace `cat=="kernel"` 事件的**区间并集**（不对 key_averages 求和，避免高层算子/底层 kernel 双计）；CPU 提交计数覆盖 **runtime(cudaLaunchKernel)+driver(cuLaunchKernel)+graph(cudaGraphLaunch)** 三类。
 - 产出：`scripts/m7_{profile,run_all}.py`、`notes/m7/profiling.md`、`outputs/m7/profile_{eager,compiled}.json`、`logs/m7/*`（chrome trace 体积大未入库、可复现）。**本模块零 vLLM 源码改动**（纯 profiler 外挂）。
 
 > **M7 之后分出两条并行能力线（M8 与 M9 无硬串行依赖）：**

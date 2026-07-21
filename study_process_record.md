@@ -119,11 +119,12 @@
 
 **工具实测（如实记录）**：**nsys 在本 WSL2 无法采集 GPU kernel**（`cuda_gpu_kern_sum` 空，CUPTI device-trace 限制）；**torch.profiler 的 CUPTI 通道本机可正常取 CPU+CUDA**，故以其为主力，chrome trace 提供时间线/launch gap。
 
-- **分析一 decode-heavy 小 batch（现象→证据→假设→实验→结论）**：M6 现象=decode ~7ms 地板。证据(eager b=1)：wall 6.66ms 但 GPU 只忙 3.46ms(gpu_frac 0.52)，**每步 257 次 kernel launch、头号 CPU 开销就是 `cudaLaunchKernel` 1.59ms**，GPU 是一堆小 kernel(`gemvx` GEMV=矩阵×向量/batch1 典型 + 小 attention)。假设=CPU/launch 受限。单变量实验(→compiled FULL 图)：**launch 257→14、gap 3.21→0.35ms、wall 6.66→2.47ms**，GPU 忙碌基本不变。**结论：地板=CPU 逐 kernel 启动开销，CUDA Graph 一次回放抹掉之（M6 假设证实）**。
-- **分析二 prefill-heavy 长输入**：M6 现象=长 prefill eager≈compiled、随长度增长。证据(L=2000 eager)：GPU kernel 时间求和 37.98ms > wall 21.70ms(gpu_frac 1.75)，**大 cutlass tensor-core GEMM(8.6+4.0+2.1ms)+flash attention(2.9ms)主导**。假设=GPU 计算受限。单变量实验(→compiled)：**launch 161→62 但 wall 不变(21.7→22.0ms)**→launch 非瓶颈。**结论：长 prefill=GPU 计算受限，图化/编译无用（M6 假设证实）**。
-- **发散**：decode b=1 vs b=64——launch 数几乎不变(257→279，只取决于层/算子数)、GPU 忙碌略增(权重读取被 64 token 摊销)→印证 M6"单步近平/吞吐近线性"，侧面支持"decode 访存受限"(GEMV 读权重)，但缺 kernel 级带宽计数器(ncu 不可用)故仅列为**受支持假设**。
-- **局限**：nsys GPU 追踪不可用(WSL)；gpu_busy 是 kernel self-time 求和、多 stream 重叠会 >wall(仅方向判断)；ncu 不可用故访存受限不下定论；单卡单模型。
-- 产出：`scripts/m7_{profile,run_all}.py`、`notes/m7/profiling.md`（含 Profiler 概念讲解）、`outputs/m7/profile_{eager,compiled}.json`、`logs/m7/*`（chrome trace 体积大未入库、可复现）。
+- **分析一 decode-heavy 小 batch（现象→证据→假设→实验→结论）**：M6 现象=decode ~7ms 地板。证据(eager b=1)：wall 7.44ms 但 GPU 忙碌并集仅 1.70ms(**gpu_frac 0.23**)，**每步 257 次 CPU 提交、头号 CPU 开销 `cudaLaunchKernel` 1.77ms**，GPU 头号是 `gemvx`(GEMV=矩阵×向量/batch1 典型)。假设=CPU/提交受限。单变量实验(→compiled FULL 图)：**总提交 257→15(含 1 次 graph 回放)、wall 7.44→2.50ms**，gpu_frac→≈1(转为 GPU 受限)。**结论：地板=CPU 逐 kernel 提交开销，CUDA Graph 一次回放抹掉之（M6 假设证实且更强）**。
+- **分析二 prefill-heavy 长输入**：M6 现象=长 prefill eager≈compiled、随长度增长。证据(L=2000 eager)：GPU 忙碌并集 18.92ms、wall 21.60ms(**gpu_frac 0.88**)，**cutlass tensor-core GEMM 14.6ms + flash attention 2.9ms 主导**。假设=GPU 计算受限。单变量实验(→compiled)：**总提交 257→255 基本不变(只是 runtime↔driver API 转移，prefill≥256 是 NONE 无图)、wall 不变(21.6→22.2ms)**→提交非瓶颈。**结论：长 prefill=GPU 计算受限（M6 假设证实）**。
+- **发散**：按 gpu_frac 分界——CPU/提交受限区(≈0.23：decode 任意 batch、短 prefill L32，图能减半 wall)vs GPU 计算受限区(≈0.88：长 prefill，图无用)；decode b1 vs b64 GPU 仅微增(权重被摊销)→印证 M6"单步近平/吞吐近线性"，侧面支持"decode 访存受限"(GEMV 读权重)但缺 kernel 级带宽计数器(ncu 不可用)故仅**受支持假设**。
+- **统计口径（经审查修订）**：GPU 时间取 chrome trace `cat=="kernel"` 事件**区间并集**(不对 key_averages 求和，避免高层算子/底层 kernel 双计——修订前 decode 双计到 3.46ms、真实 1.70ms)；CPU 提交覆盖 runtime+driver(`cuLaunchKernel`)+graph 三类(修订前漏计 driver，误报"launch 161→62"，实为总提交 257→255 基本不变)。
+- **局限**：nsys GPU 追踪不可用(WSL)；本机单 stream 故并集=求和；gpu_frac 仅 <1 时是干净占比；ncu 不可用故访存受限不下定论；单卡单模型。
+- 产出：`scripts/m7_{profile,run_all}.py`、`notes/m7/profiling.md`（含 Profiler 概念讲解 + 统计实现修订记录）、`outputs/m7/profile_{eager,compiled}.json`、`logs/m7/*`（chrome trace 体积大未入库、可复现）。
 
 **下一步（待确认）**：进入两条并行能力线 **M8（Triton kernel，slot-mapping 类）∥ M9（profiler 驱动的真实 vLLM 修改，热点由 M7 证据决定）**。
 
