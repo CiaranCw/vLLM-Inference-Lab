@@ -154,6 +154,21 @@
 
 **下一步（待确认）**：M10 —— 量化对比（★核心验收，单卡可做）：BF16 baseline / 权重量化 / KV 量化，对比显存/吞吐/TTFT/TPOT/质量，源码聚焦反量化位置、Q/K/V 与 KV dtype、scale 存放与消费。
 
+## ✅ M10 —— 量化对比（★核心验收 #9）（2026-07-21）
+
+先出《M10 最终计划审计报告》（据实机 smoke 修正：C1 正名 W8A8、C2 正名"未校准 scale=1.0 FP8 KV"、C0T 同后端基线全维度参与、性能/质量彻底分离、公共参数固定）。**环境阻塞解决**：kv fp8 的 attention 默认走 FlashInfer 在 sm_120 JIT 失败 → 用 `attention_backend="TRITON_ATTN"` 绕开；在线 fp8 无需下载模型。**零 vLLM 源码改动**。
+
+**配置**（COMMON 固定，仅改 quantization/kv_cache_dtype/attention_backend）：C0(bf16/flash)、C1(在线FP8 W8A8/flash)、C0T(bf16/triton 同后端基线)、C2(FP8 KV 未校准/triton)、C2dyn(FP8 KV 动态scale/triton)。
+- **源码机制**：在线 FP8=`Fp8LinearMethod`(per-tensor 权重 scale + 动态 per-token 激活 + `torch._scaled_mm`，scale 作 kernel 参数直接消费、非先反量化)，量化 96 个 linear、embed/lm_head/norm 保 bf16；FP8 KV 写 `reshape_and_cache_flash(k_scale,v_scale)`、读 TRITON 反量化；FLASH 不支持 fp8 KV、FLASHINFER 在 sm_120 失败。
+- **scale 审计**：C2 全 24 层 k/v_scale=1.0（未校准）；C2dyn `calculate_kv_scales=True` 动态非 1.0（k_range≈[0.024,1.055]/v_range≈[0.0016,0.101]）。
+- **显存**：C1 权重 942→**601 MiB(−36%)**（linear 半减、embed/lm_head 260MiB 保 bf16 故非理论 −50%）；C2 KV 容量 **~2×**（C2/C0T tokens 1.993×，字节相近而 token 翻倍）。
+- **质量（token 加权 PPL，5364 评分 token）**：后端 +0.02%、FP8 Linear **+0.51%**、FP8 KV 未校准 **+2.17%**、FP8 KV 动态 scale **+1.72%**（动态优于未校准）。
+- **速度（诚实含反常，全 eager）**：fp8 Linear 长 prefill(2000) **−27%**（计算受限、fp8 tensor-core GEMM 受益）但 decode **+36% 变慢**（小 GEMV+动态激活量化开销+sm_120 fp8 未优化，有 `SM 12.x requires CUDA≥12.9` 告警）；fp8 KV **不提速**（价值在容量，decode 未到 KV 带宽瓶颈，呼应 M7）。TRITON 后端本身比 FLASH 慢，故 KV 比较用同后端 C0T 隔离。
+- **结论**：fp8 主要收益是**显存**（权重 −36% / KV 容量 ~2×），质量损失小(<2.2%、动态 KV scale 更小)，**速度非普遍收益**（只在计算受限长 prefill 提速，decode 反慢）。结论限 eager/单卡/0.5B，不外推 compiled。
+- 产出：`scripts/m10_{quant,run_all,summarize}.py`、`notes/m10/quantization.md`、`outputs/m10/{configs,memory,quality,raw,summary.json,latency.csv,summary.csv}`、`logs/m10/*`。
+
+**下一步（待确认）**：M12 —— 在线/开环 Serving 与 SLO（OpenAI 兼容 server、QPS/Poisson 到达、TTFT/ITL/P50-P99、最大稳定 QPS）；M11(双卡 TP) 资源门控，有双卡时再做。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

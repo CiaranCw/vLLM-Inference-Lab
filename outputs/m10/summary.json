@@ -1,0 +1,76 @@
+{
+  "configs": [
+    "C0",
+    "C0T",
+    "C1",
+    "C2",
+    "C2dyn"
+  ],
+  "quality": {
+    "ppl_overall": {
+      "C0": 2.8184,
+      "C0T": 2.819,
+      "C1": 2.8328,
+      "C2": 2.8801,
+      "C2dyn": 2.8676
+    },
+    "C1_vs_C0(FP8 Linear)": 0.51,
+    "C0T_vs_C0(backend)": 0.02,
+    "C2_vs_C0T(FP8 KV 净)": 2.17,
+    "C2_vs_C0(总体)": 2.19,
+    "C2dyn_vs_C0T(动态scale KV)": 1.72
+  },
+  "memory": {
+    "C0": {
+      "kv_cache_size_tokens": 731792,
+      "num_gpu_blocks": 45737,
+      "weight_bytes_by_dtype_MiB": {
+        "torch.bfloat16": 942.293
+      },
+      "kv_cache_tensor_MiB": 8575.69,
+      "device_used_MiB": 11267.6
+    },
+    "C0T": {
+      "kv_cache_size_tokens": 731792,
+      "num_gpu_blocks": 45737,
+      "weight_bytes_by_dtype_MiB": {
+        "torch.bfloat16": 942.293
+      },
+      "kv_cache_tensor_MiB": 8575.69,
+      "device_used_MiB": 11287.6
+    },
+    "C1": {
+      "kv_cache_size_tokens": 758384,
+      "num_gpu_blocks": 47399,
+      "weight_bytes_by_dtype_MiB": {
+        "torch.bfloat16": 259.793,
+        "torch.float8_e4m3fn": 341.25,
+        "torch.float32": 0.0
+      },
+      "kv_cache_tensor_MiB": 8887.31,
+      "device_used_MiB": 11279.6
+    },
+    "C2": {
+      "kv_cache_size_tokens": 1458128,
+      "num_gpu_blocks": 91133,
+      "weight_bytes_by_dtype_MiB": {
+        "torch.bfloat16": 942.293
+      },
+      "kv_cache_tensor_MiB": 8543.72,
+      "device_used_MiB": 11231.6
+    },
+    "C2dyn": {
+      "kv_cache_size_tokens": 1458128,
+      "num_gpu_blocks": 91133,
+      "weight_bytes_by_dtype_MiB": {
+        "torch.bfloat16": 942.293
+      },
+      "kv_cache_tensor_MiB": 8543.72,
+      "device_used_MiB": 11231.6
+    }
+  },
+  "kv_capacity_ratio_C2_over_C0T": {
+    "tokens_C2_over_C0T": 1.993,
+    "kv_tensor_MiB_C2_over_C0T": 0.996
+  }
+}

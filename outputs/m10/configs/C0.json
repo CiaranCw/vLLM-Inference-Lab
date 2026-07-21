@@ -1,0 +1,26 @@
+{
+  "config": "C0",
+  "common": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "dtype": "auto",
+    "max_model_len": 2048,
+    "gpu_memory_utilization": 0.6,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true,
+    "seed": 0,
+    "max_num_seqs": 64,
+    "max_num_batched_tokens": 4096,
+    "enable_prefix_caching": false,
+    "async_scheduling": false,
+    "disable_log_stats": true
+  },
+  "variant": {},
+  "quantization": null,
+  "kv_cache_dtype": "auto",
+  "calculate_kv_scales": false,
+  "num_gpu_blocks": 45737,
+  "block_size": 16,
+  "kv_cache_size_tokens": 731792,
+  "kv_cache_max_concurrency": 357.3203125,
+  "engine_init_s_single_obs": 9.576
+}

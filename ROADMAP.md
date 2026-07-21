@@ -111,8 +111,14 @@
 
 ## 阶段 C · 岗位第二层能力（单卡可推进 + 资源门控）（对应 study_path 第八~九章）
 
-### M10 量化对比　⬜　★核心验收（单卡可做）
+### M10 量化对比　✅　★核心验收（单卡可做）
 - 覆盖：BF16 baseline / 权重量化 / KV 量化（本机不支持 FP8 则走 INT4/AWQ/GPTQ）；对比显存/吞吐/TTFT/TPOT/质量；源码聚焦：权重在哪反量化、Q/K/V 与 KV dtype、scale 存放、backend 如何消费 scale。
+- **实测结论（本机 sm_120，eager，Qwen2.5-0.5B；单变量对照 C1−C0/C2−C0T，同后端基线 C0T）**：**本机 FP8 可用**（在线 `quantization="fp8"` = W8A8 动态；`kv_cache_dtype="fp8"` 需 `attention_backend="TRITON_ATTN"` 避开 sm_120 FlashInfer 失败；无需下载模型）。
+  - **显存**：C1 权重 942→**601 MiB(−36%)**（linear 半减、embed/lm_head 260MiB 保 bf16 故非 −50%）；C2 KV 容量 **~2×**（C2/C0T tokens 1.993×）。
+  - **质量(token 加权 PPL)**：FP8 Linear **+0.51%**、FP8 KV(未校准 scale=1.0) **+2.17%**、FP8 KV(动态 scale) **+1.72%**、后端影响 +0.02%。
+  - **速度(诚实含反常)**：fp8 Linear 长 prefill **−27%**（计算受限受益）但 decode **+36%（反而变慢**，小 GEMV+动态激活量化开销+sm_120 未优化）；fp8 KV **不提速**（价值在容量）。
+  - **scale 审计**：C2 全层 scale=1.0（未校准）；C2dyn `calculate_kv_scales=True` 动态非 1.0。
+- 产出：`scripts/m10_{quant,run_all,summarize}.py`、`notes/m10/quantization.md`、`outputs/m10/{configs,memory,quality,raw,summary.json,latency.csv}`、`logs/m10/*`。**零 vLLM 源码改动**。结论限 eager/单卡/0.5B，不外推 compiled。
 
 ### M11 双 GPU Tensor Parallel　⬜　★核心验收（**资源门控，非硬前置**）
 - 覆盖：单卡 vs TP=2；每卡存哪些权重、QKV 切分、attention 后 collective、NCCL 占比、小 batch 时 TP 为何可能更慢。
@@ -149,9 +155,9 @@
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ✅（改动+测试+E2E 数据齐全；E2E 收益在噪声内，诚实保留无收益报告） |
 | 7 | 1 次开源 PR | M13 | ⬜ |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
-| 9 | 量化对比报告 | M10 | ⬜ |
+| 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体：M1–M9 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel + 能改"）；核心验收 6/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → ~~M9~~ → **M10（下一步）** →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M10 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel + 能改 + 量化对比"）；核心验收 7/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → ~~M9~~ → ~~M10~~ → **M12（下一步）** →（M11 资源允许时）→ M13 → M16。**
 
 ---
 

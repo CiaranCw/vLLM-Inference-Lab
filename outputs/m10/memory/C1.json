@@ -1,0 +1,20 @@
+{
+  "tensor_sum": {
+    "weight_bytes_by_dtype": {
+      "torch.bfloat16": 259.793,
+      "torch.float8_e4m3fn": 341.25,
+      "torch.float32": 0.0
+    },
+    "embed_lm_head_MiB": 259.656,
+    "weight_scale_MiB": 0.0004,
+    "kv_cache_tensor_MiB": 8887.31,
+    "kv_cache_tensor_bytes": 9319022592
+  },
+  "snapshot": {
+    "device_total_MiB": 16302.6,
+    "device_free_MiB": 5023.0,
+    "device_used_MiB": 11279.6,
+    "torch_reserved_MiB": 9858.0,
+    "torch_allocated_MiB": 9577.8
+  }
+}

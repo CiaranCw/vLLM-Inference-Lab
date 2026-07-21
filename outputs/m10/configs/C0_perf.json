@@ -1,0 +1,139 @@
+{
+  "config": "C0",
+  "scale_audit": {
+    "n_attn_layers": 24,
+    "k_all_one": true,
+    "v_all_one": true,
+    "k_range": [
+      1.0,
+      1.0
+    ],
+    "v_range": [
+      1.0,
+      1.0
+    ],
+    "example_layers": [
+      {
+        "layer": "model.layers.0.self_attn.attn",
+        "k": 1.0,
+        "v": 1.0,
+        "dtype": "torch.float32",
+        "calc_kv_scales": false
+      },
+      {
+        "layer": "model.layers.1.self_attn.attn",
+        "k": 1.0,
+        "v": 1.0,
+        "dtype": "torch.float32",
+        "calc_kv_scales": false
+      }
+    ]
+  },
+  "prefill": [
+    {
+      "sample_count": 30,
+      "median_ms": 7.4801,
+      "mean_ms": 7.6444,
+      "stdev_ms": 0.7936,
+      "p95_ms": 8.8036,
+      "min_ms": 6.396,
+      "max_ms": 9.8836,
+      "prompt_tokens": 128,
+      "metric": "engine_first_step_latency_ms"
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 7.5427,
+      "mean_ms": 8.6948,
+      "stdev_ms": 3.0811,
+      "p95_ms": 12.1912,
+      "min_ms": 6.9968,
+      "max_ms": 23.8102,
+      "prompt_tokens": 512,
+      "metric": "engine_first_step_latency_ms"
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 22.1741,
+      "mean_ms": 22.2884,
+      "stdev_ms": 0.7523,
+      "p95_ms": 22.8796,
+      "min_ms": 21.4128,
+      "max_ms": 25.8703,
+      "prompt_tokens": 2000,
+      "metric": "engine_first_step_latency_ms"
+    }
+  ],
+  "decode": [
+    {
+      "sample_count": 30,
+      "median_ms": 6.8942,
+      "mean_ms": 7.1264,
+      "stdev_ms": 0.7261,
+      "p95_ms": 8.9762,
+      "min_ms": 6.2173,
+      "max_ms": 9.2143,
+      "context_len": 64,
+      "batch_size": 1,
+      "seq_len": 73,
+      "all_valid": true,
+      "throughput_tok_s_median": 145.05
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 7.7098,
+      "mean_ms": 7.8546,
+      "stdev_ms": 0.5555,
+      "p95_ms": 8.9902,
+      "min_ms": 7.1481,
+      "max_ms": 9.3695,
+      "context_len": 64,
+      "batch_size": 8,
+      "seq_len": 73,
+      "all_valid": true,
+      "throughput_tok_s_median": 1037.64
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 8.4778,
+      "mean_ms": 8.6889,
+      "stdev_ms": 0.6929,
+      "p95_ms": 10.2375,
+      "min_ms": 7.8029,
+      "max_ms": 11.0913,
+      "context_len": 64,
+      "batch_size": 64,
+      "seq_len": 73,
+      "all_valid": true,
+      "throughput_tok_s_median": 7549.13
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 6.9702,
+      "mean_ms": 7.1836,
+      "stdev_ms": 0.6313,
+      "p95_ms": 8.5978,
+      "min_ms": 6.4739,
+      "max_ms": 8.8177,
+      "context_len": 1024,
+      "batch_size": 1,
+      "seq_len": 1033,
+      "all_valid": true,
+      "throughput_tok_s_median": 143.47
+    },
+    {
+      "sample_count": 30,
+      "median_ms": 7.7075,
+      "mean_ms": 7.8671,
+      "stdev_ms": 0.6014,
+      "p95_ms": 9.3638,
+      "min_ms": 7.1176,
+      "max_ms": 9.4667,
+      "context_len": 1024,
+      "batch_size": 8,
+      "seq_len": 1035,
+      "all_valid": true,
+      "throughput_tok_s_median": 1037.95
+    }
+  ]
+}

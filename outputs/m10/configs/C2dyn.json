@@ -1,0 +1,30 @@
+{
+  "config": "C2dyn",
+  "common": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "dtype": "auto",
+    "max_model_len": 2048,
+    "gpu_memory_utilization": 0.6,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true,
+    "seed": 0,
+    "max_num_seqs": 64,
+    "max_num_batched_tokens": 4096,
+    "enable_prefix_caching": false,
+    "async_scheduling": false,
+    "disable_log_stats": true
+  },
+  "variant": {
+    "kv_cache_dtype": "fp8",
+    "attention_backend": "TRITON_ATTN",
+    "calculate_kv_scales": true
+  },
+  "quantization": null,
+  "kv_cache_dtype": "fp8",
+  "calculate_kv_scales": true,
+  "num_gpu_blocks": 91133,
+  "block_size": 16,
+  "kv_cache_size_tokens": 1458128,
+  "kv_cache_max_concurrency": 711.9765625,
+  "engine_init_s_single_obs": 9.767
+}
