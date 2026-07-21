@@ -25,23 +25,25 @@ PAD_ID = -1  # 与 vLLM PAD_SLOT_ID 一致
 # ============================================================================
 # 基础练习 1：vector add
 # ============================================================================
-@triton.jit
+@triton.jit # 第一次调用时，Triton 根据参数和 GPU 架构将它 JIT 编译成 GPU 代码
 def vector_add_kernel(x_ptr, y_ptr, out_ptr, n, BLOCK: tl.constexpr):
-    pid = tl.program_id(0)
-    offs = pid * BLOCK + tl.arange(0, BLOCK)
-    mask = offs < n
-    x = tl.load(x_ptr + offs, mask=mask)
+    pid = tl.program_id(0) # 获取当前 Program 是第几个并行实例
+    offs = pid * BLOCK + tl.arange(0, BLOCK) # 计算当前 Program 负责的数据下标
+    mask = offs < n # 防止越界
+    x = tl.load(x_ptr + offs, mask=mask) # 从 GPU 加载对应位置的数据
     y = tl.load(y_ptr + offs, mask=mask)
-    tl.store(out_ptr + offs, x + y, mask=mask)
+    tl.store(out_ptr + offs, x + y, mask=mask) # 加法 + 写回
 
 
+# Kernel 需要 Python Wrapper 才能使用
 def vector_add(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     out = torch.empty_like(x)
     n = x.numel()
-    vector_add_kernel[(triton.cdiv(n, 1024),)](x, y, out, n, BLOCK=1024)
+    vector_add_kernel[(triton.cdiv(n, 1024),)](x, y, out, n, BLOCK=1024) # 使用向上取整除法计算需要的 Program 数量
     return out
 
 
+# PyTorch 版本，定义正确结果
 def vector_add_ref(x, y):
     return x + y
 
@@ -49,14 +51,15 @@ def vector_add_ref(x, y):
 # ============================================================================
 # 基础练习 2：fused activation = SiLU-gate（act_and_mul）
 #   x: [n_rows, 2*d] -> out[:, :] = silu(x[:, :d]) * x[:, d:]
+#   将 x 的最后一维一分为二
 # ============================================================================
 @triton.jit
 def act_and_mul_kernel(x_ptr, out_ptr, d, BLOCK: tl.constexpr):
     row = tl.program_id(0)
     offs = tl.arange(0, BLOCK)
     mask = offs < d
-    a = tl.load(x_ptr + row * (2 * d) + offs, mask=mask)
-    b = tl.load(x_ptr + row * (2 * d) + d + offs, mask=mask)
+    a = tl.load(x_ptr + row * (2 * d) + offs, mask=mask) # 每一行的长度为 2 * d，那么起始位置就是 row * (2 * d)，这里取到的是前半部分
+    b = tl.load(x_ptr + row * (2 * d) + d + offs, mask=mask) # 添加偏移 d，从后半部分取
     silu = a * tl.sigmoid(a)
     tl.store(out_ptr + row * d + offs, silu * b, mask=mask)
 
@@ -76,13 +79,14 @@ def act_and_mul_ref(x):
 
 # ============================================================================
 # 基础练习 3：row-wise softmax（数值稳定，减 max；支持非 2 次幂列宽）
+#            为了数值稳定，指数都减去一个最大值
 # ============================================================================
 @triton.jit
 def softmax_kernel(x_ptr, out_ptr, n_cols, BLOCK: tl.constexpr):
     row = tl.program_id(0)
     offs = tl.arange(0, BLOCK)
     mask = offs < n_cols
-    x = tl.load(x_ptr + row * n_cols + offs, mask=mask, other=-float("inf"))
+    x = tl.load(x_ptr + row * n_cols + offs, mask=mask, other=-float("inf")) # Mask 外的使用负无穷使得取指数后为 0，避免影响结果
     x = x - tl.max(x, axis=0)
     e = tl.exp(x)
     s = tl.sum(e, axis=0)
@@ -170,7 +174,7 @@ def slot_mapping_gen(
     # out 可传入预填哨兵值的缓冲（测试用，检测漏写）；默认填 PAD_ID
     slot_mapping = out if out is not None else torch.full(
         (max_num_tokens,), PAD_ID, dtype=torch.int64, device=positions.device)
-    slot_mapping_gen_kernel[(num_reqs + 1,)](
+    slot_mapping_gen_kernel[(num_reqs + 1,)]( # 多出来的一个负责处理 padding，[num_tokens, max_num_tokens) 填 -1
         num_tokens,
         max_num_tokens,
         query_start_loc,

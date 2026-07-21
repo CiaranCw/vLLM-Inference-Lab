@@ -70,6 +70,7 @@ def main():
 
         impls = {"mine_triton": run_mine, "vllm_triton": run_vllm, "torch_ref": run_torch}
         for name, fn in impls.items():
+            # 中位数、20%分位数、80%分位数（转换成微秒），用中位数是因为微秒级 Kernel 容易被干扰导致出现异常值大幅影响平均值
             med, p20, p80 = do_bench(fn, warmup=25, rep=100, quantiles=[0.5, 0.2, 0.8])
             med_us, p20_us, p80_us = med * 1e3, p20 * 1e3, p80 * 1e3
             payload_bytes = (8 + 8) * n  # 读 positions int64 + 写 slot int64
