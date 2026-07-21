@@ -1,0 +1,63 @@
+{
+  "m9": "on",
+  "flag_effective": true,
+  "output_token_ids": [
+    69162,
+    71817,
+    99792,
+    3837,
+    62244,
+    5309,
+    69162,
+    9370,
+    25511,
+    107043,
+    5162,
+    69162,
+    9370,
+    25511,
+    3837,
+    100624
+  ],
+  "cudaMemcpyAsync_per_step": 10.0,
+  "decode": [
+    {
+      "batch": 1,
+      "median_ms": 2.5264,
+      "p95_ms": 2.9946,
+      "stdev_ms": 0.3004,
+      "min_ms": 2.4469,
+      "n": 40
+    },
+    {
+      "batch": 8,
+      "median_ms": 2.7669,
+      "p95_ms": 3.0488,
+      "stdev_ms": 0.1123,
+      "min_ms": 2.6558,
+      "n": 40
+    },
+    {
+      "batch": 64,
+      "median_ms": 3.4642,
+      "p95_ms": 4.1025,
+      "stdev_ms": 0.1934,
+      "min_ms": 3.3011,
+      "n": 40
+    }
+  ],
+  "prefill": [
+    {
+      "length": 512,
+      "median_ms": 7.152,
+      "stdev_ms": 0.4095,
+      "n": 15
+    },
+    {
+      "length": 2000,
+      "median_ms": 21.9832,
+      "stdev_ms": 0.364,
+      "n": 15
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "zero_side_effect_off_eq_baseline": true,
+  "correctness_on_eq_baseline": true,
+  "compiled_on_eq_off_output": true,
+  "flag_effective_off": false,
+  "flag_effective_on": true,
+  "mechanism_cudaMemcpyAsync_per_step": {
+    "off": 11.0,
+    "on": 10.0
+  },
+  "decode_latency_ms_median": {
+    "off": {
+      "1": 2.5129,
+      "8": 2.7828,
+      "64": 3.4471
+    },
+    "on": {
+      "1": 2.5264,
+      "8": 2.7669,
+      "64": 3.4642
+    }
+  },
+  "decode_stdev_ms": {
+    "off": {
+      "1": 0.1555,
+      "8": 0.1192,
+      "64": 0.1866
+    },
+    "on": {
+      "1": 0.3004,
+      "8": 0.1123,
+      "64": 0.1934
+    }
+  },
+  "prefill_ms_median": {
+    "off": {
+      "512": 7.3331,
+      "2000": 22.2429
+    },
+    "on": {
+      "512": 7.152,
+      "2000": 21.9832
+    }
+  },
+  "verdict": "机制生效(memcpy/step 11->10, -1)且正确性完整(输出逐一致); E2E 收益落在噪声内(差异 ±0.01-0.02ms << stdev 0.15-0.30ms), 无可测收益; 根因: H2D 发行仅占 decode step ~0.1%, 路径已高度优化"
+}

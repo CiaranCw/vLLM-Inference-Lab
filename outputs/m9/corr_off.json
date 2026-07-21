@@ -1,0 +1,94 @@
+{
+  "env": {
+    "sys_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
+    "vllm_file": "/home/ciaran/projects/vllm-src/vllm/__init__.py",
+    "vllm_version": "0.24.1.dev0+gee0da84ab.d20260714",
+    "torch_version": "2.11.0+cu130",
+    "torch_cuda": "13.0",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 5080",
+    "env": {
+      "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
+      "VLLM_LOGGING_LEVEL": null,
+      "VLLM_LAB_TRACE": null,
+      "VLLM_ATTENTION_BACKEND": null,
+      "VLLM_USE_FLASHINFER_SAMPLER": "0"
+    }
+  },
+  "config": {
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "prompt": "请用一句话解释大模型推理中的 KV Cache。",
+    "max_model_len": 2048,
+    "max_tokens": 16,
+    "gpu_memory_utilization": 0.5,
+    "tensor_parallel_size": 1,
+    "temperature": 0.0,
+    "seed": 0,
+    "enforce_eager": true,
+    "dtype": "auto"
+  },
+  "prompt": "请用一句话解释大模型推理中的 KV Cache。",
+  "prompt_token_ids": [
+    14880,
+    11622,
+    105321,
+    104136,
+    26288,
+    104949,
+    113272,
+    101047,
+    84648,
+    19479,
+    1773
+  ],
+  "num_prompt_tokens": 11,
+  "output_token_ids": [
+    84648,
+    19479,
+    54851,
+    101053,
+    100751,
+    18493,
+    111390,
+    15946,
+    99982,
+    24360,
+    60949,
+    25511,
+    32664,
+    9370,
+    99982,
+    24360
+  ],
+  "num_output_tokens": 16,
+  "output_text": " KV Cache 是一种用于在内存中缓存键值对的缓存",
+  "finish_reason": "length",
+  "timings_s": {
+    "engine_init": 10.9487,
+    "generate": 0.5018,
+    "total": 11.4505
+  },
+  "gpu_memory": {
+    "before": {
+      "device_free_MiB": 14953.0,
+      "device_total_MiB": 16302.6,
+      "device_used_MiB": 1349.6,
+      "proc_allocated_MiB": 0.0,
+      "proc_reserved_MiB": 0.0
+    },
+    "after_init": {
+      "device_free_MiB": 6619.0,
+      "device_total_MiB": 16302.6,
+      "device_used_MiB": 9683.6,
+      "proc_allocated_MiB": 7582.2,
+      "proc_reserved_MiB": 8250.0
+    },
+    "after_generate": {
+      "device_free_MiB": 6619.0,
+      "device_total_MiB": 16302.6,
+      "device_used_MiB": 9683.6,
+      "proc_allocated_MiB": 7582.2,
+      "proc_reserved_MiB": 8250.0
+    }
+  }
+}

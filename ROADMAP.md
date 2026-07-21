@@ -20,7 +20,7 @@
 | 性能测量（latency / throughput / 显存·KV） | **能测量** ✅（M6：进程内闭环 benchmark，prefill/decode/吞吐/prefix/KV，warmup+重复+P95） |
 | 瓶颈定位（profiler / CPU vs GPU / launch） | **能定位** ✅（M7：torch.profiler 拆 step，证实 decode=launch 受限 / 长 prefill=计算受限） |
 | 写 kernel（Triton） | **能写** ✅（M8：slot_mapping 生成 kernel 三路交叉 22/22，性能≈vLLM 官方） |
-| 能改 / 能优 | **进行中**（M9：profiler 驱动的真实 vLLM 改动） |
+| 能改 / 能优 | **能改** ✅（M9：profiler 驱动、可回退、正确性完整的真实改动；本例 E2E 收益在噪声内，诚实保留为无收益报告）；**能优**：方法论完备，待有正空间的目标再证正收益 |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
 
@@ -100,10 +100,12 @@
 - **实测结论**：自写 Triton 生成 kernel 通过**三路功能交叉验证**（自写 / PyTorch 语义 Oracle / vLLM 官方 `_compute_slot_mapping_kernel`）**22/22 全绿**——覆盖随机/单token/块内首末/跨块/非连续物理块/乱序/尾部mask/ragged 多请求(query_start_loc)/padding(哨兵检测漏写)/CP interleave(world 2·4，纯 index 数学)。microbench(do_bench)：**自写 ≈ vLLM 官方**(n=16384 28.4≈28.4us，无数量级退化)，torch ref 小尺寸慢 3–4×(多 op 多 launch)，≤2048 有 ~7us launch 地板→之后转访存主导。
 - 产出：`scripts/m8_{kernels,test,bench}.py`、`notes/m8/triton_kernels.md`（含 Triton 编程模型讲解 + 生成/消费之分）、`outputs/m8/{correctness.json,microbench.csv,bench_summary.json}`、`logs/m8/*`。**零 vLLM 源码改动**（官方 kernel 作参照调用）。CP interleave 为生成侧真实特性（不再标 N/A）；未覆盖：消费侧散写、真实多卡 CP、多 KV-group、FP8/head-major。
 
-### M9 Profiler 驱动的真实 vLLM 修改　⬜　★核心验收
+### M9 Profiler 驱动的真实 vLLM 修改　✅　★核心验收（诚实无收益报告）
 - 优化对象**只由 M7 的 profiler 证据决定**。若瓶颈在 Python / CPU metadata / H2D / 同步 / Tensor 分配，**可先完成 M9，不要求先做完全部 Triton（M8）**。
 - 流程：热点→假设→microbenchmark→确认可复现→改代码→correctness→E2E benchmark。
 - 产出：修改报告（改前 timeline / 根因 / diff / 单测 / microbench / E2E / 收益区间 / 退化场景）；**无收益也保留失败报告**。
+- **实测结论（诚实）**：由 M7 证据选定"合并 decode 路径两处同型 H2D 拷贝（req_indices+query_pos）"作 profiler 驱动优化（`gpu_model_runner.py`，`VLLM_LAB_M9_COALESCE` 门控、默认关、可回退）。**机制成立**（cudaMemcpyAsync/step 11→10，每步 −1）、**正确性完整**（关=零副作用、开=输出与基线逐一致），但 **E2E 收益落在测量噪声内**（decode 各 batch 差异 ±0.01–0.02ms ≪ stdev 0.11–0.30ms）。根因：省下的 ~3.5us/step 仅占 decode step ~0.13%；该路径已被 vLLM 高度优化（pinned+non_blocking+overlap）。isolated microbench **提前量化天花板并预判 E2E 无效**，结论坐实。→ 按 ROADMAP **保留为无收益报告**，改动留作 env 门控可选项。
+- 产出：`vllm-src/gpu_model_runner.py`（M9 门控改动，`# VLLM_INFERENCE_LAB_M9`）、`backups/m9/`、`scripts/m9_{microbench,e2e}.py`、`notes/m9/optimization.md`、`outputs/m9/{microbench.csv,e2e_{on,off}.json,correctness.json,m9_change.diff}`、`logs/m9/*`。**价值在于完整的 profiler 驱动方法论 + 忠实结论（不伪造收益）**。
 
 ---
 
@@ -144,12 +146,12 @@
 | 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ✅ |
-| 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ⬜ |
+| 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ✅（改动+测试+E2E 数据齐全；E2E 收益在噪声内，诚实保留无收益报告） |
 | 7 | 1 次开源 PR | M13 | ⬜ |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M8 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel"）；核心验收 5/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → **M9（下一步）** → M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M9 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel + 能改"）；核心验收 6/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → ~~M9~~ → **M10（下一步）** →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 

@@ -141,6 +141,19 @@
 
 **下一步（待确认）**：M9 —— Profiler 驱动的真实 vLLM 修改（★核心验收，优化对象由 M7 证据决定：decode/短 prefill 的 CPU 提交/H2D 路径 或 长 prefill 计算侧）。
 
+## ✅ M9 —— Profiler 驱动的真实 vLLM 修改（★核心验收 #6，诚实无收益报告）（2026-07-21）
+
+先出《M9 最终计划审计报告》并用 AskUserQuestion 确认方向（用户选"安全微优化+诚实报告"）。**关键诚实结论（实测支撑）**：decode 路径已被 vLLM 高度优化——compiled decode step ≈2.68ms 中 `_prepare_inputs`(CPU) 仅占 16%(0.42ms)，H2D buffer 已 pinned+non_blocking、`from_numpy` zero-copy、token_ids 不 H2D → **无大赢面**。
+
+- **选定改动**：由 M7 证据选"合并 decode 路径两处同 dtype/同长度的 H2D 拷贝 `req_indices`+`query_pos`"（二者 `.gpu` 仅在同一行被消费、下游无其它读取 → 合并安全）。`gpu_model_runner.py` 加 `VLLM_LAB_M9_COALESCE` 门控（默认关、可回退、`# VLLM_INFERENCE_LAB_M9`）；备份 `backups/m9/`；隔离 diff `outputs/m9/m9_change.diff`。
+- **isolated microbench**（do_bench）：合并省 ~3.5us/step（两次拷贝 vs 一次）→ 占 decode step ~0.13%，**提前量化天花板并预判 E2E 无效**。
+- **correctness 完整**：关时 eager 输出与基线逐一致（**零副作用**）；开时输出与基线逐一致；compiled 下 on/off 输出完全相同；`collective_rpc` 验证 flag 生效。
+- **E2E 单变量对照**（compiled decode，≥40 重复）：**机制成立**（cudaMemcpyAsync/step **11→10**，每步 −1）；但 **decode latency 差异 ±0.01-0.02ms ≪ stdev 0.11-0.30ms → 落在噪声内、无可测收益**；prefill 无退化。
+- **结论（诚实）**：机制成立、正确性完整，但 E2E 收益被噪声淹没（根因：H2D 发行仅占 decode step ~0.13%，路径已高度优化）。按 ROADMAP **保留为无收益报告**，改动留作 env 门控可选项，**不伪造收益**。价值在完整的 profiler 驱动闭环方法论（热点→假设→microbench 预判天花板→toggle 可回退改动→correctness→单变量 E2E+机制计数→诚实结论）。
+- 产出：`scripts/m9_{microbench,e2e}.py`、`notes/m9/optimization.md`、`outputs/m9/*`、`backups/m9/`、`logs/m9/*`；`vllm-src/gpu_model_runner.py`（门控改动，默认关零副作用）。
+
+**下一步（待确认）**：M10 —— 量化对比（★核心验收，单卡可做）：BF16 baseline / 权重量化 / KV 量化，对比显存/吞吐/TTFT/TPOT/质量，源码聚焦反量化位置、Q/K/V 与 KV dtype、scale 存放与消费。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

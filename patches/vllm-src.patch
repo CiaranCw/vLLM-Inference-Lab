@@ -3096,7 +3096,7 @@ index 28d1a04..fd600b1 100644
          Any consecutive empty indices at the very end of the list are not
          filled.
 diff --git a/vllm/v1/worker/gpu_model_runner.py b/vllm/v1/worker/gpu_model_runner.py
-index 74938a8..0570d1a 100644
+index 74938a8..68085d5 100644
 --- a/vllm/v1/worker/gpu_model_runner.py
 +++ b/vllm/v1/worker/gpu_model_runner.py
 @@ -1,5 +1,89 @@
@@ -3213,7 +3213,23 @@ index 74938a8..0570d1a 100644
          self.vllm_config = vllm_config
          self.model_config = vllm_config.model_config
          self.cache_config = vllm_config.cache_config
-@@ -1135,6 +1236,9 @@ class GPUModelRunner(
+@@ -801,6 +902,15 @@ class GPUModelRunner(
+         self.query_pos = self._make_buffer(arange_size, dtype=torch.int64)
+         self._arange_scratch = np.empty(arange_size, dtype=np.int64)
+ 
++        # VLLM_INFERENCE_LAB_M9: 可选优化——把 req_indices 与 query_pos 两次 H2D 拷贝
++        # 合并为一次（同 dtype/同长度）。env 门控、默认关闭；关闭时行为与原版完全一致。
++        import os as _os
++        self._m9_coalesce = _os.environ.get("VLLM_LAB_M9_COALESCE", "0") == "1"
++        if self._m9_coalesce:
++            self._m9_combined = self._make_buffer(
++                2 * self.max_num_tokens, dtype=torch.int64
++            )
++
+         # Layer pairings for cross-layer KV sharing.
+         # If an Attention layer `layer_name` is in the keys of this dict, it
+         # means this layer will perform attention using the keys and values
+@@ -1135,6 +1245,9 @@ class GPUModelRunner(
          new/resumed/paused/finished request in the batch.
          """
          # Remove finished requests from the cached states.
@@ -3223,7 +3239,7 @@ index 74938a8..0570d1a 100644
          for req_id in scheduler_output.finished_req_ids:
              self.requests.pop(req_id, None)
              self.num_prompt_logprobs.pop(req_id, None)
-@@ -1152,6 +1256,7 @@ class GPUModelRunner(
+@@ -1152,6 +1265,7 @@ class GPUModelRunner(
  
          # Zero GPU memory for freshly allocated cache blocks to prevent
          # stale NaN/data from corrupting attention or SSM computation.
@@ -3231,7 +3247,7 @@ index 74938a8..0570d1a 100644
          if scheduler_output.new_block_ids_to_zero:
              self._zero_block_ids(scheduler_output.new_block_ids_to_zero)
  
-@@ -1159,25 +1264,27 @@ class GPUModelRunner(
+@@ -1159,25 +1273,27 @@ class GPUModelRunner(
          for mm_hash in scheduler_output.free_encoder_mm_hashes:
              self.encoder_cache.pop(mm_hash, None)
  
@@ -3263,7 +3279,7 @@ index 74938a8..0570d1a 100644
          for req_id in unscheduled_req_ids:
              self.input_batch.remove_request(req_id)
  
-@@ -1192,6 +1299,7 @@ class GPUModelRunner(
+@@ -1192,6 +1308,7 @@ class GPUModelRunner(
          deferred_spec_decode_corrections = []
  
          # Add new requests to the cached states.
@@ -3271,7 +3287,7 @@ index 74938a8..0570d1a 100644
          for new_req_data in scheduler_output.scheduled_new_reqs:
              req_id = new_req_data.req_id
              if req_id in self.requests:
-@@ -1221,6 +1329,7 @@ class GPUModelRunner(
+@@ -1221,6 +1338,7 @@ class GPUModelRunner(
                  to_update = model.pooler.get_pooling_updates(task)
                  to_update.apply(pooling_params)
  
@@ -3279,7 +3295,7 @@ index 74938a8..0570d1a 100644
              req_state = CachedRequestState(
                  req_id=req_id,
                  prompt_token_ids=new_req_data.prompt_token_ids,
-@@ -1235,6 +1344,7 @@ class GPUModelRunner(
+@@ -1235,6 +1353,7 @@ class GPUModelRunner(
                  output_token_ids=[],
                  lora_request=new_req_data.lora_request,
              )
@@ -3287,7 +3303,7 @@ index 74938a8..0570d1a 100644
              self.requests[req_id] = req_state
              self.late_interaction_runner.register_request(req_id, pooling_params)
  
-@@ -1259,6 +1369,7 @@ class GPUModelRunner(
+@@ -1259,6 +1378,7 @@ class GPUModelRunner(
                  ngram_gpu_new_reqs.append(req_state)
  
          # Update the states of the running/resumed requests.
@@ -3295,7 +3311,7 @@ index 74938a8..0570d1a 100644
          is_last_rank = get_pp_group().is_last_rank
          req_data = scheduler_output.scheduled_cached_reqs
          scheduled_spec_tokens = scheduler_output.scheduled_spec_decode_tokens
-@@ -1282,12 +1393,12 @@ class GPUModelRunner(
+@@ -1282,12 +1402,12 @@ class GPUModelRunner(
              self.prev_num_draft_tokens.np.fill(0)
  
          for i, req_id in enumerate(req_data.req_ids):
@@ -3311,7 +3327,7 @@ index 74938a8..0570d1a 100644
  
              if req_state.prev_num_draft_len and self.use_async_scheduling:
                  # prev_num_draft_len is used in async scheduling mode with
-@@ -1368,11 +1479,13 @@ class GPUModelRunner(
+@@ -1368,11 +1488,13 @@ class GPUModelRunner(
                      self.input_batch.num_tokens_no_spec[req_index] = end_idx
  
              # Update the block IDs.
@@ -3325,7 +3341,7 @@ index 74938a8..0570d1a 100644
              else:
                  assert req_index is None
                  assert new_block_ids is not None
-@@ -1380,6 +1493,7 @@ class GPUModelRunner(
+@@ -1380,6 +1502,7 @@ class GPUModelRunner(
                  # Replace the existing block IDs with the new ones.
                  req_state.block_ids = new_block_ids
  
@@ -3333,7 +3349,7 @@ index 74938a8..0570d1a 100644
              if req_index is None:
                  # The request is not in the persistent batch.
                  # The request was either preempted and resumed later, or was not
-@@ -1398,7 +1512,10 @@ class GPUModelRunner(
+@@ -1398,7 +1521,10 @@ class GPUModelRunner(
                  continue
  
              # Update the persistent batch.
@@ -3344,7 +3360,7 @@ index 74938a8..0570d1a 100644
              if new_block_ids is not None:
                  self.input_batch.block_table.append_row(new_block_ids, req_index)
  
-@@ -1437,6 +1554,7 @@ class GPUModelRunner(
+@@ -1437,6 +1563,7 @@ class GPUModelRunner(
  
          # Add the new or resumed requests to the persistent batch.
          # The smaller empty indices are filled first.
@@ -3352,7 +3368,7 @@ index 74938a8..0570d1a 100644
          for request in reqs_to_add:
              self.input_batch.add_request(request)
              self.input_batch.update_req_spec_token_ids(request, scheduled_spec_tokens)
-@@ -1999,11 +2117,12 @@ class GPUModelRunner(
+@@ -1999,11 +2126,12 @@ class GPUModelRunner(
                  output_idx += num_sched
  
          # Prepare the attention metadata.
@@ -3368,7 +3384,7 @@ index 74938a8..0570d1a 100644
          self.query_start_loc.copy_to_gpu()
          query_start_loc = self.query_start_loc.gpu[: num_reqs + 1]
  
-@@ -2023,11 +2142,12 @@ class GPUModelRunner(
+@@ -2023,11 +2151,12 @@ class GPUModelRunner(
          prev_req_id_to_index = self.input_batch.prev_req_id_to_index
          self._compute_prev_positions(num_reqs)
  
@@ -3382,7 +3398,38 @@ index 74938a8..0570d1a 100644
          self.discard_request_mask.np[:num_reqs] = (
              self.optimistic_seq_lens_cpu[:num_reqs].numpy() < num_tokens_np
          )
-@@ -2208,6 +2328,27 @@ class GPUModelRunner(
+@@ -2107,16 +2236,26 @@ class GPUModelRunner(
+             )
+ 
+         self.req_indices.np[:total_num_scheduled_tokens] = req_indices
+-        self.req_indices.copy_to_gpu(total_num_scheduled_tokens)
+-        req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
++        # VLLM_INFERENCE_LAB_M9: 合并 req_indices + query_pos 两次 H2D 为一次（默认关，行为等价）
++        if self._m9_coalesce:
++            _t = total_num_scheduled_tokens
++            self._m9_combined.np[:_t] = req_indices
++            self._m9_combined.np[_t : 2 * _t] = self.query_pos.np[:_t]
++            self._m9_combined.copy_to_gpu(2 * _t)
++            req_indices_gpu = self._m9_combined.gpu[:_t]
++            query_pos_gpu = self._m9_combined.gpu[_t : 2 * _t]
++        else:
++            self.req_indices.copy_to_gpu(total_num_scheduled_tokens)
++            req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
++            self.query_pos.copy_to_gpu(total_num_scheduled_tokens)
++            query_pos_gpu = self.query_pos.gpu[:total_num_scheduled_tokens]
+ 
+-        self.query_pos.copy_to_gpu(total_num_scheduled_tokens)
+         self.num_scheduled_tokens.np[:num_reqs] = num_scheduled_tokens
+         self.num_scheduled_tokens.copy_to_gpu(num_reqs)
+         num_scheduled_tokens_gpu = self.num_scheduled_tokens.gpu[:num_reqs]
+         self.positions[:total_num_scheduled_tokens] = (
+             self.num_computed_tokens[req_indices_gpu].to(torch.int64)
+-            + self.query_pos.gpu[:total_num_scheduled_tokens]
++            + query_pos_gpu
+         )
+         self.seq_lens[:num_reqs] = (
+             self.num_computed_tokens[:num_reqs] + num_scheduled_tokens_gpu
+@@ -2208,6 +2347,27 @@ class GPUModelRunner(
                  self.input_batch, num_scheduled_tokens, num_sampled_tokens
              )
  
@@ -3410,7 +3457,7 @@ index 74938a8..0570d1a 100644
          return (
              logits_indices,
              spec_decode_metadata,
-@@ -2229,6 +2370,15 @@ class GPUModelRunner(
+@@ -2229,6 +2389,15 @@ class GPUModelRunner(
          slot_mappings: dict[int, torch.Tensor] | None = None,
      ) -> tuple[PerLayerAttnMetadata, CommonAttentionMetadata | None]:
          """
@@ -3426,7 +3473,7 @@ index 74938a8..0570d1a 100644
          Returns:
              tuple[attn_metadata, spec_decode_common_attn_metadata]
          """
-@@ -3626,6 +3776,13 @@ class GPUModelRunner(
+@@ -3626,6 +3795,13 @@ class GPUModelRunner(
          dict[str, int],
          list[int],
      ]:
@@ -3440,7 +3487,7 @@ index 74938a8..0570d1a 100644
          num_nans_in_logits = {}
          if envs.VLLM_COMPUTE_NANS_IN_LOGITS:
              num_nans_in_logits = self._get_nans_in_logits(logits)
-@@ -3981,6 +4138,7 @@ class GPUModelRunner(
+@@ -3981,6 +4157,7 @@ class GPUModelRunner(
      ]:
          """
          Build slot mappings in both formats needed by the system.
@@ -3448,7 +3495,7 @@ index 74938a8..0570d1a 100644
  
          Args:
              num_tokens_padded: Total number of tokens (padded)
-@@ -4207,6 +4365,23 @@ class GPUModelRunner(
+@@ -4207,6 +4384,23 @@ class GPUModelRunner(
              )
              pad_attn = cudagraph_mode == CUDAGraphMode.FULL
  
@@ -3472,7 +3519,7 @@ index 74938a8..0570d1a 100644
              if self.cache_config.mamba_cache_mode == "align":
                  # preprocess_mamba reads req_state.num_computed_tokens (CPU)
                  # to decide copy operations, so we must apply deferred
-@@ -4329,6 +4504,17 @@ class GPUModelRunner(
+@@ -4329,6 +4523,17 @@ class GPUModelRunner(
                  defer_finalize=defer_kv_connector_finalize,
              ) as kv_connector_output,
          ):
@@ -3490,7 +3537,7 @@ index 74938a8..0570d1a 100644
              model_output = self._model_forward(
                  input_ids=input_ids,
                  positions=positions,
-@@ -4462,6 +4648,7 @@ class GPUModelRunner(
+@@ -4462,6 +4667,7 @@ class GPUModelRunner(
          self.execute_model_state = None
  
          # Apply structured output bitmasks if present.
@@ -3498,7 +3545,7 @@ index 74938a8..0570d1a 100644
          if grammar_output is not None:
              apply_grammar_bitmask(
                  scheduler_output, grammar_output, self.input_batch, logits
-@@ -6723,6 +6910,17 @@ class GPUModelRunner(
+@@ -6723,6 +6929,17 @@ class GPUModelRunner(
  
          # We skip EPLB here since we don't want to record dummy metrics
          for batch_desc in batch_descriptors:

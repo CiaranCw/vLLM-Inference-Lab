@@ -1,0 +1,16 @@
+n=    1 two_copies  median= 63.7760us
+n=    1 one_copy    median= 60.2560us
+  -> saving(two-one) = 3.5200us/step
+n=    8 two_copies  median= 62.7520us
+n=    8 one_copy    median= 60.6080us
+  -> saving(two-one) = 2.1440us/step
+n=   64 two_copies  median= 64.0320us
+n=   64 one_copy    median= 60.1600us
+  -> saving(two-one) = 3.8720us/step
+n=  256 two_copies  median= 65.8400us
+n=  256 one_copy    median= 59.7760us
+  -> saving(two-one) = 6.0640us/step
+n= 1024 two_copies  median= 63.4240us
+n= 1024 one_copy    median= 60.4160us
+  -> saving(two-one) = 3.0080us/step
+[m9_microbench] -> outputs/m9/microbench.csv

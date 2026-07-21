@@ -1,0 +1,33 @@
+904a905,913
+>         # VLLM_INFERENCE_LAB_M9: 可选优化——把 req_indices 与 query_pos 两次 H2D 拷贝
+>         # 合并为一次（同 dtype/同长度）。env 门控、默认关闭；关闭时行为与原版完全一致。
+>         import os as _os
+>         self._m9_coalesce = _os.environ.get("VLLM_LAB_M9_COALESCE", "0") == "1"
+>         if self._m9_coalesce:
+>             self._m9_combined = self._make_buffer(
+>                 2 * self.max_num_tokens, dtype=torch.int64
+>             )
+> 
+2230,2231c2239,2251
+<         self.req_indices.copy_to_gpu(total_num_scheduled_tokens)
+<         req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
+---
+>         # VLLM_INFERENCE_LAB_M9: 合并 req_indices + query_pos 两次 H2D 为一次（默认关，行为等价）
+>         if self._m9_coalesce:
+>             _t = total_num_scheduled_tokens
+>             self._m9_combined.np[:_t] = req_indices
+>             self._m9_combined.np[_t : 2 * _t] = self.query_pos.np[:_t]
+>             self._m9_combined.copy_to_gpu(2 * _t)
+>             req_indices_gpu = self._m9_combined.gpu[:_t]
+>             query_pos_gpu = self._m9_combined.gpu[_t : 2 * _t]
+>         else:
+>             self.req_indices.copy_to_gpu(total_num_scheduled_tokens)
+>             req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
+>             self.query_pos.copy_to_gpu(total_num_scheduled_tokens)
+>             query_pos_gpu = self.query_pos.gpu[:total_num_scheduled_tokens]
+2233d2252
+<         self.query_pos.copy_to_gpu(total_num_scheduled_tokens)
+2239c2258
+<             + self.query_pos.gpu[:total_num_scheduled_tokens]
+---
+>             + query_pos_gpu
