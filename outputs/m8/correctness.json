@@ -1,0 +1,117 @@
+{
+  "passed": 22,
+  "total": 22,
+  "all_green": true,
+  "cases": [
+    {
+      "name": "basic/vector_add",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/act_and_mul",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/softmax_w127",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/softmax_w128",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/softmax_w255",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/softmax_w512",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "basic/softmax_w1024",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "gen/random_multi",
+      "pass": true,
+      "detail": "n=134 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/single_token",
+      "pass": true,
+      "detail": "n=1 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/single_request",
+      "pass": true,
+      "detail": "n=50 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/block_first",
+      "pass": true,
+      "detail": "n=3 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/block_last",
+      "pass": true,
+      "detail": "n=3 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/cross_block",
+      "pass": true,
+      "detail": "n=70 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/non_contiguous_physical_blocks",
+      "pass": true,
+      "detail": "n=120 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/shuffled_slot_assignment",
+      "pass": true,
+      "detail": "n=120 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/tile_tail_mask(tile=8)",
+      "pass": true,
+      "detail": "n=62 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/ragged_multi_request",
+      "pass": true,
+      "detail": "n=103 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/padding_sentinel",
+      "pass": true,
+      "detail": "n=103 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/cp_world2_rank0_il1",
+      "pass": true,
+      "detail": "n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/cp_world2_rank1_il1",
+      "pass": true,
+      "detail": "n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/cp_world2_rank0_il2",
+      "pass": true,
+      "detail": "n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    },
+    {
+      "name": "gen/cp_world4_rank2_il1",
+      "pass": true,
+      "detail": "n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True"
+    }
+  ]
+}

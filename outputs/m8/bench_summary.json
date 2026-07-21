@@ -1,0 +1,186 @@
+{
+  "config": {
+    "block_size": 16,
+    "sizes": [
+      128,
+      512,
+      1024,
+      2048,
+      4096,
+      8192,
+      16384
+    ],
+    "timing": "triton.testing.do_bench",
+    "metric_note": "eff_payload_bandwidth = logical K/V-index payload only, not HW DRAM BW"
+  },
+  "rows": [
+    {
+      "num_tokens": 128,
+      "impl": "mine_triton",
+      "latency_us_median": 7.328,
+      "latency_us_p20": 6.432,
+      "latency_us_p80": 7.904,
+      "eff_payload_bandwidth_GBps": 0.28
+    },
+    {
+      "num_tokens": 128,
+      "impl": "vllm_triton",
+      "latency_us_median": 7.2,
+      "latency_us_p20": 6.368,
+      "latency_us_p80": 7.904,
+      "eff_payload_bandwidth_GBps": 0.28
+    },
+    {
+      "num_tokens": 128,
+      "impl": "torch_ref",
+      "latency_us_median": 26.4,
+      "latency_us_p20": 26.208,
+      "latency_us_p80": 26.496,
+      "eff_payload_bandwidth_GBps": 0.08
+    },
+    {
+      "num_tokens": 512,
+      "impl": "mine_triton",
+      "latency_us_median": 7.696,
+      "latency_us_p20": 6.995,
+      "latency_us_p80": 7.936,
+      "eff_payload_bandwidth_GBps": 1.06
+    },
+    {
+      "num_tokens": 512,
+      "impl": "vllm_triton",
+      "latency_us_median": 7.808,
+      "latency_us_p20": 6.88,
+      "latency_us_p80": 7.936,
+      "eff_payload_bandwidth_GBps": 1.05
+    },
+    {
+      "num_tokens": 512,
+      "impl": "torch_ref",
+      "latency_us_median": 30.56,
+      "latency_us_p20": 30.432,
+      "latency_us_p80": 31.93,
+      "eff_payload_bandwidth_GBps": 0.27
+    },
+    {
+      "num_tokens": 1024,
+      "impl": "mine_triton",
+      "latency_us_median": 7.872,
+      "latency_us_p20": 7.136,
+      "latency_us_p80": 7.968,
+      "eff_payload_bandwidth_GBps": 2.08
+    },
+    {
+      "num_tokens": 1024,
+      "impl": "vllm_triton",
+      "latency_us_median": 7.84,
+      "latency_us_p20": 7.155,
+      "latency_us_p80": 7.968,
+      "eff_payload_bandwidth_GBps": 2.09
+    },
+    {
+      "num_tokens": 1024,
+      "impl": "torch_ref",
+      "latency_us_median": 29.92,
+      "latency_us_p20": 28.512,
+      "latency_us_p80": 30.528,
+      "eff_payload_bandwidth_GBps": 0.55
+    },
+    {
+      "num_tokens": 2048,
+      "impl": "mine_triton",
+      "latency_us_median": 8.352,
+      "latency_us_p20": 8.032,
+      "latency_us_p80": 9.216,
+      "eff_payload_bandwidth_GBps": 3.92
+    },
+    {
+      "num_tokens": 2048,
+      "impl": "vllm_triton",
+      "latency_us_median": 8.352,
+      "latency_us_p20": 8.032,
+      "latency_us_p80": 9.28,
+      "eff_payload_bandwidth_GBps": 3.92
+    },
+    {
+      "num_tokens": 2048,
+      "impl": "torch_ref",
+      "latency_us_median": 30.048,
+      "latency_us_p20": 28.576,
+      "latency_us_p80": 30.496,
+      "eff_payload_bandwidth_GBps": 1.09
+    },
+    {
+      "num_tokens": 4096,
+      "impl": "mine_triton",
+      "latency_us_median": 11.968,
+      "latency_us_p20": 11.488,
+      "latency_us_p80": 12.064,
+      "eff_payload_bandwidth_GBps": 5.48
+    },
+    {
+      "num_tokens": 4096,
+      "impl": "vllm_triton",
+      "latency_us_median": 12.0,
+      "latency_us_p20": 11.456,
+      "latency_us_p80": 12.064,
+      "eff_payload_bandwidth_GBps": 5.46
+    },
+    {
+      "num_tokens": 4096,
+      "impl": "torch_ref",
+      "latency_us_median": 30.144,
+      "latency_us_p20": 28.826,
+      "latency_us_p80": 30.496,
+      "eff_payload_bandwidth_GBps": 2.17
+    },
+    {
+      "num_tokens": 8192,
+      "impl": "mine_triton",
+      "latency_us_median": 16.672,
+      "latency_us_p20": 16.32,
+      "latency_us_p80": 17.728,
+      "eff_payload_bandwidth_GBps": 7.86
+    },
+    {
+      "num_tokens": 8192,
+      "impl": "vllm_triton",
+      "latency_us_median": 16.704,
+      "latency_us_p20": 16.32,
+      "latency_us_p80": 17.632,
+      "eff_payload_bandwidth_GBps": 7.85
+    },
+    {
+      "num_tokens": 8192,
+      "impl": "torch_ref",
+      "latency_us_median": 30.176,
+      "latency_us_p20": 28.589,
+      "latency_us_p80": 30.496,
+      "eff_payload_bandwidth_GBps": 4.34
+    },
+    {
+      "num_tokens": 16384,
+      "impl": "mine_triton",
+      "latency_us_median": 28.384,
+      "latency_us_p20": 28.16,
+      "latency_us_p80": 28.48,
+      "eff_payload_bandwidth_GBps": 9.24
+    },
+    {
+      "num_tokens": 16384,
+      "impl": "vllm_triton",
+      "latency_us_median": 28.352,
+      "latency_us_p20": 28.064,
+      "latency_us_p80": 28.448,
+      "eff_payload_bandwidth_GBps": 9.25
+    },
+    {
+      "num_tokens": 16384,
+      "impl": "torch_ref",
+      "latency_us_median": 30.432,
+      "latency_us_p20": 29.728,
+      "latency_us_p80": 30.528,
+      "eff_payload_bandwidth_GBps": 8.61
+    }
+  ]
+}

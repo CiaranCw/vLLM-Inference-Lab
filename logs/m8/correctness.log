@@ -1,0 +1,25 @@
+[PASS] basic/vector_add  
+[PASS] basic/act_and_mul  
+[PASS] basic/softmax_w127  
+[PASS] basic/softmax_w128  
+[PASS] basic/softmax_w255  
+[PASS] basic/softmax_w512  
+[PASS] basic/softmax_w1024  
+[PASS] gen/random_multi  n=134 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/single_token  n=1 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/single_request  n=50 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/block_first  n=3 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/block_last  n=3 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/cross_block  n=70 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/non_contiguous_physical_blocks  n=120 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/shuffled_slot_assignment  n=120 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/tile_tail_mask(tile=8)  n=62 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/ragged_multi_request  n=103 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/padding_sentinel  n=103 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/cp_world2_rank0_il1  n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/cp_world2_rank1_il1  n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/cp_world2_rank0_il2  n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+[PASS] gen/cp_world4_rank2_il1  n=96 eq_ref=True eq_vllm=True pad_ok=True sentinel_ok=True
+
+[m8_test] 22/22 passed  all_green=True
+[m8_test] -> outputs/m8/correctness.json

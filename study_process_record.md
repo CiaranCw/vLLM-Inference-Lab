@@ -128,6 +128,19 @@
 
 **下一步（待确认）**：进入两条并行能力线 **M8（Triton kernel，slot-mapping 类）∥ M9（profiler 驱动的真实 vLLM 修改，热点由 M7 证据决定）**。
 
+## ✅ M8 —— Triton Kernel 能力建设（★核心验收 #5）（2026-07-21）
+
+先出《M8 最终计划审计报告》（据 study_path 原典 630-660 + vLLM 真实源码，**纠正主 kernel 定位**：是 slot_mapping **生成**侧 `_compute_slot_mapping_kernel`，非消费侧 `reshape_and_cache` 散写）。实机验证 Triton 3.6.0 在 sm_120 正常 JIT。**本模块零 vLLM 源码改动**。
+
+- **基础练习（达概念即止）**：vector_add / act_and_mul(SiLU-gate，即 M7 见到的 act_and_mul_kernel) / row-wise softmax（数值稳定，测非 2 次幂列宽 127/128/255/512/1024）——均与 PyTorch allclose。
+- **主验收 slot_mapping 生成 kernel**：grid=(num_reqs+1)，每 program 处理一请求 token 区间、末 program 填 padding(-1)；公式 `slot=block_table[req,pos//bs]*bs+off`；参数化支持多请求(query_start_loc)、padding、CP interleave。
+- **三路功能交叉验证 22/22 全绿**（自写 Triton / PyTorch 语义 Oracle / vLLM 官方 `_compute_slot_mapping_kernel`，int64 `torch.equal`）：随机多请求/单token/块内首末/跨块/non_contiguous_physical_blocks/shuffled/尾部mask(小tile=8)/ragged/padding(哨兵-999检测漏写,pad区全-1)/CP(world2 rank0·1、interleave2、world4)。
+- **microbench(do_bench，计时仅含 kernel)**：自写 Triton **≈ vLLM 官方**(全尺寸重合，n=16384 28.4≈28.4us，**无数量级退化**)；PyTorch ref 小尺寸慢 3–4×(多 op 多次 launch，~30us 平台)、n=16384 收敛；两 Triton ≤2048 有 ~7us launch 地板→之后转访存主导（呼应 M7"小任务被 launch 开销主导"）。指标 `effective_payload_bandwidth_GBps` 明确为逻辑有效载荷、非硬件 DRAM 带宽。
+- **如实说明**：生成侧允许重复 slot（前缀共享，属合法 index 计算；写竞争是消费侧问题）；CP 仅单卡纯 index 验证、未做真实多卡；未覆盖消费侧散写/多 KV-group/FP8/head-major。
+- 产出：`scripts/m8_{kernels,test,bench}.py`、`notes/m8/triton_kernels.md`（含 Triton 编程模型讲解 + 生成/消费之分）、`outputs/m8/{correctness.json,microbench.csv,bench_summary.json}`、`logs/m8/*`。
+
+**下一步（待确认）**：M9 —— Profiler 驱动的真实 vLLM 修改（★核心验收，优化对象由 M7 证据决定：decode/短 prefill 的 CPU 提交/H2D 路径 或 长 prefill 计算侧）。
+
 ## 后续 Day 3–7 固定路线（来自 study_path.md，待逐日执行）
 - **Day 3**：KV Cache 与 Block 管理（block 分配/释放/复用、block_table、prefix cache 命中、KV 不足与 preemption）。
 - **Day 4**：Attention Backend（自动选择逻辑、P/D shape、GQA、Python 层与 kernel 边界）。

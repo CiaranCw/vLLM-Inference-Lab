@@ -1,0 +1,23 @@
+n=   128 mine_triton  median=   7.328us  eff_payload=   0.28 GB/s
+n=   128 vllm_triton  median=   7.200us  eff_payload=   0.28 GB/s
+n=   128 torch_ref    median=  26.400us  eff_payload=   0.08 GB/s
+n=   512 mine_triton  median=   7.696us  eff_payload=   1.06 GB/s
+n=   512 vllm_triton  median=   7.808us  eff_payload=   1.05 GB/s
+n=   512 torch_ref    median=  30.560us  eff_payload=   0.27 GB/s
+n=  1024 mine_triton  median=   7.872us  eff_payload=   2.08 GB/s
+n=  1024 vllm_triton  median=   7.840us  eff_payload=   2.09 GB/s
+n=  1024 torch_ref    median=  29.920us  eff_payload=   0.55 GB/s
+n=  2048 mine_triton  median=   8.352us  eff_payload=   3.92 GB/s
+n=  2048 vllm_triton  median=   8.352us  eff_payload=   3.92 GB/s
+n=  2048 torch_ref    median=  30.048us  eff_payload=   1.09 GB/s
+n=  4096 mine_triton  median=  11.968us  eff_payload=   5.48 GB/s
+n=  4096 vllm_triton  median=  12.000us  eff_payload=   5.46 GB/s
+n=  4096 torch_ref    median=  30.144us  eff_payload=   2.17 GB/s
+n=  8192 mine_triton  median=  16.672us  eff_payload=   7.86 GB/s
+n=  8192 vllm_triton  median=  16.704us  eff_payload=   7.85 GB/s
+n=  8192 torch_ref    median=  30.176us  eff_payload=   4.34 GB/s
+n= 16384 mine_triton  median=  28.384us  eff_payload=   9.24 GB/s
+n= 16384 vllm_triton  median=  28.352us  eff_payload=   9.25 GB/s
+n= 16384 torch_ref    median=  30.432us  eff_payload=   8.61 GB/s
+
+[m8_bench] -> outputs/m8/microbench.csv, outputs/m8/bench_summary.json

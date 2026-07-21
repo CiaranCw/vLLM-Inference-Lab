@@ -19,7 +19,8 @@
 | 端到端主链路（入口→输出闭环） | **能证** ✅（M4 已把单请求整条链串成一次运行的证据） |
 | 性能测量（latency / throughput / 显存·KV） | **能测量** ✅（M6：进程内闭环 benchmark，prefill/decode/吞吐/prefix/KV，warmup+重复+P95） |
 | 瓶颈定位（profiler / CPU vs GPU / launch） | **能定位** ✅（M7：torch.profiler 拆 step，证实 decode=launch 受限 / 长 prefill=计算受限） |
-| 能改 / 能优 | **尚未完成**（第一阶段后半段目标） |
+| 写 kernel（Triton） | **能写** ✅（M8：slot_mapping 生成 kernel 三路交叉 22/22，性能≈vLLM 官方） |
+| 能改 / 能优 | **进行中**（M9：profiler 驱动的真实 vLLM 改动） |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
 
@@ -93,9 +94,11 @@
 
 > **M7 之后分出两条并行能力线（M8 与 M9 无硬串行依赖）：**
 
-### M8 Triton Kernel 能力建设　⬜　★核心验收（slot-mapping 类 kernel）
-- 基础练习（**达到核心概念即停，不无限扩展**）：Vector Add、Fused Activation、Row-wise Softmax。
-- **主要验收 = 简化版 slot mapping kernel**：PyTorch reference + 随机 correctness + 边界测试 + 多请求 ragged 输入 + padding +（可行时）CP interleave + microbenchmark 与规模曲线。
+### M8 Triton Kernel 能力建设　✅　★核心验收（slot-mapping 类 kernel）
+- 基础练习（**达到核心概念即停，不无限扩展**）：Vector Add、Fused Activation(SiLU-gate)、Row-wise Softmax（含非 2 次幂列宽）。
+- **主要验收 = 简化版 slot mapping kernel**：明确为**生成侧**（simplified `_compute_slot_mapping_kernel`：`positions+block_table+query_start_loc → slot_mapping`），**非消费侧** `reshape_and_cache`（散写，M4 已 trace）。
+- **实测结论**：自写 Triton 生成 kernel 通过**三路功能交叉验证**（自写 / PyTorch 语义 Oracle / vLLM 官方 `_compute_slot_mapping_kernel`）**22/22 全绿**——覆盖随机/单token/块内首末/跨块/非连续物理块/乱序/尾部mask/ragged 多请求(query_start_loc)/padding(哨兵检测漏写)/CP interleave(world 2·4，纯 index 数学)。microbench(do_bench)：**自写 ≈ vLLM 官方**(n=16384 28.4≈28.4us，无数量级退化)，torch ref 小尺寸慢 3–4×(多 op 多 launch)，≤2048 有 ~7us launch 地板→之后转访存主导。
+- 产出：`scripts/m8_{kernels,test,bench}.py`、`notes/m8/triton_kernels.md`（含 Triton 编程模型讲解 + 生成/消费之分）、`outputs/m8/{correctness.json,microbench.csv,bench_summary.json}`、`logs/m8/*`。**零 vLLM 源码改动**（官方 kernel 作参照调用）。CP interleave 为生成侧真实特性（不再标 N/A）；未覆盖：消费侧散写、真实多卡 CP、多 KV-group、FP8/head-major。
 
 ### M9 Profiler 驱动的真实 vLLM 修改　⬜　★核心验收
 - 优化对象**只由 M7 的 profiler 证据决定**。若瓶颈在 Python / CPU metadata / H2D / 同步 / Tensor 分配，**可先完成 M9，不要求先做完全部 Triton（M8）**。
@@ -140,13 +143,13 @@
 | 2 | ≥5 个可复现实验 workload | M1–M3 | ✅ 已超额 |
 | 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
-| 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ⬜ |
+| 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ✅ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ⬜ |
 | 7 | 1 次开源 PR | M13 | ⬜ |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ⬜ |
 
-**总体：M1–M7 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位"）；核心验收 4/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ →（**M8 ∥ M9**，下一步）→ M10 →（M11 资源允许时）→ M12 → M13 → M16。**
+**总体：M1–M8 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel"）；核心验收 5/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → **M9（下一步）** → M10 →（M11 资源允许时）→ M12 → M13 → M16。**
 
 ---
 
