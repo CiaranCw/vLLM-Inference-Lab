@@ -1,0 +1,17 @@
+{
+  "run_id": "shape_a_coarse_qps8_seed0",
+  "shape": {
+    "in": 256,
+    "out": 128
+  },
+  "target_offered_qps": 8,
+  "seed": 0,
+  "num_prompts": 240,
+  "arrival_bench_s": 39.61,
+  "exit_code": 0,
+  "timeout": false,
+  "drain_time_s": 1.01,
+  "drained": true,
+  "result_path": "outputs/m12/raw/shape_a_coarse_qps8_seed0.json",
+  "server_restart_count": 0
+}

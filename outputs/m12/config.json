@@ -1,0 +1,83 @@
+{
+  "server_cmd": [
+    "vllm",
+    "serve",
+    "Qwen/Qwen2.5-0.5B-Instruct",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "8014",
+    "--seed",
+    "0",
+    "--enforce-eager",
+    "--dtype",
+    "auto",
+    "--max-model-len",
+    "2048",
+    "--gpu-memory-utilization",
+    "0.6",
+    "--max-num-seqs",
+    "64",
+    "--max-num-batched-tokens",
+    "4096",
+    "--no-enable-prefix-caching",
+    "--no-async-scheduling",
+    "--enable-chunked-prefill",
+    "--disable-uvicorn-access-log"
+  ],
+  "server_config_hash": "d4216a47a3d98029",
+  "shapes": {
+    "A": [
+      256,
+      128
+    ],
+    "B": [
+      1024,
+      32
+    ]
+  },
+  "queue_thresholds": {
+    "sample_interval_s": 0.5,
+    "min_samples": 20,
+    "slope_thr": 0.5,
+    "abs_diff": 5,
+    "ratio": 2,
+    "base_floor": 1,
+    "end_waiting_thr": 5,
+    "drain_budget_s": 20
+  },
+  "slo_multipliers": {
+    "ttft": 3,
+    "tpot": 2,
+    "e2el": 2,
+    "itl": 3
+  },
+  "slo_floors": {
+    "ttft_p99_ms": 300,
+    "tpot_p99_ms": 20,
+    "e2el_p99_ms": 2000,
+    "itl_p99_guardrail_ms": 30
+  },
+  "success_ratio_min": 0.99,
+  "slo_pass_ratio_min": 0.95,
+  "preemption_limit": 0,
+  "timeout_limit": 0,
+  "fine_seeds": [
+    0,
+    1,
+    2
+  ],
+  "server_ready_time_s": 28.01,
+  "low_load_p99": {
+    "ttft": 24.21707963338123,
+    "tpot": 9.721713621759656,
+    "e2el": 1249.7163643920794,
+    "itl": 13.15771662280895
+  },
+  "experimental_slo": {
+    "ttft_p99_ms": 300,
+    "tpot_p99_ms": 20,
+    "e2el_p99_ms": 2499,
+    "itl_p99_guardrail_ms": 39
+  }
+}

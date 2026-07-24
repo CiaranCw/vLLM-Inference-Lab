@@ -1,0 +1,241 @@
+{
+  "experimental_slo": {
+    "ttft_p99_ms": 300,
+    "tpot_p99_ms": 20,
+    "e2el_p99_ms": 2499,
+    "itl_p99_guardrail_ms": 39
+  },
+  "low_load_p99": {
+    "ttft": 24.21707963338123,
+    "tpot": 9.721713621759656,
+    "e2el": 1249.7163643920794,
+    "itl": 13.15771662280895
+  },
+  "capacity_shape_a": {
+    "max_tested_stable_offered_qps": 40.0,
+    "first_tested_unstable_offered_qps": 44.0,
+    "capacity_bracket_qps": [
+      40.0,
+      44.0
+    ],
+    "qps_resolution": 0.25
+  },
+  "qps_verdict_fine": {
+    "36.0": {
+      "seeds": 3,
+      "all_stable": true,
+      "worst_seed_p99_ttft_ms": 120.6221527780871,
+      "median_p99_ttft_ms": 33.7
+    },
+    "40.0": {
+      "seeds": 3,
+      "all_stable": true,
+      "worst_seed_p99_ttft_ms": 209.27838162519035,
+      "median_p99_ttft_ms": 193.6
+    },
+    "44.0": {
+      "seeds": 3,
+      "all_stable": false,
+      "worst_seed_p99_ttft_ms": 583.0247225519272,
+      "median_p99_ttft_ms": 387.2
+    },
+    "48": {
+      "seeds": 3,
+      "all_stable": false,
+      "worst_seed_p99_ttft_ms": 662.7602516498882,
+      "median_p99_ttft_ms": 383.3
+    }
+  },
+  "coarse_a": [
+    {
+      "target_qps": 16,
+      "success_ratio": 1.0,
+      "request_throughput": 15.476,
+      "request_goodput": 15.476,
+      "p95_ttft_ms": 23.070359945995733,
+      "p99_ttft_ms": 25.2501262887381,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 1,
+      "success_ratio": 1.0,
+      "request_throughput": 0.983,
+      "request_goodput": 0.983,
+      "p95_ttft_ms": 21.91677381633781,
+      "p99_ttft_ms": 22.463734274497252,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 24,
+      "success_ratio": 1.0,
+      "request_throughput": 23.148,
+      "request_goodput": 23.148,
+      "p95_ttft_ms": 25.516130460891873,
+      "p99_ttft_ms": 29.26285832771099,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 2,
+      "success_ratio": 1.0,
+      "request_throughput": 1.933,
+      "request_goodput": 1.933,
+      "p95_ttft_ms": 21.992382151074708,
+      "p99_ttft_ms": 24.83963521663098,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 32,
+      "success_ratio": 1.0,
+      "request_throughput": 30.861,
+      "request_goodput": 30.861,
+      "p95_ttft_ms": 26.95803338428959,
+      "p99_ttft_ms": 31.921348706819106,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 48,
+      "success_ratio": 1.0,
+      "request_throughput": 45.537,
+      "request_goodput": 45.537,
+      "p95_ttft_ms": 177.53028589650054,
+      "p99_ttft_ms": 242.11371250799854,
+      "peak_waiting": 9.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 4,
+      "success_ratio": 1.0,
+      "request_throughput": 3.863,
+      "request_goodput": 3.863,
+      "p95_ttft_ms": 22.298832656815648,
+      "p99_ttft_ms": 24.20664949459024,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    },
+    {
+      "target_qps": 8,
+      "success_ratio": 1.0,
+      "request_throughput": 7.736,
+      "request_goodput": 7.736,
+      "p95_ttft_ms": 21.5576097369194,
+      "p99_ttft_ms": 24.450217176927243,
+      "peak_waiting": 0.0,
+      "end_waiting": 0.0,
+      "drain_time_s": 1.01,
+      "queue_stable": true,
+      "run_stable": true
+    }
+  ],
+  "coarse_b": [
+    {
+      "target_qps": 16,
+      "success_ratio": 1.0,
+      "request_throughput": 15.86,
+      "output_throughput": 507.53,
+      "total_token_throughput": 16748.57,
+      "p99_ttft_ms": 45.983260690700256,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 1,
+      "success_ratio": 1.0,
+      "request_throughput": 0.996,
+      "output_throughput": 31.87,
+      "total_token_throughput": 1051.59,
+      "p99_ttft_ms": 25.955984730971974,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 24,
+      "success_ratio": 1.0,
+      "request_throughput": 23.775,
+      "output_throughput": 760.79,
+      "total_token_throughput": 25105.99,
+      "p99_ttft_ms": 58.55787824257271,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 2,
+      "success_ratio": 1.0,
+      "request_throughput": 1.982,
+      "output_throughput": 63.44,
+      "total_token_throughput": 2093.41,
+      "p99_ttft_ms": 30.427876971662037,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 32,
+      "success_ratio": 1.0,
+      "request_throughput": 31.708,
+      "output_throughput": 1014.65,
+      "total_token_throughput": 33483.52,
+      "p99_ttft_ms": 61.239911461016085,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 4,
+      "success_ratio": 1.0,
+      "request_throughput": 3.967,
+      "output_throughput": 126.93,
+      "total_token_throughput": 4188.65,
+      "p99_ttft_ms": 32.251475709490485,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    },
+    {
+      "target_qps": 8,
+      "success_ratio": 1.0,
+      "request_throughput": 7.93,
+      "output_throughput": 253.75,
+      "total_token_throughput": 8373.74,
+      "p99_ttft_ms": 39.74252291955054,
+      "peak_waiting": 0.0,
+      "queue_stable": true
+    }
+  ],
+  "burst": [
+    {
+      "p50_ttft_ms": 2808.9508680277504,
+      "p95_ttft_ms": 5313.587812270271,
+      "p99_ttft_ms": 5343.257371131331,
+      "p99_e2el_ms": 6416.332956406986,
+      "peak_waiting": 236.0,
+      "peak_running": 64.0,
+      "peak_kv_usage": 0.0328,
+      "drain_time_s": 1.01,
+      "request_throughput": 46.654,
+      "output_throughput": 5971.68
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": "shape_b_coarse_qps16_seed0",
+  "shape": {
+    "in": 1024,
+    "out": 32
+  },
+  "target_offered_qps": 16,
+  "seed": 0,
+  "num_prompts": 480,
+  "arrival_bench_s": 39.92,
+  "exit_code": 0,
+  "timeout": false,
+  "drain_time_s": 1.01,
+  "drained": true,
+  "result_path": "outputs/m12/raw/shape_b_coarse_qps16_seed0.json",
+  "server_restart_count": 5
+}

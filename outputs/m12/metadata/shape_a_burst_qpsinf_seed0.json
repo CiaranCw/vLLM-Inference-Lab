@@ -1,0 +1,17 @@
+{
+  "run_id": "shape_a_burst_qpsinf_seed0",
+  "shape": {
+    "in": 256,
+    "out": 128
+  },
+  "target_offered_qps": "inf",
+  "seed": 0,
+  "num_prompts": 300,
+  "arrival_bench_s": 14.56,
+  "exit_code": 0,
+  "timeout": false,
+  "drain_time_s": 1.01,
+  "drained": true,
+  "result_path": "outputs/m12/raw/shape_a_burst_qpsinf_seed0.json",
+  "server_restart_count": 4
+}

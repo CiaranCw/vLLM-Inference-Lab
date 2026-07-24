@@ -1,0 +1,45 @@
+[m12] server ready 28.01s (restart=0)
+[m12] shape_a_calib_qps1_seed0: exit=0 timeout=False drain=1.01s
+[m12] SLO: {'ttft_p99_ms': 300, 'tpot_p99_ms': 20, 'e2el_p99_ms': 2499, 'itl_p99_guardrail_ms': 39}
+[m12] shape_a_coarse_qps1_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps1: exploratory_stable=True
+[m12] shape_a_coarse_qps2_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps2: exploratory_stable=True
+[m12] shape_a_coarse_qps4_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps4: exploratory_stable=True
+[m12] shape_a_coarse_qps8_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps8: exploratory_stable=True
+[m12] shape_a_coarse_qps16_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps16: exploratory_stable=True
+[m12] shape_a_coarse_qps24_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps24: exploratory_stable=True
+[m12] shape_a_coarse_qps32_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps32: exploratory_stable=True
+[m12] shape_a_coarse_qps48_seed0: exit=0 timeout=False drain=1.01s
+[m12] coarse qps48: exploratory_stable=True
+[m12] knee: last_stable=48 first_over=None fine_rates=[48]
+[m12] shape_a_fine_qps48_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps48_seed1: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps48_seed2: exit=0 timeout=False drain=1.01s
+[m12] shape_a_burst_qpsinf_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps1_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps2_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps4_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps8_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps16_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps24_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_b_coarse_qps32_seed0: exit=0 timeout=False drain=1.01s
+[m12] server stopped; port_free=True; runs=20
+[m12] server ready 28.01s (restart=0)
+[m12] SLO: {'ttft_p99_ms': 300, 'tpot_p99_ms': 20, 'e2el_p99_ms': 2499, 'itl_p99_guardrail_ms': 39}
+[m12] fineonly rates=[36.0, 40.0, 44.0]
+[m12] shape_a_fine_qps36.0_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps40.0_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps44.0_seed0: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps36.0_seed1: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps40.0_seed1: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps44.0_seed1: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps36.0_seed2: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps40.0_seed2: exit=0 timeout=False drain=1.01s
+[m12] shape_a_fine_qps44.0_seed2: exit=0 timeout=False drain=1.01s
+[m12] server stopped; port_free=True; runs=9

@@ -20,6 +20,7 @@
 | 性能测量（latency / throughput / 显存·KV） | **能测量** ✅（M6：进程内闭环 benchmark，prefill/decode/吞吐/prefix/KV，warmup+重复+P95） |
 | 瓶颈定位（profiler / CPU vs GPU / launch） | **能定位** ✅（M7：torch.profiler 拆 step，证实 decode=launch 受限 / 长 prefill=计算受限） |
 | 写 kernel（Triton） | **能写** ✅（M8：slot_mapping 生成 kernel 三路交叉 22/22，性能≈vLLM 官方） |
+| 在线服务与容量/SLO | **能测容量** ✅（M12：真实 serve + 开环 Poisson，真在线 TTFT/ITL/E2EL，最大稳定 QPS≈40、饱和~46、队列/过载/容量随 shape） |
 | 能改 / 能优 | **能改** ✅（M9：profiler 驱动、可回退、正确性完整的真实改动；本例 E2E 收益在噪声内，诚实保留为无收益报告）；**能优**：方法论完备，待有正空间的目标再证正收益 |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
@@ -124,9 +125,11 @@
 - 覆盖：单卡 vs TP=2；每卡存哪些权重、QKV 切分、attention 后 collective、NCCL 占比、小 batch 时 TP 为何可能更慢。
 - **门控规则**：本机为**单卡**。M10/M12 可在单卡继续，不被 M11 阻塞。获得双卡资源后再执行；无硬件时**只允许完成理论 + 源码定位**，不得标记为"实践完成"。
 
-### M12 在线 / 开环 Serving 与 SLO　⬜
+### M12 在线 / 开环 Serving 与 SLO　✅
 - 覆盖：OpenAI 兼容 server；固定 QPS / Poisson 到达 / 并发；请求排队；TTFT、ITL、P50/P95/P99；最大稳定 QPS；超时、过载、背压与容量规划。
 - 与 M6 区别：M12 = 在线开环 + SLO。
+- **实测结论（本机 sm_120，eager，Qwen2.5-0.5B；真实 vllm serve + 官方 vllm bench serve 开环 Poisson）**：Calibration(rate=1 无排队)→冻结实验 SLO(P99 TTFT≤300ms 等，跑前写死)。Shape A(in256/out128)：QPS≤32 队列恒空、P99 TTFT ~25-32ms；**最大稳定 QPS≈40 req/s（容量区间 (40,44]，3 seed worst-seed 判 SLO）**；44/48 时 P99 TTFT 尾破线(383-663ms)但吞吐仍跟随、队列不堆积→**过载是"尾延迟劣化"非"吞吐崩溃"，SLO 实用容量(40)< 饱和吞吐(~46)**。Burst(inf 一次性)：peak_running=64(=max_num_seqs)、peak_waiting=236、P99 TTFT 5.3s、饱和吞吐~46.6 req/s。Shape B(in1024/out32 prefill-heavy)：req/s 容量相近(≥32)但 total token 吞吐~33k tok/s(高一量级)、TTFT 更高→**容量随负载 shape 变化**。
+- 产出：`scripts/m12_{run_sweep,summarize}.py`、`notes/m12/serving.md`、`outputs/m12/{config.json,knee.json,sweep.csv,summary.json,metrics/,metadata/}`（raw 逐请求明细体积大、gitignore、可复现）、`logs/m12/*`。**零 vLLM 源码改动**。结论限 eager/单卡/0.5B，不外推 compiled。
 
 ### M13 首次开源 PR　⬜　★核心验收
 - 从 `contribution_candidates.md`（持续维护）中选一个**正式完成一次上游贡献**：复现→定位→改→测试→benchmark→提交→回应 review→改 PR（涉及 kernel 需 custom op 注册 + meta function + op 检查）。目标是完整经历，非必须合入。

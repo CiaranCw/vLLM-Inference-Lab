@@ -20,3 +20,6 @@ vllm_stage_reading_guide.md
 
 # M7 chrome trace 体积大且可由脚本复现，不入库
 outputs/m7/traces/
+
+# M12 逐请求 bench 明细(含 generated_texts, 体积大, 可由脚本复现)
+outputs/m12/raw/

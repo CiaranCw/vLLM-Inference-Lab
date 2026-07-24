@@ -1,0 +1,17 @@
+{
+  "coarse_exploratory_stable": {
+    "1": true,
+    "2": true,
+    "4": true,
+    "8": true,
+    "16": true,
+    "24": true,
+    "32": true,
+    "48": true
+  },
+  "last_stable": 48,
+  "first_over": null,
+  "fine_rates": [
+    48
+  ]
+}
