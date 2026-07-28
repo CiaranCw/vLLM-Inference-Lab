@@ -189,6 +189,35 @@ def test_compute_slot_mapping_non_cp(name, block_id_rows, positions_per_req):
     assert (actual[num_tokens:] == PAD_SLOT_ID).all(), f"{name}: padding region"
 
 
+@requires_cuda
+@pytest.mark.parametrize(
+    "block_id_rows,positions_per_req,expected",
+    [
+        # Two requests, contiguous blocks. block_size=16.
+        #   req0 pos {0,1,2} → block 0 → slots {0,1,2}
+        #   req1 pos {0,1}   → block 4 → slots {64,65}
+        ([[0, 1, 2, 3], [4, 5, 6, 7]], [[0, 1, 2], [0, 1]], [0, 1, 2, 64, 65]),
+        # Cross-block with non-contiguous physical blocks [3,7,1,5].
+        #   pos 0,15  → block 3 → 48,63     pos 16,31 → block 7 → 112,127
+        #   pos 32,47 → block 1 → 16,31     pos 48    → block 5 → 80
+        (
+            [[3, 7, 1, 5]],
+            [[0, 15, 16, 31, 32, 47, 48]],
+            [48, 63, 112, 127, 16, 31, 80],
+        ),
+    ],
+)
+def test_compute_slot_mapping_golden(block_id_rows, positions_per_req, expected):
+    """Anchor against hand-computed slot values (independent of the oracle)."""
+    bt = _make_block_table()
+    actual, _, qsl = _run(bt, block_id_rows, positions_per_req)
+    num_tokens = int(qsl[-1])
+    np.testing.assert_array_equal(
+        actual[:num_tokens], np.array(expected, dtype=np.int64)
+    )
+    assert (actual[num_tokens:] == PAD_SLOT_ID).all()
+
+
 # --------------------------------------------------------------------------- #
 # Context-Parallel interleave (supersedes PR #30683 under the current API)
 # --------------------------------------------------------------------------- #

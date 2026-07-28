@@ -210,7 +210,8 @@ for r in range(num_reqs):
 ### 当前状态（本轮止步于此）
 - ✅ 草稿测试已写：`notes/m13/pr_draft/test_block_table.py`（当前 API + oracle + 非CP边界 + padding + DCP4/PCP2 interleave{1,16} + world=1 退化）。
 - ✅ PR 描述草稿：`notes/m13/pr_draft/PR_DESCRIPTION.md`。
-- ✅ **GPU 验证已通过**（GPU 空闲后运行）：real RTX 5080/sm_120 上对真实上游 kernel，**24 passed in 3.86s**（7 非CP边界 + 16 DCP4/PCP2 interleave{1,16}×8rank + 1 退化）。standalone 运行（绕开需额外依赖的 `tests/conftest`；测试不依赖任何 conftest fixture）。
+- ✅ **GPU 验证已通过**（GPU 空闲后运行）：real RTX 5080/sm_120 上对真实上游 kernel，**26 passed in 6.03s**（2 手算 golden 锚点 + 7 非CP边界 + 16 DCP4/PCP2 interleave{1,16}×8rank + 1 退化）。standalone 运行（绕开需额外依赖的 `tests/conftest`；测试不依赖任何 conftest fixture）。
+- ✅ **审查补强**：加了 2 例**手算 golden 值**（独立于 numpy oracle），消除「oracle 镜像 kernel＝循环论证」的审稿隐患。
 - ✅ **规范检查**：在 **vLLM `pyproject.toml` 配置下** `ruff check` 与 `ruff format --check` 均通过（注意：从仓库外用 ruff 默认配置会误报 I001，须在 vllm-src 内跑）。
 - ⏸ **待干净环境补跑**：完整 `pre-commit run --all-files`（mypy/codespell 等其余 hook）与 CI 下 `pytest tests/`（需 `requirements/test.txt`，如 tblib）。
 - ⏸ **未提交 PR**：待用户审查草稿 + 备干净工作树 + DCO sign-off 后再提上游。

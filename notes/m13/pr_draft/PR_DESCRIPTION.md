@@ -29,10 +29,11 @@ pytest tests/v1/worker/test_block_table.py -v
 ```
 # 本机 RTX 5080 (sm_120) / WSL2 / lab venv，standalone 运行（绕开需额外依赖的 tests/conftest）
 $ python -m pytest test_block_table.py -q
-........................                                                 [100%]
-24 passed in 3.86s
+..........................                                               [100%]
+26 passed in 6.03s
 ```
-- 24 例＝7 非 CP 边界 + 16 DCP4/PCP2(interleave{1,16}×8 rank) + 1 退化一致性。
+- 26 例＝2 手算 golden 锚点 + 7 非 CP 边界 + 16 DCP4/PCP2(interleave{1,16}×8 rank) + 1 退化一致性。
+- **golden 锚点**用手算 slot 值（独立于 numpy oracle），避免「oracle 镜像 kernel」的循环论证。
 - 规范：在 **vLLM `pyproject.toml` 配置下** `ruff check` 与 `ruff format --check` 均通过。
 - 待在干净环境补跑：完整 `pre-commit run --all-files`（mypy/codespell 等）与 CI 下 `pytest tests/v1/worker/test_block_table.py`（需 `requirements/test.txt` 依赖如 tblib）。
 
