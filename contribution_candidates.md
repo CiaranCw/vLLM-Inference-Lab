@@ -44,13 +44,14 @@
 - **为什么有价值**：slot_mapping 是「逻辑 token 位置 → KV cache 物理槽位」的核心映射，错一位即静默写坏 KV、污染输出且极难定位。它有 CP interleave / padding 哨兵等**易错分支**却零单测保护——是真实且被低估的回归风险面。
 - **与已证能力对口**：M8 已实现并**三路交叉验证 22/22**（自写 / PyTorch 语义 oracle / vLLM 官方 kernel），覆盖随机/单 token/块内首末/跨块/非连续/乱序/尾 mask/ragged/padding 哨兵/CP interleave(world 2·4)。**把这套 oracle 改造成 pytest 直接测上游 kernel 即可**——现成的测试设计与参照实现，几乎为此候选量身定做。
 - **单卡 sm_120 / WSL2 可行性**：✅ 完全可行。单测规模小、可 CPU/单 GPU 跑、无需多卡（CP interleave 是纯 index 数学，无需真多卡通信，M8 已证）。
+- **上游前车（M13 研究已核实）**：**PR #30683 `[UT][PCP&DCP] UT for block_table.py`** 曾为 `compute_slot_mapping` 加 CP 维度参数化测试（17 passed），但**死于 pre-commit 检查失败后作者未跟进 → 被 stale 自动关闭**（非评审否决，还 CC 了维护者）。→ **C1 最优策略＝复活/取代 #30683（rebase main + 过 pre-commit）并用 M8 的非 CP 边界用例扩展**（#30683 强在 CP、M8 强在跨块/非连续/乱序/ragged/padding 哨兵/tile 尾 mask，二者互补）。详见 `notes/m13/pr_slot_mapping_test.md`。
 - **工作量**：中。主要是把 M8 oracle 适配为上游测试风格（pytest fixture、参数化、与现有 `tests/v1/worker/` 约定一致），并对齐 kernel 当前签名。
 - **验证/复现计划**：
   1. 对齐 `_compute_slot_mapping_kernel` 当前签名与语义（positions / block_table / query_start_loc / block_size / PAD 哨兵 / CP 参数）。
   2. 用 PyTorch 纯语义实现作 oracle（M8 已有），参数化覆盖上述全部分支。
-  3. `pytest tests/v1/worker/test_block_table_slot_mapping.py`（新文件）本地全绿。
-  4. 附一句 PR 说明：补齐此前无覆盖的生成路径分支。
-- **kill 标准 / 需先确认**：动手前 `grep compute_slot_mapping tests/` 在**当前 main** 仍为空、且 GitHub 无「add slot mapping test」在途 PR。若 M8 kernel 签名与上游已分叉，以上游为准重写 oracle 断言（M8 版仅作设计参照）。
+  3. `pytest tests/v1/worker/test_block_table.py` 本地全绿。
+  4. 附一句 PR 说明：补齐此前无覆盖的生成路径分支；引用 #30683 为前车。
+- **kill 标准 / 需先确认**：✅ **已核实**——`gh` 搜 `compute_slot_mapping path:tests`（main）= 0 命中、无在途重复 PR（#30683 已关闭）。动手前再确认 kernel 签名未与 M8 版分叉，并**准备干净工作树**（当前 vllm-src 工作树有大量学习标注，不能直接切分支）。
 - **风险**：低。纯加测试；最坏是 review 要求调整测试组织/命名。
 
 ---

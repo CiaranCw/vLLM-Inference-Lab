@@ -131,8 +131,9 @@
 - **实测结论（本机 sm_120，eager，Qwen2.5-0.5B；真实 vllm serve + 官方 vllm bench serve 开环 Poisson）**：Calibration(rate=1 无排队)→冻结实验 SLO(P99 TTFT≤300ms 等，跑前写死)。Shape A(in256/out128)：QPS≤32 队列恒空、P99 TTFT ~25-32ms；**最大稳定 QPS≈40 req/s（容量区间 (40,44]，3 seed worst-seed 判 SLO）**；44/48 时 P99 TTFT 尾破线(383-663ms)但吞吐仍跟随、队列不堆积→**过载是"尾延迟劣化"非"吞吐崩溃"，SLO 实用容量(40)< 饱和吞吐(~46)**。Burst(inf 一次性)：peak_running=64(=max_num_seqs)、peak_waiting=236、P99 TTFT 5.3s、饱和吞吐~46.6 req/s。Shape B(in1024/out32 prefill-heavy)：req/s 容量相近(≥32)但 total token 吞吐~33k tok/s(高一量级)、TTFT 更高→**容量随负载 shape 变化**。
 - 产出：`scripts/m12_{run_sweep,summarize}.py`、`notes/m12/serving.md`、`outputs/m12/{config.json,knee.json,sweep.csv,summary.json,metrics/,metadata/}`（raw 逐请求明细体积大、gitignore、可复现）、`logs/m12/*`。**零 vLLM 源码改动**。结论限 eager/单卡/0.5B，不外推 compiled。
 
-### M13 首次开源 PR　⬜　★核心验收
+### M13 首次开源 PR　🔄　★核心验收
 - 从 `contribution_candidates.md`（持续维护）中选一个**正式完成一次上游贡献**：复现→定位→改→测试→benchmark→提交→回应 review→改 PR（涉及 kernel 需 custom op 注册 + meta function + op 检查）。目标是完整经历，非必须合入。
+- **研究阶段已完成（见 `notes/m13/pr_slot_mapping_test.md`）**：选定候选 **C1 = 为 `compute_slot_mapping`/`_compute_slot_mapping_kernel` 补单元测试**。已核实：① 缺口在当前 main 仍成立（`gh` 搜 `compute_slot_mapping path:tests`=0）；② 上游前车 **PR #30683**（CP 维度 UT）**死于 pre-commit 未过、非评审否决**，故 C1 最优策略＝**复活/取代 #30683 + 合并 M8 非 CP 边界用例**（全分支覆盖）；③ kernel 全语义已拆解、M8 oracle + 22 例矩阵可复用。**待动手**：备干净工作树→写测试→过 pre-commit(硬门槛)→DCO 提交。
 
 ---
 
@@ -156,7 +157,7 @@
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ✅ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ✅（改动+测试+E2E 数据齐全；E2E 收益在噪声内，诚实保留无收益报告） |
-| 7 | 1 次开源 PR | M13 | ⬜ |
+| 7 | 1 次开源 PR | M13 | 🔄 研究完成（候选 C1=slot_mapping 单测；已定位前车 PR #30683 与复活策略，待动手提交） |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
