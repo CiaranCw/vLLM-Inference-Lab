@@ -194,10 +194,12 @@
 
 ## 阶段 E · vLLM 高级优化（单卡可做，T+E+O）
 
-### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　⬜　T+E+O
+### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　🔄　T+E+O（GPU-free 部分已完成，E 待 GPU）
 - 覆盖：共享前缀 workload 证明——哪些 KV blocks 被缓存、第二请求命中多少完整 block、少算多少 prefill token、TTFT 变化、**什么情况下没有收益**；chunked prefill 对调度与 TTFT 的影响。
-- 产出：`workloads/prefix_cache_comparison.py`、`results/prefix_cache_on_off.csv`、`reports/06_prefix_cache.md`。**单卡足够**。
-- 注：M3/M6 已初步触及 prefix 命中（省计算≠省延迟的诚实结论）；本模块系统化为 on/off 定量对照。
+- **已完成（GPU-free）**：T 理论 + O 源码定位（APC + chunked prefill 均带 v0.24.0 file:line）+ 实验设计/不变量冻结 + 可运行脚本骨架 `scripts/m17_prefix_cache.py`（复用 M6 已验证内省法）。见 `notes/m17/prefix_cache_and_chunked_prefill.md`（含续传清单）。
+- **待 GPU（E）**：跑 E1（长共享前缀 on/off sweep，看延迟收益能否超噪声——M6 短前缀时落噪声内）+ E3（chunked prefill 分块）→ `outputs/m17/*` + 结论；E2 block 生命周期内省为可选 TODO。
+- 产出：`workloads/prefix_cache_comparison.py`（本仓库实为 `scripts/m17_prefix_cache.py`）、`results/prefix_cache_on_off.csv`（实为 `outputs/m17/prefix_cache_sweep.csv`）、`reports/06_prefix_cache.md`。
+- **单卡足够**。注：M3/M6 已初步触及 prefix 命中（省计算≠省延迟）；本模块系统化为 on/off 定量对照 + 长前缀真实受益场景。
 
 ### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。
