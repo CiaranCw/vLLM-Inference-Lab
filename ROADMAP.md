@@ -142,16 +142,18 @@
 
 > **原 M14（第二引擎横向对比）、M15（高级专题）已由【第二阶段】细化展开，不再单列**：第二引擎/跨引擎对比 → **M23**（TensorRT-LLM）；Speculative Decoding → **M19**；MoE/EP → **M22**；Context Parallel / Ring Attention / P-D 分离 → **M24**；KV Offload 归入 M24 相关连接器（`docs/features/kv_offloading_usage.md`）。
 
-### M16 项目整理 + 面试化表达　⬜　★验收 #1 收口
+### M16 项目整理 + 面试化表达　🔄　★验收 #1 收口（主体完成，待 M13 PR 回填）
 - **只做最终删减、重组、简历与面试表达**（组织工作已在"持续维护任务"里随做随更新，不积压到此）。
 - README 让招聘者 5 分钟看懂（问题/源码路径/环境/基线/瓶颈/改动/性能变化/回归/复现）；核心图≤5 张；每主题 30 秒 / 3 分钟 / 10 分钟三版表达；重点题（continuous batching 为何提吞吐、PagedAttention 解决什么、block_table vs slot_mapping、P/D 瓶颈、KV 与最大并发、如何确认优化有效、profiler 区分 CPU/GPU 瓶颈、为何 TP=2 不一定更快）。
+- **已完成**：① 招聘者向 README 重写（30 秒速览 + 能力阶梯 + 逐模块成果表 M0–M13 + 亮点洞察 + 复现）；② `notes/m16/interview_and_presentation.md`（项目 30s/3min/10min + 8 重点题，全部锚定本 lab 证据）；③ **4 张核心图**（`scripts/m16_figures.py` 由既有 CSV **离线生成、无需 GPU**：M6 decode / M6 prefill / M10 量化反常 / M12 容量拐点）；④ evidence_index 补 M12/M13/M16。
+- **待回填（占位）**：README §7 与 evidence_index 中 M13 上游 PR 的链接 / 最终 diff / CI / review 往返 —— 待 M13 正式提交后补。
 
 ---
 
 ## 第一阶段核心验收线（按项，不设时间）
 | # | 验收项 | 对应模块 | 状态 |
 |---|---|---|---|
-| 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | 🔄 进行中 |
+| 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | 🔄 主体完成（招聘者向 README + 面试三档表达 + 4 核心图 + 证据索引齐；待 M13 PR 回填） |
 | 2 | ≥5 个可复现实验 workload | M1–M3 | ✅ 已超额 |
 | 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
