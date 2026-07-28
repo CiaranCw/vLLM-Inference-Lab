@@ -119,7 +119,6 @@ def _run(
     lens = [len(p) for p in positions_per_req]
     query_start_loc = np.concatenate([[0], np.cumsum(lens)]).astype(np.int32)
     positions = np.concatenate(positions_per_req).astype(np.int64)
-    num_tokens = int(query_start_loc[-1])
 
     bt.compute_slot_mapping(
         num_reqs,
@@ -178,7 +177,7 @@ def _run(
             [list(range(60)), list(range(20)), list(range(70)), [0], list(range(33))],
         ),
         # non-zero starting positions (prefix already cached)
-        ("prefix_offset", [[5, 6, 7, 8]], [list(range(40, 90))]),
+        ("prefix_offset", [[5, 6, 7, 8, 9, 10]], [list(range(40, 90))]),
     ],
 )
 def test_compute_slot_mapping_non_cp(name, block_id_rows, positions_per_req):
@@ -222,8 +221,6 @@ def test_compute_slot_mapping_dcp4_pcp2(pcp_rank, dcp_rank, interleave):
 @requires_cuda
 def test_compute_slot_mapping_cp_degenerates_to_non_cp():
     """world_size == 1 must reproduce the plain slot formula."""
-    bt = _make_block_table(
-        pcp_world_size=1, pcp_rank=0, dcp_world_size=1, dcp_rank=0
-    )
-    actual, ref, qsl = _run(bt, [[7, 3, 9, 2]], [list(range(60))])
+    bt = _make_block_table(pcp_world_size=1, pcp_rank=0, dcp_world_size=1, dcp_rank=0)
+    actual, ref, _ = _run(bt, [[7, 3, 9, 2]], [list(range(60))])
     np.testing.assert_array_equal(actual, ref)

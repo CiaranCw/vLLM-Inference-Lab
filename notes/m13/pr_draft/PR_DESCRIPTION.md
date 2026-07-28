@@ -27,8 +27,14 @@ pytest tests/v1/worker/test_block_table.py -v
 
 ## Test Result
 ```
-<待本地 GPU 空闲后填入真实输出>
+# 本机 RTX 5080 (sm_120) / WSL2 / lab venv，standalone 运行（绕开需额外依赖的 tests/conftest）
+$ python -m pytest test_block_table.py -q
+........................                                                 [100%]
+24 passed in 3.86s
 ```
+- 24 例＝7 非 CP 边界 + 16 DCP4/PCP2(interleave{1,16}×8 rank) + 1 退化一致性。
+- 规范：在 **vLLM `pyproject.toml` 配置下** `ruff check` 与 `ruff format --check` 均通过。
+- 待在干净环境补跑：完整 `pre-commit run --all-files`（mypy/codespell 等）与 CI 下 `pytest tests/v1/worker/test_block_table.py`（需 `requirements/test.txt` 依赖如 tblib）。
 
 ## Notes / 署名
 - 思路承接 #30683（作者 @pisceskkk）；如采「复活」路径应 credit 原作者。
