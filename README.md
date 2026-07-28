@@ -1,7 +1,7 @@
 # vLLM V1 Inference Trace & Optimization Lab
 
 本目录是围绕 vLLM V1 推理主链路进行**动态追踪、实验、性能分析与代码修改**的长期项目工作区。
-学习路线见 [`study_path.md`](study_path.md)，覆盖清单/里程碑见 [`ROADMAP.md`](ROADMAP.md)，进度流水见 [`study_process_record.md`](study_process_record.md)，环境细节见 [`vllm_dev_environment.md`](vllm_dev_environment.md)。
+学习路线见 [`study_path.md`](study_path.md)（第二阶段技术栈扩展路线见 [`study_path_with_tech_stack_roadmap.md`](study_path_with_tech_stack_roadmap.md)），覆盖清单/里程碑见 [`ROADMAP.md`](ROADMAP.md)（已整合两阶段：第一阶段 M0–M16 + 第二阶段 M17–M26），进度流水见 [`study_process_record.md`](study_process_record.md)，环境细节见 [`vllm_dev_environment.md`](vllm_dev_environment.md)。
 
 ## 目录用途与三者关系
 

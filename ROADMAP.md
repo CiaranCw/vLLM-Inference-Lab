@@ -1,11 +1,12 @@
-# ROADMAP —— vLLM Inference Lab · 第一阶段学习覆盖清单
+# ROADMAP —— vLLM Inference Lab · 学习覆盖清单（第一阶段 M0–M16 + 第二阶段 M17–M26）
 
-> **范围声明**：本 ROADMAP **只覆盖当前学习路线的第一阶段** —— vLLM 单机（单卡）主链路理解、性能分析、第一次真实优化，以及基础求职项目。
-> 以下**后续扩展路线不在本文件范围**（待第一阶段完成后另行规划，用户尚未提供该部分路线）：Triton Inference Server 深度部署、PP/DP/EP、TensorRT-LLM 完整实践、Context Parallel/Ring Attention、Prefill/Decode 分离、模型压缩专题、百亿或多节点集群规划。
+> **范围声明**：本 ROADMAP 覆盖两个阶段。**第一阶段**（阶段 A–D，M0–M16）= vLLM 单机（单卡）主链路理解、性能分析、第一次真实优化与基础求职项目。**第二阶段**（阶段 E–J，M17–M26）= 面向推理系统岗位的技术栈扩展路线（vLLM 高级优化、服务化/Triton、分布式并行、TensorRT-LLM 跨引擎、长上下文/解耦、模型压缩），**整合自用户提供的 `study_path_with_tech_stack_roadmap.md`（§13–§24）**（该扩展路线此前标为"待规划、用户尚未提供"，现已落地为下方【第二阶段】）。
+> **优先级铁律**：vLLM 单卡核心 ＞ 服务化与性能分析 ＞ 多 GPU 分布式 ＞ TensorRT-LLM/Triton ＞ 高级解码与长上下文 ＞ 非推理主线的模型压缩。时间不足时**不要平均分配**（最低五项见第二阶段末）。
 >
-> **设计**：按**阶段与验收条件**推进，**不按天/周/月排期**；做完一项直接开下一项。
-> **状态图例**：✅ 完成　🔄 进行中　⬜ 未开始　⏸ 后续扩展（不在本阶段）
-> **使用约定**：可对某轮限速——`[推进]`=只往下一个未完成模块走、不加额外实验；`[深化]`=允许在当前模块内追加实验。每轮结束我会标注本轮是"推进"还是"深化"，并给出剩余覆盖。
+> **设计**：按**阶段与验收条件**推进，**不按天/周/月排期**；做完一项直接开下一项。（`study_path` 原文的"第 N 周"仅作粗略顺序参考，本文件不锁定周次。）
+> **状态图例**：✅ 完成　🔄 进行中　⬜ 未开始　⏸ 资源/时机门控（非硬前置，条件具备再做）
+> **学习等级（第二阶段每模块标注，诚实区分能力边界）**：**T**=理论理解（能画图/解释/推导开销）｜**E**=可复现实验（脚本+配置+原始数据+对照+结论）｜**O**=开源项目实践（能定位/改真实源码与配置）｜**H**=特定硬件·多卡·集群实践（真实通信/显存/吞吐/故障数据）。简历"熟悉"≥**T+E**；"有实践经验"≥**E+O**；"分布式部署经验"必须 **E+O+H**。**严禁把 T/O 写成 H**（如单卡读 TP 源码 ≠ "TP 部署经验"）。
+> **使用约定**：可对某轮限速——`[推进]`=只往下一个未完成模块走、不加额外实验；`[深化]`=允许在当前模块内追加实验。
 
 ---
 
@@ -139,8 +140,7 @@
 
 ## 阶段 D · 求职收口（对应 study_path 第九章后半的收口部分）
 
-### M14 ⏸ 第二引擎横向对比　—— 后续扩展，不在第一阶段（本文件不展开）
-### M15 ⏸ 高级专题（Spec Decoding / MoE / CP / KV Offload / P-D 分离 等）　—— 后续扩展，不在第一阶段（本文件不展开）
+> **原 M14（第二引擎横向对比）、M15（高级专题）已由【第二阶段】细化展开，不再单列**：第二引擎/跨引擎对比 → **M23**（TensorRT-LLM）；Speculative Decoding → **M19**；MoE/EP → **M22**；Context Parallel / Ring Attention / P-D 分离 → **M24**；KV Offload 归入 M24 相关连接器（`docs/features/kv_offloading_usage.md`）。
 
 ### M16 项目整理 + 面试化表达　⬜　★验收 #1 收口
 - **只做最终删减、重组、简历与面试表达**（组织工作已在"持续维护任务"里随做随更新，不积压到此）。
@@ -161,16 +161,153 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体：M1–M10 完成、M0 进行中（能力已到"能证 + 能测量 + 能定位 + 能写 kernel + 能改 + 量化对比"）；核心验收 7/9。第一阶段主线优先级：~~M4~~ → ~~M5~~ → ~~M6~~ → ~~M7~~ → ~~M8~~ → ~~M9~~ → ~~M10~~ → **M12（下一步）** →（M11 资源允许时）→ M13 → M16。**
+**总体（第一阶段）：M1–M12 完成、M13 研究完成待提交、M0 进行中；核心验收 7/9（仅差 M13 上游 PR 落地、M11 多卡资源）。推进：~~M4~~→~~M5~~→~~M6~~→~~M7~~→~~M8~~→~~M9~~→~~M10~~→~~M12~~→**M13（提交准备中）**→ M16 收口；M11 待多卡资源。第一阶段收尾后进入下方【第二阶段】。**
 
 ---
 
-## 暂不做（study_path 第十章，避免分心）
+# ═══ 第二阶段 · 面向推理系统岗位的技术栈扩展路线（M17–M26，整合自 `study_path` §13–§24）═══
+
+> **定位**：第一阶段把 vLLM 单机主链路推到"能改/能优"；第二阶段在其之上**分层扩展**到岗位要求的分布式、服务化、跨引擎、长上下文与压缩能力。**每个模块标 T/E/O/H 等级与硬件门控**（见顶部图例），诚实区分"验证过 / 只读过源码 / 只懂理论"。
+> **版本接地**：仍以 pinned `ee0da84`/v0.24.0 为主完成实验——扩展主题的官方文档在该版本**均存在**（已核对：`docs/serving/parallelism_scaling.md`、`docs/features/{disagg_prefill,speculative_decoding,automatic_prefix_caching,kv_offloading_usage,lora}.md`、`docs/features/quantization/`）；上游已演进到 v0.25.0+，跨版本结构差异待各模块动手前核对。
+
+## 技术栈覆盖总表（推荐最低等级 / 硬件门控）
+| 技术栈 | 最低等级 | 需开源项目 | 硬件 | 支撑项目 |
+|---|---|---|---|---|
+| Continuous Batching / PagedAttention / KV Cache | T+E+O | 必须 | 单卡 | vLLM（=第一阶段，已达成） |
+| 张量并行 TP | T+E+O+H | 必须 | ≥双 GPU | vLLM、torch.distributed |
+| 流水线并行 PP | T+E+O+H | 必须 | 多 GPU（最好多节点） | vLLM |
+| 数据并行 DP + 请求路由 | T+E+O+H | 必须 | ≥双 GPU/双实例 | vLLM、负载均衡 |
+| Expert Parallel / MoE | T+E+O+H | 必须 | 多 GPU | vLLM、DeepEP/NCCL |
+| Triton Inference Server | T+E+O | 必须 | 单 GPU 起步 | Triton、vLLM Backend |
+| 权重量化 / KV Cache 量化 | T+E+O | 必须 | 单卡可做部分 | vLLM、TensorRT-LLM、llm-compressor |
+| Speculative Decoding | T+E+O | 必须 | 单卡(N-gram)；双模型看显存 | vLLM |
+| Medusa / EAGLE / MTP | T+E+O | 必须 | 看模型/draft 方案 | vLLM、speculators |
+| Context Parallel / Ring Attention | T+E+O+H | 必须 | 多 GPU | vLLM、Ring Attention 实现 |
+| 百亿模型服务 | T+E+O+H | 必须 | 多 GPU 服务器 | vLLM、Triton、监控压测 |
+| 千亿/MoE 服务 | T+E+O+H | 必须 | 多节点集群 | vLLM、TRT-LLM、Ray/K8s |
+| TensorRT-LLM | T+E+O | 必须 | NVIDIA GPU | TensorRT-LLM |
+| P/D 分离、KV 传输 | T+E+O+H | 必须 | ≥双实例（最好多 GPU） | vLLM、LMCache/NIXL |
+| 生产可观测性与容量规划 | T+E+O | 必须 | 单机入门/集群更完整 | Prometheus、Grafana、压测 |
+| 知识蒸馏 / 剪枝 / 低秩 | 推理岗 T；压缩岗 T+E(+O) | 视岗位 | 单卡起步 | Transformers/PyTorch/SparseML |
+
+## 阶段 E · vLLM 高级优化（单卡可做，T+E+O）
+
+### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　⬜　T+E+O
+- 覆盖：共享前缀 workload 证明——哪些 KV blocks 被缓存、第二请求命中多少完整 block、少算多少 prefill token、TTFT 变化、**什么情况下没有收益**；chunked prefill 对调度与 TTFT 的影响。
+- 产出：`workloads/prefix_cache_comparison.py`、`results/prefix_cache_on_off.csv`、`reports/06_prefix_cache.md`。**单卡足够**。
+- 注：M3/M6 已初步触及 prefix 命中（省计算≠省延迟的诚实结论）；本模块系统化为 on/off 定量对照。
+
+### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
+- 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。
+- 实验：BF16 vs 权重量化 vs（硬件可行时）FP8 KV；比显存/KV 容量/启动/TTFT/TPOT/吞吐/质量。源码聚焦：`QuantizationConfig`、量化 Linear 替换、权重加载、scale 保存传递、实际 GEMM/dequant kernel、backend 如何消费 KV scale。
+- 注：M10 已做 BF16 / FP8 W8A8 / FP8 KV（含 scale 审计与"decode +36% 反常"诚实结论）；本模块补 **W4A16/AWQ/GPTQ** 与跨引擎对照预备。**不为补表格伪造不支持的 FP8/FP4 路径**。
+
+### M19 Speculative Decoding　⬜　T+E+O（`docs/features/speculative_decoding/`）
+- 理论：target/draft(proposer)、一次提议 K token、target verification、accepted/rejected、acceptance rate、**为何中低 QPS / memory-bound decode 更受益、batch 增大为何 verification 成本抵消收益**。
+- 顺序：普通 decode baseline → N-gram → 小 draft model →（显存允许）EAGLE/MTP/Medusa。**不要一上来啃 Medusa 源码**。
+- 记录：proposed/accepted 数、acceptance rate、target forward 次数、TPOT、吞吐、显存、不同 batch 下收益或退化。硬件：N-gram 单卡即可；draft+target 共存看显存。仅读论文只算 T。
+
+## 阶段 F · 在线服务与生产化（T+E+O）
+
+### M20 服务化生产部署 + Triton（承接 M12）　⬜　T+E+O
+- vLLM OpenAI server 生产化：并发/固定 QPS/Poisson/streaming/prefix；测 TTFT/TPOT/ITL/E2E/P50-99/请求·输出吞吐/错误率/GPU·CPU·显存·KV 使用率。**M12 已做开环 SLO 与容量曲线**，本模块承接并加 streaming 与真实 server 治理。
+- Triton Inference Server（`Triton vLLM Backend`）：① 单模型部署（容器、model repository、backend 配置、健康检查、指标）；② vLLM 原生 server **vs** Triton+vLLM backend 对照（部署复杂度/启动/吞吐/TTFT/P95-99/指标暴露/故障恢复）；③ 动态配置与服务治理。单卡可入门；高可用/多副本/路由需多实例或 K8s。
+- 产出：`serving/{load_generator.py,workload_config.yaml}`、`results/online_serving_baseline.csv`、`reports/07_online_serving.md`。
+
+### M21 监控与容量规划　⬜　T+E+O
+- 搭 Prometheus + Grafana + GPU 指标 + vLLM/Triton 服务指标 + 压测结果。回答：**最大稳定 QPS、并发到哪 P99 失控、瓶颈是 GPU/显存/KV/CPU/队列、一张卡承载多少用户、OOM/超时/worker 退出如何定位**。理论只能定义指标，替代不了真实压测与面板。
+
+## 阶段 G · 分布式与并行（T+E+O+H，★资源门控）　`docs/serving/parallelism_scaling.md`
+
+### M22 Tensor / Pipeline / Data / Expert Parallel（承接 M11）　⬜　T+E+O+H
+- **门控**：本机单卡。无多卡时**只允许 T + O**（理论 + 源码定位：vLLM 并行组、切分、collective、EP dispatch 路径），**不得标 E/H**；获多卡（建议短租双/四卡云）后补 E+H。
+- **TP**：Column/Row Parallel Linear、QKV/head 切分、MLP 切分、AllReduce/ReduceScatter/AllGather 位置、通信量、**小 batch 为何 TP 更慢**；TP=1 vs 2 每卡权重·显存·KV、NCCL、kernel 与通信重叠、不同 batch 的 scaling efficiency。
+- **PP**：按 layer 分 stage、activation 传输、pipeline bubble、microbatch、与 TP 组合、stage 负载不均。**DP**：复制实例扩吞吐 + 请求路由/负载均衡/会话黏性/故障 replica 摘除。**EP/MoE**：Router/Top-K、token dispatch、All-to-All、load imbalance、capacity/dropped、DeepEP。
+- 产出：`results/{tp1_tp2,dp_scaling}.csv`、`profiles/nccl_timeline/`、`figures/parallelism_topology.png`、`reports/08_distributed_inference.md`（**区分：TP/PP 扩模型容量、DP 扩吞吐、EP 扩专家、CP 扩上下文**）。
+
+## 阶段 H · 跨引擎对比（T+E+O）
+
+### M23 TensorRT-LLM 与跨引擎对照　⬜　T+E+O
+- TRT-LLM：checkpoint 准备 → engine 构建 → 加载 → 离线推理 → 在线服务 → benchmark；**理解 vLLM 动态 PyTorch 路径 vs TRT-LLM engine 构建/tactic/runtime 路径**。
+- 同模型同硬件严格对照 Transformers vs vLLM vs TRT-LLM（固定精度/GPU/长度/并发/warmup/采样/benchmark 方法）；比安装转换复杂度、模型准备、启动、TTFT、TPOT、吞吐、显存、量化能力、动态请求适配、调试、扩展性。
+- Triton + TRT-LLM Backend 把 vLLM / TRT-LLM / Triton 串成完整栈。产出：`reports/09_vllm_vs_tensorrt_llm.md`、`results/cross_engine_benchmark.csv`、`scripts/reproduce_cross_engine.sh`。
+
+## 阶段 I · 长上下文与解耦（T+E+O+H，★资源门控）
+
+### M24 Context Parallel / Ring Attention / Disaggregated P-D　⬜　T+E+O+H
+- **CP**：序列/上下文维切分、每卡持哪部分 token、Attention 为何跨卡换 K/V、通信随上下文长度变化、prefill vs decode 并行策略差异（多卡才 E/H）。
+- **Ring Attention**：标准 Attention 数据依赖、序列切分、环形传 K/V block、online softmax、通信计算重叠、causal mask 分块处理；路径 论文→PyTorch reference→读开源实现→多卡→Nsight 看 P2P/NCCL 与计算重叠。**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention**。
+- **P/D 分离**（`docs/features/disagg_prefill.md`）：prefill compute-bound / decode bandwidth-bound、为何适合不同 GPU 配置、KV 如何跨实例传输、**传输延迟何时抵消分离收益**、routing/backpressure/容错；至少两实例，资源隔离最好多卡。产出含 Prefill/Decode worker + Connector/KV transfer + Router + TTFT/ITL/throughput@latency 对照。
+
+## 阶段 J · 模型压缩（岗位定向；推理岗多为 T，压缩岗 T+E+O）
+
+### M25 知识蒸馏 / 结构化剪枝 / 低秩分解　⬜　T（推理岗）/ T+E+O（压缩岗）
+- **推理系统岗**：**T** 即可——蒸馏(teacher/student、logit/feature/sequence、温度、如何降推理成本)、剪枝(非结构化稀疏为何不必然加速、结构化剪 head/channel/layer、硬件/kernel 能否利用)、低秩(SVD、秩与误差、大 GEMM→两小 GEMM)。
+- **压缩/算法岗**：T+E(+O)——真做小模型实验并在真实引擎 benchmark，**验证 wall-clock 加速**（模型变小≠推理加速；理论 FLOPs 降≠GPU 延迟降）。**LoRA（低秩更新/Adapter）≠ 对原权重做低秩分解压缩，勿混**。
+
+## 百亿 / 千亿落地门槛（诚实边界，勿夸大）
+- **单卡可积累（可迁移基础）**：Scheduler/CB、PagedAttention/KV、小模型高并发、压测方法、profiler、量化、spec decode、Triton 单机、TRT-LLM 单机、故障定位与监控。
+- **必须多卡/多节点（不得单卡模拟后写成"落地"）**：百亿权重跨卡切分、真实 TP/PP 通信、MoE EP、多节点 NCCL、跨节点 KV 传输、千亿容量规划、节点故障恢复、集群负载均衡、大规模 P/D。
+- 简历如实写「在 4×GPU 完成 TP/EP **缩小规模验证**」，**不写**「拥有千亿模型生产集群落地经验」。
+
+## 最终项目组合（4 个，替代十几个零散 demo）
+- **A · vLLM V1 Trace & Optimization Lab**（=第一阶段全部，**T+E+O**）：Scheduler/CB/KV/PagedAttention/backend/profiler/CUDA·Triton/一次改动或 PR。
+- **B · Distributed LLM Inference Lab**（**T+E+O+H**）：TP/PP/DP/EP(可选)/NCCL/多卡 serving/扩展效率。
+- **C · Production Serving Stack**（**T+E+O**）：vLLM Server + Triton vLLM Backend + Prometheus/Grafana + 压测 + P95/99 + 容量规划 + 故障处理。
+- **D · Cross-Engine Optimization**（**T+E+O**）：vLLM vs TRT-LLM + Triton TRT Backend + 量化 + spec decode + 同模型同硬件 benchmark。
+
+## 各技术栈最终掌握标准（自评对照）
+| 技术 | "了解" | "熟悉" | "有实践经验" |
+|---|---|---|---|
+| vLLM | 能解释架构 | 能追踪并修改主链路 | 有实验/Profiler/修改/PR（≈已达成） |
+| TP/PP/DP | 能解释切分与通信 | 能定位分布式源码 | 多 GPU 上有 benchmark 与通信数据 |
+| Triton Server | 知道 Backend 架构 | 能配 model repo 与客户端 | 部署+压测+监控+排障 |
+| 量化 | 理解误差与低精度类型 | 能追踪量化执行路径 | 有 BF16/量化对照数据 |
+| Speculative Decoding | 理解 proposer/verification | 能解释 vLLM 路径 | 有 acceptance rate/TPOT 数据 |
+| Ring Attention | 理解环形 K/V 交换 | 能读开源实现 | 多卡通信与性能数据 |
+| TensorRT-LLM | 知道 engine 工作流 | 能构建并运行 engine | 跨引擎 benchmark + 服务部署 |
+| 百亿/千亿服务 | 能容量估算 | 能设计 TP/PP/DP 拓扑 | 多卡运行+压测+故障（明确规模边界） |
+
+## 第二阶段核心验收线（按项，硬件门控标注）
+| # | 验收项 | 模块 | 硬件门控 |
+|---|---|---|---|
+| 1 | Prefix cache on/off 定量对照报告 | M17 | 单卡 |
+| 2 | 量化路径深化对照（含 W4A16/AWQ/GPTQ） | M18 | 单卡 |
+| 3 | Speculative decoding acceptance/TPOT 数据 | M19 | 单卡起 |
+| 4 | 在线 serving + Triton 部署对照报告 | M20 | 单卡/多实例 |
+| 5 | 监控 + 容量规划报告 | M21 | 单机起 |
+| 6 | TP/PP/DP/EP 实验（多卡 E+H；单卡仅 T+O） | M22 | ★多卡 |
+| 7 | TensorRT-LLM 跨引擎对照 | M23 | NVIDIA GPU |
+| 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡 |
+| 9 | 压缩专题（按岗位深度） | M25 | 单卡起 |
+| 10 | 四大项目组合 + 面试三档表达 | M26 | 无新增 |
+
+### M26 第二阶段收口：项目组合 + 掌握标准 + 面试化表达（扩展 M16）　⬜
+- 把 A/B/C/D 四项目 README 化（招聘者 5 分钟看懂：问题/源码路径/环境/基线/瓶颈/改动/性能变化/回归/复现），核心图 ≤5 张（请求时序 / CB / KV block 生命周期 / profiler timeline / 优化前后）；每主题 **30s / 3min / 10min** 三档表达；**明确标注能力边界**（已验证 / 只读源码未获硬件 / 仅理论）——这种区分反而证明系统工程严谨性。
+
+## 时间不足时的最低五项（优先级铁律的落地）
+1. vLLM Trace & Optimization Lab（=项目 A / 第一阶段）；2. 一次多卡 TP 实验（M22）；3. 一次 Triton+vLLM 部署（M20）；4. 一次量化或 spec decode 对照（M18/M19）；5. 一次开源贡献（M13）。**这五项比"每个名词都看过一点"更有可验证的求职竞争力。**
+
+## 第二阶段总验收线（走完全程应拥有）
+1 个 vLLM 源码 Trace 与优化项目、1 个 Triton 在线服务项目、1 个 TRT-LLM 跨引擎对照、1 套多 GPU TP/DP 实验、1 个量化对照、1 个 spec decode 实验、1 份长上下文或 P/D 分离设计与实践报告、1 次真实开源贡献、1 套 Prometheus/Grafana 监控与容量报告；**并能清楚标记：已真实运行验证 / 已读源码未获硬件验证 / 仅理论**。
+
+---
+
+## 暂不做（study_path 第十章，避免分心）——**第一阶段聚焦纪律**
+> 本节是**第一阶段**的防分心纪律；第二阶段（M17+）才按优先级铁律逐步解锁多引擎/分布式/长上下文等。
 进入 M6 之前不要：无目标通读全部源码 / 同时啃多套引擎 / 深入多模态·Mamba·MLA·DCP / 没有 benchmark 就改性能代码 / 死磕复杂 kernel / 只做笔记不跑实验 / 追 main 分支结构变化。第一阶段锁定：decoder-only、单机单卡、FlashAttention、Scheduler / KV / ModelRunner / BlockTable / Attention / Profiler。
 
 ---
 
-## 本次修订说明
+## 修订说明
+
+### 第二阶段整合（本次）
+- **整合 `study_path_with_tech_stack_roadmap.md` §13–§24**：新增【第二阶段】（M17–M26，阶段 E–J）＋技术栈覆盖总表＋T/E/O/H 学习等级＋最终项目组合(A–D)＋各技术栈掌握标准表＋第二阶段验收线＋百亿/千亿诚实边界；**范围声明由"仅第一阶段"改为覆盖两阶段**，加"优先级铁律"与"时间不足最低五项"。
+- **接地核对**：扩展主题官方文档在 pinned v0.24.0 **均存在**（parallelism_scaling / disagg_prefill / speculative_decoding / automatic_prefix_caching / kv_offloading / quantization），扩展路线可落到实处。
+- **原 M14/M15 占位**由第二阶段 M19（Spec Decoding）/M22（TP·PP·DP·EP）/M23（TensorRT-LLM 跨引擎）/M24（CP·Ring·P-D）细化取代。
+- **第一阶段状态刷新**：M12 已完成、M13 研究完成待提交（候选 C1）。
+
+### 早期修订（第一阶段成型）
 - **新增**：
   - **M0 环境与可复现基础设施**（据实：环境固定/记录、统一 trace 工具、trace-off 零副作用、备份/回归快照均已完成；复现入口脚本、正式 invariants/回归脚本、`contribution_candidates.md`、`notes/evidence_index.md`、主题化命名标为**待补**，未虚构）。
   - **持续维护任务**一节（`contribution_candidates.md`、`evidence_index.md`、每模块同步 ROADMAP/README/commit）。
@@ -186,4 +323,4 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步应执行的模块**：**M4 Attention Backend**（退出标准见上）。
+- **当前下一步**：完成 **M13**（候选 C1 上游 PR，研究+验证已就绪，待干净工作树+pre-commit+DCO 后提交）→ M16 第一阶段收口 → 进入【第二阶段】阶段 E（M17 起，单卡可做）；多卡门控模块（M22/M24）待资源。
