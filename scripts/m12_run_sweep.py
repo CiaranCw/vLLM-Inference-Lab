@@ -143,7 +143,7 @@ class Sampler(threading.Thread):
         while not self._stopev.is_set():
             try:
                 m = parse_metrics(http_get(_metrics_url()))
-                now = time.perf_counter()
+                now = time.perf_counter() # 不受系统时钟校准影响，因此 Monotonic Time 更可靠
                 rec = {"timestamp_monotonic_s": round(now, 3),
                        "time_since_run_start_s": round(now - self.run_start, 3),
                        "phase": self.phase, **{k: m.get(k) for k in
@@ -193,14 +193,37 @@ def warmup(n=10):
 def run_bench(shape, rate, seed, num_prompts, run_id, goodput, sampler, timeout_s):
     inl, outl = SHAPES[shape]
     result_file = f"{run_id}.json"
-    cmd = ["vllm", "bench", "serve", "--backend", "openai", "--model", MODEL,
-           "--host", HOST, "--port", str(PORT), "--endpoint", "/v1/completions",
-           "--dataset-name", "random", "--random-input-len", str(inl), "--random-output-len", str(outl),
-           "--random-range-ratio", "0", "--num-prompts", str(num_prompts),
-           "--request-rate", str(rate), "--burstiness", "1.0", "--ignore-eos",
-           "--temperature", "0", "--top-p", "1", "--seed", str(seed), "--num-warmups", "0",
-           "--percentile-metrics", "ttft,tpot,itl,e2el", "--metric-percentiles", "50,95,99",
-           "--save-result", "--save-detailed", "--result-dir", os.path.join(OUT, "raw"),
+    cmd = ["vllm", "bench", "serve", 
+           "--backend", "openai", 
+           "--model", MODEL,
+           "--host", HOST, 
+           "--port", str(PORT), 
+           "--endpoint", "/v1/completions",
+           # 固定随机数据集
+           "--dataset-name", "random", 
+           "--random-input-len", str(inl), 
+           "--random-output-len", str(outl),
+           "--random-range-ratio", "0", 
+           # 固定请求数量
+           "--num-prompts", str(num_prompts),
+           # 开环到达参数
+           "--request-rate", str(rate), 
+           "--burstiness", "1.0", 
+           # 固定输出长度，即使生成 EOS 也继续到指定长度
+           "--ignore-eos",
+           # 固定 Sampling
+           "--temperature", "0", 
+           "--top-p", "1", 
+           "--seed", str(seed), 
+           # 关闭 Bench 内部 Warmup
+           "--num-warmups", "0",
+           # 请求在线指标，汇总四个指标的 P50/P95/P99
+           "--percentile-metrics", "ttft,tpot,itl,e2el", 
+           "--metric-percentiles", "50,95,99",
+           # 保存
+           "--save-result", 
+           "--save-detailed", 
+           "--result-dir", os.path.join(OUT, "raw"),
            "--result-filename", result_file]
     if goodput:
         cmd += ["--goodput"] + goodput
