@@ -28,7 +28,7 @@
 ---
 
 ## 持续维护任务（贯穿所有模块，不是单独模块）
-- **`contribution_candidates.md`（待建）**：从现在起持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。M13 只负责把其中一个**正式提交**，而非到 M13 才开始找。
+- **`contribution_candidates.md`（已建，持续维护）**：从现在起持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。M13 只负责把其中一个**正式提交**，而非到 M13 才开始找。**当前首选候选：C1 = `_compute_slot_mapping_kernel` 通用单元测试（补真实测试缺口，与 M8 已建三路交叉 oracle 精确对口）**；C2–C4 为稳妥备选，详见文件。
 - **`notes/evidence_index.md`（已建，持续维护）**：证据索引，汇总"每个模块结论 → 对应 trace/log/jsonl/图 文件"，便于随时核查。
 - **每完成一个模块**：同步更新 `ROADMAP.md`、`README.md`、`evidence_index.md`，并做一次 git commit（保持仓库与进度一致）。
 - **项目整理不积压**：README、图表、复现说明随做随更新，M16 只做最终删减、重组、简历与面试表达。
@@ -45,7 +45,7 @@
 - 🔄 待补（据实标记，尚未落地）：
   - 统一**复现入口**（目前分散在各 notes 的复现命令；`scripts/smoke_import.py` 仅做导入自检）。
   - **正式 correctness invariants + 回归脚本**（目前 E1 回归是内联 bash 的 ad-hoc 比对，未固化为脚本）。
-  - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（见"持续维护任务"，待建）。
+  - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（已建，见"持续维护任务"）。
   - 目录/命名当前为 `dayN` 制（M1–M3 沿用）；后续模块建议改为**主题命名**，此不一致待统一。
 
 ### M1 单请求推理主链路 + Prefill/Decode 运行时 Trace　✅
