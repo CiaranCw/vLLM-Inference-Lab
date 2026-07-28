@@ -195,9 +195,23 @@ for r in range(num_reqs):
 4. **RFC 门槛**：>500 LOC（不含 kernel/数据）才需先 RFC；C1 仅一个测试文件（~300 行），无需 RFC。
 5. **⚠ AI 辅助署名（需你决策）**：vLLM 要求**披露 AI 辅助**并加 `Co-authored-by:` trailer；这与本仓库 no-coauthor 约定（[[vllm-lab-no-coauthor-trailer]]）是**不同仓库、不同规则**。上游 PR 须遵 vLLM 政策——署名口径由你定。
 
-### 复活 vs 全新，二选一（动手前定）
-- **A. 复活 #30683**（推荐）：基于其分支 rebase 到 main、修 pre-commit、补 M8 增量用例。礼貌起见可在 PR 里 credit 原作者 pisceskkk（`Co-authored-by:` 或描述致谢）。**风险**：拿不到原分支写权限 → 退回 B。
-- **B. 全新 PR**：新写 `test_block_table.py`，**在描述里引用 #30683 为前车**（说明「复活其思路 + 扩展覆盖」）。更简单、干净。
+### ⚠ 重大发现：#30683 的 API 已与当前 main 漂移（改变了策略）
+拉取 #30683 完整 diff 后发现：它调用 **`block_table.compute_slot_mapping(req_indices, positions)`**（逐 token 的 `req_indices` 数组）、并在构造时 mock `get_dcp_group`/`get_pcp_group`。但**当前签名是 `compute_slot_mapping(num_reqs, query_start_loc, positions)`**（累积偏移 `query_start_loc`，非 req_indices）——API 在 #30683(2025-12) 之后变了。
+- **含义**：#30683 的测试**无法在当前 main 直接跑**（会因签名不符失败）。
+- **反而 M8 的 harness 恰好对齐当前 kernel 签名**（M8 是近期对当前 vllm-src 写的，用 `query_start_loc` + `TOTAL_CP_WORLD_SIZE`/`TOTAL_CP_RANK`/`CP_KV_CACHE_INTERLEAVE_SIZE`）。
+- **策略定为 B（全新，但吸收两者）**：用**当前 API**新写 `tests/v1/worker/test_block_table.py`，采 M8 的 oracle 口径 + #30683 的 DCP4/PCP2 参数化风格，PR 描述里**引用并取代 #30683**、credit 原作者。
+
+### 构造机制（读 `BlockTable.__init__` 与 CPU fallback 确认）
+- `__init__(block_size, max_num_reqs, max_num_blocks_per_req, max_num_batched_tokens, pin_memory, device, kernel_block_size, cp_kv_cache_interleave_size)`。
+- CP 参数：`__init__` 尝试 `get_pcp_group()/get_dcp_group()`，**未初始化分布式时捕获 `AssertionError` 回退 world=1**。→ 非 CP 用例无需 mock；CP 用例**最简做法＝构造后直接设 `bt.pcp_world_size/pcp_rank/dcp_world_size/dcp_rank`**（`compute_slot_mapping` 直接读这些属性算 total），比 mock import 更干净。
+- kernel 读 `self.block_table.gpu`，而 `add_row` 只写 `.np` → **cuda 上必须 `commit_block_table(num_reqs)` 把 np→gpu**（#30683 用 `device=cpu`（np≡gpu）才免此步）。
+- **设备**：CP interleave 逻辑**只在 GPU Triton kernel**（`vllm/utils/cpu_triton_utils.py` 的 CPU fallback 走 C++ op 且 `assert TOTAL_CP_WORLD_SIZE==1`）。→ 测试须 CUDA + `skipif(not cuda)`，且这为「CUDA-only 测试」提供正当理由。
+
+### 当前状态（本轮止步于此）
+- ✅ 草稿测试已写：`notes/m13/pr_draft/test_block_table.py`（当前 API + oracle + 非CP边界 + padding + DCP4/PCP2 interleave{1,16} + world=1 退化）。
+- ✅ PR 描述草稿：`notes/m13/pr_draft/PR_DESCRIPTION.md`。
+- ⏸ **GPU 验证挂起**：本地 GPU 占用中，未运行任何 GPU 代码（避免 OOM）。草稿**未经验证**，Test Result 待填。
+- ⏸ **未提交 PR**：等 GPU 空闲跑通 → 备干净工作树 → pre-commit/DCO → 供用户审查后再提。
 
 ---
 
