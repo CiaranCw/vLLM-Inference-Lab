@@ -21,20 +21,31 @@
 
 | # | 候选 | 类别 | 来源模块 | 单卡 sm_120 可行 | 工作量 | 上游契合 | 推荐度 |
 |---|---|---|---|:---:|:---:|:---:|:---:|
-| **C1** | `_compute_slot_mapping_kernel` 通用单元测试（含 CP interleave / padding 哨兵 / 跨块 / ragged） | 测试缺口 | M8/M4 | ✅ | 中 | 高 | ★★★★★ **首选** |
+| **C1** | `compute_slot_mapping` 单元测试 | 测试缺口 | M8/M4 | ✅ | 中 | 高 | ✅ **已落地 → PR [#51017](https://github.com/vllm-project/vllm/pull/51017)** |
 | **C2** | `calculate_kv_scales` 弃用信息陈旧（写「v0.19 移除」但现为 v0.24.0） | 文档/信息一致性 bug | M10 | ✅ | 极小 | 中高 | ★★★★ 稳妥备选 |
 | **C3** | 安装文档补充 consumer Blackwell / RTX 50 系（sm_120） | 文档缺口 | M0/M10 | ✅ | 小 | 中 | ★★★ 低风险备选 |
 | **C4** | `quantized_kvcache.md` 明确「默认 scale=1.0＝未校准、质量影响与校准建议」 | 文档缺口 | M10 | ✅ | 小 | 中 | ★★★ 备选 |
 | C5 | `vllm bench serve` 增加 SLO 驱动的容量扫/knee 检测 | 可观测性/工具 | M12 | ✅ | 大(需 RFC) | 中 | ★★ 观望 |
 | C6 | 执行模式运行时诊断（逐 batch/长度 FULL/PIECEWISE/NONE） | 可观测性/工具 | M5/M6 | ✅ | 大(需 RFC) | 中低 | ★ 观望 |
 
-> **强烈建议 M13 选 C1**：它同时满足「有真实技术价值（补真实测试缺口）」「与已证能力精确对口（M8 已建 22 例三路交叉 oracle）」「单卡 WSL2 完全可跑」「低风险、易被接受（纯加测试、不改行为）」四条。C2/C3/C4 作为「若 C1 被抢先」的稳妥备选。
+> **C1 已于 M13 落地**：PR [#51017](https://github.com/vllm-project/vllm/pull/51017)（Ready for review，未合入）。实际实现相对本文件初稿有 3 处语义修正（slot mapping 改为**只按 DCP**分片、新增 **hybrid 块三分**、新增 **`SlotMappingMode`**）——这印证了本文件 §0 的 kill 标准：**候选必须在动手前对最新 main 重核**。**C2–C4 仍为有效备选**，若再提 PR 从中挑选。
 
 ---
 
 ## 2. Tier A — 推荐作为第一次 PR
 
-### C1 · `_compute_slot_mapping_kernel` 缺少通用单元测试　★首选
+### C1 · `compute_slot_mapping` 缺少单元测试　✅ 已落地（PR #51017）
+
+> **结局（2026-08-04）**：已作为 M13 提交 → **[PR #51017](https://github.com/vllm-project/vllm/pull/51017)**（Ready for review，未合入）。
+> 落点 `tests/v1/worker/test_block_table_slot_mapping.py`，**18 passed / test-only / 零产品改动**。
+> **实际实现与下方初稿的 3 处差异**（正是 §0 kill 标准的价值所在——下方内容基于 v0.24.0，动手时对最新 main 重核后修正）：
+> ① slot mapping 已改为**只按 DCP 分片**（`pcp × dcp` 假设作废，故删除 PCP 参数矩阵）；
+> ② 新增 **hybrid 块三分语义**（`kv_cache_block_size`/`kernel_block_size`/`blocks_per_kv_block`），需端到端覆盖；
+> ③ 新增 **`SlotMappingMode.NONE`**（Mamba/GDN 跳过，不触碰 buffer）。
+> 另：**参照实现不得复用产品 `map_to_kernel_blocks`**——变异测试实证复用会漏检（详见 `notes/m13/pr_slot_mapping_test.md` §A.4b）。
+> 以下为**当时的候选研究记录**，保留以呈现决策依据。
+
+#### （历史）候选研究记录
 - **类别**：测试缺口（纯加测试，不改产品行为——最适合第一次 PR）。
 - **来源**：M8（自写 slot_mapping 生成 kernel + 三路交叉 oracle）、M4（trace 过 slot_mapping 进 KV cache 的闭环）。
 - **上游现状（v0.24.0 已核对）**：
@@ -140,4 +151,4 @@
 
 ---
 
-*建立于 M12 收口后、M13 之前。首选目标：**C1（slot_mapping 生成 kernel 单元测试）**。*
+*建立于 M12 收口后、M13 之前。**C1 已落地为 PR #51017**（M13 完成，Ready for review / 未合入）；C2–C4 保留为后续候选。持续维护：新发现的候选继续登记，已用掉/失效的注明结局，不删除。*

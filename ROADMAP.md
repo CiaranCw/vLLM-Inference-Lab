@@ -23,13 +23,14 @@
 | 写 kernel（Triton） | **能写** ✅（M8：slot_mapping 生成 kernel 三路交叉 22/22，性能≈vLLM 官方） |
 | 在线服务与容量/SLO | **能测容量** ✅（M12：真实 serve + 开环 Poisson，真在线 TTFT/ITL/E2EL，最大稳定 QPS≈40、饱和~46、队列/过载/容量随 shape） |
 | 能改 / 能优 | **能改** ✅（M9：profiler 驱动、可回退、正确性完整的真实改动；本例 E2E 收益在噪声内，诚实保留为无收益报告）；**能优**：方法论完备，待有正空间的目标再证正收益 |
+| 上游贡献（回馈社区） | **能提交** ✅（M13：PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 为零覆盖的 `compute_slot_mapping` 补单测，18 passed / DCO pass / test-only；含语义漂移重核与变异测试验证 oracle 独立性。**未合入，等审查**） |
 
 能力阶梯：能读 → 能串 → 能证 → **能改** → **能优**。第一阶段目标是把主链路推到"能改/能优"。
 
 ---
 
 ## 持续维护任务（贯穿所有模块，不是单独模块）
-- **`contribution_candidates.md`（已建，持续维护）**：从现在起持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。M13 只负责把其中一个**正式提交**，而非到 M13 才开始找。**当前首选候选：C1 = `_compute_slot_mapping_kernel` 通用单元测试（补真实测试缺口，与 M8 已建三路交叉 oracle 精确对口）**；C2–C4 为稳妥备选，详见文件。
+- **`contribution_candidates.md`（已建，持续维护）**：持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。**C1（slot_mapping 单元测试）已于 M13 落地为 PR [#51017](https://github.com/vllm-project/vllm/pull/51017)**；**剩余备选 C2–C4** 仍有效（C2 `calculate_kv_scales` 弃用信息陈旧、C3 安装文档缺 consumer Blackwell、C4 fp8 KV 默认 scale 文档），第二阶段若再提 PR 从此挑选（动手前须按文件内 kill 标准对最新 main 重核）。
 - **`notes/evidence_index.md`（已建，持续维护）**：证据索引，汇总"每个模块结论 → 对应 trace/log/jsonl/图 文件"，便于随时核查。
 - **每完成一个模块**：同步更新 `ROADMAP.md`、`README.md`、`evidence_index.md`，并做一次 git commit（保持仓库与进度一致）。
 - **项目整理不积压**：README、图表、复现说明随做随更新，M16 只做最终删减、重组、简历与面试表达。
@@ -132,9 +133,18 @@
 - **实测结论（本机 sm_120，eager，Qwen2.5-0.5B；真实 vllm serve + 官方 vllm bench serve 开环 Poisson）**：Calibration(rate=1 无排队)→冻结实验 SLO(P99 TTFT≤300ms 等，跑前写死)。Shape A(in256/out128)：QPS≤32 队列恒空、P99 TTFT ~25-32ms；**最大稳定 QPS≈40 req/s（容量区间 (40,44]，3 seed worst-seed 判 SLO）**；44/48 时 P99 TTFT 尾破线(383-663ms)但吞吐仍跟随、队列不堆积→**过载是"尾延迟劣化"非"吞吐崩溃"，SLO 实用容量(40)< 饱和吞吐(~46)**。Burst(inf 一次性)：peak_running=64(=max_num_seqs)、peak_waiting=236、P99 TTFT 5.3s、饱和吞吐~46.6 req/s。Shape B(in1024/out32 prefill-heavy)：req/s 容量相近(≥32)但 total token 吞吐~33k tok/s(高一量级)、TTFT 更高→**容量随负载 shape 变化**。
 - 产出：`scripts/m12_{run_sweep,summarize}.py`、`notes/m12/serving.md`、`outputs/m12/{config.json,knee.json,sweep.csv,summary.json,metrics/,metadata/}`（raw 逐请求明细体积大、gitignore、可复现）、`logs/m12/*`。**零 vLLM 源码改动**。结论限 eager/单卡/0.5B，不外推 compiled。
 
-### M13 首次开源 PR　🔄　★核心验收
-- 从 `contribution_candidates.md`（持续维护）中选一个**正式完成一次上游贡献**：复现→定位→改→测试→benchmark→提交→回应 review→改 PR（涉及 kernel 需 custom op 注册 + meta function + op 检查）。目标是完整经历，非必须合入。
-- **研究阶段已完成（见 `notes/m13/pr_slot_mapping_test.md`）**：选定候选 **C1 = 为 `compute_slot_mapping`/`_compute_slot_mapping_kernel` 补单元测试**。已核实：① 缺口在当前 main 仍成立（`gh` 搜 `compute_slot_mapping path:tests`=0）；② 上游前车 **PR #30683**（CP 维度 UT）**死于 pre-commit 未过、非评审否决**，故 C1 最优策略＝**复活/取代 #30683 + 合并 M8 非 CP 边界用例**（全分支覆盖）；③ kernel 全语义已拆解、M8 oracle + 22 例矩阵可复用。**待动手**：备干净工作树→写测试→过 pre-commit(硬门槛)→DCO 提交。
+### M13 首次开源 PR　✅　★核心验收（PR 已提交，未合入）
+- 从 `contribution_candidates.md`（持续维护）中选一个**正式完成一次上游贡献**：复现→定位→改→测试→benchmark→提交→回应 review→改 PR。目标是完整经历，非必须合入。
+- **已达成**：**[vllm-project/vllm#51017](https://github.com/vllm-project/vllm/pull/51017)** `[Core] Add unit tests for BlockTable slot mapping` —— Ready for review（2026-08-04），base `24c939c` / head `4dd4fa7`、**1 commit / 1 file / +384 / −0、零产品代码改动**、**18 passed**、DCO pass、changed-file pre-commit 13 Passed 0 Failed。落点 `tests/v1/worker/test_block_table_slot_mapping.py`。
+- **覆盖**：3 类手算 golden（普通 / DCP 跨虚拟块 / hybrid 跨第二 kernel 块）+ 边界/ragged/prefix offset + 跨 1024 Triton tile padding + DCP world{2,4}×interleave{1,4} 全 rank（含「每 token 恰属一个 rank」守恒律）+ hybrid (32,16)&(64,16) + `SlotMappingMode.NONE`。
+- **关键工程结论（比 PR 本身更值钱）**：
+  - **不盲信旧笔记**：候选研究基于 v0.24.0，动手前对最新 main 重核，发现 **3 处语义漂移**——slot mapping 改为**只按 DCP 分片**（PCP 不再参与）、新增 **hybrid 块三分**（`kv_cache_block_size`/`kernel_block_size`/`blocks_per_kv_block`）、新增 **`SlotMappingMode`**；按旧假设写的测试跑不起来。
+  - **变异测试证明 oracle 必须独立**：初版参照实现复用产品 `map_to_kernel_blocks`，注入 `+1` 后 hybrid 用例**仍通过（漏检）**；改为测试内自建展开后 **3/3 正确失败**。→「测试通过 ≠ 测试有效」。
+  - **主动规避冲突**：open PR #39591 会创建同名文件（但只测 row-tail 清零、不碰 slot mapping），故改名 `test_block_table_slot_mapping.py` 并在 PR 说明、表示愿合并。
+  - **前车教训**：stale PR #30683 同方向，**死于 pre-commit 未过后无人跟进**（非评审否决）→ 本次把 pre-commit 全绿当硬门槛。
+  - **上游贡献树与学习树隔离**：`vllm-src` 带中文注释且 pin 在 v0.24.0（脏树/shallow），不可提 PR；另建 `vllm-m13-upstream`（干净 clone + `uv` 独立 venv + 跟最新 main）。
+- 产出：`notes/m13/{STATUS.md,pr_slot_mapping_test.md}`、`notes/m13/review/*`（逐行审查 / 手算 golden / 清单 / 复现命令 / diff patch）、`notes/m13/validation/*`（pytest / pre-commit / 变异回归 / 环境）、`notes/m13/pr_draft/{test_block_table_slot_mapping.py,PR_BODY_FINAL.md}`。
+- **待回填**：maintainer review 往返与迭代、是否最终合入。
 
 ---
 
@@ -142,28 +152,28 @@
 
 > **原 M14（第二引擎横向对比）、M15（高级专题）已由【第二阶段】细化展开，不再单列**：第二引擎/跨引擎对比 → **M23**（TensorRT-LLM）；Speculative Decoding → **M19**；MoE/EP → **M22**；Context Parallel / Ring Attention / P-D 分离 → **M24**；KV Offload 归入 M24 相关连接器（`docs/features/kv_offloading_usage.md`）。
 
-### M16 项目整理 + 面试化表达　🔄　★验收 #1 收口（主体完成，待 M13 PR 回填）
+### M16 项目整理 + 面试化表达　✅　★验收 #1 收口
 - **只做最终删减、重组、简历与面试表达**（组织工作已在"持续维护任务"里随做随更新，不积压到此）。
 - README 让招聘者 5 分钟看懂（问题/源码路径/环境/基线/瓶颈/改动/性能变化/回归/复现）；核心图≤5 张；每主题 30 秒 / 3 分钟 / 10 分钟三版表达；重点题（continuous batching 为何提吞吐、PagedAttention 解决什么、block_table vs slot_mapping、P/D 瓶颈、KV 与最大并发、如何确认优化有效、profiler 区分 CPU/GPU 瓶颈、为何 TP=2 不一定更快）。
 - **已完成**：① 招聘者向 README 重写（30 秒速览 + 能力阶梯 + 逐模块成果表 M0–M13 + 亮点洞察 + 复现）；② `notes/m16/interview_and_presentation.md`（项目 30s/3min/10min + 8 重点题，全部锚定本 lab 证据）；③ **4 张核心图**（`scripts/m16_figures.py` 由既有 CSV **离线生成、无需 GPU**：M6 decode / M6 prefill / M10 量化反常 / M12 容量拐点）；④ evidence_index 补 M12/M13/M16。
-- **待回填（占位）**：README §7 与 evidence_index 中 M13 上游 PR 的链接 / 最终 diff / CI / review 往返 —— 待 M13 正式提交后补。
+- **已回填（M13 提交后完成）**：README §7 由占位改为**真实成果**（PR #51017 链接 / 规模 / CI / 5 条工程判断）；30 秒速览、能力阶梯、逐模块表同步（并清除 v0.24.0 时代作废的「26/26」与旧文件名）；evidence_index 的 M13 行改写为已提交事实 + 变异测试证据；`notes/m16/interview_and_presentation.md` 把 M13 升级为真实上游经历，**新增 Q9「怎么保证测试不是自证」**（9 道重点题）并补「PR 未合入」的诚实边界；README 工作区结构补 `vllm-m13-upstream` 隔离说明。
 
 ---
 
 ## 第一阶段核心验收线（按项，不设时间）
 | # | 验收项 | 对应模块 | 状态 |
 |---|---|---|---|
-| 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | 🔄 主体完成（招聘者向 README + 面试三档表达 + 4 核心图 + 证据索引齐；待 M13 PR 回填） |
+| 1 | 完整 vLLM Trace & Optimization 项目 | M0 起 / M16 收口 | ✅（招聘者向 README + 面试三档表达/9 题 + 4 核心图 + 证据索引；M13 PR 已回填） |
 | 2 | ≥5 个可复现实验 workload | M1–M3 | ✅ 已超额 |
 | 3 | 一套离线/闭环 Benchmark 数据 | M6 | ✅ |
 | 4 | ≥2 份 Profiler 分析（现象→证据→假设→实验→结论） | M7 | ✅ |
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ✅ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ✅（改动+测试+E2E 数据齐全；E2E 收益在噪声内，诚实保留无收益报告） |
-| 7 | 1 次开源 PR | M13 | 🔄 研究完成（候选 C1=slot_mapping 单测；已定位前车 PR #30683 与复活策略，待动手提交） |
+| 7 | 1 次开源 PR | M13 | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，18 passed / DCO pass / test-only；未合入，等审查） |
 | 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M12 完成、M13 研究完成待提交、M0 进行中；核心验收 7/9（仅差 M13 上游 PR 落地、M11 多卡资源）。推进：~~M4~~→~~M5~~→~~M6~~→~~M7~~→~~M8~~→~~M9~~→~~M10~~→~~M12~~→**M13（提交准备中）**→ M16 收口；M11 待多卡资源。第一阶段收尾后进入下方【第二阶段】。**
+**总体（第一阶段）：M1–M13 + M16 完成、M0 进行中；核心验收 8/9（仅差 M11 双卡 TP，属硬件资源门控）。推进：~~M4~~→~~M5~~→~~M6~~→~~M7~~→~~M8~~→~~M9~~→~~M10~~→~~M12~~→~~M13（PR #51017 已提交）~~→~~M16 收口~~；M11 待多卡资源。**第一阶段已收口，当前进入【第二阶段】阶段 E（M17 起，单卡可做；GPU-free 部分已完成）。**
 
 ---
 
@@ -327,4 +337,4 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步**：完成 **M13**（候选 C1 上游 PR，研究+验证已就绪，待干净工作树+pre-commit+DCO 后提交）→ M16 第一阶段收口 → 进入【第二阶段】阶段 E（M17 起，单卡可做）；多卡门控模块（M22/M24）待资源。
+- **当前下一步**：第一阶段已收口（M13 PR #51017 已提交待审查、M16 已回填）。**进入【第二阶段】阶段 E：M17 的 E 实测**（GPU 空闲时跑 `scripts/m17_prefix_cache.py`，T/O 与实验设计已完成）→ M18/M19 → 阶段 F；多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。

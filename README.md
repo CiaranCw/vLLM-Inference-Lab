@@ -4,6 +4,7 @@
 > 不是"读过源码"，而是**观察真实运行、用证据验证理解、动手改并用数据说话**——包括一份**诚实的无收益报告**和一次**上游 PR**。
 
 **环境**：单卡 RTX 5080（sm_120, consumer Blackwell）· WSL2 · Qwen2.5-0.5B-Instruct · vLLM `ee0da84`/v0.24.0（editable）· `enforce_eager` 基线。所有绝对值限本配置，不外推。
+> M1–M12 在上述 pinned commit 上完成；**M13 的上游 PR 另用独立干净 clone 跟最新 `main` 开发**（见 §7 与下方工作区结构）。
 
 ---
 
@@ -15,7 +16,7 @@
 - **能写 kernel**：自写 Triton `slot_mapping` 生成 kernel，与 PyTorch 语义 oracle + vLLM 官方 kernel **三路交叉 22/22**，性能 ≈ 官方（M8）。
 - **能改（诚实）**：profiler 驱动合并 decode 两处 H2D——机制成立、正确性完整，但 **E2E 收益落在噪声内**，如实保留为**无收益报告**（M9）。
 - **量化 & 在线服务**：FP8 权重显存 −36% / KV 容量 ~2×，但 **decode 反而 +36%（诚实反常）**（M10）；真实 `vllm serve` + 开环 Poisson 测出**最大稳定 QPS ≈ 40**，且**过载是尾延迟劣化而非吞吐崩溃**（M12）。
-- **上游 PR**：为 `compute_slot_mapping` 补单元测试（**本机 26/26 通过**），取代 stale PR #30683——研究/验证就绪，待提交（M13，见 §7）。
+- **上游 PR 已提交**：[vllm-project/vllm#51017](https://github.com/vllm-project/vllm/pull/51017) —— 为 `BlockTable.compute_slot_mapping` 补单元测试（该路径原本零覆盖），**18 passed / DCO pass / test-only**；过程中用变异测试证明「参照实现必须独立于产品 helper」（M13，见 §7）。
 
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
 
@@ -40,7 +41,7 @@
 | profiler 驱动的真实改动 + 回归 | 能改 ✅ | M9 |
 | 量化对比（显存/性能/质量/源码机制） | 能测量 ✅ | M10 |
 | 在线服务容量 / SLO | 能测容量 ✅ | M12 |
-| 上游贡献（测试补齐） | 🔄 就绪待提交 | M13 |
+| 上游贡献（测试补齐） | **已提交** ✅（PR #51017，待审查） | M13 |
 
 ---
 
@@ -81,9 +82,9 @@
 | **M10** 量化对比 ★ | FP8 显存收益明确、速度诚实含反常 | 权重 −36% / KV ~2×；PPL +0.51%~+2.17%；decode **+36% 变慢**、prefill −27% | 无 | `notes/m10/*`、`outputs/m10/*` |
 | **M11** 双卡 TP | ⬜ 资源门控（本机单卡）——待多卡；无硬件仅 T+O | — | — | 见 ROADMAP M22 |
 | **M12** 在线 Serving/SLO | 真实 serve + 开环 Poisson 的容量规划 | **最大稳定 QPS≈40**、饱和~46.6、过载=尾延迟劣化、容量随 shape 变 | 无 | `notes/m12/*`、`outputs/m12/*` |
-| **M13** 首次上游 PR | 🔄 为 compute_slot_mapping 补单元测试，取代 stale #30683 | 本机 **26/26 通过**、ruff 全绿；待提交（见 §7 占位） | 纯加测试 | `notes/m13/*` |
+| **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
 
-★ = 第一阶段核心验收项。核心验收线 7/9（仅差 M13 上游 PR 落地、M11 多卡）。
+★ = 第一阶段核心验收项。**核心验收线 8/9**（仅差 M11 双卡 TP，属硬件资源门控）。
 
 ---
 
@@ -129,7 +130,8 @@ python scripts/m16_figures.py    # -> figures/*.png
 
 ```text
 /home/ciaran/projects/
-├── vllm-src/           # vLLM 源码（唯一真源）。ee0da84=v0.24.0，含中文学习注释
+├── vllm-src/           # vLLM 源码（学习用真源）。ee0da84=v0.24.0，含中文学习注释
+├── vllm-m13-upstream/  # M13 上游 PR 专用：干净 clone + 独立 .venv，跟最新 main（无学习注释）
 ├── vllm_playground/    # 干净基线 venv（只读，不得修改）
 └── vllm-inference-lab/ # 本工作区
     ├── scripts/        # 各模块实验脚本 + m16_figures.py
@@ -142,16 +144,34 @@ python scripts/m16_figures.py    # -> figures/*.png
 ```
 
 - **源码修改只发生在 `../vllm-src`**；本目录 `.venv` 以 editable 安装 vllm-src，Python 改动重启进程即生效；`csrc`/CUDA kernel 用 `VLLM_USE_PRECOMPILED=1` 复用预编译，源码级改动不自动生效。
+- **上游贡献与学习树严格隔离**：`vllm-src` 为便于学习加了中文注释、且 pin 在 v0.24.0（脏树、shallow），**不可用于提 PR**；M13 因此另建 `vllm-m13-upstream`（干净 clone + `uv` 独立 venv + 跟最新 main），保证提交的 diff 只含目标文件。
 - 不修改 `../vllm_playground/.venv`（只读基线）；不对 `../vllm-src` 执行破坏性 git 操作；环境记录不写任何密钥/Token。
 - 本目录**是 git 仓库**，已推送至 `github.com/CiaranCw/vLLM-Inference-Lab`（提交者仅 CiaranCw）。
 
 ---
 
-## §7 M13 首次上游 PR ——（占位，待提交后补充）
+## §7 M13 首次上游 PR —— 已提交
 
-> 研究与本机验证已完成，**尚未提交上游**，等提交后回填链接与 review 过程。当前快照见 [`notes/m13/STATUS.md`](notes/m13/STATUS.md)。
+> **[vllm-project/vllm#51017](https://github.com/vllm-project/vllm/pull/51017)** · `[Core] Add unit tests for BlockTable slot mapping` · **Ready for review**（2026-08-04 提交）
+> 目标是**完整经历一次上游贡献流程**，非必须合入——截至本文更新时**尚未合入**，等待 maintainer 审查。
 
-- **贡献**：为 vLLM `vllm/v1/worker/block_table.py` 的 `compute_slot_mapping` / `_compute_slot_mapping_kernel` 补单元测试（当前 `tests/` 零覆盖），取代 stale PR #30683（其死于 pre-commit 未过、非评审否决）。
-- **已就绪**：草稿测试 `notes/m13/pr_draft/test_block_table.py` 在真实 RTX 5080 上 **26/26 通过**（2 手算 golden + 7 非 CP 边界 + 16 DCP4/PCP2 interleave×rank + 1 退化），vLLM 配置下 `ruff` 全绿。
-- **待回填**：`[ ]` PR 链接　`[ ]` 最终 diff　`[ ]` CI/pre-commit 结果　`[ ]` review 往返与迭代　`[ ]` 是否合入。
-- **待用户决策**：① go/no-go 进入提交准备；② 署名口径（vLLM 要求披露 AI 辅助 + `Co-authored-by:`，与本仓库 no-coauthor 约定不同）。
+**贡献内容**：为 vLLM `vllm/v1/worker/block_table.py` 的 `BlockTable.compute_slot_mapping`（含其 Triton kernel）补**单元测试**——该路径此前在 `tests/` 中**零直接覆盖**，而它把逻辑 token 位置映射到物理 KV slot，错一位会**静默写坏 KV cache**（不报错），且含 hybrid 块 / DCP interleave / CUDA-graph padding / `SlotMappingMode.NONE` 等易错分支。
+
+| 项 | 事实 |
+|---|---|
+| PR | [#51017](https://github.com/vllm-project/vllm/pull/51017)，base `24c939c`，head `4dd4fa7` |
+| 规模 | **1 commit / 1 file / +384 / −0**，**零产品代码改动**（test-only） |
+| 落点 | `tests/v1/worker/test_block_table_slot_mapping.py` |
+| 测试 | **18 passed**（3 类手算 golden + 边界/ragged/prefix + 跨 1024 Triton tile padding + DCP 全 rank + hybrid 32/16 & 64/16 + `SlotMappingMode.NONE`） |
+| CI | **DCO pass** ✅、mergify Summary pass、Meta Internal-Only pass；`pre-commit` job 在上游 runner 队列中（本地同 hook 集 13 Passed / 0 Failed） |
+| 合规 | `git commit -s`（`Signed-off-by: CiaranCw`）+ `Assisted-by: Claude Code`（AGENTS.md 要求披露 AI 辅助）；提交前人工逐行审查、手算复核 golden、本人复跑测试 |
+
+**工程判断（这次贡献里最有价值的部分）**：
+1. **不盲信旧笔记**：候选研究基于 v0.24.0，动手前对**最新 main** 重新核实，发现 3 处语义已漂移——slot mapping **已改为只按 DCP 分片**（PCP 不再参与）、新增 **hybrid 块三分语义**（`kv_cache_block_size`/`kernel_block_size`/`blocks_per_kv_block`）、新增 **`SlotMappingMode`**。按旧假设写的测试根本跑不起来。
+2. **Oracle 必须独立**：初版参照实现复用了产品的 `map_to_kernel_blocks`——用**变异测试**证明了风险真实：给该 helper 注入 `+1` 后，复用版本的 hybrid 用例**仍然通过**（漏检）；改为测试内自建展开后，3 个 hybrid 用例**全部失败**（正确捕获）。
+3. **三方独立锚定**：手算 golden 与 numpy oracle 相互独立地钉住 kernel 输出，避免「参照实现与被测代码同错」。
+4. **主动规避冲突**：发现 open PR #39591 会创建同名文件（但它测 row-tail 清零、完全不碰 slot mapping），故改用 `test_block_table_slot_mapping.py` 并在 PR 里说明、表示愿合并。
+5. **前车教训**：stale PR #30683 曾提出同方向测试，**死于 pre-commit 未过后无人跟进**（非评审否决）——所以本次把 pre-commit 全绿当作硬门槛。
+
+**完整过程留痕**：`notes/m13/`（[STATUS.md](notes/m13/STATUS.md) 断点快照 · [pr_slot_mapping_test.md](notes/m13/pr_slot_mapping_test.md) 研究与语义漂移 · `review/` 逐行审查+手算 golden+清单 · `validation/` 测试/pre-commit/变异回归日志 · `pr_draft/` 最终测试与 PR 正文）。
+**待回填**：`[ ]` maintainer review 往返与迭代　`[ ]` 是否最终合入。
