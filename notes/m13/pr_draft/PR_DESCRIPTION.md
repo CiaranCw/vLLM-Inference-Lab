@@ -1,50 +1,119 @@
 # PR 草稿：Add unit tests for `BlockTable.compute_slot_mapping`
 
-> 这是 M13 首次上游 PR 的**草稿描述**，尚未提交。GPU 验证挂起（本地 GPU 占用中）。
-> 提交前须完成：① 本地 GPU 跑通测试、填入真实 Test Result；② 干净工作树 + DCO sign-off + pre-commit 全绿；③ 决定署名口径（见文末）。
+> **状态：READY FOR HUMAN REVIEW BEFORE PR** —— 尚未 push、尚未创建 PR。
+> 以下英文正文可直接作为 PR body；标题前缀 `[CI/Build]` 取自 `docs/contributing/README.md` 的合法分类（**`[Test]` 不在合法列表内**）。
+> 提交前请**逐行通读** `tests/v1/worker/test_block_table.py`：AGENTS.md 明确「纯 code-agent PR 不允许，提交人须能端到端理解并为改动负责」。
 
 ---
 
 ## 建议标题
-`[Test][V1] Add unit tests for BlockTable.compute_slot_mapping (slot mapping kernel)`
-
-## Purpose
-`BlockTable.compute_slot_mapping` / `_compute_slot_mapping_kernel`（`vllm/v1/worker/block_table.py`）把逻辑 token 位置映射到物理 KV-cache 槽位，是 KV 写入正确性的关键路径，且含 Context-Parallel（DCP/PCP）interleave 与 CUDA-graph padding 等易错分支——但当前 `tests/` 无任何直接覆盖（`compute_slot_mapping` 在 `tests/` 下 0 命中）。本 PR 补充针对该入口的单元测试。
-
-本 PR 取代已 stale 关闭的 #30683（`[UT][PCP&DCP] UT for block_table.py`）：那版测试写在旧 API `compute_slot_mapping(req_indices, positions)` 上，现签名已改为 `compute_slot_mapping(num_reqs, query_start_loc, positions)`；本 PR 对齐当前 API，并在其 CP 覆盖之外补充非 CP 正确性边界与 padding 覆盖。
-
-## What's covered
-- **非 CP 边界**：块内首/末位置、跨块序列、非连续/乱序物理块号、ragged 多请求（变长首尾相接）、非零起始位置（prefix 已缓存）。
-- **CUDA-graph padding**：`[num_tokens, max_num_batched_tokens)` 区间恒为 `PAD_SLOT_ID`。
-- **Context Parallel**：DCP=4 × PCP=2 全 8 rank，interleave ∈ {1,16}；以及 world_size=1 退化到普通 slot 公式的一致性。
-- 断言基准是一份独立的 plain-numpy oracle（`_reference_slot_mapping`），与 kernel 实现相互独立、交叉验证。
-
-## Test Plan
-```bash
-pytest tests/v1/worker/test_block_table.py -v
 ```
-（CP interleave 逻辑仅存在于 GPU Triton kernel——CPU fallback 断言 world_size==1——故测试需 CUDA，`@pytest.mark.skipif(not cuda)`。）
-
-## Test Result
+[CI/Build] Add unit tests for BlockTable.compute_slot_mapping
 ```
-# 本机 RTX 5080 (sm_120) / WSL2 / lab venv，standalone 运行（绕开需额外依赖的 tests/conftest）
-$ python -m pytest test_block_table.py -q
-..........................                                               [100%]
-26 passed in 6.03s
-```
-- 26 例＝2 手算 golden 锚点 + 7 非 CP 边界 + 16 DCP4/PCP2(interleave{1,16}×8 rank) + 1 退化一致性。
-- **golden 锚点**用手算 slot 值（独立于 numpy oracle），避免「oracle 镜像 kernel」的循环论证。
-- 规范：在 **vLLM `pyproject.toml` 配置下** `ruff check` 与 `ruff format --check` 均通过。
-- 待在干净环境补跑：完整 `pre-commit run --all-files`（mypy/codespell 等）与 CI 下 `pytest tests/v1/worker/test_block_table.py`（需 `requirements/test.txt` 依赖如 tblib）。
-
-## Notes / 署名
-- 思路承接 #30683（作者 @pisceskkk）；如采「复活」路径应 credit 原作者。
-- vLLM 要求披露 AI 辅助并加 `Co-authored-by:` trailer——本仓库 no-coauthor 约定不延伸到上游，署名口径待定。
-- 提交须 `git commit -s`（DCO）、`pre-commit run --all-files` 全绿（#30683 正死于 pre-commit 未过）。
 
 ---
 
-## 与本仓库草稿的对应
-- 草稿测试文件：`notes/m13/pr_draft/test_block_table.py`（**未经 GPU 验证**）。
-- 目标落点：vLLM `tests/v1/worker/test_block_table.py`。
-- 设计依据与研究留痕：`notes/m13/pr_slot_mapping_test.md`。
+## PR Body（英文，可直接粘贴）
+
+### Purpose
+
+`BlockTable.compute_slot_mapping` maps logical token positions to physical KV
+cache slots. An off-by-one in this path silently corrupts KV cache contents
+instead of raising, which is hard to trace back from garbled output. It also
+carries several easy-to-break branches: hybrid KV/kernel block sizes, decode
+context parallel (DCP) interleaving, CUDA graph padding, and the
+`SlotMappingMode.NONE` short circuit used by Mamba-style state caches.
+
+Today this path has no direct test coverage:
+
+```console
+$ grep -rln "compute_slot_mapping\b" tests/
+$ # (no matches)
+```
+
+`tests/v1/worker/test_gpu_block_table.py` covers the MRV2 `BlockTables`
+staged-write and `move_row` behaviour, and
+`tests/v1/worker/test_gpu_model_runner.py::test_hybrid_block_table_initialization`
+covers hybrid block table *initialization* (asserting the expanded row against
+`map_to_kernel_blocks` itself). Neither computes a slot mapping.
+
+This PR adds `tests/v1/worker/test_block_table.py`, testing through the public
+`BlockTable` API. It is test-only: no production code is modified.
+
+### Test plan
+
+```bash
+python -m pytest tests/v1/worker/test_block_table.py -v
+```
+
+### Test result
+
+```
+18 passed, 14 warnings in 5.34s
+```
+
+Environment: RTX 5080 (sm_120), driver 610.62, Python 3.12.13,
+torch 2.13.0+cu130, triton 3.7.1, built with `VLLM_USE_PRECOMPILED=1`
+against `cb8104839c141609d99f1254459ef3a4f1bd4263`.
+
+Pre-commit on the changed file passes (`ruff check`, `ruff format`, `typos`,
+`mypy`, SPDX and the remaining applicable hooks). `pre-commit run --all-files`
+is clean except a pre-existing `shellcheck` finding in
+`docs/pre_run_check.sh` (SC2317), untouched by this PR.
+
+Note on the neighbouring suite: `tests/v1/worker/test_gpu_block_table.py`
+reports 3 failures on this machine with `RuntimeError: UVA is not available`
+(WSL2). These reproduce on an unmodified checkout with this PR's file removed,
+so they are environmental and unrelated. The new tests use `pin_memory=False`
+and are unaffected.
+
+### What is covered
+
+| Area | Cases |
+| --- | --- |
+| Hand-computed golden slots (independent of the reference implementation) | plain mapping (2), DCP world size 2 (1), hybrid 32/16 (1) |
+| Block boundaries | first/last position in a block, spanning many blocks |
+| Physical layout | non-contiguous block ids |
+| Batching | single token, ragged multi-request, non-zero prefix offset |
+| CUDA graph padding | 1030 tokens crossing the kernel's 1024-token tile, padded tail crossing a second tile |
+| Decode context parallel | world size {2, 4} × interleave {1, 4}, every rank, plus "each token is owned by exactly one rank" |
+| Hybrid blocks | KV/kernel sizes (32, 16) and (64, 16), end to end through `compute_slot_mapping` |
+| `SlotMappingMode.NONE` | buffer is left untouched (checked with a sentinel distinct from `PAD_SLOT_ID`) |
+
+The reference implementation rebuilds the expected mapping step by step from the
+public input semantics (virtual block → DCP ownership → local offset → KV to
+kernel block expansion → physical block → slot → `PAD_SLOT_ID`) rather than
+mirroring the kernel's index arithmetic. The hand-computed golden cases guard
+against the reference and the kernel being wrong in the same way; both golden
+groups and the reference caught a real arithmetic mistake in an earlier draft of
+these tests.
+
+### Why this is not a duplicate
+
+- No open or merged PR adds direct tests for this path (searched `slot mapping`,
+  `block_table test`, `test_block_table`).
+- The open slot-mapping PRs are unrelated in scope: #41270 / #41272 remove
+  slot mapping from attention *metadata*; #46446 / #45245 / #43879 pre-compile
+  the kernel during warmup; #47924 is an RFC/prototype.
+- The closed, stale #30683 by @pisceskkk proposed unit tests for
+  `block_table.py` in the same spirit, and credit for the direction goes there.
+  That patch cannot run on current main: it targeted the older
+  `compute_slot_mapping(req_indices, positions)` signature and assumed slot
+  mapping was sharded by `pcp_world_size * dcp_world_size`. On current main the
+  signature is `(num_reqs, query_start_loc, positions)` and the kernel is
+  sharded by DCP only, so these tests were written against the current API and
+  additionally cover hybrid blocks, `SlotMappingMode`, and tile-crossing
+  padding.
+
+### AI assistance disclosure
+
+AI assistance (Claude) was used to research the current implementation, draft
+these tests, and run the validation described above. The submitter reviewed
+every line and reproduced the test results locally.
+
+---
+
+## 本仓库对应关系
+- 已验证测试文件：`notes/m13/pr_draft/test_block_table.py`（与干净树中 `tests/v1/worker/test_block_table.py` **sha256 完全一致**：`829c0e37...`）。
+- 研究与设计留痕：`notes/m13/pr_slot_mapping_test.md`；断点与验证：`notes/m13/STATUS.md`、`notes/m13/validation/`。
+- Commit 需 `git commit -s`（DCO），并按 AGENTS.md 加 AI 归属 trailer（如 `Co-authored-by:` / `Assisted-by:`）。**当前尚未创建 commit**，等确认 sign-off 身份。

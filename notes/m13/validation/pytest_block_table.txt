@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ciaran/projects/vllm-m13-upstream/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /home/ciaran/projects/vllm-m13-upstream
+configfile: pyproject.toml
+plugins: typeguard-4.6.0, buildkite-test-collector-0.1.9, shard-0.1.2, hypothesis-6.165.0, forked-1.6.0, cov-7.1.0, asyncio-1.4.0, timeout-2.4.0, mock-3.15.1, anyio-4.14.2, rerunfailures-16.4, schemathesis-4.24.3
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+Running 18 items in this shard: tests/v1/worker/test_block_table.py::test_slot_mapping_matches_hand_computed_slots[kv_manager_block_ids0-positions_per_req0-expected0], tests/v1/worker/test_block_table.py::test_slot_mapping_matches_hand_computed_slots[kv_manager_block_ids1-positions_per_req1-expected1], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[single_token-kv_manager_block_ids0-positions_per_req0], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[first_and_last_position_in_block-kv_manager_block_ids1-positions_per_req1], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[spans_many_blocks-kv_manager_block_ids2-positions_per_req2], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[non_contiguous_blocks-kv_manager_block_ids3-positions_per_req3], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[ragged_multi_request-kv_manager_block_ids4-positions_per_req4], tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[prefix_offset-kv_manager_block_ids5-positions_per_req5], tests/v1/worker/test_block_table.py::test_slot_mapping_pads_beyond_a_triton_tile, tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[1-2], tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[1-4], tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[4-2], tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[4-4], tests/v1/worker/test_block_table.py::test_slot_mapping_dcp_matches_hand_computed_slots, tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[32-16], tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[64-16], tests/v1/worker/test_block_table.py::test_slot_mapping_hybrid_matches_hand_computed_slots, tests/v1/worker/test_block_table.py::test_slot_mapping_mode_none_leaves_buffer_untouched
+
+tests/v1/worker/test_block_table.py::test_slot_mapping_matches_hand_computed_slots[kv_manager_block_ids0-positions_per_req0-expected0] PASSED [  5%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_matches_hand_computed_slots[kv_manager_block_ids1-positions_per_req1-expected1] PASSED [ 11%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[single_token-kv_manager_block_ids0-positions_per_req0] PASSED [ 16%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[first_and_last_position_in_block-kv_manager_block_ids1-positions_per_req1] PASSED [ 22%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[spans_many_blocks-kv_manager_block_ids2-positions_per_req2] PASSED [ 27%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[non_contiguous_blocks-kv_manager_block_ids3-positions_per_req3] PASSED [ 33%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[ragged_multi_request-kv_manager_block_ids4-positions_per_req4] PASSED [ 38%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_covers_block_boundaries_and_ragged_batches[prefix_offset-kv_manager_block_ids5-positions_per_req5] PASSED [ 44%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_pads_beyond_a_triton_tile PASSED [ 50%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[1-2] PASSED [ 55%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[1-4] PASSED [ 61%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[4-2] PASSED [ 66%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_partitions_tokens_across_dcp_ranks[4-4] PASSED [ 72%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_dcp_matches_hand_computed_slots PASSED [ 77%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[32-16] PASSED [ 83%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[64-16] PASSED [ 88%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_hybrid_matches_hand_computed_slots PASSED [ 94%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_mode_none_leaves_buffer_untouched PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/v1/worker/test_block_table.py: 14 warnings
+  /home/ciaran/projects/vllm-m13-upstream/.venv/lib/python3.12/site-packages/torch/jit/_script.py:365: DeprecationWarning: `torch.jit.script_method` is deprecated. Please switch to `torch.compile` or `torch.export`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 18 passed, 14 warnings in 5.34s ========================

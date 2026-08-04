@@ -1,8 +1,104 @@
 # M13 · 首次开源 PR — 研究笔记（候选 C1：`compute_slot_mapping` 单元测试）
 
-> **本笔记目的**：记录 M13「首次上游贡献」的**研究阶段**全过程与结论——为什么选 C1、缺口是否真实、上游有无前车、kernel 到底做什么、测试怎么设计、提交怎么合规。保留研究痕迹，供后续动手与复查。
-> **状态**：研究完成，**尚未动手写测试/提 PR**。下一步见 §8。
-> **边界**：本阶段只做「复现→定位→设计」，不改上游代码、不提交。
+> **阅读顺序**：本文件分两大部分。
+> - **【第一部分】当前 main（`cb81048`，2026-08-04 实测）** —— 权威、以此为准。
+> - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.3）。
+>
+> **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动），**尚未 push / 尚未建 PR**。断点见 `STATUS.md`。
+
+---
+
+# 【第一部分】当前 main（权威）
+
+## A.1 事实基线
+| 项 | 值 |
+|---|---|
+| 核查时间 | 2026-08-04 03:21–03:53 UTC |
+| upstream/main | **`cb8104839c141609d99f1254459ef3a4f1bd4263`**（2026-08-04T03:05:45Z） |
+| 最新 release | v0.26.0（2026-07-27） |
+| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests` |
+| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，+322 行；main 上此文件仍不存在） |
+
+## A.2 MRV1 / MRV2 与「测哪个对象」
+两条 block_table 并存，**必须分清**：
+- `vllm/v1/worker/block_table.py` —— `BlockTable` / `MultiGroupBlockTable` / `SlotMappingMode` / `get_block_table_width`。被 **`gpu_input_batch.py`、`gpu_model_runner.py`（MRV1）、`tpu_input_batch.py`** 及 KV connector（mooncake/nixl）使用 → **活跃路径，本 PR 的目标**。
+- `vllm/v1/worker/gpu/block_table.py` —— `BlockTables`（复数）+ `_compute_slot_mappings_kernel`（复数），被 **MRV2（`gpu/model_runner.py`）**、pcp_manager、spec-decode 使用。MRV2 仍从 V1 模块 import `get_block_table_width`。**已有测试 `test_gpu_block_table.py` 测的是它（staged writes / move_row），不测 slot mapping。**
+- 另有 CPU fallback：`vllm/utils/cpu_triton_utils.py:_compute_slot_mapping_kernel_impl`（C++ op，**断言 `TOTAL_CP_WORLD_SIZE == 1`，即 CPU 不支持 CP**）→ CP 语义只能在 GPU 测。
+
+## A.3 当前 kernel 的逐步公式（`block_table.py:379-442`，已实测验证）
+调用侧 `compute_slot_mapping`（`:182-211`）关键点：
+- `SlotMappingMode.NONE` → **直接 return，不触碰 slot_mapping buffer**（`:189-192`）。
+- 传入 kernel 的 constexpr：`KV_CACHE_BLOCK_SIZE=self.kv_cache_block_size`、`BLOCKS_PER_KV_BLOCK=self.blocks_per_kv_block`、**`TOTAL_CP_WORLD_SIZE=self.dcp_world_size`**、**`TOTAL_CP_RANK=self.dcp_rank`**、`CP_KV_CACHE_INTERLEAVE_SIZE`、`PAD_ID=PAD_SLOT_ID(-1)`、`BLOCK_SIZE=1024`（Triton tile）。
+- 传入的 `block_size` 参数是 **kernel block size**（`self.block_size`，混合时 = kernel_block_size）。
+
+kernel 内（每 program 处理一个 req；最后一个 program 填 padding）：
+```
+virtual_block_size   = KV_CACHE_BLOCK_SIZE * dcp_world_size      # 注意用“分配块大小”
+virtual_block_index  = pos // virtual_block_size
+virtual_block_offset = pos %  virtual_block_size
+is_local             = (virtual_block_offset // INTERLEAVE) % world == rank
+local_block_offsets  = (virtual_block_offset // (world*INTERLEAVE))*INTERLEAVE
+                       + (virtual_block_offset % INTERLEAVE)
+block_indices        = virtual_block_index * BLOCKS_PER_KV_BLOCK
+                       + local_block_offsets // kernel_block_size      # 混合块在此体现
+block_numbers        = block_table[req, block_indices]                 # 已是 kernel block id
+slot                 = block_numbers * kernel_block_size + local_block_offsets % kernel_block_size
+slot                 = slot if is_local else PAD_ID
+```
+padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 1024 tile 填 `PAD_ID`。
+
+**三块语义（务必分清）**：
+- `kv_cache_block_size`（= 构造参数 `block_size`）：KV manager 分配粒度，决定 virtual block 跨度。
+- `block_size`（= `kernel_block_size`）：attention kernel 粒度，**决定最终 slot 算术**。
+- `blocks_per_kv_block = kv_cache_block_size // kernel_block_size`：一个分配块含几个 kernel 块；`add_row`/`append_row` **已自动**用 `map_to_kernel_blocks` 把 KV manager id 展开成 kernel id 写入表（`:146-149`）。故 oracle 必须从「公共 API 输入语义」重建，而不是偷读 kernel 输出。
+
+**实测确认（`/tmp/m13_probe.py`，已删）**：
+- 非混合 kv=kernel=16、blocks `[5,6,7,8]`、pos `0,15,16,20` → `[80,95,96,100]` ✓
+- 混合 kv=32/kernel=16、KV blocks `[5,9]` → 表内 kernel `[10,11,18,19]`；pos `0,15,16,20,31,32,47` → `[160,175,176,180,191,288,303]` ✓
+- DCP world2：rank0 拿偶 offset、rank1 拿奇 offset，非本 rank = `-1` ✓
+- `SlotMappingMode.NONE`：预填 `-12345` 后调用，buffer **保持不变** ✓
+
+## A.4 相对旧快照的漂移（旧结论已推翻）
+1. **PCP 已不参与 slot mapping**：现在只按 **DCP** 分片（旧假设 `pcp × dcp` 错误）。`pcp_world_size/pcp_rank` 仍在 `__init__` 读取，但**不传入 kernel**。
+2. **新增混合块语义**：`kv_cache_block_size` / `kernel_block_size` / `blocks_per_kv_block` 三分（旧只有单一 block_size）。
+3. **新增 `SlotMappingMode`**：`TOKEN_TO_KV_SLOT`（默认）与 `NONE`（Mamba/GDN 状态缓存，跳过）。
+4. **`[Test]` 不是合法 PR 前缀**：`docs/contributing/README.md:223+` 列表为 Bugfix/CI-Build/Doc/Model/Frontend/Kernel/Core/Hardware/Misc → 取 **`[CI/Build]`**。
+5. **新增强制规则 `AGENTS.md`（根目录）**：禁裸 pip（必须 `uv`）、88 字符行宽、PR 须含查重说明+测试命令与结果+AI 披露、**纯 code-agent PR 不允许**（提交人须能端到端负责）、违规可**直接封禁**。
+6. **测试环境不再需要 /tmp 绕过**：装 `requirements/test/cuda.in` 后真实 `tests/conftest.py` 可导入，正式从仓库根目录运行。
+
+## A.5 当前测试矩阵（18 tests，`tests/v1/worker/test_block_table.py`）
+| 组 | 内容 |
+|---|---|
+| 手算 golden ×2（参数化） | 普通映射：blocks `[5,6,7,8]` pos `0,15,16,47` → `[80,95,96,127]`；两请求非连续块 → `[147,68]` |
+| 手算 golden（DCP） | world2/rank1、pos 0..5 → `[-1,80,-1,81,-1,82]` |
+| 手算 golden（Hybrid） | kv32/kernel16、KV blocks `[5,9]` → `[160,175,176,191,288,303]` |
+| 边界 ×6 | 单 token / 块内首末 / 跨多块(64) / 非连续物理块(96) / ragged 5 请求 / prefix offset(70..89) |
+| 跨 Triton tile | 1030 tokens（非 1024 倍数）+ padding 再跨一 tile（buffer 2100） |
+| DCP ×4 | world{2,4} × interleave{1,4} 全 rank；断言「每 token 恰被一个 rank 拥有」 |
+| Hybrid ×2 | (32,16) 与 (64,16) 端到端跨 kernel/分配块边界 |
+| SlotMappingMode.NONE | sentinel −12345（≠ PAD −1）保持不变 |
+
+**删除**旧草稿的 PCP×DCP 16 例矩阵（语义不成立，保留会误导）。**变异测试**：给 kernel `slot_offsets` 注入 +1 → **17/18 失败**（仅 NONE 用例应当存活），证明非空转；随后已还原。
+
+## A.6 已知限制
+- 未真实起多卡：DCP 通过设置 `block_table.dcp_world_size/dcp_rank` 覆盖（CP 分片是纯 index 数学，且 CPU fallback 明确不支持 CP，无法在 CPU 侧验）。
+- 未覆盖 `num_reqs=0` / 某请求长度 0 / `num_tokens=0`：调用侧（MRV1）不会产生这类输入，且 `np.concatenate` 空批本身非法契约；如需覆盖应先确认上游契约，故仅记录不写期望。
+- 未测 MRV2 的 `compute_slot_mappings`（复数，`gpu/block_table.py`）——属另一路径，本 PR 不扩大 scope。
+- 本机 3 个邻近测试失败为**基线环境问题**（WSL2 `UVA is not available`），与本改动无关（移除本文件后同样失败）。
+
+## A.7 与 PR #30683 的关系
+`CLOSED`/未合并/`stale`（作者 @pisceskkk，closed 2026-04-09）。方向相同（为 block_table 加 UT），**故 PR 描述中致谢其方向**；但**不夸大继承**：其代码基于旧 API（`compute_slot_mapping(req_indices, positions)`）与已失效的 `pcp × dcp` 假设，**无法在当前 main 运行**。本实现按当前 API 重写，并新增 hybrid / SlotMappingMode / 跨 tile padding 覆盖。
+
+## A.8 下一步（PR 流程）
+见 `STATUS.md` §7（命令已备好）。阻塞项：DCO 身份确认、AI 署名 trailer 口径、人工逐行审阅（AGENTS.md 硬要求）。
+
+---
+---
+
+# 【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28 记录）
+
+> ⚠️ **以下内容仅为历史存档**，其关于 kernel 语义（`pcp × dcp`）、无混合块、无 `SlotMappingMode`、`[Test]` 前缀、26/26 通过、/tmp 运行方式等结论**均已被 §A 推翻或取代**。保留以呈现研究演进过程。
+
 
 ---
 
