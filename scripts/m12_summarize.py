@@ -42,9 +42,9 @@ def queue_analysis(rows, drain_time_s, Q):
     k = max(1, len(arr) // 5)
     head20 = float(w[:k].mean()); tail20 = float(w[-k:].mean())
     end_waiting = float(w[-1]); peak_waiting = float(w.max())
-    qpt = slope > Q["slope_thr"]
-    qlg = (tail20 - head20 >= Q["abs_diff"]) and (tail20 / max(head20, Q["base_floor"]) >= Q["ratio"])
-    qnd = end_waiting > Q["end_waiting_thr"]
+    qpt = slope > Q["slope_thr"] # Queue Positive Trend，队列后半段存在明显持续正趋势
+    qlg = (tail20 - head20 >= Q["abs_diff"]) and (tail20 / max(head20, Q["base_floor"]) >= Q["ratio"]) # Queue Level Growth，队列后段平均水平明显高于前段
+    qnd = end_waiting > Q["end_waiting_thr"] # Queue Not Drained at End，队列末尾仍有明显积压
     queue_unstable = qpt and (qlg or qnd)
     drain_unstable = drain_time_s > Q["drain_budget_s"]
     # counter/histogram run-local delta
@@ -61,7 +61,8 @@ def queue_analysis(rows, drain_time_s, Q):
 
 def per_request(detailed, slo):
     """从 detailed 重建逐请求，算 slo_pass（成功且 ttft/tpot/e2el 全达标）与 realized_qps。"""
-    il = detailed.get("itls"); ol = detailed.get("output_lens"); st = detailed.get("start_times")
+    il = detailed.get("itls"); # Token 间延迟
+    ol = detailed.get("output_lens"); st = detailed.get("start_times")
     tt = detailed.get("ttfts"); err = detailed.get("errors")
     if not (il and ol and tt):
         return None
@@ -101,12 +102,12 @@ def run_stable(rec, slo, cfg):
 
 
 def build_run(md_path, cfg):
-    md = load(md_path)
+    md = load(md_path) # Orchestrator Metadata
     if not md:
         return None
     rid = md["run_id"]
-    res = load(md.get("result_path", ""))
-    rows = read_metrics(rid)
+    res = load(md.get("result_path", "")) # 官方 Bench Summary + Detailed
+    rows = read_metrics(rid) # 服务端 Metrics 时间序列
     slo = cfg["experimental_slo"]; Q = cfg["queue_thresholds"]
     rec = {"run_id": rid, "shape": f"{md['shape']['in']}/{md['shape']['out']}",
            "target_qps": md["target_offered_qps"], "seed": md["seed"], "num_prompts": md["num_prompts"],
