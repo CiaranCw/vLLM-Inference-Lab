@@ -1,8 +1,9 @@
 # M13 断点快照（RESUME / 交接）
 
-> **状态：COMMITTED & PUSHED TO FORK — 等待你审查后创建 Draft PR**
-> —— 提交人已完成人工审查（代码 / Golden / 18-18 pytest / pre-commit）。**已改名、已 signed-off commit、已 push 到 fork；尚未创建 PR。**
-> **下一步**：你审查最终 diff 与 PR Body → 我创建 **Draft PR** → 你在网页复核。
+> **状态：DRAFT PR 已创建 —— https://github.com/vllm-project/vllm/pull/51017（等待 CI 排队完成 / maintainer review）**
+> —— 提交人已完成人工审查（代码 / Golden / 18-18 pytest / pre-commit），已改名、signed-off commit、push 到 fork，并经你确认后创建 **Draft PR #51017**。
+> **DCO 检查：pass** ✅　**mergeable: true**　1 commit / 1 file / +384 / 零产品改动。
+> **下一步**：等 CI（当前 `queued`）→ 视结果决定是否 Ready for review；如需回应 review 再迭代。
 >
 > **最后更新**：2026-08-04 11:1x UTC（本轮：改名避开 #39591 路径冲突 + 复跑验证 + PR Body 定稿 + DCO + signed-off commit `e391a6b` + push 到 fork）
 
@@ -16,7 +17,9 @@
 | **DCO 身份** | 按你提供的值设为 **repo-local**：`CiaranCw <1399538830@qq.com>`（未改动全局配置） |
 | **Commit** | ✅ **`e391a6b`**，`git commit -s`；含 `Signed-off-by: CiaranCw <1399538830@qq.com>` 与 `Assisted-by: Claude Code`；仓库自带 `Sign-off Commit` hook 与全部 pre-commit hook 均 Passed |
 | **Push** | ✅ 已创建 fork **`CiaranCw/vllm`** 并推送分支 `m13/block-table-slot-mapping-tests`；远程 commit = 本地 `e391a6b`；compare 显示 **ahead 1 / behind 0，仅 1 个新增文件** |
-| **PR** | ⏸ **未创建**（按你的要求停下等审查）。最终英文正文：`pr_draft/PR_BODY_FINAL.md` |
+| **PR** | ✅ **Draft PR #51017** https://github.com/vllm-project/vllm/pull/51017 —— base `vllm-project:main`、head `CiaranCw:m13/block-table-slot-mapping-tests`、title `[Core] Add unit tests for BlockTable slot mapping`；正文取自 `pr_draft/PR_BODY_FINAL.md` |
+| **正文换行修正** | 初版正文按 commit-message 习惯做了 ~79 列硬换行（**我的风格选择，非项目要求**）。核查确认：`AGENTS.md:120` 的 88 列**只约束 Python**、`.markdownlint.yaml` 明确 `MD013: false`、上游 PR 模板自身最长行 149 —— 故按你选择改为**不硬换行**（段落单行，靠 GitHub 自动折行；表格/代码块原样）。已用 **REST API** 更新（`gh pr edit` 因 GraphQL projectCards 弃用而未生效），远程正文与本地**逐字节一致**、语义等价 |
+| **CI 状态** | **DCO pass** ✅、Meta Internal-Only Check pass、mergify Summary pass；`pre-commit` / `New PR Bot` 三个 job 状态 `queued`（排队，非失败、非等审批） |
 | AI 披露 | 经你确认为 **Claude Code**；PR Body 与 commit trailer 均据实填写 |
 | 产品代码 | 未修改（commit 内只有 1 个测试文件） |
 
