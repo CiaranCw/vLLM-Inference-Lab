@@ -1,6 +1,6 @@
 # PR 草稿：Add unit tests for BlockTable slot mapping
 
-> **状态：READY FOR HUMAN LINE-BY-LINE REVIEW** —— 尚未创建 Commit、尚未 Push、尚未创建 PR。
+> **状态：READY FOR FINAL HUMAN CONFIRMATION BEFORE COMMIT** —— 尚未创建 Commit、尚未 Push、尚未创建 PR（远程 CI 亦未运行）。
 > **提交前你必须做两件事**：① 逐行审查测试文件（AGENTS.md：纯 code-agent PR 不允许，提交人须端到端负责）；② 把下面 Body 中 **AI 披露段的未来时改成真实完成时**，并按实际使用的工具填名。
 > 审查材料见 `notes/m13/review/`。
 
@@ -39,8 +39,9 @@ staged-write and `move_row` behaviour, and
 covers hybrid block table *initialization* (asserting the expanded row against
 `map_to_kernel_blocks` itself). Neither computes a slot mapping.
 
-This PR adds `tests/v1/worker/test_block_table.py`, testing through the public
-`BlockTable` API. It is test-only: no production code is modified.
+This PR adds `tests/v1/worker/test_block_table.py`, exercising
+`BlockTable.compute_slot_mapping`. It is test-only: no production code is
+modified.
 
 ### Test plan
 
@@ -52,7 +53,7 @@ pre-commit run --files tests/v1/worker/test_block_table.py
 ### Test result
 
 ```
-18 passed, 14 warnings in 5.06s
+18 passed, 14 warnings in 5.24s
 ```
 
 `pre-commit run --files tests/v1/worker/test_block_table.py`: all applicable
@@ -61,30 +62,30 @@ rest).
 
 Environment: RTX 5080 (sm_120), driver 610.62, Python 3.12.13,
 torch 2.13.0+cu130, triton 3.7.1, against
-`72cd5424da80a4a9caa3f42fd65bc0b94e61cbf0`.
+`0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`.
 
 ### What is covered
 
 | Area | Cases |
 | --- | --- |
-| Hand-computed golden slots (independent of the reference implementation) | plain mapping (2), DCP world size 2 (1), hybrid 32/16 (1) |
-| Block boundaries | first/last position in a block, spanning many blocks |
-| Physical layout | non-contiguous block ids |
-| Batching | single token, ragged multi-request, non-zero prefix offset |
-| CUDA graph padding | 1030 tokens crossing the kernel's 1024-token tile, padded tail crossing a second tile |
-| Decode context parallel | world size {2, 4} × interleave {1, 4}, every rank, plus "each token is owned by exactly one rank" |
+| Hand-computed golden slots, anchoring both the kernel output and the reference | plain mapping (2: single request block boundaries, multiple request rows) |
+| Block boundaries, ragged batches, prefix offsets | single token, first/last position in a block, spanning many blocks, non-contiguous block ids, ragged multi-request, absolute non-zero positions after a cached prefix (6) |
+| CUDA graph padding across a Triton tile | 1030 tokens crossing the kernel's 1024-token tile with a hand-computed anchor on positions 1023-1029, padded tail crossing a second tile |
+| Decode context parallel partitioning | world size {2, 4} × interleave {1, 4}, every rank, plus "each token is owned by exactly one rank" |
+| Hand-computed DCP golden crossing a virtual block | world size 2, rank 1, positions up to 33 so the second KV block is used |
 | Hybrid blocks | KV/kernel sizes (32, 16) and (64, 16), end to end through `compute_slot_mapping` |
+| Hand-computed hybrid golden crossing the second kernel block | 32/16 blocks, positions up to 48 so both kernel sub-blocks of a KV block are used |
 | `SlotMappingMode.NONE` | buffer is left untouched (checked with a sentinel distinct from `PAD_SLOT_ID`) |
 
 The reference implementation independently expands KV manager block IDs into
-kernel block IDs and rebuilds the expected mapping from the public input
-semantics. It does not call `BlockTable.map_to_kernel_blocks`, does not read the
-block table that `add_row` produced, and does not reuse the kernel's indexing
-implementation. This matters in practice: with a deliberate off-by-one injected
-into `map_to_kernel_blocks`, an earlier draft whose reference reused that helper
-still passed the hybrid cases, while the current version fails all of them. The
-hand-computed golden cases additionally guard against the reference and the
-kernel being wrong in the same way.
+kernel block IDs and rebuilds the expected mapping from the inputs passed to
+`BlockTable`. It does not call `BlockTable.map_to_kernel_blocks`, does not read
+the block table that `add_row` produced, and does not reuse the kernel's
+indexing implementation. This matters in practice: with a deliberate off-by-one
+injected into `map_to_kernel_blocks`, an earlier draft whose reference reused
+that helper still passed the hybrid cases, while the current version fails all
+of them. The plain hand-computed cases assert the expected slots against both
+the kernel output and the reference, so neither can drift unnoticed.
 
 ### Why this is not a duplicate
 
@@ -116,8 +117,8 @@ responsibility for the change.
 ---
 
 ## 本仓库对应关系
-- 已验证测试文件：`notes/m13/pr_draft/test_block_table.py`，与干净树 `tests/v1/worker/test_block_table.py` **sha256 一致**：`3336963163439fd2531519f4640181444ec256c558c55c66f7226e2e934e2296`
-- 逐行审查材料：`notes/m13/review/{LINE_BY_LINE_REVIEW,MANUAL_GOLDEN_CASES,REVIEW_CHECKLIST,REPRO_COMMANDS}.md`、`REVIEW_DIFF.patch`
+- 已验证测试文件：`notes/m13/pr_draft/test_block_table.py`，与干净树 `tests/v1/worker/test_block_table.py` **sha256 一致**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
+- 逐行审查材料：`notes/m13/review/{LINE_BY_LINE_REVIEW,MANUAL_GOLDEN_CASES,REVIEW_CHECKLIST,FINAL_PRE_PR_CHECKLIST,REPRO_COMMANDS}.md`、`REVIEW_DIFF.patch`
 - 断点与验证证据：`notes/m13/STATUS.md`、`notes/m13/validation/`
 - Commit 需 `git commit -s`（DCO）并按 AGENTS.md 加 AI 归属 trailer。**当前尚未创建 commit**（待你确认 sign-off 身份）。
 

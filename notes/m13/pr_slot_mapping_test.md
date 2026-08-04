@@ -1,7 +1,7 @@
 # M13 · 首次开源 PR — 研究笔记（候选 C1：`compute_slot_mapping` 单元测试）
 
 > **阅读顺序**：本文件分两大部分。
-> - **【第一部分】当前 main（`72cd542`，2026-08-04 06:xx UTC 实测）** —— 权威、以此为准。
+> - **【第一部分】当前 main（`0b1c151`，2026-08-04 09:xx UTC 实测）** —— 权威、以此为准。
 > - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.4）。
 >
 > **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动、Oracle 独立性经变异测试证明），**尚未 commit / 尚未 push / 尚未建 PR**。断点见 `STATUS.md`，逐行审查材料见 `review/`。
@@ -13,13 +13,13 @@
 ## A.1 事实基线
 | 项 | 值 |
 |---|---|
-| 核查时间 | **2026-08-04 06:18–06:40 UTC**（本轮复核；上轮 03:21–03:53） |
-| upstream/main | **`72cd5424da80a4a9caa3f42fd65bc0b94e61cbf0`**（2026-08-04T06:15:02Z）——上轮为 `cb81048`，前进 1 commit（仅 `rust/src/bench/`，与本 PR 无关，已安全 port） |
+| 核查时间 | **2026-08-04 09:22 UTC 起**（本轮；前两轮 06:18 / 03:21） |
+| upstream/main | **`0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`**（2026-08-04T08:03:46Z）——上轮 `72cd542`，前进 1 commit（仅 `rust/src/chat/renderer/kimi_k3/`，与本 PR 无关，已安全 port） |
 | 最新 release | v0.26.0（2026-07-27） |
-| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `72cd542`（**无本地 commit**） |
-| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，**348 行 / 18 tests**；main 上此文件仍不存在） |
-| 语义复核 | `block_table.py` 在 `cb81048..72cd542` **零改动**；`AGENTS.md` / `docs/contributing/README.md` 亦零改动 |
-| 当前状态 | **READY FOR HUMAN LINE-BY-LINE REVIEW**（未 commit / 未 push / 未建 PR） |
+| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `0b1c151`（**无本地 commit**） |
+| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，**384 行 / 18 tests**，sha256 `b0a15b41…`；main 上此文件仍不存在） |
+| 语义复核 | `block_table.py` 在 `cb81048..0b1c151` **零改动**；`AGENTS.md` / `docs/contributing/README.md` / `.pre-commit-config.yaml` / `tests/v1/worker/` 亦零改动 |
+| 当前状态 | **READY FOR FINAL HUMAN CONFIRMATION BEFORE COMMIT**（未 commit / 未 push / 未建 PR；远程 CI 未运行） |
 
 ## A.2 MRV1 / MRV2 与「测哪个对象」
 两条 block_table 并存，**必须分清**：
@@ -84,15 +84,28 @@ padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 10
 
 **另一条已有证据**：kernel 级变异（`slot_offsets + 1`）→ 17/18 失败（仅 `SlotMappingMode.NONE` 用例应存活，因其不跑 kernel），证明整套测试非空转。
 
+## A.4c 人工逐行审查后的最终增强（本轮）
+
+一轮人工逐行技术审查未发现 slot mapping 数学 / DCP 语义 / hybrid 块语义 / `SlotMappingMode.NONE` 行为上的功能性阻塞问题。本轮只做**少量、明确、低风险**的增强，**不改产品语义、不扩大 PR scope**：
+
+1. **三方锚定**：普通手算 Golden 现同时断言 `Actual == Golden` 与 `Reference == Golden`——把 oracle 本身也钉在手算值上（此前只验 Actual）。
+2. **DCP Golden 跨虚拟块**：positions 扩到 `[0..5, 32, 33]`；`position 33` 用到此前从未被引用的 KV 块 6（虚拟块 1）→ slot 96。
+3. **Hybrid Golden 跨第二个 kernel 块**：positions 加 `48`；此前 kernel 块 19 从未被触及；`position 48` → 块 19 offset 0 → slot 304。同时修正 docstring（`position 47` 属块 **18**，原误写 19）。
+4. **Triton tile 边界手算断言**：删除恒真的 `assert len(actual) == num_tokens`（只验 helper 切片），改为 `actual[1023:1030] == 1039..1045`——锚定真实 token 从第一个 tile 跨入第二个；tile 块数改用通用向上取整。
+5. **测试输入最小化**：普通 Golden `[[5,6,7,8]]`→`[[5,6,7]]`、ragged 末请求 `[40,41,42]`→`[40,41]`、DCP 分区 32 块→`[[1,2,3]]`（均为「恰好足够」，且块 id 仍从 1 开始以免默认 0 掩盖错误）。
+6. **可读性与诊断**：普通 Golden 加 `ids=`；`_compute()` 加请求行数一致性 assert；ownership 显式 `np.stack(axis=0)`；手算期望数组显式 `dtype=np.int64`；NONE 断言改用 `assert_array_equal` 以显示差异位置；两处 docstring 措辞由「public API / public input semantics」收紧为「`BlockTable.compute_slot_mapping` / `BlockTable` input semantics」。
+
+**新增 anchors 均已用独立脚本复核**（DCP 33→96、Hybrid 48→304、Tile 1023–1029→1039–1045 全部 MATCH）。变异回归复跑：注入产品 `map_to_kernel_blocks +1` → 3 个 hybrid 测试全失败，恢复后产品 diff 为空、18 tests 全绿。
+
 ## A.5 当前测试矩阵（18 tests，`tests/v1/worker/test_block_table.py`）
 | 组 | 内容 |
 |---|---|
-| 手算 golden ×2（参数化） | 普通映射：blocks `[5,6,7,8]` pos `0,15,16,47` → `[80,95,96,127]`；两请求非连续块 → `[147,68]` |
-| 手算 golden（DCP） | world2/rank1、pos 0..5 → `[-1,80,-1,81,-1,82]` |
-| 手算 golden（Hybrid） | kv32/kernel16、KV blocks `[5,9]` → `[160,175,176,191,288,303]` |
+| 手算 golden ×2（参数化，**三方锚定** Actual+Reference+Golden） | `single_request_block_boundaries`：blocks `[5,6,7]` pos `0,15,16,47` → `[80,95,96,127]`；`multiple_request_rows` → `[147,68]` |
+| 手算 golden（DCP，**跨虚拟块**） | world2/rank1、pos `0..5,32,33` → `[-1,80,-1,81,-1,82,-1,96]` |
+| 手算 golden（Hybrid，**跨第二 kernel 块**） | kv32/kernel16、KV blocks `[5,9]`、pos 含 48 → `[160,175,176,191,288,303,304]` |
 | 边界 ×6 | 单 token / 块内首末 / 跨多块(64) / 非连续物理块(96) / ragged 5 请求 / prefix offset(70..89) |
-| 跨 Triton tile | 1030 tokens（非 1024 倍数）+ padding 再跨一 tile（buffer 2100） |
-| DCP ×4 | world{2,4} × interleave{1,4} 全 rank；断言「每 token 恰被一个 rank 拥有」 |
+| 跨 Triton tile | 1030 tokens（非 1024 倍数）+ padding 再跨一 tile（buffer 2100）；含手算锚点 `[1023:1030] == 1039..1045` |
+| DCP ×4 | world{2,4} × interleave{1,4} 全 rank（块 id 精简为 `[[1,2,3]]`）；`np.stack` 断言「每 token 恰被一个 rank 拥有」 |
 | Hybrid ×2 | (32,16) 与 (64,16) 端到端跨 kernel/分配块边界 |
 | SlotMappingMode.NONE | sentinel −12345（≠ PAD −1）保持不变 |
 
