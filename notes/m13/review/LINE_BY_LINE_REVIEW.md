@@ -2,7 +2,7 @@
 
 > **对象**：`tests/v1/worker/test_block_table.py`（**384 行**，新增文件，18 tests）
 > **干净工作树**：`/home/ciaran/projects/vllm-m13-upstream`，分支 `m13/block-table-slot-mapping-tests`
-> **base = upstream/main `0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`**
+> **base = upstream/main `a1657a0235a77ce85f8d348c83ff4adb29918b71`**
 > **SHA256**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
 > **本文件用途**：供**你（提交人）**逐行审查。AGENTS.md 明确「纯 code-agent PR 不允许，提交人须端到端理解并为改动负责」。**我不能代你完成审查。**
 >

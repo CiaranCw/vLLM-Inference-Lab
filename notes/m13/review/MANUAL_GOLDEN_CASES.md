@@ -3,7 +3,7 @@
 > **用途**：让你**不运行任何代码**就能独立验证测试里写死的期望值。
 > 若你的手算与下面任何一步不符，**先怀疑测试、不要怀疑自己**，然后我们一起查。
 >
-> 公式基准：`vllm/v1/worker/block_table.py` kernel（`:379-442`），upstream/main **`0b1c151`**。
+> 公式基准：`vllm/v1/worker/block_table.py` kernel（`:379-442`），upstream/main **`a1657a0`**。
 > 对应测试文件 SHA256：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`（384 行）。
 
 ---

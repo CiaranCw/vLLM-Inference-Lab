@@ -1,0 +1,186 @@
+======================================================================
+EXPECTED FAILURE FROM TEMPORARY MUTATION
+======================================================================
+These failures are INTENTIONAL and prove the independent reference
+oracle detects a bug in the production hybrid-block expansion helper.
+The production code was restored immediately after this run.
+This is NOT a failure of the submitted tests.
+
+recorded_utc : 2026-08-04T10:55:51Z
+base_sha     : a1657a0235a77ce85f8d348c83ff4adb29918b71
+mutation     : BlockTable.map_to_kernel_blocks() return value +1
+target       : vllm/v1/worker/block_table.py (temporarily patched, then restored)
+expectation  : hybrid[32-16], hybrid[64-16], hybrid golden all FAIL
+======================================================================
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- /home/ciaran/projects/vllm-m13-upstream/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /home/ciaran/projects/vllm-m13-upstream
+configfile: pyproject.toml
+plugins: typeguard-4.6.0, buildkite-test-collector-0.1.9, shard-0.1.2, hypothesis-6.165.0, forked-1.6.0, cov-7.1.0, asyncio-1.4.0, timeout-2.4.0, mock-3.15.1, anyio-4.14.2, rerunfailures-16.4, schemathesis-4.24.3
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items / 15 deselected / 3 selected
+Running 3 items in this shard: tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[32-16], tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[64-16], tests/v1/worker/test_block_table.py::test_slot_mapping_hybrid_matches_hand_computed_slots
+
+tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[32-16] FAILED [ 33%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[64-16] FAILED [ 66%]
+tests/v1/worker/test_block_table.py::test_slot_mapping_hybrid_matches_hand_computed_slots FAILED [100%]
+
+=================================== FAILURES ===================================
+______________ test_slot_mapping_with_hybrid_kernel_blocks[32-16] ______________
+
+kv_cache_block_size = 32, kernel_block_size = 16
+
+    @pytest.mark.parametrize(
+        "kv_cache_block_size,kernel_block_size",
+        [(32, 16), (64, 16)],
+    )
+    def test_slot_mapping_with_hybrid_kernel_blocks(
+        kv_cache_block_size: int, kernel_block_size: int
+    ) -> None:
+        """Slots use kernel blocks when allocation and kernel sizes differ."""
+        block_table = _make_block_table(
+            kv_cache_block_size=kv_cache_block_size,
+            kernel_block_size=kernel_block_size,
+        )
+        assert block_table.use_hybrid_blocks
+        assert block_table.blocks_per_kv_block == kv_cache_block_size // kernel_block_size
+    
+        # Cross both kernel block and KV allocation block boundaries.
+        num_tokens = 3 * kv_cache_block_size
+>       _check(block_table, [[5, 9, 2]], [list(range(num_tokens))])
+
+tests/v1/worker/test_block_table.py:350: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+block_table = <vllm.v1.worker.block_table.BlockTable object at 0x7fb2fd09dca0>
+kv_manager_block_ids = [[5, 9, 2]]
+positions_per_req = [[0, 1, 2, 3, 4, 5, ...]]
+
+    def _check(
+        block_table: BlockTable,
+        kv_manager_block_ids: list[list[int]],
+        positions_per_req: list[list[int]],
+    ) -> np.ndarray:
+        """Assert the kernel matches the reference and pads the unused tail."""
+        actual, num_tokens = _compute(block_table, kv_manager_block_ids, positions_per_req)
+        expected = _reference_slot_mapping(
+            block_table, kv_manager_block_ids, positions_per_req
+        )
+>       np.testing.assert_array_equal(actual[:num_tokens], expected[:num_tokens])
+E       AssertionError: 
+E       Arrays are not equal
+E       
+E       Mismatched elements: 96 / 96 (100%)
+E       Max absolute difference among violations: 16
+E       Max relative difference among violations: 0.25
+E        ACTUAL: array([176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188,
+E              189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201,
+E              202, 203, 204, 205, 206, 207, 304, 305, 306, 307, 308, 309, 310,...
+E        DESIRED: array([160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172,
+E              173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+E              186, 187, 188, 189, 190, 191, 288, 289, 290, 291, 292, 293, 294,...
+
+tests/v1/worker/test_block_table.py:175: AssertionError
+______________ test_slot_mapping_with_hybrid_kernel_blocks[64-16] ______________
+
+kv_cache_block_size = 64, kernel_block_size = 16
+
+    @pytest.mark.parametrize(
+        "kv_cache_block_size,kernel_block_size",
+        [(32, 16), (64, 16)],
+    )
+    def test_slot_mapping_with_hybrid_kernel_blocks(
+        kv_cache_block_size: int, kernel_block_size: int
+    ) -> None:
+        """Slots use kernel blocks when allocation and kernel sizes differ."""
+        block_table = _make_block_table(
+            kv_cache_block_size=kv_cache_block_size,
+            kernel_block_size=kernel_block_size,
+        )
+        assert block_table.use_hybrid_blocks
+        assert block_table.blocks_per_kv_block == kv_cache_block_size // kernel_block_size
+    
+        # Cross both kernel block and KV allocation block boundaries.
+        num_tokens = 3 * kv_cache_block_size
+>       _check(block_table, [[5, 9, 2]], [list(range(num_tokens))])
+
+tests/v1/worker/test_block_table.py:350: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+block_table = <vllm.v1.worker.block_table.BlockTable object at 0x7fb0edd4a5a0>
+kv_manager_block_ids = [[5, 9, 2]]
+positions_per_req = [[0, 1, 2, 3, 4, 5, ...]]
+
+    def _check(
+        block_table: BlockTable,
+        kv_manager_block_ids: list[list[int]],
+        positions_per_req: list[list[int]],
+    ) -> np.ndarray:
+        """Assert the kernel matches the reference and pads the unused tail."""
+        actual, num_tokens = _compute(block_table, kv_manager_block_ids, positions_per_req)
+        expected = _reference_slot_mapping(
+            block_table, kv_manager_block_ids, positions_per_req
+        )
+>       np.testing.assert_array_equal(actual[:num_tokens], expected[:num_tokens])
+E       AssertionError: 
+E       Arrays are not equal
+E       
+E       Mismatched elements: 192 / 192 (100%)
+E       Max absolute difference among violations: 16
+E       Max relative difference among violations: 0.125
+E        ACTUAL: array([336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348,
+E              349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361,
+E              362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374,...
+E        DESIRED: array([320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332,
+E              333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345,
+E              346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358,...
+
+tests/v1/worker/test_block_table.py:175: AssertionError
+_____________ test_slot_mapping_hybrid_matches_hand_computed_slots _____________
+
+    def test_slot_mapping_hybrid_matches_hand_computed_slots() -> None:
+        """Hand-computed hybrid mapping for 32-token KV blocks over 16-token kernel blocks.
+    
+        ``add_row`` expands KV blocks [5, 9] into kernel blocks [10, 11, 18, 19].
+        A virtual block spans the 32-token allocation block, so the kernel block is
+        picked by the offset within it, and slots use the kernel block size of 16:
+            position 0  -> kernel block 10 offset 0  -> 10 * 16 + 0  = 160
+            position 15 -> kernel block 10 offset 15 -> 10 * 16 + 15 = 175
+            position 16 -> kernel block 11 offset 0  -> 11 * 16 + 0  = 176
+            position 31 -> kernel block 11 offset 15 -> 11 * 16 + 15 = 191
+            position 32 -> kernel block 18 offset 0  -> 18 * 16 + 0  = 288
+            position 47 -> kernel block 18 offset 15 -> 18 * 16 + 15 = 303
+            position 48 -> kernel block 19 offset 0  -> 19 * 16 + 0  = 304
+        """
+        block_table = _make_block_table(kv_cache_block_size=32, kernel_block_size=16)
+        actual, num_tokens = _compute(block_table, [[5, 9]], [[0, 15, 16, 31, 32, 47, 48]])
+>       np.testing.assert_array_equal(
+            actual[:num_tokens],
+            np.array([160, 175, 176, 191, 288, 303, 304], dtype=np.int64),
+        )
+E       AssertionError: 
+E       Arrays are not equal
+E       
+E       Mismatched elements: 7 / 7 (100%)
+E       Max absolute difference among violations: 16
+E       Max relative difference among violations: 0.1
+E        ACTUAL: array([176, 191, 192, 207, 304, 319, 320])
+E        DESIRED: array([160, 175, 176, 191, 288, 303, 304])
+
+tests/v1/worker/test_block_table.py:369: AssertionError
+=============================== warnings summary ===============================
+tests/v1/worker/test_block_table.py: 14 warnings
+  /home/ciaran/projects/vllm-m13-upstream/.venv/lib/python3.12/site-packages/torch/jit/_script.py:365: DeprecationWarning: `torch.jit.script_method` is deprecated. Please switch to `torch.compile` or `torch.export`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[32-16]
+FAILED tests/v1/worker/test_block_table.py::test_slot_mapping_with_hybrid_kernel_blocks[64-16]
+FAILED tests/v1/worker/test_block_table.py::test_slot_mapping_hybrid_matches_hand_computed_slots
+================ 3 failed, 15 deselected, 14 warnings in 1.46s =================
+
+PRODUCTION CODE RESTORED: git diff -- vllm/ csrc/ is empty (verified)

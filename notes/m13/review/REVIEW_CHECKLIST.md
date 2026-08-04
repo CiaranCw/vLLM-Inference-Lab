@@ -5,9 +5,14 @@
 >
 > 对象：`tests/v1/worker/test_block_table.py`，**384 行 / 18 tests**
 > SHA256：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
-> base：upstream/main **`0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`**
+> base：upstream/main **`a1657a0235a77ce85f8d348c83ff4adb29918b71`**
 >
 > 提交前的最终确认另见 `FINAL_PRE_PR_CHECKLIST.md`。
+
+> **Agent 已自动验证 vs 你需人工确认**：Agent 已自动跑过 pytest / pre-commit / ruff / diff /
+> 变异回归，并独立复核过三个手算锚点——但这些**只是 Agent 结果**（`Agent verified`），
+> **不能替代**你的人工确认（`Human pending`）。AGENTS.md 要求提交人端到端负责。
+> 因此下列每一项仍需**你本人**执行并勾选；**Agent 未勾选任何一项**。
 
 ## A. 理解与背景
 - [ ] 我理解该 PR 为什么不是重复工作

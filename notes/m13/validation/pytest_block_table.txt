@@ -34,4 +34,4 @@ tests/v1/worker/test_block_table.py: 14 warnings
     warnings.warn(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================= 18 passed, 14 warnings in 5.20s ========================
+======================= 18 passed, 14 warnings in 5.46s ========================

@@ -5,7 +5,12 @@
 > 最终对象：`tests/v1/worker/test_block_table.py`
 > **行数**：384　**Tests**：18
 > **SHA256**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
-> **base**：upstream/main `0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`（记录于 2026-08-04 09:2x UTC）
+> **base**：upstream/main `a1657a0235a77ce85f8d348c83ff4adb29918b71`（记录于 2026-08-04 09:2x UTC）
+
+> **Agent 已自动验证 vs 你需人工确认**：Agent 已自动跑过 pytest / pre-commit / ruff / diff /
+> 变异回归，并独立复核过三个手算锚点——但这些**只是 Agent 结果**（`Agent verified`），
+> **不能替代**你的人工确认（`Human pending`）。AGENTS.md 要求提交人端到端负责。
+> 因此下列每一项仍需**你本人**执行并勾选；**Agent 未勾选任何一项**。
 
 ## 基线与内容
 - [ ] 我确认 upstream/main SHA 仍是提交前最新基线（已重新 `git fetch origin main` 核对）

@@ -1,7 +1,7 @@
 # M13 · 首次开源 PR — 研究笔记（候选 C1：`compute_slot_mapping` 单元测试）
 
 > **阅读顺序**：本文件分两大部分。
-> - **【第一部分】当前 main（`0b1c151`，2026-08-04 09:xx UTC 实测）** —— 权威、以此为准。
+> - **【第一部分】当前 main（`a1657a0`，2026-08-04 09:xx UTC 实测）** —— 权威、以此为准。
 > - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.4）。
 >
 > **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动、Oracle 独立性经变异测试证明），**尚未 commit / 尚未 push / 尚未建 PR**。断点见 `STATUS.md`，逐行审查材料见 `review/`。
@@ -14,9 +14,9 @@
 | 项 | 值 |
 |---|---|
 | 核查时间 | **2026-08-04 09:22 UTC 起**（本轮；前两轮 06:18 / 03:21） |
-| upstream/main | **`0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`**（2026-08-04T08:03:46Z）——上轮 `72cd542`，前进 1 commit（仅 `rust/src/chat/renderer/kimi_k3/`，与本 PR 无关，已安全 port） |
+| upstream/main | **`a1657a0235a77ce85f8d348c83ff4adb29918b71`**（2026-08-04T08:03:46Z）——上轮 `72cd542`，前进 1 commit（仅 `rust/src/chat/renderer/kimi_k3/`，与本 PR 无关，已安全 port） |
 | 最新 release | v0.26.0（2026-07-27） |
-| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `0b1c151`（**无本地 commit**） |
+| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `a1657a0`（**无本地 commit**） |
 | 目标文件 | `tests/v1/worker/test_block_table.py`（新增，**384 行 / 18 tests**，sha256 `b0a15b41…`；main 上此文件仍不存在） |
 | 语义复核 | `block_table.py` 在 `cb81048..0b1c151` **零改动**；`AGENTS.md` / `docs/contributing/README.md` / `.pre-commit-config.yaml` / `tests/v1/worker/` 亦零改动 |
 | 当前状态 | **READY FOR FINAL HUMAN CONFIRMATION BEFORE COMMIT**（未 commit / 未 push / 未建 PR；远程 CI 未运行） |

@@ -1,13 +1,22 @@
-# M13 validation environment (round 4 - final enhancements)
-recorded_utc: 2026-08-04T09:35:29Z
-upstream_main_sha: 0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a
-branch: m13/block-table-slot-mapping-tests  (HEAD=0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a, local commits ahead=0)
-test_file_lines: 384
-test_file_sha256: b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb
-tests: 18 passed
-python: Python 3.12.13
-torch: 2.13.0+cu130
-triton: 3.7.1
-ruff: ruff 0.14.0
-gpu: NVIDIA GeForce RTX 5080, 610.62
-product_diff: ''  (empty = none)
+# M13 validation environment (final agent preparation run)
+recorded_utc      : 2026-08-04T10:59:53Z
+upstream_remote   : origin -> https://github.com/vllm-project/vllm.git
+upstream_main_sha : a1657a0235a77ce85f8d348c83ff4adb29918b71
+local_HEAD        : a1657a0235a77ce85f8d348c83ff4adb29918b71
+local_commits_ahead: 0  (0 = no commit created)
+branch            : m13/block-table-slot-mapping-tests
+test_file_lines   : 384
+test_file_sha256  : b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb
+collect           : 18 tests collected
+pytest            : 18 passed, 14 warnings in 5.46s  (AGENT AUTOMATED RUN, not submitter-run)
+ruff check        : All checks passed!
+ruff format       : 1 file already formatted
+pre-commit        : 13 Passed / 0 Failed (changed-file scope)
+py_compile        : OK
+product_diff      : ''  (empty = none)
+mutation_regress  : 3/3 hybrid tests failed under injected bug; product restored (see mutation_final.txt)
+python            : Python 3.12.13
+torch             : 2.13.0+cu130
+triton            : 3.7.1
+ruff              : ruff 0.14.0
+gpu               : NVIDIA GeForce RTX 5080, 610.62

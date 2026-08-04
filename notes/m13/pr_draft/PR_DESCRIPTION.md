@@ -1,6 +1,6 @@
 # PR 草稿：Add unit tests for BlockTable slot mapping
 
-> **状态：READY FOR FINAL HUMAN CONFIRMATION BEFORE COMMIT** —— 尚未创建 Commit、尚未 Push、尚未创建 PR（远程 CI 亦未运行）。
+> **状态：READY FOR FINAL HUMAN ACTIONS** —— 尚未创建 Commit、尚未 Push、尚未创建 PR（远程 CI 亦未运行）。
 > **提交前你必须做两件事**：① 逐行审查测试文件（AGENTS.md：纯 code-agent PR 不允许，提交人须端到端负责）；② 把下面 Body 中 **AI 披露段的未来时改成真实完成时**，并按实际使用的工具填名。
 > 审查材料见 `notes/m13/review/`。
 
@@ -26,10 +26,11 @@ carries several easy-to-break branches: hybrid KV/kernel block sizes, decode
 context parallel (DCP) interleaving, CUDA graph padding, and the
 `SlotMappingMode.NONE` short circuit used by Mamba-style state caches.
 
-Today this path has no direct test coverage:
+On the base revision before this change, the tests directory had no direct
+coverage of `BlockTable.compute_slot_mapping`:
 
 ```console
-$ git grep -l "compute_slot_mapping" -- tests/
+$ git grep -l "compute_slot_mapping" a1657a0235a77ce85f8d348c83ff4adb29918b71 -- tests/
 $ # (no matches)
 ```
 
@@ -46,23 +47,25 @@ modified.
 ### Test plan
 
 ```bash
-python -m pytest tests/v1/worker/test_block_table.py -v
-pre-commit run --files tests/v1/worker/test_block_table.py
+.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -v
+.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py
 ```
 
 ### Test result
 
+Automated preparation run:
+
 ```
-18 passed, 14 warnings in 5.24s
+18 passed, 14 warnings in 5.46s
 ```
 
-`pre-commit run --files tests/v1/worker/test_block_table.py`: all applicable
-hooks pass (`ruff check`, `ruff format`, `typos`, `mypy`, SPDX headers, and the
-rest).
+`.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py`: all
+applicable hooks pass (`ruff check`, `ruff format`, `typos`, `mypy`, SPDX
+headers, and the rest).
 
 Environment: RTX 5080 (sm_120), driver 610.62, Python 3.12.13,
 torch 2.13.0+cu130, triton 3.7.1, against
-`0b1c151cbcacd12e207f2a91e4ca9f5b6961ec8a`.
+`a1657a0235a77ce85f8d348c83ff4adb29918b71`.
 
 ### What is covered
 
@@ -89,12 +92,20 @@ the kernel output and the reference, so neither can drift unnoticed.
 
 ### Why this is not a duplicate
 
-- No open or merged PR adds direct tests for this path (searched
-  `compute_slot_mapping`, `block table slot mapping`, `test_block_table`,
-  `DCP slot mapping`, `hybrid block table`).
+- No open or merged PR adds direct tests for
+  `BlockTable.compute_slot_mapping` (searched `compute_slot_mapping`,
+  `BlockTable slot mapping`, `test_block_table`, `DCP slot mapping`,
+  `hybrid block table`).
 - The open slot-mapping PRs are unrelated in scope: #41270 / #41272 remove
   slot mapping from attention *metadata*; #46446 / #45245 / #43879 pre-compile
   the kernel during warmup; #47924 is an RFC/prototype.
+- Open PR #39591 also adds a file at `tests/v1/worker/test_block_table.py`, but
+  it covers a different behaviour: zeroing the block table row tail to fix
+  concurrent variable-length prefill non-determinism (#39589). Its tests
+  exercise `append_row` / `add_row` / `move_row` / `clear_row` and never call
+  `compute_slot_mapping`. The two sets of tests are complementary; whichever
+  lands first, the other can be rebased into the same file. Happy to rename or
+  merge into that file if maintainers prefer.
 - The closed #30683 by @pisceskkk previously explored direct tests for this
   area, and credit for identifying the testing direction goes there. It was not
   merged and targets an older API: it used
@@ -106,13 +117,13 @@ the kernel output and the reference, so neither can drift unnoticed.
 
 ### AI assistance disclosure
 
-<!-- Before submission: name the actual AI tools used, and change the sentence
-     below to the past tense once the review has actually been completed. -->
+<!-- Before submission, list the actual AI tools used and change the following
+statement only after the human submitter completes final review and testing. -->
 
-AI assistance was used to research the current implementation, draft the tests,
-and prepare validation materials. Before submission, the human submitter will
-review every changed line, reproduce the test results locally, and take
-responsibility for the change.
+AI assistance was used to research the current implementation, draft and refine
+the tests, and prepare validation materials. Before submission, the human
+submitter will review every changed line, reproduce the tests locally, verify
+the hand-computed golden cases, and take responsibility for the change.
 
 ---
 
