@@ -1,9 +1,9 @@
 # M13 断点快照（RESUME / 交接）
 
-> **状态：DRAFT PR 已创建 —— https://github.com/vllm-project/vllm/pull/51017（等待 CI 排队完成 / maintainer review）**
+> **状态：PR #51017 已 Ready for review（rebase 到最新 main 24c939c、已 force-with-lease push）**
 > —— 提交人已完成人工审查（代码 / Golden / 18-18 pytest / pre-commit），已改名、signed-off commit、push 到 fork，并经你确认后创建 **Draft PR #51017**。
 > **DCO 检查：pass** ✅　**mergeable: true**　1 commit / 1 file / +384 / 零产品改动。
-> **下一步**：等 CI（当前 `queued`）→ 视结果决定是否 Ready for review；如需回应 review 再迭代。
+> **下一步**：等 `pre-commit` job 出队完成（当前 repo 级 runner 拥堵：22 queued / 1 in_progress，**无 approval gate**）→ 回应 maintainer review。
 >
 > **最后更新**：2026-08-04 11:1x UTC（本轮：改名避开 #39591 路径冲突 + 复跑验证 + PR Body 定稿 + DCO + signed-off commit `e391a6b` + push 到 fork）
 
@@ -22,6 +22,22 @@
 | **CI 状态** | **DCO pass** ✅、Meta Internal-Only Check pass、mergify Summary pass；`pre-commit` / `New PR Bot` 三个 job 状态 `queued`（排队，非失败、非等审批） |
 | AI 披露 | 经你确认为 **Claude Code**；PR Body 与 commit trailer 均据实填写 |
 | 产品代码 | 未修改（commit 内只有 1 个测试文件） |
+
+
+## 0b. 提交后收尾（rebase 到最新 main）
+| 项 | 结果 |
+|---|---|
+| upstream 变化 | `a1657a0` → **`24c939c`**（2 commits：`6a9fdf0` seq-cls num_labels、`24c939c` XPU oneccl）。改动仅 `tests/models/test_adapters.py`、`vllm/collect_env.py`、`vllm/model_executor/models/adapters.py` —— **未触及** `vllm/v1/worker/`、`tests/v1/worker/`、`AGENTS.md`、`docs/contributing/`、`.pre-commit-config.yaml`、`pyproject.toml` |
+| **Rebase** | ✅ `git rebase origin/main` **无冲突**；commit 由 `e391a6b` 重写为 **`4dd4fa7`**（rebase 必然重写，未额外新增 commit、无 merge commit）；base == origin/main；仍 1 commit |
+| 内容完整性 | 测试文件 sha256 **`b0a15b41…` 不变**；`Signed-off-by: CiaranCw <1399538830@qq.com>` 与 `Assisted-by: Claude Code` 均保留 |
+| **pytest** | **18 passed / 0 failed / 14 warnings / 5.34s** |
+| **pre-commit** | **13 Passed / 0 Failed**（ruff check/format、typos、mypy、SPDX、forbidden imports…） |
+| `git diff --check origin/main` | 无输出 |
+| `vllm/` `csrc/` | **无改动**；工作树 clean |
+| **Push** | ✅ `git push --force-with-lease` → `e391a6b...4dd4fa7 (forced update)`，lease 校验通过 |
+| **PR 描述** | 仅更新 **Base SHA → `24c939c`**（2 处）与 **测试结果 → 5.34s**；未改测试范围或设计（表格 10 行 / 6 代码块 / 6 章节不变）。`gh pr edit` 因 GraphQL projectCards 弃用无效，改用 REST PATCH 成功 |
+| **Ready for review** | ✅ `draft: false`（REST `draft=false` 无效——GitHub 要求 GraphQL `markPullRequestReadyForReview`，已用 `gh pr ready`） |
+| 禁止项 | **未** merge、**未** auto-merge（`auto_merge: null`）、**未**加任何 label |
 
 
 ## 1. 最新上游状态

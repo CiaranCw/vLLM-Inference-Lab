@@ -5,7 +5,7 @@
 On the base revision before this change, the tests directory had no direct coverage of `BlockTable.compute_slot_mapping`:
 
 ```console
-$ git grep -l "compute_slot_mapping" a1657a0235a77ce85f8d348c83ff4adb29918b71 -- tests/
+$ git grep -l "compute_slot_mapping" 24c939c47df59d0d3e9af2fe63046e21e65b5924 -- tests/
 $ # (no matches)
 ```
 
@@ -23,12 +23,12 @@ This PR adds `tests/v1/worker/test_block_table_slot_mapping.py`, exercising `Blo
 ### Test result
 
 ```
-18 passed, 14 warnings in 5.53s
+18 passed, 14 warnings in 5.34s
 ```
 
 `.venv/bin/pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py`: all applicable hooks pass (`ruff check`, `ruff format`, `typos`, `mypy`, SPDX headers, and the rest).
 
-Environment: RTX 5080 (sm_120), driver 610.62, Python 3.12.13, torch 2.13.0+cu130, triton 3.7.1, against `a1657a0235a77ce85f8d348c83ff4adb29918b71`.
+Environment: RTX 5080 (sm_120), driver 610.62, Python 3.12.13, torch 2.13.0+cu130, triton 3.7.1, against `24c939c47df59d0d3e9af2fe63046e21e65b5924`.
 
 ### What is covered
 
