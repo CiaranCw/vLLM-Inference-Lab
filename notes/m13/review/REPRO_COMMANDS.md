@@ -11,14 +11,14 @@
 cd /home/ciaran/projects/vllm-m13-upstream
 git branch --show-current      # 期望: m13/block-table-slot-mapping-tests
 git rev-parse HEAD             # 期望: a1657a0235a77ce85f8d348c83ff4adb29918b71
-sha256sum tests/v1/worker/test_block_table.py   # 期望: b0a15b41...
+sha256sum tests/v1/worker/test_block_table_slot_mapping.py   # 期望: b0a15b41...
 ```
 
 ## 2. 查看改动（逐行审查主入口）
 ```bash
-git status --short                        # 期望: 只有 tests/v1/worker/test_block_table.py
+git status --short                        # 期望: 只有 tests/v1/worker/test_block_table_slot_mapping.py
 git diff --stat HEAD                      # 期望: 1 file changed, 384 insertions(+)
-git diff HEAD -- tests/v1/worker/test_block_table.py | less   # ← 逐行读
+git diff HEAD -- tests/v1/worker/test_block_table_slot_mapping.py | less   # ← 逐行读
 ```
 对照产品源码（建议并排）：
 ```bash
@@ -36,32 +36,32 @@ git log -1 --format=fuller origin/main
 ## 4. 运行测试
 ```bash
 nvidia-smi     # 跑前确认无他人重要进程；不要 kill 任何进程
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py --collect-only   # 期望: 18 tests collected
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -v               # 期望: 18 passed
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py --collect-only   # 期望: 18 tests collected
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py -v               # 期望: 18 passed
 ```
 
 ## 5. 运行 Pre-commit 与 Ruff
 ```bash
-.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py   # 期望: 全部 Passed
-.venv/bin/python -m ruff check tests/v1/worker/test_block_table.py     # 期望: All checks passed!
-.venv/bin/python -m ruff format --check tests/v1/worker/test_block_table.py  # 期望: 1 file already formatted
+.venv/bin/pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py   # 期望: 全部 Passed
+.venv/bin/python -m ruff check tests/v1/worker/test_block_table_slot_mapping.py     # 期望: All checks passed!
+.venv/bin/python -m ruff format --check tests/v1/worker/test_block_table_slot_mapping.py  # 期望: 1 file already formatted
 git diff --check HEAD                                                  # 期望: 无输出
 ```
 
 ## 6. 确认产品代码零改动 + Oracle 独立
 ```bash
 git diff --name-only HEAD -- vllm/ csrc/     # 期望: 无输出
-grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table.py   # 期望: 无输出（仅 docstring 提名字）
+grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table_slot_mapping.py   # 期望: 无输出（仅 docstring 提名字）
 ```
 
 ## 7. （可选）自行复跑变异测试
 ```bash
 cp vllm/v1/worker/block_table.py /tmp/bt_backup.py
 # 手动在 map_to_kernel_blocks 的返回表达式末尾加 "+ 1"
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -k hybrid -q   # 期望: 3 failed
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py -k hybrid -q   # 期望: 3 failed
 cp /tmp/bt_backup.py vllm/v1/worker/block_table.py     # 必须恢复
 git diff --name-only HEAD -- vllm/                     # 必须无输出
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -q             # 期望: 18 passed
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py -q             # 期望: 18 passed
 ```
 
 ## 8. 最后一次查重（AGENTS.md 要求）
@@ -94,7 +94,7 @@ git config user.email
 
 ### 10.2 Commit 模板
 ```bash
-git add tests/v1/worker/test_block_table.py
+git add tests/v1/worker/test_block_table_slot_mapping.py
 
 git commit -s \
   -m "[Core] Add unit tests for BlockTable slot mapping" \

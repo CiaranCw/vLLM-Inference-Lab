@@ -1,8 +1,7 @@
 # PR 草稿：Add unit tests for BlockTable slot mapping
 
-> **状态：READY FOR FINAL HUMAN ACTIONS** —— 尚未创建 Commit、尚未 Push、尚未创建 PR（远程 CI 亦未运行）。
-> **提交前你必须做两件事**：① 逐行审查测试文件（AGENTS.md：纯 code-agent PR 不允许，提交人须端到端负责）；② 把下面 Body 中 **AI 披露段的未来时改成真实完成时**，并按实际使用的工具填名。
-> 审查材料见 `notes/m13/review/`。
+> ⚠️ **本文件为历史草稿。最终提交用的英文正文是 `PR_BODY_FINAL.md`**（已定稿：路径改名、真实 5.53s 人工结果、AI 披露已按提交人确认填为 Claude Code、完成时表述）。
+> 状态：已 signed-off commit `e391a6b`、已 push 到 fork `CiaranCw/vllm`；**PR 尚未创建**（等待提交人审查）。
 
 ---
 
@@ -40,15 +39,15 @@ staged-write and `move_row` behaviour, and
 covers hybrid block table *initialization* (asserting the expanded row against
 `map_to_kernel_blocks` itself). Neither computes a slot mapping.
 
-This PR adds `tests/v1/worker/test_block_table.py`, exercising
+This PR adds `tests/v1/worker/test_block_table_slot_mapping.py`, exercising
 `BlockTable.compute_slot_mapping`. It is test-only: no production code is
 modified.
 
 ### Test plan
 
 ```bash
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -v
-.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py -v
+.venv/bin/pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py
 ```
 
 ### Test result
@@ -59,7 +58,7 @@ Automated preparation run:
 18 passed, 14 warnings in 5.46s
 ```
 
-`.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py`: all
+`.venv/bin/pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py`: all
 applicable hooks pass (`ruff check`, `ruff format`, `typos`, `mypy`, SPDX
 headers, and the rest).
 
@@ -128,7 +127,7 @@ the hand-computed golden cases, and take responsibility for the change.
 ---
 
 ## 本仓库对应关系
-- 已验证测试文件：`notes/m13/pr_draft/test_block_table.py`，与干净树 `tests/v1/worker/test_block_table.py` **sha256 一致**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
+- 已验证测试文件：`notes/m13/pr_draft/test_block_table_slot_mapping.py`，与干净树 `tests/v1/worker/test_block_table_slot_mapping.py` **sha256 一致**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
 - 逐行审查材料：`notes/m13/review/{LINE_BY_LINE_REVIEW,MANUAL_GOLDEN_CASES,REVIEW_CHECKLIST,FINAL_PRE_PR_CHECKLIST,REPRO_COMMANDS}.md`、`REVIEW_DIFF.patch`
 - 断点与验证证据：`notes/m13/STATUS.md`、`notes/m13/validation/`
 - Commit 需 `git commit -s`（DCO）并按 AGENTS.md 加 AI 归属 trailer。**当前尚未创建 commit**（待你确认 sign-off 身份）。

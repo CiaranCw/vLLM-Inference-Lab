@@ -17,7 +17,7 @@
 | upstream/main | **`a1657a0235a77ce85f8d348c83ff4adb29918b71`**（2026-08-04T08:03:46Z）——上轮 `72cd542`，前进 1 commit（仅 `rust/src/chat/renderer/kimi_k3/`，与本 PR 无关，已安全 port） |
 | 最新 release | v0.26.0（2026-07-27） |
 | 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `a1657a0`（**无本地 commit**） |
-| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，**384 行 / 18 tests**，sha256 `b0a15b41…`；main 上此文件仍不存在） |
+| 目标文件 | `tests/v1/worker/test_block_table_slot_mapping.py`（新增，**384 行 / 18 tests**，sha256 `b0a15b41…`；main 上此文件仍不存在） |
 | 语义复核 | `block_table.py` 在 `cb81048..0b1c151` **零改动**；`AGENTS.md` / `docs/contributing/README.md` / `.pre-commit-config.yaml` / `tests/v1/worker/` 亦零改动 |
 | 当前状态 | **READY FOR FINAL HUMAN CONFIRMATION BEFORE COMMIT**（未 commit / 未 push / 未建 PR；远程 CI 未运行） |
 
@@ -97,7 +97,7 @@ padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 10
 
 **新增 anchors 均已用独立脚本复核**（DCP 33→96、Hybrid 48→304、Tile 1023–1029→1039–1045 全部 MATCH）。变异回归复跑：注入产品 `map_to_kernel_blocks +1` → 3 个 hybrid 测试全失败，恢复后产品 diff 为空、18 tests 全绿。
 
-## A.5 当前测试矩阵（18 tests，`tests/v1/worker/test_block_table.py`）
+## A.5 当前测试矩阵（18 tests，`tests/v1/worker/test_block_table_slot_mapping.py`）
 | 组 | 内容 |
 |---|---|
 | 手算 golden ×2（参数化，**三方锚定** Actual+Reference+Golden） | `single_request_block_boundaries`：blocks `[5,6,7]` pos `0,15,16,47` → `[80,95,96,127]`；`multiple_request_rows` → `[147,68]` |
@@ -187,7 +187,7 @@ gh api "search/code?q=compute_slot_mapping+repo:vllm-project/vllm+path:tests"  #
 `gh search prs` 查在途/历史 PR，命中一条决定性前车：
 
 ### PR #30683 `[UT][PCP&DCP] UT for block_table.py`（作者 pisceskkk）
-- **它做了什么**：为 `compute_slot_mapping` 加单元测试，参数化覆盖 `dcp_world_size × dcp_rank × pcp_world_size × pcp_rank × cp_kv_cache_interleave_size`；文件 `tests/v1/worker/test_block_table.py`（+254 行）；自述 `17 passed`。
+- **它做了什么**：为 `compute_slot_mapping` 加单元测试，参数化覆盖 `dcp_world_size × dcp_rank × pcp_world_size × pcp_rank × cp_kv_cache_interleave_size`；文件 `tests/v1/worker/test_block_table_slot_mapping.py`（+254 行）；自述 `17 passed`。
 - **状态**：**CLOSED，标签 `stale`**。创建 2025-12-15，关闭 2026-04-09。
 - **为什么流产**（看评论链，重要）：
   - `mergify` 机器人提示 **pre-commit 检查失败**，要求作者 `pre-commit install && pre-commit run --all-files` 后重推；
@@ -299,7 +299,7 @@ for r in range(num_reqs):
 
 ## 6. 测试设计（待实现的 pytest 蓝本）
 
-- **文件**：`tests/v1/worker/test_block_table.py`（沿用 #30683 的路径与命名，便于「复活/取代」）。
+- **文件**：`tests/v1/worker/test_block_table_slot_mapping.py`（沿用 #30683 的路径与命名，便于「复活/取代」）。
 - **被测对象**：优先测**公开入口** `BlockTable.compute_slot_mapping(...)`（真实构造 `BlockTable`、设 CP 参数），而非直接 call 私有 kernel——这样测试更稳、贴近真实调用（#30683 即如此）。
 - **参照**：把 §4.5 oracle **内联进测试文件**（上游不能依赖本仓库 `scripts/m8_kernels.py`）。
 - **断言**：`np.testing.assert_array_equal(got, ref)`（含 padding 区 == PAD_ID；可选哨兵预填检测漏写）。
@@ -322,7 +322,7 @@ for r in range(num_reqs):
 据 `vllm-src/docs/contributing/README.md`：
 1. **DCO sign-off**：每个 commit `git commit -s`（`Signed-off-by:`），否则 CI 拒。
 2. **pre-commit**（#30683 的死因）：`uv pip install pre-commit`（需 `>=4.5.1`）→ `pre-commit install` → `pre-commit run --all-files` 全绿再推。**这是硬门槛**。
-3. **测试**：本地 `pytest tests/v1/worker/test_block_table.py` 全绿；附 Test Plan / Test Result 到 PR 描述（照 #30683 格式）。
+3. **测试**：本地 `pytest tests/v1/worker/test_block_table_slot_mapping.py` 全绿；附 Test Plan / Test Result 到 PR 描述（照 #30683 格式）。
 4. **RFC 门槛**：>500 LOC（不含 kernel/数据）才需先 RFC；C1 仅一个测试文件（~300 行），无需 RFC。
 5. **⚠ AI 辅助署名（需你决策）**：vLLM 要求**披露 AI 辅助**并加 `Co-authored-by:` trailer；这与本仓库 no-coauthor 约定（[[vllm-lab-no-coauthor-trailer]]）是**不同仓库、不同规则**。上游 PR 须遵 vLLM 政策——署名口径由你定。
 
@@ -330,7 +330,7 @@ for r in range(num_reqs):
 拉取 #30683 完整 diff 后发现：它调用 **`block_table.compute_slot_mapping(req_indices, positions)`**（逐 token 的 `req_indices` 数组）、并在构造时 mock `get_dcp_group`/`get_pcp_group`。但**当前签名是 `compute_slot_mapping(num_reqs, query_start_loc, positions)`**（累积偏移 `query_start_loc`，非 req_indices）——API 在 #30683(2025-12) 之后变了。
 - **含义**：#30683 的测试**无法在当前 main 直接跑**（会因签名不符失败）。
 - **反而 M8 的 harness 恰好对齐当前 kernel 签名**（M8 是近期对当前 vllm-src 写的，用 `query_start_loc` + `TOTAL_CP_WORLD_SIZE`/`TOTAL_CP_RANK`/`CP_KV_CACHE_INTERLEAVE_SIZE`）。
-- **策略定为 B（全新，但吸收两者）**：用**当前 API**新写 `tests/v1/worker/test_block_table.py`，采 M8 的 oracle 口径 + #30683 的 DCP4/PCP2 参数化风格，PR 描述里**引用并取代 #30683**、credit 原作者。
+- **策略定为 B（全新，但吸收两者）**：用**当前 API**新写 `tests/v1/worker/test_block_table_slot_mapping.py`，采 M8 的 oracle 口径 + #30683 的 DCP4/PCP2 参数化风格，PR 描述里**引用并取代 #30683**、credit 原作者。
 
 ### 构造机制（读 `BlockTable.__init__` 与 CPU fallback 确认）
 - `__init__(block_size, max_num_reqs, max_num_blocks_per_req, max_num_batched_tokens, pin_memory, device, kernel_block_size, cp_kv_cache_interleave_size)`。
@@ -339,7 +339,7 @@ for r in range(num_reqs):
 - **设备**：CP interleave 逻辑**只在 GPU Triton kernel**（`vllm/utils/cpu_triton_utils.py` 的 CPU fallback 走 C++ op 且 `assert TOTAL_CP_WORLD_SIZE==1`）。→ 测试须 CUDA + `skipif(not cuda)`，且这为「CUDA-only 测试」提供正当理由。
 
 ### 当前状态（本轮止步于此）
-- ✅ 草稿测试已写：`notes/m13/pr_draft/test_block_table.py`（当前 API + oracle + 非CP边界 + padding + DCP4/PCP2 interleave{1,16} + world=1 退化）。
+- ✅ 草稿测试已写：`notes/m13/pr_draft/test_block_table_slot_mapping.py`（当前 API + oracle + 非CP边界 + padding + DCP4/PCP2 interleave{1,16} + world=1 退化）。
 - ✅ PR 描述草稿：`notes/m13/pr_draft/PR_DESCRIPTION.md`。
 - ✅ **GPU 验证已通过**（GPU 空闲后运行）：real RTX 5080/sm_120 上对真实上游 kernel，**26 passed in 6.03s**（2 手算 golden 锚点 + 7 非CP边界 + 16 DCP4/PCP2 interleave{1,16}×8rank + 1 退化）。standalone 运行（绕开需额外依赖的 `tests/conftest`；测试不依赖任何 conftest fixture）。
 - ✅ **审查补强**：加了 2 例**手算 golden 值**（独立于 numpy oracle），消除「oracle 镜像 kernel＝循环论证」的审稿隐患。
@@ -353,7 +353,7 @@ for r in range(num_reqs):
 
 1. **准备干净工作树**（重要）：当前 `vllm-src` **工作树有大量本地学习标注**（~22 文件加中文注释 + `_lab_trace.py`；`git status` 见 §9）。**不能从这个脏树直接切分支提 PR**。→ 另做**干净 checkout**（或 fork + clone），或把标注 stash/隔离到独立分支。
 2. 拉取 #30683 完整 diff，逐条确认其覆盖，敲定「复活(A) 或全新(B)」。
-3. 按 §6 写 `tests/v1/worker/test_block_table.py`，内联 oracle。
+3. 按 §6 写 `tests/v1/worker/test_block_table_slot_mapping.py`，内联 oracle。
 4. `pre-commit run --all-files` + `pytest` 全绿（§7 硬门槛）。
 5. `git commit -s`（DCO），推 fork，开 PR（描述含 Purpose / Test Plan / Test Result / 引用 #30683）。
 6. 回应 review、迭代。**目标是完整经历流程，非必须合入。**
@@ -370,7 +370,7 @@ gh api "search/code?q=compute_slot_mapping+repo:vllm-project/vllm+path:tests"   
 
 # 前车 PR
 gh pr view 30683 --repo vllm-project/vllm --json ...        # stale，死于 pre-commit
-gh pr diff 30683 --repo vllm-project/vllm                   # +254, tests/v1/worker/test_block_table.py，CP 参数化
+gh pr diff 30683 --repo vllm-project/vllm                   # +254, tests/v1/worker/test_block_table_slot_mapping.py，CP 参数化
 
 # 本机 pinned 源码核对
 grep -rln compute_slot_mapping /home/ciaran/projects/vllm-src/tests/    # 0 命中

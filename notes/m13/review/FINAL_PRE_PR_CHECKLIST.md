@@ -2,7 +2,7 @@
 
 > **这是创建 PR 之前的最后一道关卡。全部复选框初始未勾选，只能由你（提交人）本人勾选；AI 不得代勾。**
 >
-> 最终对象：`tests/v1/worker/test_block_table.py`
+> 最终对象：`tests/v1/worker/test_block_table_slot_mapping.py`
 > **行数**：384　**Tests**：18
 > **SHA256**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
 > **base**：upstream/main `a1657a0235a77ce85f8d348c83ff4adb29918b71`（记录于 2026-08-04 09:2x UTC）
@@ -16,7 +16,7 @@
 - [ ] 我确认 upstream/main SHA 仍是提交前最新基线（已重新 `git fetch origin main` 核对）
 - [ ] 我逐行读过**最终**测试 Diff，而不是旧版本
 - [ ] 我确认最终测试 SHA256 与本文件顶部一致
-- [ ] 我确认 upstream diff 只包含 `tests/v1/worker/test_block_table.py`
+- [ ] 我确认 upstream diff 只包含 `tests/v1/worker/test_block_table_slot_mapping.py`
 
 ## 设计理解
 - [ ] 我能解释 Actual、Reference 和 Golden 为什么必须独立

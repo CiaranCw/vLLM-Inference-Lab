@@ -3,7 +3,7 @@
 > **规则**：全部复选框初始为**未勾选**。**只能由你（提交人）本人勾选** —— AI 不得代勾。
 > vLLM `AGENTS.md`：「Pure code-agent PRs are **not allowed**. A human submitter must understand and defend the change end-to-end.」
 >
-> 对象：`tests/v1/worker/test_block_table.py`，**384 行 / 18 tests**
+> 对象：`tests/v1/worker/test_block_table_slot_mapping.py`，**384 行 / 18 tests**
 > SHA256：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
 > base：upstream/main **`a1657a0235a77ce85f8d348c83ff4adb29918b71`**
 >

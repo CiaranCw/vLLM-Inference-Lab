@@ -1,12 +1,25 @@
 # M13 断点快照（RESUME / 交接）
 
-> **状态：READY FOR FINAL HUMAN ACTIONS**
-> —— **Agent 可自动化的提交前工作已全部完成**；**尚未创建 Commit、尚未 Push、尚未创建 PR**（远程 CI 亦未运行）。
-> **下一步（人类责任步骤）**：按 `notes/m13/review/HUMAN_FINAL_COMMANDS.md` 亲自执行，并按 `FINAL_PRE_PR_CHECKLIST.md` 逐项勾选。
+> **状态：COMMITTED & PUSHED TO FORK — 等待你审查后创建 Draft PR**
+> —— 提交人已完成人工审查（代码 / Golden / 18-18 pytest / pre-commit）。**已改名、已 signed-off commit、已 push 到 fork；尚未创建 PR。**
+> **下一步**：你审查最终 diff 与 PR Body → 我创建 **Draft PR** → 你在网页复核。
 >
-> **最后更新**：2026-08-04 10:52–11:0x UTC（本轮：port 到最新 main + 全量自动重验 + 变异回归 + PR 草稿事实刷新 + 生成人工操作清单）
+> **最后更新**：2026-08-04 11:1x UTC（本轮：改名避开 #39591 路径冲突 + 复跑验证 + PR Body 定稿 + DCO + signed-off commit `e391a6b` + push 到 fork）
 
 ---
+
+## 0. 本轮执行结果（提交人已完成人工审查后）
+| 项 | 状态 |
+|---|---|
+| 人工审查 | ✅ 代码审查、Golden 理解、**人工 pytest 18/18**、**人工 pre-commit 通过**（由提交人本人完成） |
+| **文件改名** | `test_block_table.py` → **`tests/v1/worker/test_block_table_slot_mapping.py`**，避开 open PR **#39591** 的同名路径冲突；内容未变（sha256 不变），改名后复跑 **18 passed**、pre-commit 13 Passed 0 Failed |
+| **DCO 身份** | 按你提供的值设为 **repo-local**：`CiaranCw <1399538830@qq.com>`（未改动全局配置） |
+| **Commit** | ✅ **`e391a6b`**，`git commit -s`；含 `Signed-off-by: CiaranCw <1399538830@qq.com>` 与 `Assisted-by: Claude Code`；仓库自带 `Sign-off Commit` hook 与全部 pre-commit hook 均 Passed |
+| **Push** | ✅ 已创建 fork **`CiaranCw/vllm`** 并推送分支 `m13/block-table-slot-mapping-tests`；远程 commit = 本地 `e391a6b`；compare 显示 **ahead 1 / behind 0，仅 1 个新增文件** |
+| **PR** | ⏸ **未创建**（按你的要求停下等审查）。最终英文正文：`pr_draft/PR_BODY_FINAL.md` |
+| AI 披露 | 经你确认为 **Claude Code**；PR Body 与 commit trailer 均据实填写 |
+| 产品代码 | 未修改（commit 内只有 1 个测试文件） |
+
 
 ## 1. 最新上游状态
 | 项 | 值 |
@@ -53,7 +66,7 @@
 | #47924 | RFC/prototype：decode step 整体编译 | 否 |
 | #46446 / #45245 / #43879 | slot-mapping kernel **warmup 预编译**（bugfix） | 否 |
 | #41124 | Mamba/SSM `None` block_size 处理（bugfix） | 否 |
-| **#39591** | **同名文件 `tests/v1/worker/test_block_table.py`**，但内容是 **row-tail 清零**修复 #39589 的 35 个测试（`append_row`/`add_row`/`move_row`/`clear_row`），文件内 `compute_slot_mapping`/`slot_mapping`/`dcp`/`SlotMappingMode` 引用次数**全为 0** | **否（路径重合，语义互补）** |
+| **#39591** | **`tests/v1/worker/test_block_table.py`**，但内容是 **row-tail 清零**修复 #39589 的 35 个测试（`append_row`/`add_row`/`move_row`/`clear_row`），文件内 `compute_slot_mapping`/`slot_mapping`/`dcp`/`SlotMappingMode` 引用次数**全为 0** | **否（路径重合，语义互补）** |
 | #48970 | e2e hybrid-Mamba prefix-cache 回归（不在 `tests/v1/worker/`） | 否 |
 | #30683（closed） | 旧 API + 已失效 `pcp × dcp` 假设 | 否（已关闭） |
 
@@ -94,7 +107,7 @@
 
 ## 5. 当前 Diff
 ```
- tests/v1/worker/test_block_table.py | 384 ++++++++++++++++++++++++++++++++++++
+ tests/v1/worker/test_block_table_slot_mapping.py | 384 ++++++++++++++++++++++++++++++++++++
  1 file changed, 384 insertions(+)
 ```
 - **文件总行数**：384　**Tests**：18
@@ -107,7 +120,7 @@
 |---|---|
 | `STATUS.md` | 本文件，已更新 |
 | `pr_slot_mapping_test.md` | 已加最终增强小节；基线 SHA 已刷新 |
-| `pr_draft/test_block_table.py` | 与干净树 sha256 一致 |
+| `pr_draft/test_block_table_slot_mapping.py` | 与干净树 sha256 一致 |
 | `pr_draft/PR_DESCRIPTION.md` | 标题 `[Core]`；**base SHA→`a1657a0`**、精确命令、结果标注为 *Automated preparation run*、缺口表述改为「on the base revision」、新增 #39591 路径重合说明；AI 披露仍为**不点名未来时占位** |
 | `review/LINE_BY_LINE_REVIEW.md` | **行号已按 384 行版本重生成**，含本轮 15 项修改说明 |
 | `review/MANUAL_GOLDEN_CASES.md` | 含 DCP position 32/33、Hybrid position 48、Tile 1023–1029 完整手算 |
@@ -123,8 +136,8 @@
 命令见 `review/HUMAN_FINAL_COMMANDS.md`。
 
 1. **逐行阅读最终 Diff**（384 行，基线 `a1657a0`）
-2. **亲自运行** `pytest tests/v1/worker/test_block_table.py -v`
-3. **亲自运行** `pre-commit run --files tests/v1/worker/test_block_table.py`
+2. **亲自运行** `pytest tests/v1/worker/test_block_table_slot_mapping.py -v`
+3. **亲自运行** `pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py`
 4. **手算复核** 3 类 Golden（`MANUAL_GOLDEN_CASES.md`）
 5. **确认 Git identity / DCO**（当前 `CiaranCw <CiaranCw@users.noreply.github.com>` —— 我不代确认）
 6. **确认实际使用过的 AI 工具**并据此填写 `Assisted-by:` trailer（我不猜测工具名）

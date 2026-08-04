@@ -1,8 +1,34 @@
-diff --git a/tests/v1/worker/test_block_table.py b/tests/v1/worker/test_block_table.py
+commit e391a6b8b6c64c74233431ff83b7734c8194c5d6
+Author: CiaranCw <1399538830@qq.com>
+Date:   Tue Aug 4 19:24:00 2026 +0800
+
+    [Core] Add unit tests for BlockTable slot mapping
+    
+    `BlockTable.compute_slot_mapping` maps logical token positions to physical KV
+    cache slots. An off-by-one there silently corrupts KV cache contents instead of
+    raising, and the path carries several easy-to-break branches: hybrid KV/kernel
+    block sizes, decode context parallel interleaving, CUDA graph padding, and the
+    `SlotMappingMode.NONE` short circuit used by Mamba-style state caches. The
+    tests directory had no direct coverage of it.
+    
+    Add tests through `BlockTable.compute_slot_mapping` covering hand-computed
+    golden slots for the plain, DCP and hybrid cases, block boundaries, ragged
+    batches, non-zero prefix offsets, padding across the kernel's 1024-token Triton
+    tile, DCP partitioning over every rank, and the `SlotMappingMode.NONE`
+    contract. The reference implementation expands KV manager block ids into kernel
+    block ids independently, so a bug in `map_to_kernel_blocks` cannot cancel out
+    in both the expected and actual values.
+    
+    Test-only: no production code is modified.
+    
+    Assisted-by: Claude Code
+    Signed-off-by: CiaranCw <1399538830@qq.com>
+
+diff --git a/tests/v1/worker/test_block_table_slot_mapping.py b/tests/v1/worker/test_block_table_slot_mapping.py
 new file mode 100644
 index 0000000..28cb15c
 --- /dev/null
-+++ b/tests/v1/worker/test_block_table.py
++++ b/tests/v1/worker/test_block_table_slot_mapping.py
 @@ -0,0 +1,384 @@
 +# SPDX-License-Identifier: Apache-2.0
 +# SPDX-FileCopyrightText: Copyright contributors to the vLLM project

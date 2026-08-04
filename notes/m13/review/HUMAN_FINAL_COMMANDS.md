@@ -11,16 +11,16 @@ cd /home/ciaran/projects/vllm-m13-upstream
 
 # 1) 确认基线与改动范围
 git log -1 --oneline
-git status --short                       # 期望：只有 tests/v1/worker/test_block_table.py
+git status --short                       # 期望：只有 tests/v1/worker/test_block_table_slot_mapping.py
 
 # 2) 逐行审查最终 Diff（这一步不可省略、不可替代）
-git diff HEAD -- tests/v1/worker/test_block_table.py | less
+git diff HEAD -- tests/v1/worker/test_block_table_slot_mapping.py | less
 
 # 3) 亲自运行目标测试
-.venv/bin/python -m pytest tests/v1/worker/test_block_table.py -v
+.venv/bin/python -m pytest tests/v1/worker/test_block_table_slot_mapping.py -v
 
 # 4) 亲自运行 changed-file pre-commit
-.venv/bin/pre-commit run --files tests/v1/worker/test_block_table.py
+.venv/bin/pre-commit run --files tests/v1/worker/test_block_table_slot_mapping.py
 
 # 5) 确认无空白错误、且产品代码零改动
 git diff --check HEAD

@@ -1,6 +1,6 @@
 # M13 · 逐行人工审查主文档（LINE_BY_LINE_REVIEW）
 
-> **对象**：`tests/v1/worker/test_block_table.py`（**384 行**，新增文件，18 tests）
+> **对象**：`tests/v1/worker/test_block_table_slot_mapping.py`（**384 行**，新增文件，18 tests）
 > **干净工作树**：`/home/ciaran/projects/vllm-m13-upstream`，分支 `m13/block-table-slot-mapping-tests`
 > **base = upstream/main `a1657a0235a77ce85f8d348c83ff4adb29918b71`**
 > **SHA256**：`b0a15b41c12edd9084295a9f88ef24b56b78d338a004c761f974872142a6b2eb`
@@ -116,7 +116,7 @@ MAX_NUM_BATCHED_TOKENS = 2048
 - **为什么必须存在**：产品 `add_row`（`block_table.py:146-149`）用 `map_to_kernel_blocks` 展开写表。若 oracle **也调**同一函数，该 helper 出 bug 时期望值与实际值**一起错**，测试照样绿。
 - **实测证据（上一轮）**：注入 `map_to_kernel_blocks +1` 后，复用版本的 `hybrid[32-16]`/`[64-16]` **仍 passed（漏检）**；独立版本 **3/3 失败**。本轮已复跑确认仍然 3/3 失败。
 - **输入/输出**：`[5, 9]`, bpk=2 → `[10, 11, 18, 19]`。
-- **你要检查**：`grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table.py` → **必须无输出**（仅 L69 docstring 提及名字，无可执行调用）。
+- **你要检查**：`grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table_slot_mapping.py` → **必须无输出**（仅 L69 docstring 提及名字，无可执行调用）。
 
 ## 6. L82–L137：`_reference_slot_mapping`（Oracle，逐公式）
 
@@ -298,7 +298,7 @@ MAX_NUM_BATCHED_TOKENS = 2048
 cd /home/ciaran/projects/vllm-m13-upstream
 sed -n '182,215p' vllm/v1/worker/block_table.py    # compute_slot_mapping 调用侧
 sed -n '379,443p' vllm/v1/worker/block_table.py    # kernel 全文
-grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table.py   # 必须无输出
+grep -n "map_to_kernel_blocks(" tests/v1/worker/test_block_table_slot_mapping.py   # 必须无输出
 ```
 
 ## 18. 已知限制（审查时需知情）
