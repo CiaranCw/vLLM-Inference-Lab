@@ -1,0 +1,28 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 08-04 20:35:33 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 08-04 20:35:35 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 08-04 20:35:35 [model.py:1725] Using max model len 4096
+WARNING 08-04 20:35:35 [arg_utils.py:2476] This model does not officially support disabling chunked prefill. Disabling this manually may cause the engine to crash or produce incorrect outputs.
+Traceback (most recent call last):
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m17_prefix_cache.py", line 431, in <module>
+    main()
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m17_prefix_cache.py", line 417, in main
+    _dump(run_e3(only_chunked=ch, only_mbt=a.e3_mbt), tag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m17_prefix_cache.py", line 228, in run_e3
+    engine = build_engine(
+             ^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m17_prefix_cache.py", line 86, in build_engine
+    return LLMEngine.from_engine_args(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-src/vllm/v1/engine/llm_engine.py", line 221, in from_engine_args
+    vllm_config = engine_args.create_engine_config(usage_context)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-src/vllm/engine/arg_utils.py", line 2117, in create_engine_config
+    scheduler_config = SchedulerConfig(
+                       ^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for SchedulerConfig
+  Value error, max_num_batched_tokens (2048) is smaller than max_model_len (4096). This effectively limits the maximum sequence length to max_num_batched_tokens and makes vLLM reject longer sequences. Please increase max_num_batched_tokens or decrease max_model_len. [type=value_error, input_value=ArgsKwargs((), {'runner_t..., 'stream_interval': 1}), input_type=ArgsKwargs]
+    For further information visit https://errors.pydantic.dev/2.13/v/value_error

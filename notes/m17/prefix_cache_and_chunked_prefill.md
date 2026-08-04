@@ -3,9 +3,9 @@
 > **模块目标（ROADMAP 第二阶段 阶段 E，T+E+O，单卡可做）**：在 M3/M6 已触及 prefix 的基础上，**用真实受益场景（长共享前缀）系统化证明** APC 的作用与边界，并打通 chunked prefill 对调度/TTFT 的影响。
 >
 > **本文件状态（GPU 繁忙下推进）**：
-> - ✅ **T 理论** + **O 源码定位（带 file:line）** + **实验设计冻结** + **可运行脚本骨架** —— 全部 GPU-free，已完成（见 §1–§5）。
-> - ⏸ **E 实测**（跑脚本产出 `outputs/m17/*` 与 `reports/06_prefix_cache.md`）—— **需 GPU，未跑**。GPU 空闲后见 §6 一键复现。
-> - 恢复入口：读本文件 §5「续传清单」即可立刻接上。
+> - ✅ **T 理论** + **O 源码定位（带 file:line）** + **实验设计冻结** + **可运行脚本骨架**（§1–§5）。
+> - ✅ **E 实测已完成**（2026-08-04）——**结论见 `notes/m17/results.md`**；数据 `outputs/m17/*`、日志 `logs/m17/*`。
+>   核心结果：**长前缀下 APC 收益真实且显著**（P=2048 TTFT −62.4%、14.96ms ≈ 8.8σ），而 P≤512 落在噪声内 → **M6 的「省计算≠省延迟」只是短前缀现象**；I1–I4 全部通过。
 >
 > **边界**：本机 RTX 5080/sm_120、WSL2、Qwen2.5-0.5B、`enforce_eager`；结论限本配置。源码行号基于 pinned `ee0da84`/v0.24.0，动手前可再核。
 
@@ -108,11 +108,13 @@
 - [x] T 理论、O 源码定位（本文件 §1–§2）
 - [x] 实验设计 + 不变量冻结（§3–§4）
 - [x] 可运行脚本骨架 `scripts/m17_prefix_cache.py`（E1/E3 主体，复用 M6 内省法）
-- [ ] **跑 E1**（长共享前缀 on/off sweep）→ `outputs/m17/prefix_cache_sweep.csv`
-- [ ] **跑 E3**（chunked prefill）→ `outputs/m17/chunked_prefill.csv`
-- [ ] （可选）E2 block 生命周期内省——**先验证 `block_pool` 的 ref_cnt/free 队列内省 API 在本版本可读**（脚本里标了 TODO）
-- [ ] 写 `reports`/结论，回填 evidence_index 与 ROADMAP M17 状态
-- [ ] 逐条核对 I1–I5
+- [x] **跑 E1**（长共享前缀 on/off sweep）→ `outputs/m17/prefix_cache_sweep.csv`（4 档 × on/off，240 samples）
+- [x] **跑 E3**（chunked prefill）→ `outputs/m17/chunked_prefill.csv`（5 个可构造配置）
+- [x] 写结论 → **`notes/m17/results.md`**；已回填 evidence_index 与 ROADMAP M17 状态
+- [x] 核对不变量：**I1（命中对齐）/ I2（省计算守恒）/ I3（off 基线）/ I4（分块守恒）全部通过**
+- [x] **I5（APC 只省 prefill 不省 decode）**：本轮以 `max_tokens=1` 只测 prefill，未扫输出长度 → **改为由结构直接成立**（hot 侧 scheduled 恒为 16，命中前缀完全跳过 prefill；decode 路径不受 APC 影响），如需定量仍可扫 `max_tokens`（记为后续可选）
+- [ ] （可选，未做）E2 block 生命周期内省——需先验证 `block_pool` 的 ref_cnt/free 队列内省 API 可读
+- [x] **脚本重构（实测暴露的真实缺陷）**：同进程内多引擎无法归还 KV 显存 → 改为 M6 已验证的「每配置一个独立进程」模式（`--shard`）
 
 **脚本已标注**：需要 GPU 的入口在 `main()`，未运行；命中证据法（`actual − scheduled`）已被 M6 验证可靠；E2 的 block_pool 深度内省标为待验证 TODO（不阻塞 E1/E3）。
 

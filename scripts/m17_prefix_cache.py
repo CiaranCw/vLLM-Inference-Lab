@@ -164,9 +164,10 @@ def _prefill_once(engine, spy, rid, ids):
 
 
 # ============================ E1：长共享前缀 on/off ============================
-def run_e1():
+def run_e1(prefix_on: bool):
+    """跑一侧（APC on 或 off）。一次只建一个引擎——见 main() 的说明。"""
     samples = []
-    for prefix_on in (True, False):
+    if True:
         engine = build_engine(
             prefix_on, max_num_batched_tokens=8192, enable_chunked_prefill=True
         )
@@ -216,10 +217,13 @@ def run_e1():
 
 
 # ============================ E3：chunked prefill ============================
-def run_e3():
+def run_e3(only_chunked: bool | None = None, only_mbt: int | None = None):
+    """跑 chunked prefill。`only_*` 非空时只跑该单一配置（一个进程一个引擎）。"""
     samples = []
-    for chunked in E3_CHUNKED:
-        for mbt in E3_BATCHED_TOKENS:
+    chunked_list = E3_CHUNKED if only_chunked is None else [only_chunked]
+    mbt_list = E3_BATCHED_TOKENS if only_mbt is None else [only_mbt]
+    for chunked in chunked_list:
+        for mbt in mbt_list:
             # 关闭 APC 以隔离 chunked 行为（前缀命中会改变待算 token 数）
             engine = build_engine(
                 enable_prefix_caching=False,
@@ -278,12 +282,7 @@ def run_e2():
 
 
 def summarize(e1, e3):
-    os.makedirs(RAW, exist_ok=True)
-    with open(os.path.join(RAW, "e1.jsonl"), "w") as f:
-        f.writelines(json.dumps(s, ensure_ascii=False) + "\n" for s in e1)
-    with open(os.path.join(RAW, "e3.jsonl"), "w") as f:
-        f.writelines(json.dumps(s, ensure_ascii=False) + "\n" for s in e3)
-
+    """由已落盘的 shard 汇总成 CSV（不建引擎、不需 GPU）。"""
     # E1 汇总：按 (prefix_caching, prefix_len, kind) 聚合 measure 相的 median latency + hit
     agg = {}
     for s in e1:
@@ -364,19 +363,68 @@ def summarize(e1, e3):
     )
 
 
+def _dump(samples, tag):
+    """把一个 shard 的样本写成 JSONL（供 summarize 阶段汇总）。"""
+    os.makedirs(RAW, exist_ok=True)
+    path = os.path.join(RAW, f"{tag}.jsonl")
+    with open(path, "w") as f:
+        f.writelines(json.dumps(s, ensure_ascii=False) + "\n" for s in samples)
+    print(f"[m17] shard written: {path} ({len(samples)} samples)")
+
+
+def _load_shards(prefix):
+    """读回所有匹配 shard 的样本。"""
+    out = []
+    if not os.path.isdir(RAW):
+        return out
+    for name in sorted(os.listdir(RAW)):
+        if name.startswith(prefix) and name.endswith(".jsonl"):
+            with open(os.path.join(RAW, name)) as f:
+                out.extend(json.loads(line) for line in f if line.strip())
+    return out
+
+
 def main():
     p = argparse.ArgumentParser(
         description="M17 prefix caching & chunked prefill (needs GPU)"
     )
-    p.add_argument("--only", choices=["e1", "e3", "all"], default="all")
+    # 一次只建一种引擎配置（沿用 M6 的做法：每配置一个独立进程，避免同进程内多引擎
+    # 显存无法释放——vLLM 引擎的 del + empty_cache() 不足以归还 KV cache 显存）。
+    p.add_argument(
+        "--shard",
+        choices=["e1-on", "e1-off", "e3", "summarize"],
+        required=True,
+        help="e1-on/e1-off/e3 各自单引擎跑；summarize 只汇总已有 shard，不建引擎",
+    )
+    p.add_argument(
+        "--e3-chunked",
+        choices=["on", "off"],
+        help="仅 --shard e3：只跑这一侧（进一步拆到单引擎，避免同进程多引擎）",
+    )
+    p.add_argument(
+        "--e3-mbt", type=int, help="仅 --shard e3：只跑该 max_num_batched_tokens"
+    )
     a = p.parse_args()
     os.makedirs(OUT, exist_ok=True)
-    e1 = run_e1() if a.only in ("e1", "all") else []
-    e3 = run_e3() if a.only in ("e3", "all") else []
-    summarize(e1, e3)
-    print(
-        "[m17] done. 逐条核对不变量 I1-I5，见 notes/m17/prefix_cache_and_chunked_prefill.md §4"
-    )
+
+    if a.shard == "e1-on":
+        _dump(run_e1(prefix_on=True), "e1_on")
+    elif a.shard == "e1-off":
+        _dump(run_e1(prefix_on=False), "e1_off")
+    elif a.shard == "e3":
+        ch = None if a.e3_chunked is None else (a.e3_chunked == "on")
+        tag = "e3" if ch is None else f"e3_{a.e3_chunked}_{a.e3_mbt}"
+        _dump(run_e3(only_chunked=ch, only_mbt=a.e3_mbt), tag)
+    else:
+        e1 = _load_shards("e1_")
+        e3 = _load_shards("e3")
+        if not e1 and not e3:
+            raise SystemExit("no shards under outputs/m17/raw/; run the shards first")
+        summarize(e1, e3)
+        print(
+            "[m17] done. 逐条核对不变量 I1-I5，"
+            "见 notes/m17/prefix_cache_and_chunked_prefill.md §4"
+        )
 
 
 if __name__ == "__main__":

@@ -204,10 +204,19 @@
 
 ## 阶段 E · vLLM 高级优化（单卡可做，T+E+O）
 
-### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　🔄　T+E+O（GPU-free 部分已完成，E 待 GPU）
+### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O
 - 覆盖：共享前缀 workload 证明——哪些 KV blocks 被缓存、第二请求命中多少完整 block、少算多少 prefill token、TTFT 变化、**什么情况下没有收益**；chunked prefill 对调度与 TTFT 的影响。
-- **已完成（GPU-free）**：T 理论 + O 源码定位（APC + chunked prefill 均带 v0.24.0 file:line）+ 实验设计/不变量冻结 + 可运行脚本骨架 `scripts/m17_prefix_cache.py`（复用 M6 已验证内省法）。见 `notes/m17/prefix_cache_and_chunked_prefill.md`（含续传清单）。
-- **待 GPU（E）**：跑 E1（长共享前缀 on/off sweep，看延迟收益能否超噪声——M6 短前缀时落噪声内）+ E3（chunked prefill 分块）→ `outputs/m17/*` + 结论；E2 block 生命周期内省为可选 TODO。
+- **T+O（GPU-free）**：APC + chunked prefill 源码逐点定位（block hash 链式 / 命中 / ref_cnt / LRU 驱逐「尾部优先淘汰·前缀优先保留」/ 登记；token 预算 / 长阈值 / 预算共享），均带 file:line；实验设计与不变量跑前冻结。
+- **E 实测结论（已完成，`notes/m17/results.md`）**：
+  - **长前缀下 APC 收益真实且显著**：P=1024 省 **5.02ms（−39.0%，≈3.5σ）**、P=2048 省 **14.96ms（−62.4%，≈8.8σ）**；而 **P≤512 省 0.9–1.3ms 落在噪声内**。
+  - **机制打通（接 M7）**：off 侧延迟斜率 256→512 **≈0**（被 M7 已证的 ~7ms CPU 提交地板主导）、512→2048 转为 **8.85→10.85 us/tok**（计算受限）；hot 侧几乎不随 P 增长（命中后每次只算 16 个尾 token）。→ **APC 的收益必须等 prompt 长到穿透地板才显现**。
+  - **修正 M6 两处**：① 「省计算≠省延迟」只是**短前缀**现象；② 「prefix ON 短 prompt 反略慢」**未复现**（4 档 ×15 样本 cold 全部 ≤ off），判定为噪声。
+  - **不变量 I1–I4 全过**（命中对齐 / 省计算守恒 `hit=actual−scheduled` / off 基线 hit=0 / 分块守恒 Σchunks=prompt_len）。
+  - **E3**：分块守恒成立（512→4 块、1024→2 块）；**单请求下分块本身有成本**（4 块 +15.6% TTFT ≈ 多付 3 次 ~7ms 级 step 固定开销）——但其真实价值在多请求并发降 ITL 抖动，本轮**未覆盖**，故不下"chunked 有害"的结论。
+  - ⭐ **意外发现（上游硬约束）**：`enable_chunked_prefill=False` 时 vLLM **强制 `max_num_batched_tokens ≥ max_model_len`**（`vllm/config/scheduler.py:268-279` 直接 raise）——这是 chunked prefill 存在意义的硬编码证明，也使「off + 小预算」对照**无法构造**（据实调整网格）。
+- **实测暴露的脚本缺陷（已修）**：同进程内建多个引擎时 `del engine + empty_cache()` **不足以归还 KV cache 显存**（nvidia-smi 显示 12GB 空闲、vLLM 只见 5.08GB）→ 改为 **M6 已验证的「每配置一个独立进程」**（`--shard`）+ `summarize` 阶段不建引擎。
+- 产出：`scripts/m17_prefix_cache.py`、`notes/m17/{prefix_cache_and_chunked_prefill.md,results.md}`、`outputs/m17/{prefix_cache_sweep.csv,chunked_prefill.csv,raw/*.jsonl}`、`logs/m17/*`。**零 vLLM 源码改动。**
+- **未做（如实）**：E2 block 生命周期 ref_cnt/驱逐内省（可选）；E3 的并发场景（ITL 抖动）；不外推 compiled。
 - 产出：`workloads/prefix_cache_comparison.py`（本仓库实为 `scripts/m17_prefix_cache.py`）、`results/prefix_cache_on_off.csv`（实为 `outputs/m17/prefix_cache_sweep.csv`）、`reports/06_prefix_cache.md`。
 - **单卡足够**。注：M3/M6 已初步触及 prefix 命中（省计算≠省延迟）；本模块系统化为 on/off 定量对照 + 长前缀真实受益场景。
 
@@ -337,4 +346,4 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步**：第一阶段已收口（M13 PR #51017 已提交待审查、M16 已回填）。**进入【第二阶段】阶段 E：M17 的 E 实测**（GPU 空闲时跑 `scripts/m17_prefix_cache.py`，T/O 与实验设计已完成）→ M18/M19 → 阶段 F；多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。
+- **当前下一步**：第一阶段已收口；**第二阶段 M17 已完成（T+E+O）**。→ **M18（量化路径深化：W4A16/AWQ/GPTQ，单卡可做）** 或 **M19（Speculative Decoding：N-gram 起步，单卡可做）**；之后阶段 F（M20 服务化+Triton、M21 监控容量）。多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。

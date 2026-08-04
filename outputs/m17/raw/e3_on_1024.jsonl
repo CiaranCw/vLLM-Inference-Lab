@@ -1,0 +1,1 @@
+{"experiment": "E3_chunked", "enable_chunked_prefill": true, "max_num_batched_tokens": 1024, "prompt_len": 2048, "num_chunks": 2, "chunk_sizes": [1024, 1024], "sum_scheduled": 2048, "ttft_proxy_ms": 134.5226}

@@ -1,0 +1,6 @@
+enable_chunked_prefill,max_num_batched_tokens,prompt_len,num_chunks,sum_scheduled,ttft_proxy_ms,chunk_sizes
+False,4096,2048,1,2048,129.2829,[2048]
+True,1024,2048,2,2048,134.5226,"[1024, 1024]"
+True,2048,2048,1,2048,128.0955,[2048]
+True,4096,2048,1,2048,129.1917,[2048]
+True,512,2048,4,2048,148.0216,"[512, 512, 512, 512]"
