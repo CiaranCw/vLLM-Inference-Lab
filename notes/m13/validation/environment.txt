@@ -1,14 +1,11 @@
-# M13 validation environment
-recorded_utc: 2026-08-04T03:53:21Z
-upstream_main_sha: cb8104839c141609d99f1254459ef3a4f1bd4263
-branch: m13/block-table-slot-mapping-tests
-branch_base_sha: cb8104839c141609d99f1254459ef3a4f1bd4263
-workspace: /home/ciaran/projects/vllm-m13-upstream (clean clone of upstream/main)
+# M13 validation environment (round 2)
+recorded_utc: 2026-08-04T06:33:14Z
+upstream_main_sha: 72cd5424da80a4a9caa3f42fd65bc0b94e61cbf0
+branch: m13/block-table-slot-mapping-tests  (HEAD=72cd5424da80a4a9caa3f42fd65bc0b94e61cbf0, no local commit)
+test_file_sha256: 3336963163439fd2531519f4640181444ec256c558c55c66f7226e2e934e2296
 vllm: 0.1.dev1+gcb8104839
 python: Python 3.12.13
-torch: 2.13.0+cu130
-cuda_runtime(torch): 13.0
+torch: 2.13.0+cu130 cuda=13.0
 triton: 3.7.1
-gpu: NVIDIA GeForce RTX 5080, 610.62, 16303 MiB
-gpu_capability: (12, 0)
-install: VLLM_USE_PRECOMPILED=1 uv pip install -e . --torch-backend=auto
+ruff: ruff 0.14.0
+gpu: NVIDIA GeForce RTX 5080, 610.62

@@ -38,6 +38,8 @@ def _make_block_table(
     max_num_batched_tokens: int = MAX_NUM_BATCHED_TOKENS,
     max_num_blocks_per_req: int = MAX_NUM_BLOCKS_PER_REQ,
 ) -> BlockTable:
+    if kernel_block_size is None:
+        kernel_block_size = kv_cache_block_size
     block_table = BlockTable(
         block_size=kv_cache_block_size,
         max_num_reqs=MAX_NUM_REQS,
@@ -45,7 +47,7 @@ def _make_block_table(
         max_num_batched_tokens=max_num_batched_tokens,
         pin_memory=False,
         device=torch.device("cuda"),
-        kernel_block_size=kernel_block_size or kv_cache_block_size,
+        kernel_block_size=kernel_block_size,
         cp_kv_cache_interleave_size=cp_kv_cache_interleave_size,
         slot_mapping_mode=slot_mapping_mode,
     )
@@ -56,6 +58,27 @@ def _make_block_table(
     return block_table
 
 
+def _expand_kernel_block_ids(
+    kv_manager_block_ids: list[int],
+    blocks_per_kv_block: int,
+) -> np.ndarray:
+    """Expand KV manager block ids into kernel block ids.
+
+    A KV manager block covers ``blocks_per_kv_block`` consecutive kernel
+    blocks, so ``kernel_block_id = kv_block_id * blocks_per_kv_block +
+    sub_block``. Kept independent of ``BlockTable.map_to_kernel_blocks`` so a
+    bug there cannot cancel out in both the expected and actual values.
+    """
+    return np.array(
+        [
+            kv_block_id * blocks_per_kv_block + sub_block
+            for kv_block_id in kv_manager_block_ids
+            for sub_block in range(blocks_per_kv_block)
+        ],
+        dtype=np.int64,
+    )
+
+
 def _reference_slot_mapping(
     block_table: BlockTable,
     kv_manager_block_ids: list[list[int]],
@@ -63,20 +86,20 @@ def _reference_slot_mapping(
 ) -> np.ndarray:
     """Recompute the expected slot mapping from the public input semantics.
 
-    Mirrors the kernel contract without reusing its indexing helpers:
+    Starts from the KV manager block ids handed to ``add_row``, expands them
+    into kernel block ids independently, and rebuilds the mapping step by step.
+    It neither calls the production mapping helpers nor reads the block table
+    that ``add_row`` produced:
 
     1. A virtual block spans ``kv_cache_block_size * dcp_world_size`` tokens,
        because a KV cache block is spread over the DCP ranks.
     2. A token is local when its virtual block offset, chunked by the
        interleave size, is assigned to this rank round-robin.
     3. The local offset is the token's position within this rank's share.
-    4. A KV manager block covers ``blocks_per_kv_block`` kernel blocks, so the
-       kernel block index advances by the local offset divided by the kernel
-       block size.
-    5. Physical kernel block ids come from the block table row, which
-       ``add_row`` already expanded from KV manager ids for hybrid blocks.
-    6. The slot is ``kernel_block_id * kernel_block_size + offset in block``.
-    7. Non-local tokens and trailing padding are ``PAD_SLOT_ID``.
+    4. The kernel block index advances by the local offset divided by the
+       kernel block size, within the expanded ids of the virtual block.
+    5. The slot is ``kernel_block_id * kernel_block_size + offset in block``.
+    6. Non-local tokens and trailing padding are ``PAD_SLOT_ID``.
     """
     kernel_block_size = block_table.block_size
     kv_cache_block_size = block_table.kv_cache_block_size
@@ -87,13 +110,7 @@ def _reference_slot_mapping(
 
     expected = np.full(block_table.max_num_batched_tokens, PAD_SLOT_ID, dtype=np.int64)
     kernel_block_ids = [
-        BlockTable.map_to_kernel_blocks(
-            np.array(ids, dtype=np.int64),
-            blocks_per_kv_block,
-            np.arange(blocks_per_kv_block).reshape(1, -1),
-        )
-        if blocks_per_kv_block > 1
-        else np.array(ids, dtype=np.int64)
+        _expand_kernel_block_ids(ids, blocks_per_kv_block)
         for ids in kv_manager_block_ids
     ]
 
@@ -168,9 +185,11 @@ def _check(
         #   position 16 -> block 6, offset 0  -> 6 * 16 + 0  = 96
         #   position 47 -> block 7, offset 15 -> 7 * 16 + 15 = 127
         ([[5, 6, 7, 8]], [[0, 15, 16, 47]], [80, 95, 96, 127]),
-        # Non-contiguous blocks [9, 2], two requests sharing the batch:
-        #   req 0 position 3  -> block 9, offset 3 -> 9 * 16 + 3 = 147
-        #   req 1 position 20 -> block 4, offset 4 -> 4 * 16 + 4 = 68
+        # Two requests sharing the batch, each with its own block table row:
+        #   req 0 position 3  -> block index 0 -> row 0 block 9, offset 3
+        #                     -> 9 * 16 + 3 = 147
+        #   req 1 position 20 -> block index 1 -> row 1 block 4, offset 4
+        #                     -> 4 * 16 + 4 = 68
         ([[9, 2], [7, 4]], [[3], [20]], [147, 68]),
     ],
 )
@@ -189,24 +208,30 @@ def test_slot_mapping_matches_hand_computed_slots(
 
 
 @pytest.mark.parametrize(
-    "name,kv_manager_block_ids,positions_per_req",
+    "kv_manager_block_ids,positions_per_req",
     [
-        ("single_token", [[9]], [[0]]),
-        ("first_and_last_position_in_block", [[8, 2, 5]], [[0, 15, 16, 31, 32]]),
-        ("spans_many_blocks", [[3, 7, 1, 5]], [list(range(64))]),
-        ("non_contiguous_blocks", [[100, 3, 57, 12, 88, 1]], [list(range(96))]),
+        ([[9]], [[0]]),
+        ([[8, 2, 5]], [[0, 15, 16, 31, 32]]),
+        ([[3, 7, 1, 5]], [list(range(64))]),
+        ([[100, 3, 57, 12, 88, 1]], [list(range(96))]),
         (
-            "ragged_multi_request",
             [[1, 2, 3, 4], [10, 11], [20, 21, 22], [30], [40, 41, 42]],
             [list(range(60)), list(range(20)), list(range(33)), [0], list(range(17))],
         ),
         # Decode steps of a request whose prefix is already cached start at a
         # non-zero position.
-        ("prefix_offset", [[5, 6, 7, 8, 9, 10]], [list(range(70, 90))]),
+        ([[5, 6, 7, 8, 9, 10]], [list(range(70, 90))]),
+    ],
+    ids=[
+        "single_token",
+        "first_and_last_position_in_block",
+        "spans_many_blocks",
+        "non_contiguous_blocks",
+        "ragged_multi_request",
+        "prefix_offset",
     ],
 )
 def test_slot_mapping_covers_block_boundaries_and_ragged_batches(
-    name: str,
     kv_manager_block_ids: list[list[int]],
     positions_per_req: list[list[int]],
 ) -> None:
@@ -294,14 +319,15 @@ def test_slot_mapping_with_hybrid_kernel_blocks(
 def test_slot_mapping_hybrid_matches_hand_computed_slots() -> None:
     """Hand-computed hybrid mapping for 32-token KV blocks over 16-token kernel blocks.
 
-    ``add_row`` expands KV blocks [5, 9] into kernel blocks [10, 11, 18, 19],
-    and slots are computed with the kernel block size of 16:
+    ``add_row`` expands KV blocks [5, 9] into kernel blocks [10, 11, 18, 19].
+    A virtual block spans the 32-token allocation block, so the kernel block is
+    picked by the offset within it, and slots use the kernel block size of 16:
         position 0  -> kernel block 10 offset 0  -> 10 * 16 + 0  = 160
         position 15 -> kernel block 10 offset 15 -> 10 * 16 + 15 = 175
         position 16 -> kernel block 11 offset 0  -> 11 * 16 + 0  = 176
         position 31 -> kernel block 11 offset 15 -> 11 * 16 + 15 = 191
         position 32 -> kernel block 18 offset 0  -> 18 * 16 + 0  = 288
-        position 47 -> kernel block 19 offset 15 -> 19 * 16 + 15 = 303
+        position 47 -> kernel block 18 offset 15 -> 18 * 16 + 15 = 303
     """
     block_table = _make_block_table(kv_cache_block_size=32, kernel_block_size=16)
     actual, num_tokens = _compute(block_table, [[5, 9]], [[0, 15, 16, 31, 32, 47]])

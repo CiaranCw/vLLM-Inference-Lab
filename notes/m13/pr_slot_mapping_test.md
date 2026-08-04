@@ -1,10 +1,10 @@
 # M13 · 首次开源 PR — 研究笔记（候选 C1：`compute_slot_mapping` 单元测试）
 
 > **阅读顺序**：本文件分两大部分。
-> - **【第一部分】当前 main（`cb81048`，2026-08-04 实测）** —— 权威、以此为准。
-> - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.3）。
+> - **【第一部分】当前 main（`72cd542`，2026-08-04 06:xx UTC 实测）** —— 权威、以此为准。
+> - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.4）。
 >
-> **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动），**尚未 push / 尚未建 PR**。断点见 `STATUS.md`。
+> **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动、Oracle 独立性经变异测试证明），**尚未 commit / 尚未 push / 尚未建 PR**。断点见 `STATUS.md`，逐行审查材料见 `review/`。
 
 ---
 
@@ -13,11 +13,13 @@
 ## A.1 事实基线
 | 项 | 值 |
 |---|---|
-| 核查时间 | 2026-08-04 03:21–03:53 UTC |
-| upstream/main | **`cb8104839c141609d99f1254459ef3a4f1bd4263`**（2026-08-04T03:05:45Z） |
+| 核查时间 | **2026-08-04 06:18–06:40 UTC**（本轮复核；上轮 03:21–03:53） |
+| upstream/main | **`72cd5424da80a4a9caa3f42fd65bc0b94e61cbf0`**（2026-08-04T06:15:02Z）——上轮为 `cb81048`，前进 1 commit（仅 `rust/src/bench/`，与本 PR 无关，已安全 port） |
 | 最新 release | v0.26.0（2026-07-27） |
-| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests` |
-| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，+322 行；main 上此文件仍不存在） |
+| 干净工作区 | `/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 `.venv`），分支 `m13/block-table-slot-mapping-tests`，HEAD = `72cd542`（**无本地 commit**） |
+| 目标文件 | `tests/v1/worker/test_block_table.py`（新增，**348 行 / 18 tests**；main 上此文件仍不存在） |
+| 语义复核 | `block_table.py` 在 `cb81048..72cd542` **零改动**；`AGENTS.md` / `docs/contributing/README.md` 亦零改动 |
+| 当前状态 | **READY FOR HUMAN LINE-BY-LINE REVIEW**（未 commit / 未 push / 未建 PR） |
 
 ## A.2 MRV1 / MRV2 与「测哪个对象」
 两条 block_table 并存，**必须分清**：
@@ -62,9 +64,25 @@ padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 10
 1. **PCP 已不参与 slot mapping**：现在只按 **DCP** 分片（旧假设 `pcp × dcp` 错误）。`pcp_world_size/pcp_rank` 仍在 `__init__` 读取，但**不传入 kernel**。
 2. **新增混合块语义**：`kv_cache_block_size` / `kernel_block_size` / `blocks_per_kv_block` 三分（旧只有单一 block_size）。
 3. **新增 `SlotMappingMode`**：`TOKEN_TO_KV_SLOT`（默认）与 `NONE`（Mamba/GDN 状态缓存，跳过）。
-4. **`[Test]` 不是合法 PR 前缀**：`docs/contributing/README.md:223+` 列表为 Bugfix/CI-Build/Doc/Model/Frontend/Kernel/Core/Hardware/Misc → 取 **`[CI/Build]`**。
+4. **`[Test]` 不是合法 PR 前缀**：`docs/contributing/README.md:223+` 列表为 Bugfix/CI-Build/Doc/Model/Frontend/Kernel/Core/Hardware/Misc → **本轮定为 `[Core]`**（本 PR 不改 CI/Build/测试基础设施，保护的是 V1 核心 KV BlockTable 行为；上轮曾暂定 `[CI/Build]`，已改）。
 5. **新增强制规则 `AGENTS.md`（根目录）**：禁裸 pip（必须 `uv`）、88 字符行宽、PR 须含查重说明+测试命令与结果+AI 披露、**纯 code-agent PR 不允许**（提交人须能端到端负责）、违规可**直接封禁**。
 6. **测试环境不再需要 /tmp 绕过**：装 `requirements/test/cuda.in` 后真实 `tests/conftest.py` 可导入，正式从仓库根目录运行。
+
+## A.4b 独立 Oracle 的必要性（本轮新增，含实证）
+
+旧版 Oracle 调用产品 `BlockTable.map_to_kernel_blocks` 展开 hybrid 块——而产品 `add_row` 用的**是同一个函数**。后果：该 helper 若有 bug，**期望值与实际值一起错**，hybrid 测试照样绿。
+
+**实证（注入 `map_to_kernel_blocks` 返回值 +1）**：
+
+| 用例 | 修复前 | 修复后 |
+|---|:--:|:--:|
+| `hybrid_kernel_blocks[32-16]`（Oracle 驱动） | ✅ passed（**漏检**） | ❌ failed |
+| `hybrid_kernel_blocks[64-16]`（Oracle 驱动） | ✅ passed（**漏检**） | ❌ failed |
+| `hybrid_matches_hand_computed_slots`（写死 golden） | ❌ failed | ❌ failed |
+
+**修复**：测试内自建 `_expand_kernel_block_ids`（`kernel_block_id = kv_block_id * bpk + sub_block`），Oracle 从原始 KV manager id 自行展开，**不调用任何产品 mapping helper、不读产品 `block_table.np`**。恢复后 `git diff -- vllm/ csrc/` 为空、18 tests 全绿。
+
+**另一条已有证据**：kernel 级变异（`slot_offsets + 1`）→ 17/18 失败（仅 `SlotMappingMode.NONE` 用例应存活，因其不跑 kernel），证明整套测试非空转。
 
 ## A.5 当前测试矩阵（18 tests，`tests/v1/worker/test_block_table.py`）
 | 组 | 内容 |
@@ -87,7 +105,11 @@ padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 10
 - 本机 3 个邻近测试失败为**基线环境问题**（WSL2 `UVA is not available`），与本改动无关（移除本文件后同样失败）。
 
 ## A.7 与 PR #30683 的关系
-`CLOSED`/未合并/`stale`（作者 @pisceskkk，closed 2026-04-09）。方向相同（为 block_table 加 UT），**故 PR 描述中致谢其方向**；但**不夸大继承**：其代码基于旧 API（`compute_slot_mapping(req_indices, positions)`）与已失效的 `pcp × dcp` 假设，**无法在当前 main 运行**。本实现按当前 API 重写，并新增 hybrid / SlotMappingMode / 跨 tile padding 覆盖。
+`CLOSED`/未合并/`stale`（作者 @pisceskkk，closed 2026-04-09）。方向相同（为 block_table 加 UT），**故 PR 描述中致谢其提出该测试方向**；但**不夸大**：
+- **不声称** maintainer 已接纳该方向（无明确 maintainer 评论证据；PR 描述措辞已相应收紧）；
+- 其代码基于旧 API（`compute_slot_mapping(req_indices, positions)`）与已失效的 `pcp × dcp` 分片假设，**无法在当前 main 运行**。
+
+本实现按当前 API 重写，并新增 hybrid / `SlotMappingMode` / 跨 tile padding 覆盖。
 
 ## A.8 下一步（PR 流程）
 见 `STATUS.md` §7（命令已备好）。阻塞项：DCO 身份确认、AI 署名 trailer 口径、人工逐行审阅（AGENTS.md 硬要求）。
