@@ -20,6 +20,8 @@
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
 
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
+>
+> **接手/协作者请先读**：[`HANDOFF.md`](HANDOFF.md)（当前进度、下一步选项、已知坑）与 [`AGENTS.md`](AGENTS.md)（硬性工作规则：诚实性红线 / Git 署名 / GPU 安全 / 必需环境变量）。
 
 ---
 

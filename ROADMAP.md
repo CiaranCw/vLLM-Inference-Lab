@@ -377,4 +377,5 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步**：第一阶段已收口；**第二阶段 M17 已完成（T+E+O）**。→ **M18（量化路径深化：W4A16/AWQ/GPTQ，单卡可做）** 或 **M19（Speculative Decoding：N-gram 起步，单卡可做）**；之后阶段 F（M20 服务化+Triton、M21 监控容量）。多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。
+- **当前下一步**：第一阶段已收口；**第二阶段 M17 已完成（T+E+O，I5-b/E2 未做）**。→ **M18（量化路径深化：W4A16/AWQ/GPTQ，单卡可做，但需先获授权下载量化模型）** 或 **M19（Speculative Decoding：N-gram 起步，单卡即可、无需下载）**；亦可先补 **M17 的 I5-b**（最小收尾项）。之后阶段 F（M20 服务化+Triton、M21 监控容量）。多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。
+- **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

@@ -1,0 +1,58 @@
+---
+description: vLLM Inference Lab —— 本仓库的硬性工作规则（始终生效）
+alwaysApply: true
+---
+
+# 本仓库工作规则（摘要 · 完整版见根目录 AGENTS.md）
+
+**首次接手请先读 `HANDOFF.md`（进度交接）与 `AGENTS.md`（完整规则）。**
+
+这是一个**求职用**的 vLLM 推理系统工程项目，价值建立在**每条结论都能回溯到原始数据**之上。
+
+## 诚实性红线（最高优先级）
+- 不得伪造、修饰或挑选性引用性能数据；所有数字必须能回溯到 `outputs/` 下的 CSV/JSONL。
+- **数据推翻旧结论时，改结论，不改数据。** 不得为维持既有结论而筛选数据。
+- 未完成的实验必须标 `[ ]` / "未执行"，**即使理论上成立也不能勾选**。
+- 结论必须带适用边界：单卡 RTX 5080 / sm_120 / WSL2 / Qwen2.5-0.5B / `enforce_eager` / in-process。不外推。
+- 区分「未观察到超出噪声的收益」与「没有收益」。统计显著性用 Bootstrap 95% CI（固定 seed），不要自造 "3.5σ" 这类非标准量。
+- 错误不得静默吞掉（禁止 `|| true` 掩盖）；报告原始命令 + 原始报错 + 根因，然后询问。
+
+## Git
+- **提交者只能是 CiaranCw**；**绝不添加 `Co-Authored-By:` / `Assisted-by:` 等 AI 署名 trailer**。
+- 本仓库提交后**直接 `git push origin main`**（已授权，无需每次询问）。
+- **禁止对 `../vllm-src` 做破坏性 git 操作**（`reset --hard` / `clean -fd` / `checkout -- .` / `restore` / `stash`）——该工作树有约 1583 行未提交的中文学习注释。
+- 提交信息用中文，说明「做了什么 + 为什么 + 数据依据」。
+
+## 环境安全
+- **绝不修改 `../vllm_playground/.venv`**（只读干净基线）。
+- 不用 sudo、不装系统级包、不删任何缓存。`VLLM_USE_PRECOMPILED=1`（不编译 CUDA/C++）。
+- **不自动下载模型**；需要新模型先问所有者。
+
+## GPU（16GB，常被占用）
+- **跑 GPU 任务前先 `nvidia-smi`**；有别人的进程就停下来问，**不得 kill 进程或 reset**。
+- **一个进程只建一个 vLLM 引擎**（KV 显存 `del` + `empty_cache()` 也归还不掉）；多配置对照用独立进程（见 `scripts/m17_prefix_cache.py --shard`）。
+
+## 必需环境变量（缺了会崩）
+```bash
+source .venv/bin/activate
+export VLLM_USE_FLASHINFER_SAMPLER=0    # 必须：sm_120 上 flashinfer sampler JIT 失败
+export VLLM_ENABLE_V1_MULTIPROCESSING=0
+```
+**首次冷跑因 Triton JIT 极慢（首样本可比稳态慢 4–5×）→ 性能实验必须 warmup，且 warmup 与 measure 分开统计。**
+
+## 实验方法学
+- 单变量对照；参数写死在脚本顶部常量区。
+- 每配置 ≥15 次 measure + 5 次 warmup；报 median/stdev/p95；汇总只用 measure 且 success=True。
+- 先定义可验证的不变量（守恒律），跑完逐条核对；**布尔判据要有独立的第二证据源**。
+- 逐样本落盘 `outputs/mN/raw/*.jsonl`；**旧数据只备份不删除**。
+- in-process 延迟不要叫 "TTFT"（那是 M12 的在线口径）。
+
+## 目录约定
+- 笔记 `notes/mN/`；跨模块索引 `notes/evidence_index.md`（留在 notes 根）；数据 `outputs/mN/`；日志 `logs/mN/`；脚本 `scripts/mN_*.py`；图 `figures/`。
+- 图必须由已落盘数据**离线**生成（不需 GPU、不 import vllm）——范例 `scripts/m17_figures.py`。
+- 完成模块后同步更新 `ROADMAP.md` + `notes/evidence_index.md` +（如有核心结论/图）`README.md`。
+
+## 沟通
+- **面向所有者的报告用中文**；命令/路径/日志/报错保持原文。给结论 + 依据 + 下一步，不要冗长思考过程。
+- **需授权**：向 vLLM 上游提/改 PR 或加 label、下载新模型、任何破坏性或对外发布操作。
+- **PR #51017 当前阻塞于上游新贡献者门禁（需 maintainer 打 label），不要试图"修复"该 CI，也不要自行加 label。**
