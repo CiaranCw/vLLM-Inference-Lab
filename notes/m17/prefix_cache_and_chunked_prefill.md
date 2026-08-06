@@ -2,10 +2,16 @@
 
 > **模块目标（ROADMAP 第二阶段 阶段 E，T+E+O，单卡可做）**：在 M3/M6 已触及 prefix 的基础上，**用真实受益场景（长共享前缀）系统化证明** APC 的作用与边界，并打通 chunked prefill 对调度/TTFT 的影响。
 >
-> **本文件状态（GPU 繁忙下推进）**：
-> - ✅ **T 理论** + **O 源码定位（带 file:line）** + **实验设计冻结** + **可运行脚本骨架**（§1–§5）。
-> - ✅ **E 实测已完成**（2026-08-04）——**结论见 `notes/m17/results.md`**；数据 `outputs/m17/*`、日志 `logs/m17/*`。
->   核心结果：**长前缀下 APC 收益真实且显著**（P=2048 TTFT −62.4%、14.96ms ≈ 8.8σ），而 P≤512 落在噪声内 → **M6 的「省计算≠省延迟」只是短前缀现象**；I1–I4 全部通过。
+> **本文件状态**：
+> - ✅ **T 理论** + **O 源码定位（带 file:line）** + **实验设计冻结**（§1–§4）。
+> - ✅ **E 实测已完成并按审计重跑**（2026-08-05）——**结论见 `notes/m17/results.md`**。
+>   E1（APC 4 档 ×15）、E3-single（5 配置 ×15，含 warmup 排除 JIT）、**E3-concurrency（新增，
+>   Decode ITL 抖动，两侧 mbt=4096 单变量）** 全部完成；**不变量 I1–I4 通过**；
+>   **I5 仅完成理论边界确认，其定量实验（扫输出长度）未执行**（见 §5）。
+> - 2026-08-05 第二轮修正：E1 的 `chunked` 字段会把全部 hot 样本误标（真因是 prefix 命中，
+>   而非分块），已改为 `prefix_cache_hit` + `prefill_step_count` 并重跑 E1。
+> - ⚠ 2026-08-04 首版的 E3 结论（单样本、被 JIT 污染）与 "3.5σ/8.8σ" 表述**已撤回**，
+>   详见 results.md §6。旧数据留存在 `backups/m17_pre_fix_20260805T032832Z/`。
 >
 > **边界**：本机 RTX 5080/sm_120、WSL2、Qwen2.5-0.5B、`enforce_eager`；结论限本配置。源码行号基于 pinned `ee0da84`/v0.24.0，动手前可再核。
 
@@ -70,7 +76,7 @@
 
 ## 3. 实验设计（跑前冻结，GPU 空闲后执行）
 
-> 复用 M6 已验证的**闭环内省法**：`LLMEngine` + `ScheduleSpy` 抓 `SchedulerOutput`；**命中证据 = `actual_prompt_tokens − total_num_scheduled_tokens`**（命中→scheduled<actual）；`chunked = scheduled>actual`；计时用 `torch.cuda.synchronize()` 夹 `perf_counter()`。固定 `Qwen2.5-0.5B / enforce_eager / seed=0 / temperature=0`，warmup 与正式分离、重复≥15、报 median/P95/stdev。
+> 复用 M6 已验证的**闭环内省法**：`LLMEngine` + `ScheduleSpy` 抓 `SchedulerOutput`；**命中证据 = `actual_prompt_tokens − total_num_scheduled_tokens`**（命中→scheduled<actual）；**分块判据（已修正，原写反）**：分块时是 `scheduled < actual`；且**请求是否真的跨多个 prefill step，以「prefill step 数 > 1」为最终证据**——注意 E1 里 `scheduled < actual` 是 **prefix 命中**所致（每请求仍只 1 个 prefill step），故 E1 记 `prefix_cache_hit`/`prefill_step_count`、**不记 chunked**；计时先 `torch.cuda.synchronize()` 再取 `perf_counter()`。固定 `Qwen2.5-0.5B / enforce_eager / seed=0 / temperature=0`，warmup 与正式分离、重复≥15、报 median/P95/stdev。
 
 ### E1 · 长共享前缀 on/off（核心）
 - 构造：共享前缀长度 `P ∈ {256, 512, 1024, 2048}`（block 对齐），各带一段**独立短后缀**打破完全命中。
@@ -104,26 +110,33 @@
 
 ---
 
-## 5. 续传清单（GPU 空闲后从这里接）
-- [x] T 理论、O 源码定位（本文件 §1–§2）
+## 5. 完成清单（2026-08-05 审计修复后）
+- [x] T 理论、O 源码定位（§1–§2）
 - [x] 实验设计 + 不变量冻结（§3–§4）
-- [x] 可运行脚本骨架 `scripts/m17_prefix_cache.py`（E1/E3 主体，复用 M6 内省法）
-- [x] **跑 E1**（长共享前缀 on/off sweep）→ `outputs/m17/prefix_cache_sweep.csv`（4 档 × on/off，240 samples）
-- [x] **跑 E3**（chunked prefill）→ `outputs/m17/chunked_prefill.csv`（5 个可构造配置）
-- [x] 写结论 → **`notes/m17/results.md`**；已回填 evidence_index 与 ROADMAP M17 状态
-- [x] 核对不变量：**I1（命中对齐）/ I2（省计算守恒）/ I3（off 基线）/ I4（分块守恒）全部通过**
-- [x] **I5（APC 只省 prefill 不省 decode）**：本轮以 `max_tokens=1` 只测 prefill，未扫输出长度 → **改为由结构直接成立**（hot 侧 scheduled 恒为 16，命中前缀完全跳过 prefill；decode 路径不受 APC 影响），如需定量仍可扫 `max_tokens`（记为后续可选）
-- [ ] （可选，未做）E2 block 生命周期内省——需先验证 `block_pool` 的 ref_cnt/free 队列内省 API 可读
-- [x] **脚本重构（实测暴露的真实缺陷）**：同进程内多引擎无法归还 KV 显存 → 改为 M6 已验证的「每配置一个独立进程」模式（`--shard`）
-
-**脚本已标注**：需要 GPU 的入口在 `main()`，未运行；命中证据法（`actual − scheduled`）已被 M6 验证可靠；E2 的 block_pool 深度内省标为待验证 TODO（不阻塞 E1/E3）。
-
----
+- [x] 脚本重构为 `--shard` 单引擎模式（同进程多引擎无法归还 KV 显存）
+- [x] **E1**（APC 4 档 × on/off × 15 measure，共 180 有效样本）→ `prefix_cache_sweep.csv` / `prefix_cache_effect.csv`
+- [x] **E3-single**（5 配置 × 15 measure，**5 warmup 排除首次 JIT**）→ `chunked_prefill.csv`
+- [x] **E3-concurrency**（新增，D 稳定 decode 后插入长 prefill，两侧 mbt=4096 单变量）→ `chunked_prefill_concurrency.csv`
+- [x] 不变量 **I1/I2/I3/I4 全部通过**（见 results.md §1.3 / §2.1）
+- [x] **I5-a 理论边界确认**：APC 只省 prefill 不省 decode —— 由结构成立（hot 侧 `scheduled` 恒为 16，
+      命中前缀完全跳过 prefill；decode 路径不受 APC 影响）
+- [ ] **I5-b 输出长度定量实验：未执行** —— 冻结设计要求「固定前缀、加长 `max_tokens` 时 APC 的 E2E
+      相对收益应变小」。本轮所有请求均 `max_tokens=1`（只测 prefill），**未扫输出长度**，故该定量实验**未完成**（不得因理论成立而勾选整项）
+- [x] 统计口径改为 **Bootstrap 95% CI**（固定 seed=0，无重依赖），删除不规范的 σ 表述
+- [x] 指标改名 `in_process_first_token_latency_ms`，显式声明非在线 TTFT
+- [ ] （可选，未做）E2 block 生命周期 ref_cnt/驱逐内省——需先验证 `block_pool` 内省 API 可读
 
 ## 6. 复现（待 GPU 空闲，注意先确认 GPU 不忙以免 OOM）
 ```bash
-cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
-VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-  python scripts/m17_prefix_cache.py            # E1 + E3 -> outputs/m17/*.csv + raw/*.jsonl
-# 产出后再写结论、回填 evidence_index / ROADMAP
+source .venv/bin/activate
+export VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0
+# 必须分片：一个进程一个引擎（详见脚本顶部说明）
+python scripts/m17_prefix_cache.py --shard e1-on
+python scripts/m17_prefix_cache.py --shard e1-off
+for mbt in 512 1024 2048 4096; do
+  python scripts/m17_prefix_cache.py --shard e3 --e3-chunked on --e3-mbt $mbt; sleep 20; done
+python scripts/m17_prefix_cache.py --shard e3 --e3-chunked off --e3-mbt 4096
+python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode chunked
+python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode nochunk
+python scripts/m17_prefix_cache.py --shard summarize   # 不建引擎、不需 GPU
 ```

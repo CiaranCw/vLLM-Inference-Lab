@@ -1,6 +1,6 @@
-enable_chunked_prefill,max_num_batched_tokens,prompt_len,num_chunks,sum_scheduled,ttft_proxy_ms,chunk_sizes
-False,4096,2048,1,2048,129.2829,[2048]
-True,1024,2048,2,2048,134.5226,"[1024, 1024]"
-True,2048,2048,1,2048,128.0955,[2048]
-True,4096,2048,1,2048,129.1917,[2048]
-True,512,2048,4,2048,148.0216,"[512, 512, 512, 512]"
+enable_chunked_prefill,max_num_batched_tokens,prompt_len,prefill_step_count,chunk_sizes,sum_prefill_scheduled,n,ttft_median_ms,ttft_mean_ms,ttft_stdev_ms,ttft_p95_ms,ttft_min_ms,ttft_max_ms,metric_scope
+False,4096,2048,1,[2048],2048,15,23.5777,23.5673,0.3978,24.2341,23.1233,24.268,in-process
+True,512,2048,4,"[512, 512, 512, 512]",2048,15,32.3097,32.7814,1.3281,34.753,30.7865,35.3745,in-process
+True,1024,2048,2,"[1024, 1024]",2048,15,25.5528,25.7306,0.8078,26.8512,24.7846,27.4143,in-process
+True,2048,2048,1,[2048],2048,15,22.5929,22.9344,0.7133,23.9291,22.0664,24.379,in-process
+True,4096,2048,1,[2048],2048,15,23.6022,23.4907,0.4616,24.2947,22.9453,24.4345,in-process

@@ -1,0 +1,12 @@
+# M17 rerun environment
+recorded_utc: 2026-08-05T03:43:01Z
+lab_HEAD: 58c8ab6ed9b95003763516a751525fcf1870da85
+vllm: 0.24.1.dev0+gee0da84ab.d20260714
+vllm_path: /home/ciaran/projects/vllm-src/vllm/__init__.py
+vllm_src_HEAD: ee0da84ab9e04ac7610e28580af62c365e898389 (v0.24.0)
+torch: 2.11.0+cu130
+cuda: 13.0
+gpu: NVIDIA GeForce RTX 5080, 610.62
+capability: (12, 0)
+python: Python 3.12.13
+config: enforce_eager=True seed=0 temperature=0 model=Qwen/Qwen2.5-0.5B-Instruct

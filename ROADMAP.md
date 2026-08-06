@@ -204,21 +204,52 @@
 
 ## 阶段 E · vLLM 高级优化（单卡可做，T+E+O）
 
-### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O
-- 覆盖：共享前缀 workload 证明——哪些 KV blocks 被缓存、第二请求命中多少完整 block、少算多少 prefill token、TTFT 变化、**什么情况下没有收益**；chunked prefill 对调度与 TTFT 的影响。
-- **T+O（GPU-free）**：APC + chunked prefill 源码逐点定位（block hash 链式 / 命中 / ref_cnt / LRU 驱逐「尾部优先淘汰·前缀优先保留」/ 登记；token 预算 / 长阈值 / 预算共享），均带 file:line；实验设计与不变量跑前冻结。
-- **E 实测结论（已完成，`notes/m17/results.md`）**：
-  - **长前缀下 APC 收益真实且显著**：P=1024 省 **5.02ms（−39.0%，≈3.5σ）**、P=2048 省 **14.96ms（−62.4%，≈8.8σ）**；而 **P≤512 省 0.9–1.3ms 落在噪声内**。
-  - **机制打通（接 M7）**：off 侧延迟斜率 256→512 **≈0**（被 M7 已证的 ~7ms CPU 提交地板主导）、512→2048 转为 **8.85→10.85 us/tok**（计算受限）；hot 侧几乎不随 P 增长（命中后每次只算 16 个尾 token）。→ **APC 的收益必须等 prompt 长到穿透地板才显现**。
-  - **修正 M6 两处**：① 「省计算≠省延迟」只是**短前缀**现象；② 「prefix ON 短 prompt 反略慢」**未复现**（4 档 ×15 样本 cold 全部 ≤ off），判定为噪声。
-  - **不变量 I1–I4 全过**（命中对齐 / 省计算守恒 `hit=actual−scheduled` / off 基线 hit=0 / 分块守恒 Σchunks=prompt_len）。
-  - **E3**：分块守恒成立（512→4 块、1024→2 块）；**单请求下分块本身有成本**（4 块 +15.6% TTFT ≈ 多付 3 次 ~7ms 级 step 固定开销）——但其真实价值在多请求并发降 ITL 抖动，本轮**未覆盖**，故不下"chunked 有害"的结论。
-  - ⭐ **意外发现（上游硬约束）**：`enable_chunked_prefill=False` 时 vLLM **强制 `max_num_batched_tokens ≥ max_model_len`**（`vllm/config/scheduler.py:268-279` 直接 raise）——这是 chunked prefill 存在意义的硬编码证明，也使「off + 小预算」对照**无法构造**（据实调整网格）。
-- **实测暴露的脚本缺陷（已修）**：同进程内建多个引擎时 `del engine + empty_cache()` **不足以归还 KV cache 显存**（nvidia-smi 显示 12GB 空闲、vLLM 只见 5.08GB）→ 改为 **M6 已验证的「每配置一个独立进程」**（`--shard`）+ `summarize` 阶段不建引擎。
-- 产出：`scripts/m17_prefix_cache.py`、`notes/m17/{prefix_cache_and_chunked_prefill.md,results.md}`、`outputs/m17/{prefix_cache_sweep.csv,chunked_prefill.csv,raw/*.jsonl}`、`logs/m17/*`。**零 vLLM 源码改动。**
-- **未做（如实）**：E2 block 生命周期 ref_cnt/驱逐内省（可选）；E3 的并发场景（ITL 抖动）；不外推 compiled。
-- 产出：`workloads/prefix_cache_comparison.py`（本仓库实为 `scripts/m17_prefix_cache.py`）、`results/prefix_cache_on_off.csv`（实为 `outputs/m17/prefix_cache_sweep.csv`）、`reports/06_prefix_cache.md`。
-- **单卡足够**。注：M3/M6 已初步触及 prefix 命中（省计算≠省延迟）；本模块系统化为 on/off 定量对照 + 长前缀真实受益场景。
+### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O（核心实验完成；I5-b 定量实验与 E2 未做）
+- **T+O**：APC + chunked prefill 源码逐点定位（block hash 链式 / 命中 / ref_cnt / LRU 驱逐「尾部优先淘汰·前缀优先保留」/ 登记；token 预算 / 长阈值 / 预算共享），均带 file:line。
+- **E 实测（2026-08-05 按审计修复后重跑；每配置 5 warmup + 15 measure，汇总只用 measure）**：
+  - **E1 APC**：**P=1024 / 2048 收益显著**（median difference 的 Bootstrap 95% CI 明确排除 0）——
+    第二轮 **+3.95ms（−32.4%）/ +13.20ms（−58.5%）**，第一轮 +4.95ms（−39.9%）/ +14.20ms（−61.3%），
+    **两轮方向与显著性一致、绝对值有 1–3ms 跑间漂移**；**P=256/512 的 CI 含 0**
+    → 在本配置与 n=15 下**未观察到超出噪声的稳定收益**（不等于"没有收益"）。
+  - **机制（接 M7）**：off 侧短 prompt 区斜率明显偏低（两轮 +1.09 / +4.62 us/tok），长区稳定在
+    **+7.78 → +10.16 us/tok**（计算受限）；hot 侧几乎不随 P 增长（命中后只算 16 尾 token）
+    → **APC 收益必须等 prompt 长到穿透固定开销地板才显现**。
+  - **E3-single 分块守恒（I4）**：512→4 块 / 1024→2 块 / ≥2048→1 块，**Σchunks 恒 2048**、每块 ≤ 预算；
+    **prefill 与 decode 已按每请求 `num_scheduled_tokens` 分离统计**（不再把 decode step 误计为 chunk）。
+    单请求下每多一个 prefill step 约 **+3.0–3.2ms**。
+  - **⭐ E3-concurrency（本轮新增，回答 chunked prefill 的核心卖点）**：D 稳定 decode 后插入 2048-token
+    长 prefill，**两侧 `max_num_batched_tokens=4096` 严格单变量**（chunked 侧靠
+    `long_prefill_token_threshold=512` 强制分块，实测 4×512；两侧 D 的 ITL 样本数均为 92）：
+    **D 的最坏 ITL 22.87 → 10.51ms（−54%，CI [+11.84,+12.60] 显著）**，而 **ITL median/p95 的 CI 含 0
+    （几乎不变）**；代价是**长 prefill 自身 TTFT 22.87 → 33.69ms（+47%，CI 显著）**。
+    → **chunked prefill 用长请求自身的 TTFT，换取其他请求 decode 的尾部平滑性**——只改尾部、不改中位。
+    **机制（以原始 `steps_detail` 为准）**：nochunk 那一步是 `d=1, p=2048, total=2049`——**D 仍被同批
+    调度了 1 个 decode token，只是该 token 的返回被这个长联合 step 整体推迟**；chunked 侧每步
+    `d=1, p=512, total=513`，D 同样每步产出，但每次等待的 step 更短。（改善的是「等多长的 step」，
+    不是「是否被调度」。）
+  - **上游配置语义（重新验证）**：`enable_chunked_prefill=False` 时 `max_num_batched_tokens < max_model_len`
+    被拒（`vllm/config/scheduler.py:268-279`）——关闭分块时 scheduler 必须能在单步容纳最大序列长度。
+    据此调整网格（off 侧用 mbt=4096）；**不把它当作 chunked prefill 性能价值的证明**（性能价值由并发实验单独给出）。
+- **与 M6 的关系**：①「省计算≠省延迟」仅是**短前缀**现象（长前缀收益显著）；
+  ②「prefix ON 短 prompt 反略慢」**在 P=256 上部分复现**——第二轮 cold−off = **+0.60ms
+  （CI [+0.22,+0.98]，显著，cold 更慢）**，其余三档 CI 含 0；且两轮 cold−off 符号不稳定，
+  说明多数档次是噪声。（首版曾写「4 档 cold 全部 ≤ off、P=256 cold=7.42」，**与 CSV 不符，已修正**。）
+- **已撤回首版（2026-08-04）不可支持的结论**：E3「+5%/+15.6%/≈3×7ms」（单样本 + 无 warmup + 首次 Triton JIT
+  污染，实测首个 warmup 样本 128–145ms vs measure max 23–35ms）、"3.5σ/8.8σ"（非正式统计量）、
+  `chunked = scheduled > actual`（方向反）、E3 计时 sync 顺序错、含糊的 "在线 TTFT" 称呼。旧数据留存备份未删。
+- **第二轮又修 5 处（独立审计发现，均已在真实数据核实）**：① 「D 在长 prefill 那步拿不到输出」与原始
+  `steps_detail`（`d=1`）矛盾；② 设计笔记 §3 仍留反向公式；③ **E1 的 `chunked` 字段把 60/60 hot 样本
+  误标 True**（真因是 prefix 命中、非分块）→ 改 `prefix_cache_hit`+`prefill_step_count` 并重跑 E1；
+  ④ **I5 被整项勾选**但其定量实验（扫输出长度）未做 → 拆为「理论边界=完成 / 定量实验=未执行」；
+  ⑤ **「4 档 cold 全部 ≤ off、cold=7.42」是事实错误**（实为 8.0051 > 7.8465），且暴露我的"14/14 自动
+  核对"只覆盖主表、未覆盖正文叙述句这一盲区。
+- 产出：`scripts/m17_prefix_cache.py`（`--shard` 单引擎模式）、`scripts/m17_figures.py`（离线出图，无需 GPU）、
+  `notes/m17/{prefix_cache_and_chunked_prefill.md,results.md}`、
+  `outputs/m17/{prefix_cache_sweep,prefix_cache_effect,chunked_prefill,chunked_prefill_concurrency}.csv` + `raw/*.jsonl`、
+  `logs/m17/*`（含 `environment.txt`）、`figures/{fig5_m17_apc,fig6_m17_chunked}.png`（已并入 README 核心图）。**零 vLLM 源码改动。**
+- **未做（如实）**：**I5-b 输出长度定量实验（扫 `max_tokens` 验证 APC 相对收益随输出变长而下降）——
+  未执行**，本轮全部请求 `max_tokens=1`；E2 block 生命周期内省（可选）；并发实验仅 1 decode + 1 长 prefill，未扫并发度；
+  `max_num_partial_prefills` 本版本不可调（`arg_utils.py:2350` 直接 NotImplementedError）；不外推 compiled/大模型/多卡/在线服务。
 
 ### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。

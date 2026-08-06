@@ -1,0 +1,3 @@
+mode,n,long_prefill_step_count,long_prefill_chunk_sizes,itl_median_of_medians_ms,itl_p95_median_ms,itl_max_median_ms,itl_max_worst_ms,long_prefill_ttft_median_ms,total_latency_median_ms,effective_cfg,metric_scope
+chunked,15,4,"[512, 512, 512, 512]",7.5393,9.1851,10.5086,13.4099,33.6939,708.3655,"{""enable_chunked_prefill"": true, ""long_prefill_token_threshold"": 512, ""max_num_partial_prefills"": 1, ""max_num_batched_tokens"": 4096}",in-process
+nochunk,15,1,[2048],7.5795,9.3041,22.8721,23.4873,22.8721,719.9398,"{""enable_chunked_prefill"": false, ""long_prefill_token_threshold"": 0, ""max_num_partial_prefills"": 1, ""max_num_batched_tokens"": 4096}",in-process

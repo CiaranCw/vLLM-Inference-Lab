@@ -1,0 +1,5 @@
+[m17] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m17/prefix_cache_sweep.csv
+[m17] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m17/prefix_cache_effect.csv
+[m17] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m17/chunked_prefill.csv
+[m17] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m17/chunked_prefill_concurrency.csv
+[m17] summarize done. measure samples: E1=180 E3-single=75 E3-conc=30
