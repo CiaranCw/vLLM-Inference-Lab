@@ -10,6 +10,7 @@ __pycache__/
 .claude/
 *.tmp
 .env
+temp/
 
 # 本地回退备份（vLLM 上游文件副本，随 patches/ 可重建，不入库）
 backups/
