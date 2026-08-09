@@ -1,0 +1,10 @@
+tag,tp,prompt_len,n,prefill_step_count,chunk_sizes,sum_prefill_scheduled,first_token_ms_median,first_token_ms_stdev,first_token_ms_p95,speedup_vs_tp1,metric_scope
+h20_formal,1,256,15,1,[256],256,29.3286,0.0567,29.4385,1.0,in-process
+h20_formal,1,1024,15,1,[1024],1024,108.1532,0.1168,108.3749,1.0,in-process
+h20_formal,1,4096,15,1,[4096],4096,424.2689,0.0568,424.3462,1.0,in-process
+h20_formal,2,256,15,1,[256],256,17.2138,0.0305,17.2712,1.7038,in-process
+h20_formal,2,1024,15,1,[1024],1024,58.6779,0.0715,58.8177,1.8432,in-process
+h20_formal,2,4096,15,1,[4096],4096,226.8601,0.0942,226.8982,1.8702,in-process
+h20_formal,4,256,15,1,[256],256,13.0222,0.0639,13.1321,2.2522,in-process
+h20_formal,4,1024,15,1,[1024],1024,33.4684,0.0508,33.541,3.2315,in-process
+h20_formal,4,4096,15,1,[4096],4096,125.1272,0.2035,125.316,3.3907,in-process

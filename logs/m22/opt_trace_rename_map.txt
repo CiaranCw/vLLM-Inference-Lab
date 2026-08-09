@@ -1,0 +1,25 @@
+# rename map: old_name -> new_name (size_bytes) ; 依据=每 rank 文件时间戳序 == cases 执行序 [small,large,prefill]
+h20_opt_profile_tp1_decode_small_batch_rank0.1786281704677487717.pt.trace.json.gz -> h20_opt_profile_tp1_decode_small_batch_rank0.1786281704677487717.pt.trace.json.gz (1027798)
+h20_opt_profile_tp1_decode_small_batch_rank0.1786281709662186341.pt.trace.json.gz -> h20_opt_profile_tp1_decode_large_batch_rank0.1786281709662186341.pt.trace.json.gz (1027206)
+h20_opt_profile_tp1_decode_small_batch_rank0.1786281714792557433.pt.trace.json.gz -> h20_opt_profile_tp1_prefill_long_rank0.1786281714792557433.pt.trace.json.gz (73086)
+h20_opt_profile_tp2_decode_small_batch_rank0.1786281626822790545.pt.trace.json.gz -> h20_opt_profile_tp2_decode_small_batch_rank0.1786281626822790545.pt.trace.json.gz (1633938)
+h20_opt_profile_tp2_decode_small_batch_rank0.1786281632746078222.pt.trace.json.gz -> h20_opt_profile_tp2_decode_large_batch_rank0.1786281632746078222.pt.trace.json.gz (1673985)
+h20_opt_profile_tp2_decode_small_batch_rank0.1786281638936881221.pt.trace.json.gz -> h20_opt_profile_tp2_prefill_long_rank0.1786281638936881221.pt.trace.json.gz (127289)
+h20_opt_profile_tp2_decode_small_batch_rank1.1786281626819380108.pt.trace.json.gz -> h20_opt_profile_tp2_decode_small_batch_rank1.1786281626819380108.pt.trace.json.gz (1634738)
+h20_opt_profile_tp2_decode_small_batch_rank1.1786281632739692500.pt.trace.json.gz -> h20_opt_profile_tp2_decode_large_batch_rank1.1786281632739692500.pt.trace.json.gz (1673742)
+h20_opt_profile_tp2_decode_small_batch_rank1.1786281638929752406.pt.trace.json.gz -> h20_opt_profile_tp2_prefill_long_rank1.1786281638929752406.pt.trace.json.gz (127374)
+h20_opt_profile_tp4_decode_small_batch_rank0.1786281671803323183.pt.trace.json.gz -> h20_opt_profile_tp4_decode_small_batch_rank0.1786281671803323183.pt.trace.json.gz (1605415)
+h20_opt_profile_tp4_decode_small_batch_rank0.1786281677536810626.pt.trace.json.gz -> h20_opt_profile_tp4_decode_large_batch_rank0.1786281677536810626.pt.trace.json.gz (1643262)
+h20_opt_profile_tp4_decode_small_batch_rank0.1786281683122579026.pt.trace.json.gz -> h20_opt_profile_tp4_prefill_long_rank0.1786281683122579026.pt.trace.json.gz (126735)
+h20_opt_profile_tp4_decode_small_batch_rank1.1786281671806209210.pt.trace.json.gz -> h20_opt_profile_tp4_decode_small_batch_rank1.1786281671806209210.pt.trace.json.gz (1606845)
+h20_opt_profile_tp4_decode_small_batch_rank1.1786281677537462552.pt.trace.json.gz -> h20_opt_profile_tp4_decode_large_batch_rank1.1786281677537462552.pt.trace.json.gz (1644156)
+h20_opt_profile_tp4_decode_small_batch_rank1.1786281683122897879.pt.trace.json.gz -> h20_opt_profile_tp4_prefill_long_rank1.1786281683122897879.pt.trace.json.gz (126682)
+h20_opt_profile_tp4_decode_small_batch_rank2.1786281671800071053.pt.trace.json.gz -> h20_opt_profile_tp4_decode_small_batch_rank2.1786281671800071053.pt.trace.json.gz (1606878)
+h20_opt_profile_tp4_decode_small_batch_rank2.1786281677532369392.pt.trace.json.gz -> h20_opt_profile_tp4_decode_large_batch_rank2.1786281677532369392.pt.trace.json.gz (1643822)
+h20_opt_profile_tp4_decode_small_batch_rank2.1786281683121812773.pt.trace.json.gz -> h20_opt_profile_tp4_prefill_long_rank2.1786281683121812773.pt.trace.json.gz (126939)
+h20_opt_profile_tp4_decode_small_batch_rank3.1786281671805323919.pt.trace.json.gz -> h20_opt_profile_tp4_decode_small_batch_rank3.1786281671805323919.pt.trace.json.gz (1605524)
+h20_opt_profile_tp4_decode_small_batch_rank3.1786281677536157310.pt.trace.json.gz -> h20_opt_profile_tp4_decode_large_batch_rank3.1786281677536157310.pt.trace.json.gz (1643453)
+h20_opt_profile_tp4_decode_small_batch_rank3.1786281683122948278.pt.trace.json.gz -> h20_opt_profile_tp4_prefill_long_rank3.1786281683122948278.pt.trace.json.gz (126826)
+tp1 jsonl: [('decode_small_batch', True), ('decode_large_batch', True), ('prefill_long', True)]
+tp2 jsonl: [('decode_small_batch', True), ('decode_large_batch', True), ('prefill_long', True)]
+tp4 jsonl: [('decode_small_batch', True), ('decode_large_batch', True), ('prefill_long', True)]

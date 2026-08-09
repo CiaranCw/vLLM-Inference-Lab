@@ -1,11 +1,15 @@
 # M22 Execution Freeze Manifest
 
+> **执行后状态（2026-08-09）**：正式矩阵 `h20_formal` 已在 4×H20 跑完并回传；结论见 [`results.md`](results.md)。  
+> 下文保留**上机前冻结快照**（矩阵 / bundle hash / 文件指纹），供审计；其中列出的远端 Prompt / Runbook 等运营文件已在收口时删除，学习入口改为 [`README.md`](README.md)。
+
 **Freeze ID:** `FROZEN_FOR_H20_2026-08-09_20-00_CST`
 
 - Freeze time (local): `2026-08-08T12:54:44+08:00`
 - Window: **2026-08-09 20:00 Asia/Shanghai** → ~2026-08-10 00:00 Asia/Shanghai (4h)
 - CP_ENV_MODEL hard gate: **2026-08-09 21:00 Asia/Shanghai**
-- Status: **FROZEN_FOR_H20_2026-08-09_20-00_CST** / READY_FOR_H20_EXECUTION
+- Status at freeze: **FROZEN_FOR_H20_2026-08-09_20-00_CST** / READY_FOR_H20_EXECUTION
+- Status after window: **TP E/H COMPLETE**（见 results.md；PP/DP/EP 仍 ⬜）
 
 ## Project
 
@@ -86,16 +90,17 @@
 Freeze 之后**不再修改** M22 正式执行代码。若发现 blocker 必须改：
 1. 记录原因；2. 更新 SHA256；3. 重跑受影响测试；4. 重新生成本 manifest。
 
-# **M22 FROZEN — WAITING_FOR_H20 SSH @ 2026-08-09 20:00 Asia/Shanghai**
+# **M22 FROZEN — 窗口已执行完毕（2026-08-09）；见 results.md**
 
 ---
 
 ## Handoff amendment（2026-08-09 · 不改执行矩阵）
 
-为内部客户端 Agent / GitHub 拉取准备，**未修改**上表 `code_artifacts` 中的正式脚本与 Runbook 正文哈希目标。新增仅文档与快照：
+上机前曾为内部客户端准备运营文档；**收口后已删除**（Prompt / 拖拽 / GitHub 私有访问说明等）。  
+学习入口：[`README.md`](README.md) · [`results.md`](results.md) · [`execution_record.md`](execution_record.md)。
 
-- `notes/m22/README.md` · `REMOTE_AGENT_PROMPT.md` · `H20_PATH_CONVENTIONS.md` · `H20_GITHUB_AND_UPLOAD.md` · `OPERATOR_DRAG_DROP.md` · `H20_READY_CHECKLIST.md`
-- `notes/m22/frozen_runtime_snapshot/`：Freeze 版 `check_invariants.py` / `repro_manifest.yaml`（工作区副本可能已漂移）
+仍保留：`notes/m22/frozen_runtime_snapshot/`（Freeze 版 invariants / repro）。  
+本文件上表 `code_artifacts` 指纹仍供审计；其中 `H20_RUNBOOK.md` 已不在工作树。
 
-上表 Offline 路径中的 `/home/ciaran/m22_offline/...` 仅为**冻结时操作者本机快照**；H20 与 Agent 文档一律使用 `$OFFLINE` / `$REPO_ROOT`（见 `H20_PATH_CONVENTIONS.md`）。
+上表 Offline 路径中的 `/home/ciaran/m22_offline/...` 仅为**冻结时操作者本机快照**。
 

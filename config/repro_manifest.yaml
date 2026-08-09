@@ -1,0 +1,596 @@
+# repro_manifest.yaml —— 统一复现清单（M0 收口产物之一）
+#
+# 用途：把「某个模块要跑哪些命令、产出哪些文件、满足哪些不变量」从各处 notes 里的
+# 散落命令收敛成一份机器可读的登记表，供 scripts/reproduce.py 与
+# scripts/check_invariants.py 共同消费。
+#
+# 依赖说明：使用 YAML 是因为 PyYAML 已随 vLLM 进入本 venv（vllm 的硬依赖），
+# 因此**不引入任何新依赖**。若将来该依赖消失，可平移为 JSON（结构完全相同）。
+#
+# 状态取值（诚实标注，不得因“理论成立”而提前置为 done）：
+#   done            已执行且已核验
+#   implemented     脚本已实现但**尚未执行**，无数据
+#   in_progress     部分完成
+#   optional        可选扩展：脚本可能已就绪，但**不属于主线**，不阻塞后续模块。
+#                   `reproduce.py --run` **不会**自动执行，必须 `--only <id>` 显式点名。
+#   optional_todo   可选、明确未做（连脚本都没有）
+#
+# 约定：
+#   - requires_gpu=true 的步骤一律「一个进程一个引擎」；
+#   - creates_engine=true 的步骤在 --dry-run / --verify-only 下**绝不执行**；
+#   - summarize / figures 类步骤 requires_gpu=false，只读已落盘数据。
+
+version: 1
+
+project:
+  repo: vllm-inference-lab
+  vllm_commit: ee0da84
+  vllm_version: 0.24.1.dev0+gee0da84ab
+  vllm_src: ../vllm-src
+  model: Qwen/Qwen2.5-0.5B-Instruct
+  platform: WSL2 / RTX 5080 (sm_120) / 单卡
+  enforce_eager: true
+  seed: 0
+  temperature: 0
+  # 所有绝对值仅限本配置，不外推 compiled / 大模型 / 多卡 / 在线服务
+  metric_scope: in-process
+
+env:
+  # 缺了会崩（见 AGENTS.md §5）
+  required:
+    VLLM_USE_FLASHINFER_SAMPLER: "0"
+    VLLM_ENABLE_V1_MULTIPROCESSING: "0"
+  # 实验性门控钩子必须关闭，否则实验不是基线语义
+  must_be_unset_or_zero:
+    - VLLM_LAB_M9_COALESCE
+    - VLLM_LAB_TRACE
+
+modules:
+  m0:
+    title: 环境与可复现基础设施
+    status: in_progress
+    requires_gpu: false
+    notes: notes/../vllm_dev_environment.md
+    steps:
+      - id: smoke_import
+        desc: 导入自检（确认 vllm 指向 ../vllm-src 的 editable 安装，不加载模型）
+        cmd: [python, scripts/smoke_import.py]
+        requires_gpu: false
+        creates_engine: false
+    artifacts:
+      required_files:
+        - scripts/smoke_import.py
+        - vllm_dev_environment.md
+    invariants: [env_vars, vllm_points_to_src]
+    known_gaps:
+      # 如实登记：本轮补了统一入口与正式不变量脚本，命名统一仍未做
+      - "M1–M3 仍为 dayN 命名，未统一为主题命名"
+      - "check_invariants 目前登记了 M17 / M19 / M22，M1–M16 的规则待逐步迁移"
+      - "文档数字反向溯源目前只覆盖 M17 的两张主表，M19 的表格尚未纳入自动核对"
+
+  m17:
+    title: Prefix Caching & Chunked Prefill 深化
+    # 核心实验（E1 / E3-single / E3-concurrency）已完成并核验；
+    # P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期为**可选扩展**，
+    # 不阻塞后续模块（M19 已在其之后独立完成）。
+    status: done
+    requires_gpu: true
+    notes:
+      - notes/m17/prefix_cache_and_chunked_prefill.md
+      - notes/m17/results.md
+    expected_measure_samples:
+      e1_per_group: 15
+      e3_single_per_group: 15
+      e3_conc_per_side: 15
+      e3_correctness_per_side_per_case: 3
+      i5b_per_group: 15
+    warmup:
+      e1: 5
+      e3_single: 5
+      e3_conc: 5
+      e3_correctness: 1
+      i5b: 5
+
+    # ---------- 已完成并核验的部分 ----------
+    steps:
+      - id: e1-on
+        desc: E1 · APC on（cold 填缓存 + hot 命中），4 档前缀 × (5 warmup + 15 measure)
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-on]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e1_on.log
+        outputs: [outputs/m17/raw/e1_on.jsonl]
+        status: done
+      - id: e1-off
+        desc: E1 · APC off 对照（跑与 hot 完全相同的 prompt）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-off]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e1_off.log
+        outputs: [outputs/m17/raw/e1_off.jsonl]
+        status: done
+      - id: e3-on-512
+        desc: E3-single · chunked on, max_num_batched_tokens=512（预期 4 块）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3, --e3-chunked, "on", --e3-mbt, "512"]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_single_on_512.log
+        outputs: [outputs/m17/raw/e3_single_on_512.jsonl]
+        status: done
+      - id: e3-on-1024
+        desc: E3-single · chunked on, mbt=1024（预期 2 块）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3, --e3-chunked, "on", --e3-mbt, "1024"]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_single_on_1024.log
+        outputs: [outputs/m17/raw/e3_single_on_1024.jsonl]
+        status: done
+      - id: e3-on-2048
+        desc: E3-single · chunked on, mbt=2048（预期 1 块）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3, --e3-chunked, "on", --e3-mbt, "2048"]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_single_on_2048.log
+        outputs: [outputs/m17/raw/e3_single_on_2048.jsonl]
+        status: done
+      - id: e3-on-4096
+        desc: E3-single · chunked on, mbt=4096（预期 1 块）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3, --e3-chunked, "on", --e3-mbt, "4096"]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_single_on_4096.log
+        outputs: [outputs/m17/raw/e3_single_on_4096.jsonl]
+        status: done
+      - id: e3-off-4096
+        desc: >-
+          E3-single · chunked off, mbt=4096。注意上游硬约束：关闭 chunked 时要求
+          mbt >= max_model_len（vllm/config/scheduler.py:268-279），故 off 侧只能用 4096。
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3, --e3-chunked, "off", --e3-mbt, "4096"]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_single_off_4096.log
+        outputs: [outputs/m17/raw/e3_single_off_4096.jsonl]
+        status: done
+      - id: e3-conc-chunked
+        desc: E3-concurrency · chunked 侧（mbt=4096 + long_prefill_token_threshold=512）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3-conc, --conc-mode, chunked]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_conc_chunked.log
+        outputs: [outputs/m17/raw/e3_conc_chunked.jsonl]
+        status: done
+      - id: e3-conc-nochunk
+        desc: E3-concurrency · nochunk 侧（mbt=4096，严格单变量）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3-conc, --conc-mode, nochunk]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_conc_nochunk.log
+        outputs: [outputs/m17/raw/e3_conc_nochunk.jsonl]
+        status: done
+      - id: summarize
+        desc: 由已落盘 JSONL 离线汇总为 CSV（不建引擎、不需 GPU）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, summarize]
+        requires_gpu: false
+        creates_engine: false
+        log: logs/m17/summarize.log
+        outputs:
+          - outputs/m17/prefix_cache_sweep.csv
+          - outputs/m17/prefix_cache_effect.csv
+          - outputs/m17/chunked_prefill.csv
+          - outputs/m17/chunked_prefill_concurrency.csv
+        status: done
+
+      # ---------- P0 · no-chunk 生成正确性（实现完成，待 GPU 执行） ----------
+      - id: e3-correctness-chunked
+        desc: >-
+          P0 · chunked 侧生成正确性 probe。场景 A（单长请求 2048/64）+ 场景 B
+          （D 稳定 decode 后插入长 prefill P）。prompt 由 TokenFactory 确定性构造。
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3-correctness, --conc-mode, chunked]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_correctness_chunked.log
+        outputs: [outputs/m17/raw/e3_correctness_chunked.jsonl]
+        status: optional
+      - id: e3-correctness-nochunk
+        desc: >-
+          P0 · nochunk 侧（enable_chunked_prefill=False）。上游对该配置有告警：
+          vllm/engine/arg_utils.py:2476-2480 "may cause the engine to crash or
+          produce incorrect outputs" —— 本 probe 就是为了验证这一点。
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3-correctness, --conc-mode, nochunk]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e3_correctness_nochunk.log
+        outputs: [outputs/m17/raw/e3_correctness_nochunk.jsonl]
+        status: optional
+      - id: e3-correctness-summarize
+        desc: 逐 case 比对两侧完整 output_token_ids；任一不一致即非零退出
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e3-correctness-summarize]
+        requires_gpu: false
+        creates_engine: false
+        log: logs/m17/e3_correctness_summarize.log
+        outputs: [outputs/m17/e3_correctness.csv]
+        status: optional
+
+      # ---------- P2 · I5-b 输出长度定量实验（实现完成，待 GPU 执行） ----------
+      - id: e1-output-len-on
+        desc: I5-b · APC on，固定 2048 前缀，max_tokens ∈ {1,8,32,128}
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-output-len-on]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e1_output_len_on.log
+        outputs: [outputs/m17/raw/e1_output_len_on.jsonl]
+        status: optional
+      - id: e1-output-len-off
+        desc: I5-b · APC off 对照（与 hot 完全相同的 prompt token ids）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-output-len-off]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m17/e1_output_len_off.log
+        outputs: [outputs/m17/raw/e1_output_len_off.jsonl]
+        status: optional
+      - id: e1-output-len-summarize
+        desc: 按 max_tokens 比较 off/hot 的完成延迟（median diff 的 Bootstrap 95% CI）
+        cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-output-len-summarize]
+        requires_gpu: false
+        creates_engine: false
+        log: logs/m17/e1_output_len_summarize.log
+        outputs:
+          - outputs/m17/apc_output_length.csv
+          - outputs/m17/apc_output_length_effect.csv
+        status: optional
+
+      # ---------- 离线出图 ----------
+      - id: figures
+        desc: 由已落盘 CSV/JSONL 离线出图（不需 GPU、不 import vllm）
+        cmd: [python, scripts/m17_figures.py]
+        requires_gpu: false
+        creates_engine: false
+        outputs:
+          - figures/fig5_m17_apc.png
+          - figures/fig6_m17_chunked.png
+        optional_outputs:
+          # 只有 I5-b 数据落盘后才会生成；无数据时脚本跳过，**不生成伪图**
+          - figures/m17_apc_output_length.png
+        status: done
+
+    invariants:
+      - e1_i1_hit_alignment
+      - e1_i2_hit_conservation
+      - e1_i3_off_no_hit
+      - e1_hot_fields
+      - e1_cold_off_fields
+      - e1_sample_counts
+      - e3_single_chunk_conservation
+      - e3_single_step_counts
+      - e3_single_sample_counts
+      - e3_conc_chunk_shape
+      - e3_conc_itl_sample_consistency
+      - e3_conc_sample_counts
+      - e3_correctness_pairs
+      - i5b_output_len_fields
+      - i5b_sample_counts
+      - csv_matches_jsonl
+      - doc_numbers_traceable
+
+    limitations:
+      # 必须随结论一起呈现的适用边界
+      - >-
+        no-chunk 对照：当前模型不正式支持关闭 chunked prefill
+        （vllm/engine/arg_utils.py:2476-2480 有明确告警）。因此 E3 的现有结果主要支持
+        **调度形态与延迟观察**，不外推为普适的生成正确性保证。
+
+    open_items:
+      # 均为**可选扩展**，不阻塞后续模块；如实标注，未执行的一律不得勾选
+      - id: I5-b
+        desc: 输出长度定量实验（扫 max_tokens 验证 APC 相对收益随输出变长而下降）
+        status: optional      # 脚本就绪，尚未执行；可选扩展
+      - id: E3-no-chunk-correctness
+        desc: chunked / nochunk 两侧生成 token 的逐一比对
+        status: optional      # 脚本就绪，尚未执行；可选扩展
+      - id: E2
+        desc: block 生命周期 ref_cnt / 驱逐内省
+        status: optional_todo # 明确未做，不为完成度强行实现
+
+  m19:
+    title: Speculative Decoding（N-gram 主线 T+E+O CLOSED）
+    status: done
+    readiness: NGRAM_T_E_O_COMPLETE
+    requires_gpu: true
+    notes:
+      - notes/m19/speculative_decoding.md
+      - notes/m19/results.md
+    expected_measure_samples:
+      per_group: 15          # 2 config × 2 workload × 3 batch = 12 组
+      equiv_per_group: 3
+    warmup:
+      main: 5
+      equiv: 1
+    frozen_config:
+      speculative: {method: ngram, prompt_lookup_min: 3, prompt_lookup_max: 5,
+                    num_speculative_tokens: 3}
+      workloads: [high_repeat, low_repeat]  # 语义：高/低初始 prompt 重叠；见 notes
+      batch_sizes: [1, 4, 16]
+      prompt_len: 256
+      output_len: 128
+      # 两侧都显式写死，否则会变成隐藏的第二变量（见 notes/m19 §2.5）
+      async_scheduling: false
+      disable_log_stats: false
+      enable_prefix_caching: false
+    steps:
+      - id: smoke-ngram
+        desc: 极小自检：确认 ngram 配置真实生效、proposed/accepted 计数可观测
+        cmd: [python, scripts/m19_spec_decode.py, --shard, smoke, --mode, ngram]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/smoke_ngram.log
+        outputs: [outputs/m19/smoke/smoke_ngram.jsonl]
+        status: done
+      - id: smoke-baseline
+        desc: 极小自检：确认 baseline 侧无任何投机计数
+        cmd: [python, scripts/m19_spec_decode.py, --shard, smoke, --mode, baseline]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/smoke_baseline.log
+        outputs: [outputs/m19/smoke/smoke_baseline.jsonl]
+        status: done
+      - id: baseline
+        desc: 普通 decode baseline，2 workload × 3 batch × (5 warmup + 15 measure)
+        cmd: [python, scripts/m19_spec_decode.py, --shard, baseline]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/baseline.log
+        outputs: [outputs/m19/raw/m19_baseline.jsonl]
+        status: done
+      - id: ngram
+        desc: N-gram 投机解码（唯一变量为 speculative_config）
+        cmd: [python, scripts/m19_spec_decode.py, --shard, ngram]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/ngram.log
+        outputs: [outputs/m19/raw/m19_ngram.jsonl]
+        status: done
+      - id: summarize
+        desc: 离线汇总为 CSV（不建引擎、不需 GPU）
+        cmd: [python, scripts/m19_spec_decode.py, --shard, summarize]
+        requires_gpu: false
+        creates_engine: false
+        log: logs/m19/summarize.log
+        outputs:
+          - outputs/m19/spec_decode_summary.csv
+          - outputs/m19/spec_decode_effect.csv
+          - outputs/m19/acceptance_by_position.csv
+          - outputs/m19/output_equivalence.csv
+        status: done
+      - id: equiv-baseline
+        desc: 输出一致性 probe（baseline 侧，落盘完整 output token ids）
+        cmd: [python, scripts/m19_spec_decode.py, --shard, equiv, --mode, baseline]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/equiv_baseline.log
+        outputs: [outputs/m19/raw/m19_equiv_baseline.jsonl]
+        status: done
+      - id: equiv-ngram
+        desc: 输出一致性 probe（ngram 侧）
+        cmd: [python, scripts/m19_spec_decode.py, --shard, equiv, --mode, ngram]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m19/equiv_ngram.log
+        outputs: [outputs/m19/raw/m19_equiv_ngram.jsonl]
+        status: done
+      - id: summarize-equiv
+        desc: >-
+          逐请求比对两侧完整 token 序列 + 正交对照（同一侧内部只改 batch 组成，
+          用来判定分歧是批形状数值差异还是投机解码问题）
+        cmd: [python, scripts/m19_spec_decode.py, --shard, summarize-equiv]
+        requires_gpu: false
+        creates_engine: false
+        log: logs/m19/summarize_equiv.log
+        outputs:
+          - outputs/m19/output_equivalence_detail.csv
+          - outputs/m19/batch_shape_control.csv
+        status: done
+      - id: figures
+        desc: 由正式 CSV 离线出图（不需 GPU、不 import vllm、连跑两次 MD5 一致）
+        cmd: [python, scripts/m19_figures.py]
+        requires_gpu: false
+        creates_engine: false
+        outputs:
+          - figures/fig7_m19_acceptance.png
+          - figures/fig8_m19_speedup.png
+        status: done
+
+    invariants:
+      - m19_output_len_exact
+      - m19_baseline_no_spec_counts
+      - m19_baseline_one_token_per_step
+      - m19_accepted_within_proposed
+      - m19_acceptance_rate_range
+      - m19_proposed_equals_drafts_times_k
+      - m19_per_pos_conservation
+      - m19_ngram_cfg_effective
+      - m19_single_variable
+      - m19_same_prompt_both_sides
+      - m19_sample_counts
+      - m19_warmup_excluded
+      - m19_summary_n_matches_jsonl
+      - m19_effect_csv_recomputable
+      - m19_equiv_same_length
+      - m19_equiv_no_divergence_at_zero
+      - m19_within_config_reproducible
+
+    limitations:
+      - 单卡 / eager / 0.5B / WSL2 / in-process / batch ≤ 16 / 输出 128；不外推 compiled、大模型、多卡、在线服务
+      - 只测了一组 N-gram 超参（k=3、prompt_lookup 3..5），未扫 k
+      - 未拆分 proposer / verification / spec metadata 各自的固定开销
+      - batch 与 prompt 集合存在混淆：不同 batch 用了不同数量的 prompt
+      - batch 最大只到 16，未观察到收益消失或退化的拐点
+
+    open_items:
+      - id: draft-model
+        desc: 小 draft model / EAGLE / MTP / Medusa（Optional / Future；不阻塞主线）
+        status: optional_todo
+      - id: sweep-k
+        desc: >-
+          扫 num_speculative_tokens（Optional）。当前仅有逐位置数据提示更远 position
+          更难命中；未实证最优 k 或完整 k–performance 曲线
+        status: optional_todo
+      - id: overhead-breakdown
+        desc: 用 profiler 拆分 proposer / rejection sampler / spec metadata 的固定开销
+        status: optional_todo
+      - id: true-low-acceptance
+        desc: 构造真正低 Proposal Coverage / 低 Acceptance 退化 workload（当前 low_repeat 不是）
+        status: optional_todo
+
+  m22:
+    title: Tensor Parallel（TP=1/2/4）—— 4×H20 已实测
+    # TP 主线 T+E+O+H COMPLETE（2026-08-09）；PP/DP/EP 仍未做。
+    status: done
+    requires_gpu: true
+    requires_multi_gpu: true
+    notes:
+      - notes/m22/tensor_parallel.md
+      - notes/m22/results.md
+      - notes/m22/execution_record.md
+    readiness: TP_EH_COMPLETE
+    frozen_config:
+      model_primary: Qwen/Qwen2.5-7B-Instruct     # 待授权下载
+      model_fallback: Qwen/Qwen2.5-1.5B-Instruct  # TP=4 下 KV head 会被复制，须解释
+      # 必须 > 最长 prompt(4096)：input_processor.py:423-432 规定
+      # prompt_len == max_model_len 直接 ValueError
+      max_model_len: 8192
+      gpu_memory_utilization: 0.85
+      max_num_seqs: 256
+      max_num_batched_tokens: 8192
+      enforce_eager: true
+      enable_prefix_caching: false
+      # 三档必须一致：默认 None 会因 executor 类不同而自动取不同值(config/vllm.py:938)
+      async_scheduling: false
+      disable_log_stats: true      # 本轮不依赖 stats 观测（与 M19 不同）
+      d2_batches: [1, 4, 16, 64]
+      d2_prompt_len: 128
+      d2_output_len: 64
+      d3_prompt_lens: [256, 1024, 4096]
+      warmup: 5
+      measure: 15
+    steps:
+      - id: preflight
+        desc: 上机自检（GPU/拓扑/驱动/网络/磁盘/环境变量），不下载模型
+        cmd: [bash, scripts/m22_preflight.sh]
+        requires_gpu: true
+        creates_engine: false
+        log: logs/m22/preflight.log
+        status: implemented
+      - id: nccl-smoke
+        desc: 独立 torch.distributed all-reduce 冒烟（不 import vllm），切开故障域
+        cmd: [python, scripts/m22_nccl_smoke.py, --world-size, "4"]
+        requires_gpu: true
+        creates_engine: false
+        log: logs/m22/nccl_smoke.log
+        outputs: [outputs/m22/nccl_smoke.json]
+        status: implemented
+      - id: local-preflight-tp1
+        desc: >-
+          本地 RTX5080 单卡 TP=1 全链路预演（0.5B/quick）。
+          **不是 H20 结果**，tag=local_preflight，绝不混入正式 CSV。
+        cmd: [python, scripts/m22_tensor_parallel.py, --tp, "1", --tag, local_preflight,
+              --model, Qwen/Qwen2.5-0.5B-Instruct, --quick]
+        requires_gpu: true
+        creates_engine: true
+        log: logs/m22/local_preflight_tp1_run.log
+        outputs: [outputs/m22/raw/local_preflight_tp1_run.jsonl]
+        status: done
+      - id: tp-run
+        desc: 正式 D1+D2+D3（每档 TP 一个独立进程，支持断点续跑）
+        cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --tp, "1,2,4"]
+        requires_gpu: true
+        creates_engine: true
+        outputs:
+          - outputs/m22/raw/h20_formal_tp1_run.jsonl
+          - outputs/m22/raw/h20_formal_tp2_run.jsonl
+          - outputs/m22/raw/h20_formal_tp4_run.jsonl
+        status: implemented
+      - id: tp-profile
+        desc: P1 collective communication evidence（ProfilerConfig；每 rank 一份 trace）
+        cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --tp, "2,4", --profile]
+        requires_gpu: true
+        creates_engine: true
+        outputs: [outputs/m22/traces]
+        status: implemented
+      - id: summarize
+        desc: 离线汇总（speedup/efficiency 全部由 D2 派生，不另跑实验）
+        cmd: [python, scripts/m22_tensor_parallel.py, --shard, summarize, --tag, h20_formal]
+        requires_gpu: false
+        creates_engine: false
+        outputs:
+          - outputs/m22/h20_formal_memory_kv.csv
+          - outputs/m22/h20_formal_decode.csv
+          - outputs/m22/h20_formal_decode_effect.csv
+          - outputs/m22/h20_formal_prefill.csv
+          - outputs/m22/h20_formal_output_consistency.csv
+        status: implemented
+      - id: figures
+        desc: 由正式 CSV 离线出图；只有一档 TP 时拒绝生成伪图
+        cmd: [python, scripts/m22_figures.py, --tag, h20_formal]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs: [figures/fig9_m22_tp_scaling_h20_formal.png]
+        status: implemented
+      - id: transfer-test
+        desc: >-
+          远端生成几 KB 测试文件 + sha256，供**本地主动 pull** 演练。
+          必须在 T+0:10 就做：本地能 SSH 到 H20 不代表 H20 能反连本地，
+          rsync/key/路径错必须尽早暴露。
+        cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --transfer-test]
+        requires_gpu: false
+        creates_engine: false
+        status: implemented
+      - id: trace-analyze
+        desc: >-
+          P1 trace 离线分类（区间并集口径；per-workload/per-rank/per-kernel）。
+          在**数据回传后本地**执行，不占 H20 机时。
+        cmd: [python, scripts/m22_trace_analyze.py, --trace-dir, outputs/m22/traces,
+              --tag, h20_formal]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs: [outputs/m22/h20_formal_comm_profile.csv]
+        status: implemented
+      - id: package
+        desc: 打包 + sha256（数据没带走 == 实验失败）
+        cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --package]
+        requires_gpu: false
+        creates_engine: false
+        status: implemented
+
+    invariants:
+      - m22_single_variable
+      - m22_async_sched_off
+      - m22_d2_output_len_exact
+      - m22_d2_steady_batch_stable
+      - m22_d2_enough_steady_steps
+      - m22_scheduler_introspection
+      - m22_d3_prompt_within_limit
+      - m22_sample_counts_uniform
+      - m22_warmup_excluded
+      - m22_d1_all_ranks_reported
+      - m22_consistency_same_length
+      - m22_consistency_same_prompt
+
+    limitations:
+      - H20(sm_90) 与本地 RTX5080(sm_120) 的绝对性能**不可横向比较**，只可比趋势与机制
+      - executor backend 随 TP 变化(TP=1→uni / TP>1→mp)，属固有伴随变量，无法消除
+      - 「每卡权重≈1/k」「KV 容量随 TP 上升」是**预期观察**而非不变量，不符时须解释而非判失败
+      - 通信 kernel 的 GPU 时间占比 ≠ 通信造成的净 wall-time 损失（可能与计算重叠）
+      - 本轮只做 TP；**PP/DP/EP/CP/P-D 明确不在范围内**，未编写任何实现，仍为 ⬜。
+        PP 不进入正式时间预算/主实验矩阵/降级阶梯/最低成功线/目标成功线
+
+    open_items:
+      - id: E-H-data
+        desc: 4×H20 实测数据（TP=1/2/4）
+        status: implemented   # 脚本就绪，**尚未执行**
+      - id: model-7b-divisibility
+        desc: >-
+          Qwen2.5-7B-Instruct 结构兼容性**已用公开 config metadata 静态确认**：
+          heads=28 / kv_heads=4 / hidden=3584 / inter=18944 / vocab=152064 /
+          tie_word_embeddings=false。TP=1/2/4 的 28%tp 均为 0，且 KV 不会被复制。
+          远端仍读一次实际 config.json 做一致性 sanity check（非 blocker）。
+        status: done

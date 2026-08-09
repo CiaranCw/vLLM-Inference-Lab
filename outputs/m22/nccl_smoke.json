@@ -1,0 +1,245 @@
+{
+  "elapsed_s": 7.05,
+  "ranks": [
+    {
+      "rank": 0,
+      "world_size": 4,
+      "device": "cuda:0",
+      "device_name": "NVIDIA H20",
+      "capability": [
+        9,
+        0
+      ],
+      "backend": "nccl",
+      "cases": [
+        {
+          "payload_MiB": 0.03,
+          "numel": 15728,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0355,
+          "allreduce_ms_min": 0.0342
+        },
+        {
+          "payload_MiB": 0.25,
+          "numel": 131072,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0348,
+          "allreduce_ms_min": 0.0328
+        },
+        {
+          "payload_MiB": 2.0,
+          "numel": 1048576,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0515,
+          "allreduce_ms_min": 0.0508
+        },
+        {
+          "payload_MiB": 8.0,
+          "numel": 4194304,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0862,
+          "allreduce_ms_min": 0.0827
+        },
+        {
+          "payload_MiB": 32.0,
+          "numel": 16777216,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.1863,
+          "allreduce_ms_min": 0.1836
+        }
+      ],
+      "ok": true,
+      "err": ""
+    },
+    {
+      "rank": 1,
+      "world_size": 4,
+      "device": "cuda:1",
+      "device_name": "NVIDIA H20",
+      "capability": [
+        9,
+        0
+      ],
+      "backend": "nccl",
+      "cases": [
+        {
+          "payload_MiB": 0.03,
+          "numel": 15728,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0356,
+          "allreduce_ms_min": 0.0349
+        },
+        {
+          "payload_MiB": 0.25,
+          "numel": 131072,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0356,
+          "allreduce_ms_min": 0.0333
+        },
+        {
+          "payload_MiB": 2.0,
+          "numel": 1048576,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0522,
+          "allreduce_ms_min": 0.0507
+        },
+        {
+          "payload_MiB": 8.0,
+          "numel": 4194304,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0866,
+          "allreduce_ms_min": 0.0825
+        },
+        {
+          "payload_MiB": 32.0,
+          "numel": 16777216,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.1862,
+          "allreduce_ms_min": 0.184
+        }
+      ],
+      "ok": true,
+      "err": ""
+    },
+    {
+      "rank": 2,
+      "world_size": 4,
+      "device": "cuda:2",
+      "device_name": "NVIDIA H20",
+      "capability": [
+        9,
+        0
+      ],
+      "backend": "nccl",
+      "cases": [
+        {
+          "payload_MiB": 0.03,
+          "numel": 15728,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0361,
+          "allreduce_ms_min": 0.0336
+        },
+        {
+          "payload_MiB": 0.25,
+          "numel": 131072,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0343,
+          "allreduce_ms_min": 0.0327
+        },
+        {
+          "payload_MiB": 2.0,
+          "numel": 1048576,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0526,
+          "allreduce_ms_min": 0.0516
+        },
+        {
+          "payload_MiB": 8.0,
+          "numel": 4194304,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0864,
+          "allreduce_ms_min": 0.0811
+        },
+        {
+          "payload_MiB": 32.0,
+          "numel": 16777216,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.1867,
+          "allreduce_ms_min": 0.1834
+        }
+      ],
+      "ok": true,
+      "err": ""
+    },
+    {
+      "rank": 3,
+      "world_size": 4,
+      "device": "cuda:3",
+      "device_name": "NVIDIA H20",
+      "capability": [
+        9,
+        0
+      ],
+      "backend": "nccl",
+      "cases": [
+        {
+          "payload_MiB": 0.03,
+          "numel": 15728,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0362,
+          "allreduce_ms_min": 0.0345
+        },
+        {
+          "payload_MiB": 0.25,
+          "numel": 131072,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.035,
+          "allreduce_ms_min": 0.0331
+        },
+        {
+          "payload_MiB": 2.0,
+          "numel": 1048576,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0528,
+          "allreduce_ms_min": 0.0514
+        },
+        {
+          "payload_MiB": 8.0,
+          "numel": 4194304,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.0869,
+          "allreduce_ms_min": 0.0856
+        },
+        {
+          "payload_MiB": 32.0,
+          "numel": 16777216,
+          "expected": 10,
+          "got": 10.0,
+          "correct": true,
+          "allreduce_ms_median": 0.1868,
+          "allreduce_ms_min": 0.1832
+        }
+      ],
+      "ok": true,
+      "err": ""
+    }
+  ]
+}

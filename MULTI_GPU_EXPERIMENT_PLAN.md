@@ -1,17 +1,15 @@
-# 4×H20 多卡实验方案（**v3 · 已冻结**）
+# 4×H20 多卡实验方案（**v3 · 已冻结 · TP 已执行**）
 
-> # 状态：`READY_FOR_H20_EXECUTION`
+> # 状态：`TP_EH_COMPLETE`（2026-08-09）
 >
-> **实验矩阵已冻结**，除非发现真正的 blocker，不再调整。
-> **未申请 H20、未连接远端、未下载任何模型。**
+> **实验矩阵已冻结且已在 4×H20 采集**。结论：[`notes/m22/results.md`](notes/m22/results.md)。  
+> 执行留痕：[`notes/m22/execution_record.md`](notes/m22/execution_record.md)。  
+> 源码依据：[`notes/m22/tensor_parallel.md`](notes/m22/tensor_parallel.md)（R1–R7）。
 >
-> - **上机操作手册**：[`notes/m22/H20_RUNBOOK.md`](notes/m22/H20_RUNBOOK.md)（14 个 Stage，命令级）
-> - **源码依据**：[`notes/m22/tensor_parallel.md`](notes/m22/tensor_parallel.md)（R1–R7，带 `file:line`）
+> **版本演进**：v1 = 计划；v2 = 本地脚本；v3 = 冻结矩阵；**执行后** = 正式 tag `h20_formal`。
 >
-> **版本演进**：v1 = 计划；v2 = 已在本地跑通的脚本；**v3 = 冻结的矩阵 + 可照做的 Runbook**。
->
-> **资源**：4×H20，SSH 接入，总窗口 **4 小时**。
-> **最高优先级**：把 4 小时变成**纯数据采集窗口**——上机后不写代码、不重想统计口径、不设计实验。
+> 本文件保留设计rationale（为何改 max_model_len、ProfilerConfig、collective 而非纯 NCCL）。  
+> **不再作为上机操作手册**（原 Stage 0–14 Runbook 已在收口时删除）。
 
 ---
 
@@ -213,7 +211,7 @@ KV head 不足时**不报错、而是复制**（`:1259-1270`）。
 | `scripts/m22_figures.py` | 离线出图 | ✅ 只有一档 TP 时**拒绝生成伪图** |
 | `scripts/check_invariants.py --module m22` | 12 条硬 invariant + 2 条 expected observation | ✅ 真实数据 15 PASS；**变异测试 4/4 捕获** |
 | `config/repro_manifest.yaml` | m22 登记（含冻结配置与 limitations） | ✅ `reproduce.py --module m22 --dry-run` |
-| **`notes/m22/H20_RUNBOOK.md`** | **命令级上机手册（Stage 0–14）** | — |
+| `notes/m22/results.md` / `execution_record.md` | **E/H 结论与执行留痕**（原 Stage Runbook 已收口删除） | ✅ 2026-08-09 |
 
 **本地预演结果（`tag=local_preflight`，RTX 5080 单卡，`--quick`）—— 不是 H20 结果，不进正式 CSV**：
 - `collective_rpc(callable)` 的 per-rank 观测**实测可用**（拿到 weight 949.95 MiB / KV 12243 MiB / device UUID）；
@@ -244,7 +242,7 @@ tmux new -s m22
 
 > 净实验时间 ≈ 2 小时。每个检查点有 Go/No-Go，到点没过就降级，**不原地调试**。
 
-> 逐条命令见 [`notes/m22/H20_RUNBOOK.md`](notes/m22/H20_RUNBOOK.md)（Stage 0–14）。
+> 上机窗口已结束；复现与产物清单见 [`notes/m22/execution_record.md`](notes/m22/execution_record.md)。
 
 | 时刻 | Stage | 内容 | 检查点 |
 |---|---|---|---|

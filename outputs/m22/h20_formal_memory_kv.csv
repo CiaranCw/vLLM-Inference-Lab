@@ -1,0 +1,8 @@
+tag,tp,rank,device,device_uuid,weight_MiB,torch_allocated_MiB,torch_reserved_MiB,non_torch_MiB,available_kv_MiB,num_gpu_blocks,block_size,device_total_MiB,sched_num_gpu_blocks,sched_kv_cache_size_tokens,sched_kv_capacity_equiv_concurrency,runtime_max_num_seqs,num_attention_heads_per_rank,num_kv_heads_per_rank,total_num_kv_heads,kv_heads_replicated,observation_method
+h20_formal,1,0,cuda:0,GPU-ce155112-9dc4-a54c-961d-3e44cb787bf2,14632.69,81607.75,82816.0,124.0,66790.51,76332,16,97284.94,76332,1221312,149.0859375,256,28,4,4,False,collective_rpc(callable)
+h20_formal,2,0,cuda:0,GPU-ce155112-9dc4-a54c-961d-3e44cb787bf2,7327.57,81534.62,82688.0,586.0,74021.63,169192,16,97284.94,169192,2707072,330.453125,256,14,2,4,False,collective_rpc(callable)
+h20_formal,2,1,cuda:1,GPU-78f97945-850e-5f5e-4911-0cbb4c544342,7327.57,81534.62,82688.0,586.0,74021.63,169192,16,97284.94,169192,2707072,330.453125,256,14,2,4,False,collective_rpc(callable)
+h20_formal,4,0,cuda:0,GPU-ce155112-9dc4-a54c-961d-3e44cb787bf2,3720.51,81623.57,82864.0,586.0,77727.92,355327,16,97284.94,355327,5685232,693.998046875,256,7,1,4,False,collective_rpc(callable)
+h20_formal,4,1,cuda:1,GPU-78f97945-850e-5f5e-4911-0cbb4c544342,3720.51,81623.57,82864.0,586.0,77727.92,355327,16,97284.94,355327,5685232,693.998046875,256,7,1,4,False,collective_rpc(callable)
+h20_formal,4,2,cuda:2,GPU-c9453649-ecce-8560-3217-bc488163a152,3720.51,81623.57,82864.0,586.0,77727.92,355327,16,97284.94,355327,5685232,693.998046875,256,7,1,4,False,collective_rpc(callable)
+h20_formal,4,3,cuda:3,GPU-e222ef45-5263-16d8-06c7-a17cd7ca9d35,3720.51,81623.57,82864.0,586.0,77727.92,355327,16,97284.94,355327,5685232,693.998046875,256,7,1,4,False,collective_rpc(callable)

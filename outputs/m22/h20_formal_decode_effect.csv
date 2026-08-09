@@ -1,0 +1,9 @@
+tag,batch_size,tp,n_per_group,tp1_steady_step_ms,tpk_steady_step_ms,median_diff_ms,ci95_lo_ms,ci95_hi_ms,ci_excludes_zero,rel_change_pct,metric_scope
+h20_formal,1,2,15,10.1315,12.3668,-2.2353,-2.2657,-2.219,yes,-22.06,in-process
+h20_formal,1,4,15,10.1315,12.5254,-2.3939,-2.4244,-2.3749,yes,-23.63,in-process
+h20_formal,4,2,15,10.2632,12.5139,-2.2507,-2.2715,-2.2243,yes,-21.93,in-process
+h20_formal,4,4,15,10.2632,12.6066,-2.3434,-2.3723,-2.3314,yes,-22.83,in-process
+h20_formal,16,2,15,10.5132,12.9936,-2.4804,-2.503,-2.4546,yes,-23.59,in-process
+h20_formal,16,4,15,10.5132,12.9279,-2.4147,-2.439,-2.3889,yes,-22.97,in-process
+h20_formal,64,2,15,11.7591,14.0243,-2.2652,-2.2837,-2.2322,yes,-19.26,in-process
+h20_formal,64,4,15,11.7591,14.0168,-2.2577,-2.2813,-2.2215,yes,-19.2,in-process

@@ -1,0 +1,5 @@
+tag,batch_size,tp,n_per_group,tp1_steady_step_ms,tpk_steady_step_ms,median_diff_ms,ci95_lo_ms,ci95_hi_ms,ci_excludes_zero,rel_change_pct,metric_scope
+h20_smoke,1,2,3,10.2619,12.7639,-2.502,-2.5519,-2.4355,yes,-24.38,in-process
+h20_smoke,1,4,3,10.2619,12.1921,-1.9302,-2.8324,-1.866,yes,-18.81,in-process
+h20_smoke,4,2,3,10.3611,12.8519,-2.4908,-2.5432,-2.4698,yes,-24.04,in-process
+h20_smoke,4,4,3,10.3611,12.2959,-1.9348,-1.9502,-1.9098,yes,-18.67,in-process

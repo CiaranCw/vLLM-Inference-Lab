@@ -44,9 +44,19 @@
 - ✅ 环境记录：`vllm_dev_environment.md`、`logs/day1/vllm_collect_env.txt`、`logs/day1/nvidia_smi_*.txt`（GPU/Driver/CUDA/PyTorch/vLLM）。editable 安装已验证 `vllm.__file__ → vllm-src`。
 - ✅ 统一 trace 基础设施：`vllm-src/vllm/_lab_trace.py`（统一事件 schema `component/event/fields`、`VLLM_LAB_TRACE*` 开关、JSONL 输出、组件过滤、layer/once/step 限制）。
 - ✅ trace 默认关闭不改变执行语义：多次 E1 回归验证"归一化后逐行一致"（钩子零副作用）；每次改源码前备份到 `backups/`；`logs/*/source_status_{before,after}*.txt` 记录 git 状态。
+- ✅ **统一复现入口已落地**：`config/repro_manifest.yaml`（模块 → 命令 / 产物 / 日志 / 环境变量 / 预期样本数 / 不变量集合）
+  + `scripts/reproduce.py`（`--list` / `--dry-run` / `--verify-only` / `--run`）。
+  安全设计：`--run` 默认**只跑 `status != done` 的步骤**（不覆盖已核验数据），涉及 GPU 必须显式 `--confirm-gpu`，
+  覆盖已有产物必须显式 `--confirm-overwrite`，每个建引擎的步骤起独立子进程，失败立即停止，且**不做任何 git 操作**。
+- ✅ **正式 correctness invariants + 回归脚本已落地**：`scripts/check_invariants.py`（不需 GPU、不 import vllm）。
+  当前覆盖 M17：I1–I4、字段语义（`prefix_cache_hit`/`prefill_step_count`/`scheduled_prompt_tokens`）、
+  每组 measure 样本数、warmup 已分离、**CSV↔JSONL 的 n 一致**、**`prefix_cache_effect.csv` 可由 JSONL 逐位重算**，
+  以及**文档数字反向溯源**（E1 主表与 E3-single 表的每个数字都必须能从 CSV 重算；另做正向核对以覆盖正文叙述句
+  ——正是 M17 审计暴露的盲区）。三种结论严格区分 **PASS / FAIL / PENDING**，PENDING（实验未执行）**不计为通过**。
+  已用变异测试验证其有效性（改文档数字 / 删一个 measure 样本 / 破坏 hit 守恒 → **3/3 均被捕获并非零退出**）。
 - 🔄 待补（据实标记，尚未落地）：
-  - 统一**复现入口**（目前分散在各 notes 的复现命令；`scripts/smoke_import.py` 仅做导入自检）。
-  - **正式 correctness invariants + 回归脚本**（目前 E1 回归是内联 bash 的 ad-hoc 比对，未固化为脚本）。
+  - `check_invariants.py` 目前**只登记了 M17**，M1–M16 的规则待逐步迁移（架构已支持按模块注册）。
+  - 文档溯源目前覆盖 E1 主表 + E3-single 表（反向）与关键结论数字（正向）；**§1.2 斜率、§5 对照表等正文推导值尚未覆盖**（已在脚本输出中如实声明，不当作全覆盖）。
   - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（已建，见"持续维护任务"）。
   - 目录/命名当前为 `dayN` 制（M1–M3 沿用）；后续模块建议改为**主题命名**，此不一致待统一。
 
@@ -170,10 +180,10 @@
 | 5 | 1 个 slot-mapping 类 Triton kernel（含 correctness+microbench） | M8 | ✅ |
 | 6 | 1 次 profiler 驱动、有测试+性能数据的 vLLM 改动 | M9 | ✅（改动+测试+E2E 数据齐全；E2E 收益在噪声内，诚实保留无收益报告） |
 | 7 | 1 次开源 PR | M13 | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，18 passed / DCO pass / test-only；未合入，等审查） |
-| 8 | 分布式(TP)对比报告 | M11（资源门控） | ⬜ |
+| 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成、M0 进行中；核心验收 8/9（仅差 M11 双卡 TP，属硬件资源门控）。推进：~~M4~~→~~M5~~→~~M6~~→~~M7~~→~~M8~~→~~M9~~→~~M10~~→~~M12~~→~~M13（PR #51017 已提交）~~→~~M16 收口~~；M11 待多卡资源。**第一阶段已收口，当前进入【第二阶段】阶段 E（M17 起，单卡可做；GPU-free 部分已完成）。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / **M22(TP)** 已收口；M20 正式 C、M18 等待继续。**
 
 ---
 
@@ -204,7 +214,13 @@
 
 ## 阶段 E · vLLM 高级优化（单卡可做，T+E+O）
 
-### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O（核心实验完成；I5-b 定量实验与 E2 未做）
+### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O　**主线已收口**
+> **收口口径**：核心实验（E1 / E3-single / E3-concurrency）完成并核验；
+> **P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期属于可选扩展，不阻塞后续模块**
+> （已在 `config/repro_manifest.yaml` 标为 `status: optional`，`reproduce.py --run` 不会自动执行）。
+> **no-chunk 限制说明（须随结论一起呈现）**：当前模型不正式支持关闭 chunked prefill
+> （`vllm/engine/arg_utils.py:2476-2480` 有明确告警），因此现有结果**主要支持调度形态与延迟观察，
+> 不外推为普适的生成正确性保证**。
 - **T+O**：APC + chunked prefill 源码逐点定位（block hash 链式 / 命中 / ref_cnt / LRU 驱逐「尾部优先淘汰·前缀优先保留」/ 登记；token 预算 / 长阈值 / 预算共享），均带 file:line。
 - **E 实测（2026-08-05 按审计修复后重跑；每配置 5 warmup + 15 measure，汇总只用 measure）**：
   - **E1 APC**：**P=1024 / 2048 收益显著**（median difference 的 Bootstrap 95% CI 明确排除 0）——
@@ -250,34 +266,93 @@
 - **未做（如实）**：**I5-b 输出长度定量实验（扫 `max_tokens` 验证 APC 相对收益随输出变长而下降）——
   未执行**，本轮全部请求 `max_tokens=1`；E2 block 生命周期内省（可选）；并发实验仅 1 decode + 1 长 prefill，未扫并发度；
   `max_num_partial_prefills` 本版本不可调（`arg_utils.py:2350` 直接 NotImplementedError）；不外推 compiled/大模型/多卡/在线服务。
+- **⬜ 两项可选扩展：脚本已实现，尚未执行，不阻塞主线**（冻结设计见 `notes/m17/prefix_cache_and_chunked_prefill.md` §7，
+  状态可用 `python scripts/check_invariants.py --module m17` 查询，显示为 PENDING —— 既不计通过也不计失败）：
+  - `[ ]` **E3 no-chunk 生成正确性** —— E3 用 `enable_chunked_prefill=False` 作不分块对照，
+    但上游对该配置有明确告警（`vllm/engine/arg_utils.py:2476-2480`："This model does not officially support
+    disabling chunked prefill … may cause the engine to crash or produce incorrect outputs"）。
+    既有证据只覆盖**调度守恒与延迟**，**从未比较两侧生成的 token**——调度守恒 ≠ 生成正确。
+    新增 shard `--shard e3-correctness --conc-mode {chunked,nochunk}`：场景 A（单长请求 2048/64）+
+    场景 B（复现 E3-concurrency 的 D 与 P），逐一比对完整 `output_token_ids`。
+    **失败则把 no-chunk 侧性能数据降级为探索性观察，不再作因果对照。**
+  - `[ ]` **I5-b** —— 新增 shard `--shard e1-output-len-{on,off}`，固定 2048 前缀扫 `max_tokens ∈ {1,8,32,128}`，
+    每组 5 warmup + 15 measure；扩展到 256 需**先获所有者确认**，不得跑完再挑有利档位。
+    产物写独立文件（`outputs/m17/apc_output_length*.csv`），**不并入既有已核验 CSV**。
 
 ### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。
 - 实验：BF16 vs 权重量化 vs（硬件可行时）FP8 KV；比显存/KV 容量/启动/TTFT/TPOT/吞吐/质量。源码聚焦：`QuantizationConfig`、量化 Linear 替换、权重加载、scale 保存传递、实际 GEMM/dequant kernel、backend 如何消费 KV scale。
 - 注：M10 已做 BF16 / FP8 W8A8 / FP8 KV（含 scale 审计与"decode +36% 反常"诚实结论）；本模块补 **W4A16/AWQ/GPTQ** 与跨引擎对照预备。**不为补表格伪造不支持的 FP8/FP4 路径**。
 
-### M19 Speculative Decoding　⬜　T+E+O（`docs/features/speculative_decoding/`）
-- 理论：target/draft(proposer)、一次提议 K token、target verification、accepted/rejected、acceptance rate、**为何中低 QPS / memory-bound decode 更受益、batch 增大为何 verification 成本抵消收益**。
-- 顺序：普通 decode baseline → N-gram → 小 draft model →（显存允许）EAGLE/MTP/Medusa。**不要一上来啃 Medusa 源码**。
-- 记录：proposed/accepted 数、acceptance rate、target forward 次数、TPOT、吞吐、显存、不同 batch 下收益或退化。硬件：N-gram 单卡即可；draft+target 共存看显存。仅读论文只算 T。
+### M19 Speculative Decoding　✅　T+E+O（**N-gram 主线已闭环**；draft-model family 为 Optional / Future）
+
+- **M19-A · Baseline vs N-gram** ✅ T+E+O COMPLETE（见 `notes/m19/`）
+- **M19-B · Small Draft Model** ⬜ Optional / Future（需显存评估；下载须授权）
+- **M19-C · EAGLE / MTP / Medusa** ⬜ Optional / Future
+- 理论：proposer/verification/rejection；**用额外并行 verification 换更少串行 execution rounds**（通常不保证少 FLOPs）；
+  Proposal Coverage + Conditional Acceptance + Round Cost；为何 CPU/launch-bound decode 更受益、
+  batch 增大为何 verification 更难被隐藏。
+- **不要一上来啃 Medusa 源码**；主线已完成，后续 proposer extensions **不阻塞**模块完成状态。
+- **T+O（已完成）**：ngram 的 config 语义、proposer 算法（反转 + KMP LPS，`vllm/v1/spec_decode/ngram_proposer.py:207`）、
+  proposer 调用点（`gpu_model_runner.py:665-668` / `:5088-5099`）、greedy 验收判据
+  （`rejection_sampler.py:756-757`：`rejected = draft_token_id != target_argmax_id`）、
+  以及**计数其实由 Scheduler 从输出 token 数反推**（`scheduler.py:1845-1869`，`num_accepted = len(generated)-1`）——均带 file:line 逐条实读核对。
+- **E 实测（2026-08-06；2×2×3=12 组，每组 5 warmup+15 measure，180 measure；语义收口 2026-08-08）**：
+  - **Acceptance 随 workload/config 组合变化**（**不是**「完全由 workload 决定」）：
+    `high_repeat`（高初始 prompt 重叠）**1.000**（draft-bearing acceptance length 4.000），
+    `low_repeat`（低初始 prompt 重叠，**非**真正低输出重复）**0.750 / 0.798 / 0.854**。
+    正交第二证据：`output_4gram_in_prompt_ratio` **1.00 / 0.00**；但 low 的
+    `output_repetition_4gram≈0.82–0.84`。**Batch↔prompt composition confounding**（§1.4）。
+  - **机制**：`engine.step` = execution-round **强 proxy**（非严格纯 Decode Target Forward）——
+    **128→33**（high）、**128→56–62**（low）。draft-bearing length ≠ global `E`
+    （例：low b1 length=3.25，但 128/56≈2.286 tok/round）。
+  - **性能**：完成延迟 −**72–75.5%**（high）/ −**54.8–57.4%**（low）；
+    **amortized TPOT**（≠ streaming ITL）7.5–8.5ms → **1.8ms** / **3.2–3.7ms**；
+    in-process 输出吞吐 **+257~308%** / **+121~135%**。**12 组 CI 全排除 0**。
+    high 的 acceptance 恒为 1.0 但降幅 75.5%→72% → Acceptance **非充分指标**。
+  - **逐位置**：low b4 pos0/1/2 = 0.895/0.879/0.621 → **提示**更大 k 可能边际递减；
+    **未扫 k，不能实证最优 k**。
+  - **显存（KV capacity planning）**：非-KV 预算约 +0.16 GiB → KV tokens **−1.9%**；
+    与 sample `max_memory_allocated` **不同口径**；未做组件 breakdown。
+  - **First Token**：无稳定收益；low b1 差值约 **−0.93ms**（不是「全部 ±0.6ms」）。
+  - **batch≤16 未触及 knee**（仍 CPU 提交受限，M7）；≠「大 batch 也安全」。
+  - **输出一致性**：111/126 exact match；batch-shape control 证明 shape 变化**可以**导致
+    divergence，与现象一致；**未发现明确 Spec Decode bug**，也**不是**严格逐例排除。
+- **两个必须写死的隐藏变量**：① 两侧 `async_scheduling=False`；② 两侧 `disable_log_stats=False`。
+  生效配置由 `effective_cfg` 从引擎读回并被不变量核对。
+- **计数观测**：自定义 `StatLoggerBase` → per-step `SpecDecodingStats`。**零产品源码改动**。
+- 产出：`scripts/m19_{spec_decode,figures}.py`、`notes/m19/*`、`outputs/m19/*.csv`+`raw/*.jsonl`、
+  `logs/m19/*`、`figures/fig{7,8}_m19_*.png`；`check_invariants.py --module m19`。
+- **Optional / Future（不阻塞）**：`k` sweep；true low-coverage/acceptance workload；profiler breakdown；
+  larger batch/model 找 knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa。
 
 ## 阶段 F · 在线服务与生产化（T+E+O）
 
-### M20 服务化生产部署 + Triton（承接 M12）　⬜　T+E+O
-- vLLM OpenAI server 生产化：并发/固定 QPS/Poisson/streaming/prefix；测 TTFT/TPOT/ITL/E2E/P50-99/请求·输出吞吐/错误率/GPU·CPU·显存·KV 使用率。**M12 已做开环 SLO 与容量曲线**，本模块承接并加 streaming 与真实 server 治理。
-- Triton Inference Server（`Triton vLLM Backend`）：① 单模型部署（容器、model repository、backend 配置、健康检查、指标）；② vLLM 原生 server **vs** Triton+vLLM backend 对照（部署复杂度/启动/吞吐/TTFT/P95-99/指标暴露/故障恢复）；③ 动态配置与服务治理。单卡可入门；高可用/多副本/路由需多实例或 K8s。
-- 产出：`serving/{load_generator.py,workload_config.yaml}`、`results/online_serving_baseline.csv`、`reports/07_online_serving.md`。
+### M20 服务化生产部署 + Triton（承接 M12）　🔄　**T + A + B smoke 完成；C 可行性已确认；正式 C 未跑 → overall NOT COMPLETE**
+- **修订目标**：求职向「能部署并解释 Triton+vLLM Backend，并在 **same-runtime** 下与 Native 对照」。**不重复** M12 Online SLO 网格；不把 host-M12 与 container 混减称 overhead。
+- **已完成**：Gate0→安装 Docker 29.7.2 + NVIDIA Container Toolkit 1.19.1；拉取 `nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3`（digest `sha256:31e20bf…`）；M20-A host smoke；**M20-B** Triton health/load/`generate`/`generate_stream`/metrics PASS（0.5B bind-mount）；**same-runtime**：同镜像内 `vllm serve` PASS。见 `notes/m20/b_triton_runtime_unblocked.md`。
+- **容器 vs host**：container vLLM `0.24.0+092c4842.nv26.7…` / torch `2.13.0a0…nv26.07` / CUDA 13.3 ≠ lab `ee0da84` / torch 2.11+cu130 → 正式 C **必须**同镜像串行对照。
+- **未完成**：M20-C 正式定点（主 QPS **32/40**）+ 报告/图。**延后至 M22 H20 窗口结束、数据安全落地之后**。
+- 产出：`serving/triton_model_repository/`、`outputs/m20/`、`logs/m20/`；正式报告待 C。
 
 ### M21 监控与容量规划　⬜　T+E+O
 - 搭 Prometheus + Grafana + GPU 指标 + vLLM/Triton 服务指标 + 压测结果。回答：**最大稳定 QPS、并发到哪 P99 失控、瓶颈是 GPU/显存/KV/CPU/队列、一张卡承载多少用户、OOM/超时/worker 退出如何定位**。理论只能定义指标，替代不了真实压测与面板。
 
 ## 阶段 G · 分布式与并行（T+E+O+H，★资源门控）　`docs/serving/parallelism_scaling.md`
 
-### M22 Tensor / Pipeline / Data / Expert Parallel（承接 M11）　⬜　T+E+O+H
-- **门控**：本机单卡。无多卡时**只允许 T + O**（理论 + 源码定位：vLLM 并行组、切分、collective、EP dispatch 路径），**不得标 E/H**；获多卡（建议短租双/四卡云）后补 E+H。
-- **TP**：Column/Row Parallel Linear、QKV/head 切分、MLP 切分、AllReduce/ReduceScatter/AllGather 位置、通信量、**小 batch 为何 TP 更慢**；TP=1 vs 2 每卡权重·显存·KV、NCCL、kernel 与通信重叠、不同 batch 的 scaling efficiency。
-- **PP**：按 layer 分 stage、activation 传输、pipeline bubble、microbatch、与 TP 组合、stage 负载不均。**DP**：复制实例扩吞吐 + 请求路由/负载均衡/会话黏性/故障 replica 摘除。**EP/MoE**：Router/Top-K、token dispatch、All-to-All、load imbalance、capacity/dropped、DeepEP。
-- 产出：`results/{tp1_tp2,dp_scaling}.csv`、`profiles/nccl_timeline/`、`figures/parallelism_topology.png`、`reports/08_distributed_inference.md`（**区分：TP/PP 扩模型容量、DP 扩吞吐、EP 扩专家、CP 扩上下文**）。
+### M22 Tensor / Pipeline / Data / Expert Parallel（承接 M11）　✅　**TP：T+E+O+H COMPLETE**；PP/DP/EP ⬜
+- **门控**：本机单卡时只允许 T+O；多卡 E/H 已在 **4×H20（2026-08-09）** 完成 TP 部分。
+- **✅ TP 的 T+O**（`notes/m22/tensor_parallel.md`，R1–R7，`file:line`，v0.24.0）：
+  MultiprocExecutor / InprocClient、per-rank `collective_rpc`、ProfilerConfig（无 `VLLM_TORCH_PROFILER_DIR`）、
+  custom all-reduce 优先路径、7B 在 TP=1/2/4 结构兼容（28/4 heads，KV 不复制）。
+- **✅ TP 的 E/H**（`notes/m22/results.md`，tag=`h20_formal`，7B / eager / in-process）：
+  D1 权重≈1/TP、KV tokens 随 TP 升；D2 稳态 decode 单步 TP 显著更慢（全 batch Bootstrap CI 排除 0）；
+  D3 长 prefill TP 加速（P=4096 TP4≈3.39×）；大 batch 吞吐 speedup **主要来自并发 prefill** 而非 decode 单步；
+  P1 见 custom AR/NCCL；invariants **22 PASS**；图 `figures/fig9_m22_tp_scaling_h20_formal.png`。
+- **⬜ PP/DP/EP/CP/P-D**：**未编写实现、未实测**，不得勾选。方案原文 [`MULTI_GPU_EXPERIMENT_PLAN.md`](MULTI_GPU_EXPERIMENT_PLAN.md)。
+- **TP 要点**：Column/Row Parallel、每层 2× all-reduce、**小 batch 更慢的机制与数据**、scaling efficiency、collective 后端。
+- **PP/DP/EP（未做）**：stage/bubble；副本扩吞吐；MoE dispatch / All-to-All。
+- 产出：`outputs/m22/h20_formal_*.csv`、`outputs/m22/raw/*`、`outputs/m22/traces/`、`notes/m22/{tensor_parallel,results,execution_record}.md`。
 
 ## 阶段 H · 跨引擎对比（T+E+O）
 
@@ -327,7 +402,7 @@
 |---|---|---|---|
 | 1 | Prefix cache on/off 定量对照报告 | M17 | 单卡 |
 | 2 | 量化路径深化对照（含 W4A16/AWQ/GPTQ） | M18 | 单卡 |
-| 3 | Speculative decoding acceptance/TPOT 数据 | M19 | 单卡起 |
+| 3 | Speculative decoding acceptance/TPOT 数据 | M19 | 单卡起 ✅ **N-gram T+E+O 主线完成**；draft-model family / EAGLE / MTP / Medusa **未做**（Optional） |
 | 4 | 在线 serving + Triton 部署对照报告 | M20 | 单卡/多实例 |
 | 5 | 监控 + 容量规划报告 | M21 | 单机起 |
 | 6 | TP/PP/DP/EP 实验（多卡 E+H；单卡仅 T+O） | M22 | ★多卡 |
@@ -377,5 +452,9 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步**：第一阶段已收口；**第二阶段 M17 已完成（T+E+O，I5-b/E2 未做）**。→ **M18（量化路径深化：W4A16/AWQ/GPTQ，单卡可做，但需先获授权下载量化模型）** 或 **M19（Speculative Decoding：N-gram 起步，单卡即可、无需下载）**；亦可先补 **M17 的 I5-b**（最小收尾项）。之后阶段 F（M20 服务化+Triton、M21 监控容量）。多卡门控模块（M22/M24）待资源。M13 若收到 maintainer review，优先回应迭代。
+- **当前下一步（2026-08-08 更新）**：第一阶段已收口。第二阶段 **M17 主线已收口**，
+  **M19 N-gram 主线 T+E+O 已闭环**（语义收口完成；draft-model / EAGLE / MTP / Medusa / k sweep 等为 Optional，不阻塞）。
+  **M22** TP：**T+E+O+H COMPLETE**（4×H20 / 2026-08-09，`notes/m22/results.md`）；PP/DP/EP 仍 ⬜。
+  → 单卡学习主线：可进入下一单卡模块（如 M18，下载须授权）；**不要**把 Optional 的 M19 深化当作阻塞项。
+  M13 若收到 maintainer review，优先回应迭代。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

@@ -18,6 +18,8 @@
 - **量化 & 在线服务**：FP8 权重显存 −36% / KV 容量 ~2×，但 **decode 反而 +36%（诚实反常）**（M10）；真实 `vllm serve` + 开环 Poisson 测出**最大稳定 QPS ≈ 40**，且**过载是尾延迟劣化而非吞吐崩溃**（M12）。
 - **上游 PR 已提交**：[vllm-project/vllm#51017](https://github.com/vllm-project/vllm/pull/51017) —— 为 `BlockTable.compute_slot_mapping` 补单元测试（该路径原本零覆盖），**18 passed / DCO pass / test-only**；过程中用变异测试证明「参照实现必须独立于产品 helper」（M13，见 §7）。
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
+- **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
+- **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
 
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
 >
@@ -46,10 +48,12 @@
 | 在线服务容量 / SLO | 能测容量 ✅ | M12 |
 | 上游贡献（测试补齐） | **已提交** ✅（PR #51017，待审查） | M13 |
 | 调度特性权衡（APC / chunked prefill） | 能证 + 能量化 ✅ | M17 |
+| 投机解码（N-gram：Coverage/Acceptance/execution rounds/吞吐） | 能证 + 能量化 ✅ | M19 |
+| 张量并行 TP（多卡：step vs 吞吐口径） | 能证 + 能量化 ✅ | M22 |
 
 ---
 
-## 核心图（由既有实验数据离线生成，复现：`python scripts/m16_figures.py` + `python scripts/m17_figures.py`）
+## 核心图（由既有实验数据离线生成，复现：`python scripts/m16_figures.py` + `m17`/`m19`/`m22_figures.py`）
 
 **M6 · Decode：eager vs compiled**
 ![M6 decode](figures/fig1_m6_decode.png)
@@ -75,6 +79,18 @@
 ![M17 chunked](figures/fig6_m17_chunked.png)
 > 左（两侧 `max_num_batched_tokens=4096` 严格单变量，chunked 侧靠 `long_prefill_token_threshold=512` 强制分成 4×512）：并发 decode 请求 D 的**最坏 stall 22.87→10.51ms（−54%，CI 显著）**，而 **ITL median/p95 的 CI 都含 0**；代价是长 prefill **自身 TTFT +47%（显著）**。右：单请求下每多一个 prefill step ≈ **+3.2ms**，量级与 M7 所证的每-step 固定 CPU 提交开销一致。
 
+**M19 · N-gram Spec Decode：额外并行 verification → 更少串行 execution rounds**
+![M19 acceptance](figures/fig7_m19_acceptance.png)
+> 左：acceptance 随 workload/config 组合变化（高初始 prompt 重叠 **1.000**；低初始 prompt 重叠 0.75–0.85——后者**不是**真正低输出重复）。中：较远 draft position 更难命中（low b4 第 3 位 0.621；**未扫 k**）。右：每输出 token 的 **engine execution rounds**（强 proxy，非严格 target-forward 计数）从 baseline 1.0 降到 **0.26** / **0.44–0.48**。
+
+**M19 · 延迟与吞吐：batch≤16 未见退化（未触及 knee）**
+![M19 speedup](figures/fig8_m19_speedup.png)
+> 完成延迟与 **amortized TPOT**（≠ streaming ITL）的 **6+6 组 CI 全排除 0**。降幅与 acceptance 同向排序，但 Acceptance 非充分（high 恒 1.0 仍有 75.5%→72%）。batch=16 仍保持 72%/55%——本机 eager decode 仍 **CPU 提交受限**（M7），**未跑到「多算 verification 要付算力」的拐点**。≠「大 batch 也安全」。
+
+**M22 · 4×H20 Tensor Parallel：decode 单步更慢 vs prefill 加速（口径必须拆开）**
+![M22 TP scaling](figures/fig9_m22_tp_scaling_h20_formal.png)
+> 左：稳态 decode 单步 TP 全程更慢（~+19–24%，CI 排除 0）。中：吞吐 `speedup_vs_tp1` 在大 batch 可 >1——**主要来自并发 prefill**。右：长 prompt first-token 随 TP 加速（P=4096 TP4≈3.39×）。边界：H20 / 7B / eager / in-process；**PP/DP/EP 未做**。
+
 ---
 
 ## 逐模块成果（M0–M13 + M17，不遗漏信息）
@@ -92,12 +108,13 @@
 | **M8** Triton Kernel ★ | 自写 slot_mapping 生成 kernel，三路交叉全绿 | **22/22**；microbench 自写≈vLLM 官方(28.4≈28.4us) | 无（官方作参照） | `notes/m8/*`、`outputs/m8/correctness.json` |
 | **M9** profiler 驱动改动 ★ | 合并 decode H2D：机制成立但 E2E 无收益（诚实） | cudaMemcpyAsync/step 11→10；E2E 差异 ±0.01-0.02ms≪stdev；天花板 0.13% | 门控改动(默认关,可回退) | `notes/m9/*`、`outputs/m9/*` |
 | **M10** 量化对比 ★ | FP8 显存收益明确、速度诚实含反常 | 权重 −36% / KV ~2×；PPL +0.51%~+2.17%；decode **+36% 变慢**、prefill −27% | 无 | `notes/m10/*`、`outputs/m10/*` |
-| **M11** 双卡 TP | ⬜ 资源门控（本机单卡）——待多卡；无硬件仅 T+O | — | — | 见 ROADMAP M22 |
+| **M11** 双卡 TP | → 并入 **M22**（已在 4×H20 完成 TP E/H） | 见 M22 | — | `notes/m22/results.md` |
 | **M12** 在线 Serving/SLO | 真实 serve + 开环 Poisson 的容量规划 | **最大稳定 QPS≈40**、饱和~46.6、过载=尾延迟劣化、容量随 shape 变 | 无 | `notes/m12/*`、`outputs/m12/*` |
 | **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
-| **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**I5-b/E2 未做** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
-
-★ = 第一阶段核心验收项（M17 属第二阶段阶段 E）。**第一阶段核心验收线 8/9**（仅差 M11 双卡 TP，属硬件资源门控）。
+| **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线已收口，3 项可选扩展未执行** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
+| **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
+| **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
+★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
 ---
 
@@ -109,6 +126,9 @@
 4. **省计算 ≠ 省延迟，但"长到一定程度"就等号了**：prefix cache 命中省掉 94% prefill 计算 token，短 prompt 下首 token 延迟改善却落在噪声内（M6）；M17 把前缀加长后发现这是**地板效应**——P=256/512 的 CI 仍含 0，而 P=1024/2048 省出 **32.4% / 58.5%**（CI 排除 0）。**同一份"省计算"，穿透那条 ~7ms 固定开销地板才变成"省延迟"。**
 5. **chunked prefill 改的是尾部，不是平均**：它把并发 decode 的最坏 stall 砍半（22.87→10.51ms），但 ITL 的 median/p95 几乎不动（CI 含 0），且长 prefill 自己的 TTFT 变慢 47%——**这是一次公平交换，不是免费加速**。另外机制不是"长 prefill 把 decode 挤出去"：原始逐 step 记录显示 decode **仍被同批调度**（`d=1, p=2048`），只是它的 token 要等一个 2049-token 的长 step 才返回。
 6. **不是所有 profiler 热点都值得改**：M9 的 H2D 合并机制成立、正确，但该路径已被上游高度优化（pinned+non_blocking+overlap），isolated microbench 提前算出天花板仅 0.13%——**能证明"为什么没收益"也是能力**。
+7. **投机解码优化的是串行 execution depth，不是保证少算**：M19 直接计数 engine execution rounds（强 proxy，非严格纯 Decode Target Forward），高初始 prompt 重叠 workload 从 128→33。Acceptance 重要但非充分；还需 Proposal Coverage 与 Round Cost。教科书「batch 增大收益消失」在本机 batch≤16 **未触及**——仍是 M7 的 CPU 提交受限区，**不等于规律不成立**。
+8. **"输出不一致"不等于"实现有 bug"**：M19 有 15/126 请求 baseline↔ngram 不完全一致。batch-shape control 证明 **baseline 自己**换 batch 组成也可在相近位置分歧——现有证据与有限精度 batch-shape sensitivity **一致**，**未发现明确 Spec Decode correctness bug**，但也不是严格逐例排除。**先找对照组，再定证据强度。**
+9. **TP 的「吞吐加速」≠「decode 单步变快」**：M22 在 4×H20 / 7B 上，稳态 decode 单步 TP 全程显著更慢（~+19–24%，CI 排除 0）；bs=64 时 `speedup_vs_tp1>1` 主要来自并发 prefill 的 first-token（804→230ms）。**口径拆不开就会把通信税说成加速。**
 
 > 完整证据链见 [`notes/evidence_index.md`](notes/evidence_index.md)；每个结论都可回溯到 trace/log/jsonl/csv。
 
@@ -139,9 +159,26 @@ python scripts/m17_prefix_cache.py --shard e3 --e3-chunked on --e3-mbt 512   # �
 python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode chunked       # 另跑 nochunk
 python scripts/m17_prefix_cache.py --shard summarize            # 汇总，不建引擎、不需 GPU
 
+# M19：Baseline vs N-gram 投机解码（同样一个进程一个引擎）
+python scripts/m19_spec_decode.py --shard smoke --mode ngram   # 先自检：ngram 是否真生效
+python scripts/m19_spec_decode.py --shard baseline
+python scripts/m19_spec_decode.py --shard ngram
+python scripts/m19_spec_decode.py --shard summarize            # 汇总，不建引擎、不需 GPU
+python scripts/m19_spec_decode.py --shard equiv --mode baseline   # 输出一致性 probe
+python scripts/m19_spec_decode.py --shard equiv --mode ngram
+python scripts/m19_spec_decode.py --shard summarize-equiv
+
+# 统一复现入口 + 正式不变量（均不需 GPU）
+python scripts/reproduce.py --list
+python scripts/reproduce.py --module m19 --dry-run
+python scripts/reproduce.py --module m19 --verify-only
+python scripts/check_invariants.py                             # M0 / M17 / M19
+
 # 核心图（无需 GPU，仅由已落盘数据生成）
 python scripts/m16_figures.py    # -> figures/fig1..4
 python scripts/m17_figures.py    # -> figures/fig5..6
+python scripts/m19_figures.py    # -> figures/fig7..8
+python scripts/m22_figures.py --tag h20_formal  # -> figures/fig9_m22_tp_scaling_h20_formal.png
 ```
 
 关键运行约定（本机 WSL2/sm_120）：`VLLM_USE_FLASHINFER_SAMPLER=0`（无 nvcc，FlashInfer sampler JIT 会失败）、`VLLM_ENABLE_V1_MULTIPROCESSING=0`、`seed=0`、`temperature=0`。
@@ -156,7 +193,8 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 ├── vllm-m13-upstream/  # M13 上游 PR 专用：干净 clone + 独立 .venv，跟最新 main（无学习注释）
 ├── vllm_playground/    # 干净基线 venv（只读，不得修改）
 └── vllm-inference-lab/ # 本工作区
-    ├── scripts/        # 各模块实验脚本 + m16_figures.py
+    ├── scripts/        # 各模块实验脚本 + 离线出图 + reproduce.py / check_invariants.py
+    ├── config/         # repro_manifest.yaml（模块→命令/产物/日志/环境/不变量 的统一登记）
     ├── notes/          # 逐模块源码学习笔记（含 evidence_index / m16 面试表达）
     ├── outputs/        # 实验输出（csv/json/jsonl；大件 raw/traces 走 gitignore、可复现）
     ├── figures/        # 核心图（由 CSV 离线生成）
@@ -222,3 +260,37 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 **适用边界**：单卡 / eager / 0.5B / WSL2 / in-process，绝对值限本配置；**跑间有 1–3ms 漂移**，故只对「显著/不显著与量级」下结论。**首版（2026-08-04）结论因单样本且被首次 Triton JIT 编译污染已整体撤回并重跑**，撤回明细见 [`notes/m17/results.md`](notes/m17/results.md) §6。
 
 **留痕与数据**：[`results.md`](notes/m17/results.md)（结果 + 撤回表）· [`prefix_cache_and_chunked_prefill.md`](notes/m17/prefix_cache_and_chunked_prefill.md)（T/O 源码定位 + 冻结设计 + 不变量 I1–I5）· `outputs/m17/*.csv` + `outputs/m17/raw/*.jsonl`（含 `phase`/`success`/`metric_scope`）· `logs/m17/*`。旧数据保留未删（`raw_old_20260805/`、`raw_pre_field_fix/`）。**零 vLLM 产品源码改动。**
+
+**主线收口口径（2026-08-06）**：核心实验完成并核验；**P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期属于可选扩展，不阻塞后续模块**。⚠ **必须随结论一起呈现的限制**：当前模型**不正式支持关闭 chunked prefill**（`vllm/engine/arg_utils.py:2476-2480` 明确告警），因此现有结果**主要支持调度形态与延迟观察，不外推为普适的生成正确性保证**。
+
+---
+
+## §9 M19 Speculative Decoding（N-gram 主线 · T+E+O CLOSED）
+
+> **T + E + O 已完成并语义收口**（`notes/m19/`）。draft model / EAGLE / MTP / Medusa / `k` sweep 等为 **Optional / Future**，不阻塞主线。
+
+用真实 vLLM N-gram Spec Decode 验证：**额外并行 verification 换取更少串行 execution rounds**；
+高初始 prompt 重叠 workload 延迟约 −72–75%，低初始 prompt 重叠（非真正低输出重复）约 −55–57%；
+建立 Proposal Coverage + Conditional Acceptance + Round Cost 性能模型；记录 KV capacity 约 −1.9%
+与有限精度 output divergence 边界。
+
+**方法**：`LLMEngine` + 自定义 `StatLoggerBase` 逐 step 收 `SpecDecodingStats`。网格：2×2×3，
+每组 **5 warmup + 15 measure**。统计：median difference 的 **Bootstrap 95% CI**（seed=0）。
+
+| 维度 | high_repeat（高初始 prompt 重叠） | low_repeat（低初始 prompt 重叠） |
+|---|---|---|
+| **acceptance rate** | **1.000**（draft-bearing length 4.000） | 0.750 / 0.798 / 0.854（batch 1/4/16；含 prompt-composition confounding） |
+| **正交第二证据**（输出 4-gram∈prompt，离线） | **1.00** | **0.00**（但输出自身 4-gram 重复 ≈0.82–0.84） |
+| **engine execution rounds**（强 proxy） | 128 → **33**（−74%） | 128 → **56–62**（−52~−56%） |
+| **完成延迟** | −**72.0~75.5%** | −**54.8~57.4%** |
+| **amortized TPOT**（≠ streaming ITL） | 7.6–8.5ms → **1.8–2.3ms** | 7.5–8.5ms → **3.2–3.7ms** |
+| **in-process 输出吞吐** | **+257~308%** | **+121~135%** |
+
+**隐藏变量已写死**：两侧 `async_scheduling=False`、`disable_log_stats=False`；`effective_cfg` 从引擎读回核对。
+
+**代价与边界**：KV capacity **−1.9%**；batch≤16 **未触及 knee**；**未扫 k**；未做 profiler breakdown / compile / draft-model family；
+batch↔prompt confounding。正确性：111/126 exact match；batch-shape control 支持 numerical sensitivity 解释，
+**非严格「与 Spec Decode 无关」证明**。
+
+**留痕**：[`results.md`](notes/m19/results.md) · [`speculative_decoding.md`](notes/m19/speculative_decoding.md) ·
+`outputs/m19/*.csv` + `raw/*.jsonl` · `logs/m19/*`。`check_invariants.py --module m19`。**零产品源码改动。**

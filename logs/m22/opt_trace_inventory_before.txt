@@ -1,0 +1,25 @@
+total 20M
+drwxr-xr-x 2 root root 4.0K Aug  9 21:03 .
+drwxr-xr-x 4 root root 4.0K Aug  9 21:04 ..
+-rw-r--r-- 1 root root 1.6M Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank0.1786280555615683699.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank0.1786280561833004362.pt.trace.json.gz
+-rw-r--r-- 1 root root 125K Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank0.1786280568148538628.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank1.1786280555615071403.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank1.1786280561783890475.pt.trace.json.gz
+-rw-r--r-- 1 root root 125K Aug  9 21:02 h20_formal_tp2_decode_small_batch_rank1.1786280568142574387.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank0.1786280601220454126.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank0.1786280607069283744.pt.trace.json.gz
+-rw-r--r-- 1 root root 124K Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank0.1786280612781625827.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank1.1786280601219668203.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank1.1786280607039483789.pt.trace.json.gz
+-rw-r--r-- 1 root root 124K Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank1.1786280612778241330.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank2.1786280601222764626.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank2.1786280607035420117.pt.trace.json.gz
+-rw-r--r-- 1 root root 124K Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank2.1786280612779048643.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank3.1786280601223861262.pt.trace.json.gz
+-rw-r--r-- 1 root root 1.6M Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank3.1786280607035457007.pt.trace.json.gz
+-rw-r--r-- 1 root root 124K Aug  9 21:03 h20_formal_tp4_decode_small_batch_rank3.1786280612778943795.pt.trace.json.gz
+-rw-r--r-- 1 root root  21K Aug  9 21:03 profiler_out_0.txt
+-rw-r--r-- 1 root root  21K Aug  9 21:03 profiler_out_1.txt
+-rw-r--r-- 1 root root  21K Aug  9 21:03 profiler_out_2.txt
+-rw-r--r-- 1 root root  21K Aug  9 21:03 profiler_out_3.txt

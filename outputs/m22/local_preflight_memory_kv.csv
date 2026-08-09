@@ -1,0 +1,2 @@
+tag,tp,rank,device,device_uuid,weight_MiB,torch_allocated_MiB,torch_reserved_MiB,non_torch_MiB,available_kv_MiB,num_gpu_blocks,block_size,device_total_MiB,sched_num_gpu_blocks,sched_kv_cache_size_tokens,sched_kv_capacity_equiv_concurrency,runtime_max_num_seqs,num_attention_heads_per_rank,num_kv_heads_per_rank,total_num_kv_heads,kv_heads_replicated,observation_method
+local_preflight,1,0,cuda:0,GPU-250dd0ac-380f-5343-8f75-c87b558c5bf6,949.95,13297.76,14010.0,72.0,12243.21,65297,16,16302.56,65297,1044752,127.533203125,256,14,2,2,False,collective_rpc(callable)
