@@ -1,0 +1,234 @@
+{
+  "freeze_id": "FROZEN_FOR_H20_2026-08-09_20-00_CST",
+  "freeze_time_local": "2026-08-08T12:54:44+08:00",
+  "window": {
+    "start": "2026-08-09 20:00 Asia/Shanghai",
+    "approx_end": "2026-08-10 00:00 Asia/Shanghai",
+    "duration_hours": 4,
+    "hard_env_model_gate": "2026-08-09 21:00 Asia/Shanghai (CP_ENV_MODEL)",
+    "hard_stop_relative": "T+3:25"
+  },
+  "project": {
+    "lab_head": "8b20a122b6ce34e5a885cacfb0894b76dd51d3fe",
+    "lab_dirty_file_count": 31,
+    "vllm_src_head": "ee0da84ab9e04ac7610e28580af62c365e898389",
+    "vllm_src_dirty_baseline_expected": 22,
+    "vllm_src_dirty_file_count": 22,
+    "readiness": "READY_FOR_H20_EXECUTION",
+    "freeze_status": "FROZEN_FOR_H20_2026-08-09_20-00_CST"
+  },
+  "frozen_experiment": {
+    "scope": "TP + collective communication evidence only",
+    "out_of_scope": [
+      "PP",
+      "DP",
+      "EP",
+      "CP",
+      "P-D",
+      "compiled",
+      "quant",
+      "serving"
+    ],
+    "D1": "per-rank memory/KV via collective_rpc",
+    "D2": "steady-state decode batch 1/4/16/64, prompt 128, out 64",
+    "D3": "prefill 256/1024/4096, batch=1, out=1, max_model_len=8192",
+    "P1": "representative profiler workloads; per-call backend analysis",
+    "warmup_measure": ">=5 warmup + >=15 measure; summarize measure&success only",
+    "model_priority": "Qwen/Qwen2.5-7B-Instruct",
+    "model_fallback": "Qwen/Qwen2.5-1.5B-Instruct (time/network only; not second formal control)",
+    "tp_fallback": "if TP=4 unstable → TP=1/2"
+  },
+  "code_artifacts": [
+    {
+      "path": "scripts/m22_tensor_parallel.py",
+      "size_bytes": 44465,
+      "sha256": "079c8706cef771c4ab3dea2692d58050e3fca0f8a8110a75ede0d377834aa929"
+    },
+    {
+      "path": "scripts/m22_run_all.py",
+      "size_bytes": 8128,
+      "sha256": "1d11074e5bd1e7acb2a7a8159e1c180137351c3d18e8e76ef02b3b4827593e6e"
+    },
+    {
+      "path": "scripts/m22_preflight.sh",
+      "size_bytes": 6315,
+      "sha256": "4627b3bdad68deefc005c2618d6a4973f6fa7a1dc2eb18dc96671cb109966f3e"
+    },
+    {
+      "path": "scripts/m22_nccl_smoke.py",
+      "size_bytes": 5922,
+      "sha256": "8253402d3981426b444fcc41d6851ebfc0ab9f3bc250f5263a9e570dc19e04e0"
+    },
+    {
+      "path": "scripts/m22_trace_analyze.py",
+      "size_bytes": 9046,
+      "sha256": "e33d4a158a1c67c4abdae4874cda100524ca204c1833a061e6e8990991071668"
+    },
+    {
+      "path": "scripts/m22_figures.py",
+      "size_bytes": 6463,
+      "sha256": "25cea1e605652f1c4e150a7dc88a7f659cabea78e96a7478386aad44beb9e4e1"
+    },
+    {
+      "path": "scripts/check_invariants.py",
+      "size_bytes": 63912,
+      "sha256": "25f95f12f5792ae9d116e2ae779f1e9d6f8e62c1f563458f9ff919312a8fedb9"
+    },
+    {
+      "path": "scripts/reproduce.py",
+      "size_bytes": 14585,
+      "sha256": "3f73f3a3e06344fe97cb9721b2faee7b451c10bab7b4b06f86bfdcb2ff7c4507"
+    },
+    {
+      "path": "config/repro_manifest.yaml",
+      "size_bytes": 25386,
+      "sha256": "fc60892e30da05f84f58afb149f9dbd59e0f87188672b797c7d1a27fd057491f"
+    },
+    {
+      "path": "notes/m22/H20_RUNBOOK.md",
+      "size_bytes": 23907,
+      "sha256": "c487edf9533da61991816c24764c3e01f4590bc9d1a69f2ef27f03cca6ca6e7a"
+    },
+    {
+      "path": "notes/m22/tensor_parallel.md",
+      "size_bytes": 21112,
+      "sha256": "2086f738b411a278ad85c9ffb4bb07f2b21ead1a583f9678799ce5c332ed33a6"
+    },
+    {
+      "path": "MULTI_GPU_EXPERIMENT_PLAN.md",
+      "size_bytes": 24670,
+      "sha256": "b26d80b43061e550cf47256b7724158dcb0f44880b863b7c9592f63333d93842"
+    }
+  ],
+  "runtime_bundle": {
+    "path": "/home/ciaran/m22_offline/bundles/m22_runtime_bundle.tar.gz",
+    "filename": "m22_runtime_bundle.tar.gz",
+    "size_bytes": 83070,
+    "sha256": "ebc3c7d58b8ef63d747f4bfc59434fcee7dff840345f6e7ae57092e5226286b1",
+    "meta_txt": [
+      "bundle=m22_runtime_bundle.tar.gz",
+      "uncompressed_bytes=254592",
+      "compressed_bytes=83070",
+      "file_count=13",
+      "sha256=ebc3c7d58b8ef63d747f4bfc59434fcee7dff840345f6e7ae57092e5226286b1"
+    ],
+    "file_count": 13,
+    "cleanroom_report": "/home/ciaran/m22_offline/manifests/bundle_cleanroom_20260808_125518.log",
+    "cleanroom_result": "PASS"
+  },
+  "models": {
+    "primary_7b": {
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "local_path": "/home/ciaran/m22_offline/models/Qwen2.5-7B-Instruct",
+      "total_size_bytes": 15242807272,
+      "file_count": 15,
+      "manifest_sha256": "/home/ciaran/m22_offline/manifests/qwen2.5-7b.sha256",
+      "manifest_files_json": "/home/ciaran/m22_offline/manifests/qwen2.5-7b_files.json",
+      "config_checks": {
+        "architectures": [
+          "Qwen2ForCausalLM"
+        ],
+        "num_attention_heads": 28,
+        "num_key_value_heads": 4,
+        "hidden_size": 3584,
+        "num_hidden_layers": 28,
+        "intermediate_size": 18944,
+        "vocab_size": 152064,
+        "torch_dtype": "bfloat16",
+        "tie_word_embeddings": false
+      },
+      "safetensors": {
+        "mode": "sharded",
+        "index": "model.safetensors.index.json",
+        "shards": [
+          "model-00001-of-00004.safetensors",
+          "model-00002-of-00004.safetensors",
+          "model-00003-of-00004.safetensors",
+          "model-00004-of-00004.safetensors"
+        ],
+        "metadata_total_size": 15231233024,
+        "actual_shard_bytes": 15231271888,
+        "shard_bytes_match_meta": false
+      },
+      "readiness": "READY",
+      "note_on_shard_meta_mismatch": "index metadata.total_size differs from sum(shard sizes) by ~38KB; all indexed shards present; full per-file sha256 computed; tokenizer/config local_files_only smoke OK"
+    },
+    "fallback_1_5b": {
+      "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "local_path": "/home/ciaran/m22_offline/models/Qwen2.5-1.5B-Instruct",
+      "total_size_bytes": 3098955668,
+      "file_count": 7,
+      "manifest_sha256": "/home/ciaran/m22_offline/manifests/qwen2.5-1.5b.sha256",
+      "manifest_files_json": "/home/ciaran/m22_offline/manifests/qwen2.5-1.5b_files.json",
+      "config_checks": {
+        "architectures": [
+          "Qwen2ForCausalLM"
+        ],
+        "num_attention_heads": 12,
+        "num_key_value_heads": 2,
+        "hidden_size": 1536,
+        "num_hidden_layers": 28,
+        "torch_dtype": "bfloat16"
+      },
+      "structure_caveat": {
+        "tp4_kv_replication": true,
+        "note": "12 heads / 2 KV heads → TP=4 triggers KV head replication; memory/KV scaling must not be interpreted like 7B"
+      },
+      "readiness": "READY"
+    }
+  },
+  "wheelhouse": {
+    "path": "/home/ciaran/m22_offline/wheelhouse",
+    "contents": {
+      "package": "vllm",
+      "version": "0.24.0",
+      "filename": "vllm-0.24.0-cp38-abi3-manylinux_2_28_x86_64.whl",
+      "size_bytes": 279209310,
+      "sha256_pypi": "2d2831aeba311292250df0132dbc4d8e9f42c654536eaec48e6fe58acb1822cf",
+      "sha256_local": "2d2831aeba311292250df0132dbc4d8e9f42c654536eaec48e6fe58acb1822cf",
+      "url": "https://files.pythonhosted.org/packages/00/33/3f0abda52acff437a471cf3a2bf204213eb4102975b2677512cd76f2b45e/vllm-0.24.0-cp38-abi3-manylinux_2_28_x86_64.whl",
+      "requires_python": "<3.15,>=3.10",
+      "platform_assumption": "manylinux_2_28_x86_64 / abi3 cp38+",
+      "compatibility_claim": "CANDIDATE_ONLY — does NOT guarantee install on unknown H20 Python/CUDA/PyTorch/glibc",
+      "sdist_available": true,
+      "source_compile_fallback": "FORBIDDEN as normal path on H20"
+    },
+    "compatibility_claim": "CANDIDATE_ONLY — does NOT guarantee install on unknown H20",
+    "source_compile_fallback": "FORBIDDEN as normal path",
+    "readiness": "CANDIDATE_PREPARED"
+  },
+  "validation": {
+    "local_tp1_preflight": "prior READY_FOR_H20_EXECUTION (tag=local_preflight)",
+    "invariants_module_m22": "recognizes m22; PENDING without H20 data (correct)",
+    "mutation_tests": "prior T+O (do not re-run as redesign)",
+    "bundle_cleanroom": "PASS",
+    "trace_analyzer_synthetic": "PASS",
+    "model_7b_config_tokenizer_smoke": "PASS local_files_only",
+    "model_1_5b_config_tokenizer_smoke": "PASS local_files_only",
+    "full_sha256_models": true
+  },
+  "discipline": {
+    "no_modify_formal_m22_code_after_freeze": true,
+    "if_blocker_fix": [
+      "record reason",
+      "update sha256",
+      "re-run affected local tests",
+      "regenerate freeze manifest"
+    ]
+  },
+  "disk": {
+    "before_avail_bytes": 618885447680,
+    "after_avail_bytes": 603613106176,
+    "filesystem": "/dev/sdd"
+  },
+  "handoff_amendment_2026_08_09": {
+    "note": "Docs/Agent prompt/path conventions/frozen_runtime_snapshot added for internal-client H20 run. Formal code_artifacts hashes unchanged. Absolute /home/ciaran/m22_offline paths in this manifest are operator-local freeze snapshots only; use $OFFLINE/$REPO_ROOT on H20.",
+    "agent_entrypoint": "notes/m22/REMOTE_AGENT_PROMPT.md",
+    "frozen_snapshot_dir": "notes/m22/frozen_runtime_snapshot",
+    "workspace_drift": [
+      "scripts/check_invariants.py",
+      "config/repro_manifest.yaml"
+    ],
+    "remediation": "On H20 prefer runtime bundle extract, or copy frozen_runtime_snapshot over scripts/ and config/ before formal run"
+  }
+}

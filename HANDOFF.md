@@ -42,15 +42,15 @@
 | M13 | 首次上游 PR ★ | 🟡 | **PR #51017 已提交，等待 maintainer**（详见 §3） |
 | M16 | 项目整理 + 面试表达 | ✅ | README/图/三档表达 |
 
-### 第二阶段（M17–M26）：M17 刚完成
+### 第二阶段（M17–M26）：M17 / M19 主线收口；M22 待 H20
 | 模块 | 主题 | 状态 | 备注 |
 |---|---|:--:|---|
-| **M17** | Prefix Caching & Chunked Prefill | ✅ | **本次交接前刚完成**，详见 §4 |
-| **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | ⬜ | **建议的下一步**，见 §5 |
-| M19 | Speculative Decoding | ⬜ | 单卡可做（N-gram 起步） |
-| M20 | 服务化 + Triton | ⬜ | 单卡可入门 |
+| **M17** | Prefix Caching & Chunked Prefill | ✅ | **主线已收口**；三项可选扩展未执行、不阻塞后续（见 §4） |
+| **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | ⬜ | 需先获授权下载量化模型，见 §5 |
+| **M19** | Speculative Decoding | ✅ | **N-gram T+E+O CLOSED**（见 §4.2）；draft/EAGLE/MTP/Medusa/`k` sweep = Optional |
+| M20 | 服务化 + Triton | 🔄 | T+A+B smoke PASS；runtime 已解阻；same-runtime C 可行；**正式 C 未跑** → NOT COMPLETE；见 `notes/m20/b_triton_runtime_unblocked.md` |
 | M21 | 监控 + 容量规划（Prom/Grafana） | ⬜ | 单机起 |
-| M22 | TP/PP/DP/EP | ⬜ | ★**多卡门控**：无多卡时只允许 T+O，不得标 E/H |
+| M22 | TP/PP/DP/EP | 🔄 | ★**多卡**：TP 的 T+O 完成、`READY_FOR_H20` Frozen；E/H 等 2026-08-09 20:00 Asia/Shanghai 窗口 |
 | M23 | TensorRT-LLM 跨引擎 | ⬜ | 单卡可做但工程量大 |
 | M24 | CP / Ring Attention / P-D 分离 | ⬜ | ★**多卡门控** |
 | M25 | 压缩（蒸馏/剪枝/低秩） | ⬜ | 推理岗只需 T |
@@ -111,17 +111,57 @@
 | 「D 在长 prefill 那步拿不到输出」 | 与自己记录的原始 `steps_detail` 矛盾（实为 `d=1, p=2048, total=2049`，decode **仍被同批调度**） | **写机制解释前回去核对原始逐 step 记录** |
 | 「4 档 cold 全部 ≤ off、cold=7.42」 | 事实错误（实为 8.0051 > 7.8465），且 7.42 不在任何数据里；暴露"自动核对只覆盖表格、没覆盖正文叙述句" | **核对数字时要覆盖正文，不只是表格** |
 
-**M17 未完成项（如实标注，不要擅自勾选）**：
-- `[ ]` **I5-b 输出长度定量实验**：冻结设计要求扫 `max_tokens` 验证「APC 相对收益随输出变长而下降」。本轮所有请求都是 `max_tokens=1`（只测 prefill），**未执行**。（I5-a 理论边界确认已完成。）
-  → **这是一个小而完整的可接手任务**，见 §5 选项 C。
-- `[ ]` **E2 block 生命周期内省**（ref_cnt / 驱逐）：可选，需先验证 `block_pool` 内省 API 可读。
+**M17 主线已收口（2026-08-06）**。核心实验（E1 / E3-single / E3-concurrency）完成并核验；
+以下三项为**可选扩展，不阻塞后续模块**（manifest 标 `status: optional`，`reproduce.py --run` **不会**自动执行；
+`check_invariants --module m17` 显示为 PENDING —— 既不计通过也不计失败）：
+- `[ ]` **E3 no-chunk 生成正确性**：脚本已实现（`--shard e3-correctness`），**未执行**。
+- `[ ]` **I5-b 输出长度定量实验**：脚本已实现（`--shard e1-output-len-*`），**未执行**。
+- `[ ]` **E2 block 生命周期内省**（ref_cnt / 驱逐）：**脚本都未实现**，不为完成度强行做。
+
+**⚠ 必须随 M17 结论一起呈现的限制**：当前模型**不正式支持关闭 chunked prefill**
+（`vllm/engine/arg_utils.py:2476-2480` 明确告警 "may cause the engine to crash or produce
+incorrect outputs"），因此 E3 的现有结果**主要支持调度形态与延迟观察，不外推为普适的生成正确性保证**。
+
 - 已知**跑间波动**：同日两轮 P=1024/2048 的 median 差有 1–3ms 漂移（方向与显著性一致）；cold−off 的符号甚至在两轮间反转 → **亚毫秒级差异不作结论**。
 
 ---
 
-## 5. 下一步做什么（三个选项，建议先和所有者确认）
+## 4.2 M19 N-gram Speculative Decoding —— T+E+O CLOSED
 
-> ROADMAP 的官方"下一步"是 **M18 或 M19**（`ROADMAP.md` 末尾"当前下一步"）。以下按上手成本排序。
+**产出**：`notes/m19/{speculative_decoding.md,results.md}`、`scripts/m19_spec_decode.py`、
+`scripts/m19_figures.py`、`outputs/m19/*.csv` + `raw/*.jsonl`、`logs/m19/*`、
+`figures/{fig7_m19_acceptance,fig8_m19_speedup}.png`。**零 vLLM 产品源码改动。**
+**2026-08-08**：语义收口（不改数据）——统一 Coverage+Acceptance+Round Cost 模型；
+修正 overstated 表述（acceptance/length/`engine.step`/TPOT/`low_repeat`/correctness 等）。
+
+**网格**：2×2×3，180 measure；ngram `{method:ngram, prompt_lookup_min/max:3/5, num_speculative_tokens:3}`。
+
+| 结论 | 数据 / 证据强度 |
+|---|---|
+| Acceptance 随 workload/config 变化（**非**「完全由 workload」） | high（高初始 prompt 重叠）**1.000**；low（低初始重叠，**非**真正低输出重复）**0.75–0.85**；batch↔prompt confounding |
+| 机制：串行 execution rounds 下降 | `engine.step` 强 proxy：**128→33 / 56–62**（非严格纯 Decode Target Forward） |
+| 性能 | 完成延迟 −**72~75.5%** / −**54.8~57.4%**；**amortized TPOT**（≠ ITL）；吞吐大幅提升；12 组 CI 排除 0；Acceptance **非充分** |
+| KV capacity | planning 口径约 **−1.9%**（≠ allocator peak） |
+| 正确性 | 111/126 exact；batch-shape **可**致 divergence；未发现明确 Spec bug（**非**严格逐例排除） |
+
+**隐藏变量已写死**：两侧 `async_scheduling=False`、`disable_log_stats=False`。
+
+**Optional / Future（不阻塞）**：`k` sweep；true low-coverage/acceptance；profiler breakdown；
+larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa。
+
+---
+
+## 5. 下一步做什么（建议先和所有者确认）
+
+> **2026-08-09 更新（今晚 H20）**
+> - **优先**：4×H20 M22 TP E/H —— 窗口 **20:00 Asia/Shanghai**；**不提前登录**。
+> - **内部客户端 Agent**：入口 `notes/m22/README.md` → 粘贴 `notes/m22/REMOTE_AGENT_PROMPT.md`。
+> - **GitHub**：可推小文件（notes/m22、scripts/m22_*、Freeze、Agent Prompt）；**模型/wheel/formal tar 禁止进 Git**，用拖拽（`notes/m22/OPERATOR_DRAG_DROP.md`）。
+> - **代码主路径**：拖拽 `m22_runtime_bundle.tar.gz`（与 Freeze 一致）；GitHub clone 为文档/fallback。
+> - 就绪核对：`notes/m22/H20_READY_CHECKLIST.md`（E1–E5 现场项不得预勾）。
+> - M20 正式 C、M18 等：**H20 数据安全落地之后**再继续。
+>
+> 以下保留为背景（交接早期选项）。
 
 ### 选项 A · M18 量化路径深化（承接 M10）—— ROADMAP 首选
 - **要补的**：M10 已做 BF16 / FP8 W8A8 / FP8 KV；**M18 要补 W4A16（AWQ / GPTQ）**，并为 M23 的跨引擎对照做预备。

@@ -23,3 +23,13 @@ outputs/m7/traces/
 
 # M12 逐请求 bench 明细(含 generated_texts, 体积大, 可由脚本复现)
 outputs/m12/raw/
+
+# M22：Offline Pack / H20 回传暂存 / 大产物（永不入库）
+m22_offline/
+_h20_pull/
+**/m22_h20_formal_*.tar.gz
+**/m22_h20_formal_*.tar.gz.sha256
+outputs/m22/traces/
+*.safetensors
+*.whl
+wheelhouse/
