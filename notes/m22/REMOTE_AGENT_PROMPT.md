@@ -220,7 +220,7 @@ ls -lh "$OFFLINE/wheelhouse"/vllm-0.24.0*.whl 2>/dev/null
 # 身份（可写 global；值为固定要求）
 git config --global user.name >/dev/null 2>&1 || true
 git config --global user.name "CiaranCw"
-git config --global user.email "CiaranCw@users.noreply.github.com"
+git config --global user.email "1399538830@qq.com"
 git config --global --get user.name
 git config --global --get user.email
 
@@ -290,7 +290,7 @@ ls "${OFFLINE:-/nonexistent}/bundles/m22_runtime_bundle.tar.gz" 2>/dev/null
 - REPO_ROOT: <路径|未找到>
 - OFFLINE: <路径|未找到>  bundles/models/manifests/wheelhouse: OK/MISS
 - GitHub SSH/HTTPS: PASS/FAIL + 原始关键一行报错
-- git user.name/email:
+- git user.name/email:（期望 CiaranCw / 1399538830@qq.com）
 - HEAD（若有）:
 - GPU 数量与型号:  他人进程: 有/无
 - topo 摘要（NVLink/PCIe 一句话）:

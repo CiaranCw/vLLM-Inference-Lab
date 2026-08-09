@@ -25,9 +25,9 @@
 
 ## 2. Git 规则
 
-- **提交者必须只有 CiaranCw 一人**。**绝不添加 `Co-Authored-By:` / `Assisted-by:` 等任何 AI 署名 trailer**（历史上曾用 `filter-branch` 清理过，勿重犯）。
+- **提交者必须只有 CiaranCw 一人**（`user.name=CiaranCw`，`user.email=1399538830@qq.com`）。**绝不添加 `Co-Authored-By:` / `Assisted-by:` 等任何 AI 署名 trailer**（历史上曾用 `filter-branch` 清理过，勿重犯）。
   > 例外：**向 vLLM 上游提 PR 时**，上游 `AGENTS.md` 要求披露 AI 辅助 —— 那是另一个仓库、另一套规则，不适用于本仓库。
-- 提交前用 `git log -1 --format='%an <%ae>|%cn <%ce>'` 自查。
+- 提交前用 `git log -1 --format='%an <%ae>|%cn <%ce>'` 自查（期望 `CiaranCw <1399538830@qq.com>`）。
 - 本仓库**提交后直接 `git push origin main`**，无需每次询问（所有者已授权）。
 - **不得对 `../vllm-src` 执行破坏性 git 操作**：`reset --hard` / `clean -fd` / `checkout -- .` / `restore` / `stash` 一律禁止（该工作树有约 1226 行未提交的中文学习注释，是所有者的资产）。
 - 提交信息用中文，说清「做了什么 + 为什么 + 数据依据」。
@@ -87,6 +87,6 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0 # 引擎在进程内跑，trace 有序
 - [ ] 未完成的项标成未完成了？（不因"理论成立"而勾选）
 - [ ] 结论带了适用边界（单卡/eager/0.5B/WSL2/in-process）？
 - [ ] 改了实验脚本的话，重跑了受影响的数据、而不是只改文档？
-- [ ] `git log -1` 里只有 CiaranCw、没有 AI trailer？
+- [ ] `git log -1` 里是 `CiaranCw <1399538830@qq.com>`、没有 AI trailer？
 - [ ] `git -C ../vllm-src status --short | wc -l` 仍是 **22**（基线脏文件数，说明没动产品源码）？
 - [ ] `ROADMAP.md` / `notes/evidence_index.md` 同步了？

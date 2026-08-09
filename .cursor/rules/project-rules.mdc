@@ -18,7 +18,7 @@ alwaysApply: true
 - 错误不得静默吞掉（禁止 `|| true` 掩盖）；报告原始命令 + 原始报错 + 根因，然后询问。
 
 ## Git
-- **提交者只能是 CiaranCw**；**绝不添加 `Co-Authored-By:` / `Assisted-by:` 等 AI 署名 trailer**。
+- **提交者只能是 CiaranCw \<1399538830@qq.com\>**；**绝不添加 `Co-Authored-By:` / `Assisted-by:` 等 AI 署名 trailer**。
 - 本仓库提交后**直接 `git push origin main`**（已授权，无需每次询问）。
 - **禁止对 `../vllm-src` 做破坏性 git 操作**（`reset --hard` / `clean -fd` / `checkout -- .` / `restore` / `stash`）——该工作树有约 1583 行未提交的中文学习注释。
 - 提交信息用中文，说明「做了什么 + 为什么 + 数据依据」。

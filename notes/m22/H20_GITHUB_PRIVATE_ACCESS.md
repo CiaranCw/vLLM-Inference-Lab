@@ -8,7 +8,7 @@
 - GitHub 仓库：`github.com/CiaranCw/vLLM-Inference-Lab`（私有）
 - 远端项目根：`$REPO_ROOT`
 - Offline Pack：`$REPO_ROOT/m22_offline/`（整目录拖入，与 Git 互补）
-- 提交身份必须是 **CiaranCw**（本仓库 AGENTS 硬性规则；禁止 AI `Co-authored-by` trailer）
+- 提交身份必须是 **CiaranCw \<1399538830@qq.com\>**（本仓库 AGENTS：提交者姓名为 CiaranCw；禁止 AI `Co-authored-by` trailer）
 
 ---
 
@@ -18,7 +18,7 @@
 1. H20 上生成 SSH key（或准备 PAT）
 2. 把公钥 / PAT 加到 GitHub（本机浏览器操作）
 3. 远端测通：ssh -T git@github.com
-4. git config --global user.name / user.email（CiaranCw）
+4. git config --global user.name / user.email（CiaranCw / 1399538830@qq.com）
 5. git clone 私有仓 → $REPO_ROOT
 6. 拖入 m22_offline（若尚未拖）
 7. 再开实验；需要回传小摘要时再 commit/push
@@ -133,20 +133,21 @@ git remote set-url origin https://github.com/CiaranCw/vLLM-Inference-Lab.git
 
 ```bash
 git config --global user.name "CiaranCw"
-git config --global user.email "CiaranCw@users.noreply.github.com"
+git config --global user.email "1399538830@qq.com"
 # 可选：禁止本机乱改
 git config --global commit.gpgsign false
 
 # 自检
 git config --global --get user.name
 git config --global --get user.email
+# 期望：CiaranCw / 1399538830@qq.com
 ```
 
 每次 commit 后强制自检（本仓库规则）：
 
 ```bash
 git log -1 --format='%an <%ae>|%cn <%ce>|%B'
-# 作者/提交者必须是 CiaranCw；正文不得出现 Co-authored-by / Assisted-by / cursoragent
+# 作者/提交者必须是 CiaranCw <1399538830@qq.com>；正文不得出现 Co-authored-by / Assisted-by / cursoragent
 ```
 
 若工具自动注入 `Co-authored-by: Cursor`：**不要 push**；用干净 message 重写后再推（或只在本机整理后推）。
