@@ -28,12 +28,17 @@
 ## 双路径心智模型
 
 ```text
-操作者电脑                         H20（窗口内）
-───────────                        ────────────
-GitHub 小文件 clone      ──可选──►  $REPO_ROOT          [文档+代码 fallback]
-runtime bundle (~81KiB)  ──拖拽──►  解压到 $REPO_ROOT   [代码主路径，与 Freeze 一致]
-models / wheel (~18G)    ──拖拽──►  $REPO_ROOT/models   [大文件，永不进 GitHub]
-正式结果 tar/raw         ──回传──►  操作者本地校验       [优先；GitHub 只收小摘要]
+操作者电脑                              H20（窗口内）
+───────────                             ────────────
+GitHub clone/pull（小文件）   ──可选──►  $REPO_ROOT
+整目录 m22_offline（~18G）    ──拖拽──►  $REPO_ROOT/m22_offline/
+                                         ├─ bundles/   → 解压 Frozen 代码
+                                         ├─ models/    → $MODEL_PATH
+                                         ├─ manifests/ → sha256 校验
+                                         └─ wheelhouse/→ 可选 pip
+正式结果 tar/raw              ──回传──►  操作者本机校验（优先）
 ```
+
+**现行约定**：不再要求拆文件零散拖；**一次拖入完整 `m22_offline`**。详见 [OPERATOR_DRAG_DROP.md](OPERATOR_DRAG_DROP.md)。
 
 **诚实性**：没有带回并 `sha256sum -c` 通过的数据 = **没有实验**。不得把本地 5080 TP=1 preflight 写成 H20 多卡结果。

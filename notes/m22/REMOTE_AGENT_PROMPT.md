@@ -8,8 +8,15 @@
 ## 你是谁 / 你在哪
 
 你是在 **4×H20** 机器上协助执行 **vLLM Inference Lab · M22 Tensor Parallel** 正式实验的 Agent。  
-仓库根目录记为 `$REPO_ROOT`（git clone 或 runtime bundle 解压后的目录）。  
-**禁止**使用操作者笔记本上的绝对路径（如 `/home/ciaran/...`）。一律用 `$REPO_ROOT`、`$MODEL_PATH`、相对路径 `scripts/...`、`logs/m22/...`、`outputs/m22/...`。
+仓库根目录记为 `$REPO_ROOT`（git clone 解压后的项目根）。  
+**Offline Pack** 已由操作者**整目录拖入**，默认位于：
+
+```text
+$REPO_ROOT/m22_offline/
+  bundles/   models/   manifests/   wheelhouse/
+```
+
+**禁止**使用操作者笔记本上的绝对路径（如 `/home/ciaran/...`）。一律用 `$REPO_ROOT`、`$OFFLINE`、`$MODEL_PATH`、相对路径 `scripts/...`、`logs/m22/...`、`outputs/m22/...`。
 
 ---
 
@@ -24,39 +31,65 @@
 7. **有其他用户 GPU 进程 → 停下报告，不 kill、不 reset。**  
 8. **诚实性**：不伪造数据；不把 `local_preflight` 与 `h20_formal` 混写入同一 CSV；未跑完的项标未完成；数据推翻预期就改结论。  
 9. **回传**：由操作者本机主动 pull；你负责在远端打包 + checksum。没有 `sha256sum -c OK` 的数据 = **没有实验**。  
-10. **硬门禁**：**CP_ENV_MODEL @ 21:00 Asia/Shanghai**（模型未就绪则切 Path B/C 或降级，不要死等）；**HARD STOP @ T+3:25**（无条件进入打包/回传）。  
+10. **硬门禁**：**CP_ENV_MODEL @ 21:00 Asia/Shanghai**（模型未就绪则切 1.5B 或降级，不要死等）；**HARD STOP @ T+3:25**（无条件进入打包/回传）。  
 11. **不要修改**冻结实验矩阵、采样数（5 warmup + 15 measure）、tag 命名。  
-12. 工作区若存在漂移的 `scripts/check_invariants.py` / `config/repro_manifest.yaml`，正式跑前用  
-    `notes/m22/frozen_runtime_snapshot/` **覆盖**，或直接以 **runtime bundle 解压结果**为准（与 Freeze SHA 一致）。
+12. 正式跑前用 **`$OFFLINE/bundles` 中的 runtime bundle 解压**，或以 `notes/m22/frozen_runtime_snapshot/` 覆盖漂移的 invariants/repro。
 
 ---
 
 ## 开局：确认代码与路径
 
 ```bash
-cd "$REPO_ROOT"   # 若尚未定义：cd <项目根>; export REPO_ROOT="$PWD"
+# 1) 进入项目根（git clone 后的目录）
+cd <项目根>
+export REPO_ROOT="$PWD"
 export REMOTE_DIR="$REPO_ROOT"
+
+# 2) Offline Pack = 整目录拖入后的 m22_offline
+export OFFLINE="$REPO_ROOT/m22_offline"
+# 若实际拖到别处：export OFFLINE="<实际 m22_offline 路径>"（仍禁止本机 /home/ciaran/...）
+
+# 3) 必需环境变量（每个 tmux window 都要）
 export VLLM_ENABLE_V1_MULTIPROCESSING=0
 export VLLM_USE_FLASHINFER_SAMPLER=0
 unset VLLM_LAB_TRACE VLLM_LAB_M9_COALESCE
-mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces models wheelhouse
+mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces
+
+# 4) 核对 Offline Pack 布局
+test -d "$OFFLINE/bundles" && test -d "$OFFLINE/models" || {
+  echo "BLOCKED: 未找到 $OFFLINE/{bundles,models} —— 请操作者拖入完整 m22_offline 目录"
+  exit 1
+}
+ls -lh "$OFFLINE/bundles/m22_runtime_bundle.tar.gz"*
+ls -lh "$OFFLINE/models/Qwen2.5-7B-Instruct/config.json"
+ls -lh "$OFFLINE/models/Qwen2.5-1.5B-Instruct/config.json" 2>/dev/null || true
+ls -lh "$OFFLINE/wheelhouse"/vllm-0.24.0*.whl 2>/dev/null || true
 ```
 
-**代码对齐（二选一，优先 A）：**
+**代码对齐（优先用 Offline Pack 内的 Frozen bundle）：**
 
-- **A（推荐）**：操作者已拖拽 `m22_runtime_bundle.tar.gz` + `.sha256`  
-  ```bash
-  cd "$REPO_ROOT"
-  sha256sum -c m22_runtime_bundle.tar.gz.sha256
-  # 期望：ebc3c7d58b8ef63d747f4bfc59434fcee7dff840345f6e7ae57092e5226286b1
-  tar -xzf m22_runtime_bundle.tar.gz
-  ```
-- **B**：仅有 GitHub clone → 核对 `notes/m22/M22_EXECUTION_FREEZE_MANIFEST.md` 中 m22 脚本 sha256；并执行：  
-  ```bash
-  mkdir -p scripts config
-  cp notes/m22/frozen_runtime_snapshot/check_invariants.py scripts/check_invariants.py
-  cp notes/m22/frozen_runtime_snapshot/repro_manifest.yaml config/repro_manifest.yaml
-  ```
+```bash
+cd "$REPO_ROOT"
+cp -f "$OFFLINE/bundles/m22_runtime_bundle.tar.gz" \
+      "$OFFLINE/bundles/m22_runtime_bundle.tar.gz.sha256" .
+sha256sum -c m22_runtime_bundle.tar.gz.sha256
+# 期望：ebc3c7d58b8ef63d747f4bfc59434fcee7dff840345f6e7ae57092e5226286b1
+tar -xzf m22_runtime_bundle.tar.gz
+```
+
+若尚无 Git 文档树、仅有 bundle：解压后仍以 `$REPO_ROOT` 为根继续。  
+若只用 GitHub clone、暂无 bundle：再用  
+`notes/m22/frozen_runtime_snapshot/` 覆盖 `scripts/check_invariants.py` 与 `config/repro_manifest.yaml`。
+
+**模型路径（默认走 Offline Pack，不必再复制到 `$REPO_ROOT/models`）：**
+
+```bash
+export MODEL_PATH="$OFFLINE/models/Qwen2.5-7B-Instruct"
+# Path C fallback：
+# export MODEL_PATH="$OFFLINE/models/Qwen2.5-1.5B-Instruct"
+# 校验（在 $OFFLINE/models/... 目录内对照 manifests）：
+#   cd "$MODEL_PATH" && sha256sum -c "$OFFLINE/manifests/qwen2.5-7b.sha256"
+```
 
 阅读顺序：`notes/m22/README.md` → 本 Prompt → `H20_RUNBOOK.md` Stage 2 起。
 
@@ -64,16 +97,14 @@ mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces models wheelhouse
 
 ## 执行顺序（不得跳步；Go/No-Go 失败则停）
 
-对照 Runbook Stage 编号：
-
 | 顺序 | 动作 | 命令要点 |
 |---|---|---|
 | 1 | tmux | `tmux new -s m22` |
 | 2 | Preflight | `bash scripts/m22_preflight.sh 2>&1 \| tee logs/m22/preflight.log` |
 | 3 | Transfer test | `python scripts/m22_run_all.py --tag h20_formal --transfer-test`；通知操作者 **Pull 0** |
 | 4 | NCCL smoke | `python scripts/m22_nccl_smoke.py 2>&1 \| tee logs/m22/nccl_smoke.log` |
-| 5 | vLLM 环境 | 确认 `vllm==0.24.0`；写 `logs/m22/environment.txt`（含 `nvidia-smi topo -m`） |
-| 6 | 模型 | Path A 下载或等待拖拽；`export MODEL_PATH=...`；校验 config heads/kv；**21:00 门禁** |
+| 5 | vLLM 环境 | 确认 `vllm==0.24.0`；失败时可试 `pip install --no-index --find-links="$OFFLINE/wheelhouse" "vllm==0.24.0"`（**candidate，不保证**）；写 `logs/m22/environment.txt`（含 `nvidia-smi topo -m`） |
+| 6 | 模型 | 默认 `$OFFLINE/models/...`；Path A 仅当未拖包且 HF 可用；校验 config；**21:00 门禁** |
 | 7 | TP smoke | `python scripts/m22_run_all.py --tag h20_smoke --tp 1,2,4 --quick --model "$MODEL_PATH"` |
 | 8 | 正式 | `python scripts/m22_run_all.py --tag h20_formal --tp 1,2,4 --model "$MODEL_PATH"` |
 | 9 | 可选 profile | `python scripts/m22_run_all.py --tag h20_formal --tp 2,4 --profile --model "$MODEL_PATH"` |
@@ -83,7 +114,7 @@ mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces models wheelhouse
 | 12 | 打包 | `python scripts/m22_run_all.py --tag h20_formal --package` |
 | 13 | 通知操作者 Final Pull | 给出 tar 路径与 sha256；等待其本机 `sha256sum -c` OK |
 
-增量回传提醒：TP=1/2 的 D1+D2 完成后催 **Pull 1**；TP=4/D3 后 **Pull 2**。
+增量回传：TP=1/2 的 D1+D2 完成后催 **Pull 1**；TP=4/D3 后 **Pull 2**。
 
 ---
 
@@ -91,7 +122,7 @@ mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces models wheelhouse
 
 1. TP=4 不稳定 → 只保 TP=1/2  
 2. 时间不够 → 砍 D3 的 4096 → 再砍 D2 的 batch=64  
-3. 7B 未就绪且过 21:00 → Path C：`Qwen2.5-1.5B-Instruct`（注明 KV 复制语义）  
+3. 7B 有问题且过 21:00 → `MODEL_PATH="$OFFLINE/models/Qwen2.5-1.5B-Instruct"`（注明 KV 复制）  
 4. Profiler 失败 → 记 `observation_gap`，主实验继续；**禁止用延迟差反推通信**  
 5. 回传失败 → **立刻停止扩实验，优先修 transfer**
 
@@ -107,17 +138,12 @@ mkdir -p logs/m22 outputs/m22/raw outputs/m22/traces models wheelhouse
 
 ## 汇报格式（对操作者）
 
-每个阶段结束用中文简报：
+每个阶段结束用中文简报：完成/失败（原始报错摘要）、产物相对路径、Go/No-Go、下一步或阻塞项。
 
-- 完成了什么 / 失败了什么（贴原始报错摘要）  
-- 产物相对路径（`logs/m22/...`、`outputs/m22/raw/...`）  
-- Go/No-Go 判定  
-- 下一阶段是否可继续；若阻塞，需要操作者拖拽/回传什么  
-
-**禁止**：伪装成功、跳过 Stage、把 smoke/`--quick` 数据标成正式 `h20_formal`、把 host-5080 数字当 H20 结论。
+**禁止**：伪装成功、跳过 Stage、把 smoke/`--quick` 标成 `h20_formal`、把 host-5080 数字当 H20 结论。
 
 ---
 
 ## 你无法做到时
 
-你若无法 SSH、无法看见 GPU、无法访问 `$REPO_ROOT`：明确说 **BLOCKED**，列出缺的权限/文件，等待操作者。不要假装已跑完。
+无法 SSH / 看不见 GPU / 找不到 `$REPO_ROOT` 或 `$OFFLINE`：明确说 **BLOCKED**，列出缺什么，等待操作者。不要假装已跑完。
