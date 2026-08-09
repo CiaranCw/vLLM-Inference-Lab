@@ -149,3 +149,168 @@ export MODEL_PATH="$OFFLINE/models/Qwen2.5-7B-Instruct"
 ## 你无法做到时
 
 无法 SSH / 看不见 GPU / 找不到 `$REPO_ROOT` 或 `$OFFLINE`：明确说 **BLOCKED**，列出缺什么，等待操作者。不要假装已跑完。
+
+---
+
+## Phase 0 · 探索与就绪探测（先做；必要时再请操作者接入）
+
+> **默认模式**：先只做本 Phase 的只读/可逆探测与最小配置，产出一份中文 **探索报告**。  
+> **未宣布 Phase 0 = READY 前，禁止**进入上文「执行顺序」里的正式 TP smoke / `h20_formal` / 长时间 GPU 负载。  
+> 需要操作者介入时：列出 **精确动作**（复制公钥、拖目录、加 Deploy key 等），然后 **停下等待**；不要空转重试刷屏。
+
+### 0.0 目标
+
+在不烧机时的前提下，弄清：机器能不能跑 M22、代码/Offline Pack 在哪、私有 GitHub 能不能拉、缺什么必须人来补。
+
+### 0.1 发现工作区（只读）
+
+```bash
+date -Iseconds; hostname; whoami; pwd; uname -srmo
+echo "TMUX=${TMUX:-<unset>}"
+# 常见落点：自行 find/ls，不要假设本机路径
+ls -la
+find "$HOME" -maxdepth 3 -type d \( -name 'vLLM-Inference-Lab' -o -name 'vllm-inference-lab' -o -name 'm22_offline' \) 2>/dev/null | head -40
+```
+
+判定并写入报告：
+
+| 发现 | 动作 |
+|---|---|
+| 已有 git 项目根 | `export REPO_ROOT=<该路径>` |
+| 仅有 `m22_offline` | 记路径为候选 `$OFFLINE`；项目根可能需 clone 或仅用 bundle 解压目录 |
+| 什么都没有 | **NEED_HUMAN**：请操作者拖入 `m22_offline` 和/或完成 Git 认证后 clone |
+
+### 0.2 时间窗与 GPU 快照（只读）
+
+```bash
+date -Iseconds
+# 对照：正式实验仅允许 2026-08-09 20:00 Asia/Shanghai 之后
+command -v nvidia-smi && nvidia-smi -L
+nvidia-smi --query-gpu=index,name,memory.total,memory.used,driver_version --format=csv
+nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+nvidia-smi topo -m 2>/dev/null | head -40
+```
+
+- GPU < 4 → 报告；正式 TP=4 不可用，只能讨论降级。  
+- 有他人进程 → **BLOCKED_NEED_HUMAN**（不 kill）。  
+- 未到 20:00 → 只允许 Phase 0 探测与文档/Git 配置，**禁止**正式实验。
+
+### 0.3 Offline Pack（整目录）
+
+```bash
+# 若已定位
+export OFFLINE="${OFFLINE:-$REPO_ROOT/m22_offline}"
+ls -la "$OFFLINE" 2>/dev/null || echo "NO_OFFLINE_YET"
+for p in bundles models manifests wheelhouse; do
+  [ -d "$OFFLINE/$p" ] && echo "OK $p" || echo "MISS $p"
+done
+ls -lh "$OFFLINE/bundles/m22_runtime_bundle.tar.gz" 2>/dev/null
+ls -lh "$OFFLINE/models/Qwen2.5-7B-Instruct/config.json" 2>/dev/null
+ls -lh "$OFFLINE/models/Qwen2.5-1.5B-Instruct/config.json" 2>/dev/null
+ls -lh "$OFFLINE/wheelhouse"/vllm-0.24.0*.whl 2>/dev/null
+```
+
+缺 `bundles` 或 `models` → **NEED_HUMAN：请拖入完整 m22_offline 到 $REPO_ROOT/m22_offline/**。
+
+### 0.4 私有 GitHub 可达性（可做最小配置，密钥勿入库）
+
+对照 `notes/m22/H20_GITHUB_PRIVATE_ACCESS.md`（若尚无该文件，按下列最小步骤）：
+
+```bash
+# 身份（可写 global；值为固定要求）
+git config --global user.name >/dev/null 2>&1 || true
+git config --global user.name "CiaranCw"
+git config --global user.email "CiaranCw@users.noreply.github.com"
+git config --global --get user.name
+git config --global --get user.email
+
+# SSH 探测
+ssh -o BatchMode=yes -o ConnectTimeout=8 -T git@github.com 2>&1 || true
+# 若失败且疑似拦 22：可试配置 ssh.github.com:443（见私有访问文档），再测一次
+```
+
+| 结果 | 你做的事 |
+|---|---|
+| `Hi ... authenticated` | 继续：`git clone`/`pull`（若还没有 `$REPO_ROOT`） |
+| `Permission denied (publickey)` | 若尚无 key：在 H20 `ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github -N ""`，**只把 .pub 内容贴给操作者** → **NEED_HUMAN：请把公钥加到 GitHub SSH/Deploy key** → **停下等待** |
+| 连接超时 | 试 443；仍失败 → **NEED_HUMAN：改用 PAT 或放弃 Git，仅拖代码树** |
+| HTTPS 才通 | **NEED_HUMAN：请提供/粘贴 PAT 的使用方式（不要让 Agent 把 PAT 写入仓库文件）** |
+
+Clone（仅认证已通时）：
+
+```bash
+git clone git@github.com:CiaranCw/vLLM-Inference-Lab.git
+cd vLLM-Inference-Lab && export REPO_ROOT="$PWD"
+git rev-parse --short HEAD
+git status -sb
+```
+
+**禁止**：把私钥、PAT、`.pub` 以外的秘密写进 `notes/` 或任何将要 commit 的路径。
+
+### 0.5 Python / vLLM 探测（短、可失败）
+
+```bash
+command -v python3; python3 -V
+python3 - <<'PY'
+import importlib.util
+for m in ("torch","vllm"):
+    print(m, "YES" if importlib.util.find_spec(m) else "NO")
+PY
+python3 - <<'PY'
+try:
+  import torch, vllm
+  print("torch", torch.__version__, "cuda", torch.version.cuda, "avail", torch.cuda.is_available(), "ngpu", torch.cuda.device_count())
+  print("vllm", vllm.__version__)
+except Exception as e:
+  print("IMPORT_FAIL", type(e).__name__, e)
+PY
+```
+
+- 无 vLLM → 记「Stage 5 待装」；可注明 `$OFFLINE/wheelhouse` 是否存在；**Phase 0 不要**开始长编译。  
+- 版本不是 0.24.0 → 记入报告，正式阶段再按硬约束处理。
+
+### 0.6 文档与 Freeze 入口是否可见
+
+```bash
+cd "${REPO_ROOT:-.}"
+ls notes/m22/REMOTE_AGENT_PROMPT.md notes/m22/H20_RUNBOOK.md notes/m22/H20_GITHUB_PRIVATE_ACCESS.md 2>/dev/null
+ls scripts/m22_preflight.sh scripts/m22_run_all.py 2>/dev/null
+# 若只有 offline bundle：
+ls "${OFFLINE:-/nonexistent}/bundles/m22_runtime_bundle.tar.gz" 2>/dev/null
+```
+
+### 0.7 探索报告模板（必须输出给操作者）
+
+用中文填写，缺什么写什么，**不要伪装成功**：
+
+```text
+## M22 Phase 0 探索报告
+- 时间（远端 date）:
+- hostname / user / 是否在 tmux:
+- REPO_ROOT: <路径|未找到>
+- OFFLINE: <路径|未找到>  bundles/models/manifests/wheelhouse: OK/MISS
+- GitHub SSH/HTTPS: PASS/FAIL + 原始关键一行报错
+- git user.name/email:
+- HEAD（若有）:
+- GPU 数量与型号:  他人进程: 有/无
+- topo 摘要（NVLink/PCIe 一句话）:
+- python / torch / vllm:
+- 窗口：未到 20:00 / 已到 / 未知
+- NEED_HUMAN 列表（每条一个可执行动作）:
+  1.
+- Phase 0 结论: READY_FOR_STAGE2 | BLOCKED | WAITING_HUMAN
+- 下一步建议: <等你接入 | 开始 Runbook Stage2 preflight | 仅补齐 Git/拖包>
+```
+
+### 0.8 何时请操作者接入（触发器）
+
+出现任一项就 **停下并 @ 操作者**，不要自行发明绕过：
+
+1. 需要把 SSH **公钥加到 GitHub** / 需要 PAT  
+2. 需要拖入或补全 `m22_offline`  
+3. GPU 被他人占用或不足 4 卡且你无法判定策略  
+4. 网络策略导致 GitHub/HF 全不可达，需改通道  
+5. 任何需要 sudo、改系统包、杀进程、reset GPU 的事  
+6. 正式窗口未到但有人要求开跑正式实验  
+
+操作者回复并完成动作后：从 **0.1 或失败项** 续跑 Phase 0，直到结论为 `READY_FOR_STAGE2`，再进入上文「开局：确认代码与路径」与「执行顺序」。
