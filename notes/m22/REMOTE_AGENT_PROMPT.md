@@ -18,6 +18,8 @@ $REPO_ROOT/m22_offline/
 
 **禁止**使用操作者笔记本上的绝对路径（如 `/home/ciaran/...`）。一律用 `$REPO_ROOT`、`$OFFLINE`、`$MODEL_PATH`、相对路径 `scripts/...`、`logs/m22/...`、`outputs/m22/...`。
 
+仓库为**私有**：H20 需先按 [`H20_GITHUB_PRIVATE_ACCESS.md`](H20_GITHUB_PRIVATE_ACCESS.md) 配好 SSH/PAT 与 `user.name=CiaranCw`，才能 `clone`/`pull`/`push`。密钥与 PAT **禁止**写入本 Prompt 或仓库文件；认证未通时报 **BLOCKED**。
+
 ---
 
 ## 硬约束（违反即停）

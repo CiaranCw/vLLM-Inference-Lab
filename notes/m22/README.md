@@ -7,14 +7,15 @@
 ## 给内部客户端 Agent 的入口
 
 1. **先读并严格执行**：[REMOTE_AGENT_PROMPT.md](REMOTE_AGENT_PROMPT.md)（可整份粘贴为系统/任务 Prompt）
-2. **命令级手册**：[H20_RUNBOOK.md](H20_RUNBOOK.md)（Stage 0–14）
-3. **传输与 GitHub 边界**：[H20_GITHUB_AND_UPLOAD.md](H20_GITHUB_AND_UPLOAD.md)
-4. **路径约定（禁止本机绝对路径）**：[H20_PATH_CONVENTIONS.md](H20_PATH_CONVENTIONS.md)
-5. **操作者拖拽清单**：[OPERATOR_DRAG_DROP.md](OPERATOR_DRAG_DROP.md)
-6. **就绪确认**：[H20_READY_CHECKLIST.md](H20_READY_CHECKLIST.md)
-7. **冻结记录**：[M22_EXECUTION_FREEZE_MANIFEST.md](M22_EXECUTION_FREEZE_MANIFEST.md)（+ JSON）
-8. **理论 T+O**：[tensor_parallel.md](tensor_parallel.md)
-9. **矩阵 / 成功线**：[`../../MULTI_GPU_EXPERIMENT_PLAN.md`](../../MULTI_GPU_EXPERIMENT_PLAN.md)
+2. **私有 GitHub 认证**：[H20_GITHUB_PRIVATE_ACCESS.md](H20_GITHUB_PRIVATE_ACCESS.md)（H20 不能匿名拉私有仓时必做）
+3. **命令级手册**：[H20_RUNBOOK.md](H20_RUNBOOK.md)（Stage 0–14）
+4. **传输与 GitHub 边界**：[H20_GITHUB_AND_UPLOAD.md](H20_GITHUB_AND_UPLOAD.md)
+5. **路径约定（禁止本机绝对路径）**：[H20_PATH_CONVENTIONS.md](H20_PATH_CONVENTIONS.md)
+6. **操作者拖拽清单**：[OPERATOR_DRAG_DROP.md](OPERATOR_DRAG_DROP.md)
+7. **就绪确认**：[H20_READY_CHECKLIST.md](H20_READY_CHECKLIST.md)
+8. **冻结记录**：[M22_EXECUTION_FREEZE_MANIFEST.md](M22_EXECUTION_FREEZE_MANIFEST.md)（+ JSON）
+9. **理论 T+O**：[tensor_parallel.md](tensor_parallel.md)
+10. **矩阵 / 成功线**：[`../../MULTI_GPU_EXPERIMENT_PLAN.md`](../../MULTI_GPU_EXPERIMENT_PLAN.md)
 
 ## 代码与冻结快照
 
