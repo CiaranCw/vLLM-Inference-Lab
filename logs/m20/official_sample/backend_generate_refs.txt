@@ -1,0 +1,13 @@
+42:from utils.request import EmbedRequest, GenerateRequest
+449:                # Stop checking for cancellation if the last response is generated.
+450:                if not response_state["last_response_generated"]:
+478:            request_task_name = "generate"
+507:            "last_response_generated": False,  # last response ready but not yet sent
+513:            if request_task_name == "generate":
+515:                    request = GenerateRequest(
+517:                        self._llm_engine.generate,
+524:                    request = GenerateRequest(
+526:                        self._llm_engine.generate,
+556:                        response_state["last_response_generated"] = True
+580:                        response_state["last_response_generated"] = True
+587:                if request_task_name == "generate":

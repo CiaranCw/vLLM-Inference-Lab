@@ -1,0 +1,18 @@
+# Copied/adapted from Triton vLLM backend sample (minimal).
+# Actual I/O schema is handled by the vLLM backend; do not invent extra
+# generate-endpoint fields here. REPORT_CUSTOM_METRICS enables vllm: metrics.
+backend: "vllm"
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_MODEL
+  }
+]
+
+parameters: {
+  key: "REPORT_CUSTOM_METRICS"
+  value: {
+    string_value: "true"
+  }
+}

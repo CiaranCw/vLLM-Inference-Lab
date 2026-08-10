@@ -1,0 +1,242 @@
+=== 2026-08-08T19:43:18+08:00 Docker install start ===
+codename=resolute
+Ign:1 file:/var/cuda-repo-wsl-ubuntu-11-6-local  InRelease
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Hit:5 http://archive.ubuntu.com/ubuntu resolute InRelease
+Hit:6 http://security.ubuntu.com/ubuntu resolute-security InRelease
+Get:7 http://archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+Hit:8 http://archive.ubuntu.com/ubuntu resolute-backports InRelease
+Get:9 http://archive.ubuntu.com/ubuntu resolute-updates/main amd64 Packages [446 kB]
+Get:10 http://archive.ubuntu.com/ubuntu resolute-updates/universe amd64 Packages [235 kB]
+Get:11 http://archive.ubuntu.com/ubuntu resolute-updates/multiverse amd64 Packages [11.3 kB]
+Fetched 830 kB in 3s (295 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+ca-certificates is already the newest version (20260601~26.04.1).
+ca-certificates set to manually installed.
+curl is already the newest version (8.18.0-1ubuntu2.3).
+Solving dependencies...
+0 upgraded, 0 newly installed, 0 to remove and 40 not upgraded.
+Ign:1 file:/var/cuda-repo-wsl-ubuntu-11-6-local  InRelease
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Get:5 https://download.docker.com/linux/ubuntu resolute InRelease [32.5 kB]
+Get:6 https://download.docker.com/linux/ubuntu resolute/stable amd64 Packages [23.4 kB]
+Hit:7 http://archive.ubuntu.com/ubuntu resolute InRelease
+Hit:8 http://archive.ubuntu.com/ubuntu resolute-updates InRelease
+Hit:9 http://security.ubuntu.com/ubuntu resolute-security InRelease
+Hit:10 http://archive.ubuntu.com/ubuntu resolute-backports InRelease
+Fetched 55.8 kB in 1s (50.7 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Solving dependencies...
+The following additional packages will be installed:
+  docker-ce-rootless-extras iptables libip4tc2 libip6tc2
+  libnetfilter-conntrack3 libnfnetlink0 libnftables1 libnftnl11 nftables pigz
+Suggested packages:
+  cgroupfs-mount | cgroup-lite docker-model-plugin firewalld
+The following NEW packages will be installed:
+  containerd.io docker-buildx-plugin docker-ce docker-ce-cli
+  docker-ce-rootless-extras docker-compose-plugin iptables libip4tc2 libip6tc2
+  libnetfilter-conntrack3 libnfnetlink0 libnftables1 libnftnl11 nftables pigz
+0 upgraded, 15 newly installed, 0 to remove and 40 not upgraded.
+Need to get 103 MB of archives.
+After this operation, 399 MB of additional disk space will be used.
+Get:1 https://download.docker.com/linux/ubuntu resolute/stable amd64 containerd.io amd64 2.3.3-1~ubuntu.26.04~resolute [22.7 MB]
+Get:2 http://archive.ubuntu.com/ubuntu resolute/main amd64 libip4tc2 amd64 1.8.11-2ubuntu3 [24.2 kB]
+Get:3 https://download.docker.com/linux/ubuntu resolute/stable amd64 docker-ce-cli amd64 5:29.7.2-1~ubuntu.26.04~resolute [17.0 MB]
+Get:4 http://archive.ubuntu.com/ubuntu resolute/main amd64 libip6tc2 amd64 1.8.11-2ubuntu3 [24.4 kB]
+Get:5 http://archive.ubuntu.com/ubuntu resolute/main amd64 libnfnetlink0 amd64 1.0.2-3build1 [15.1 kB]
+Get:6 http://archive.ubuntu.com/ubuntu resolute/main amd64 libnetfilter-conntrack3 amd64 1.1.1-1 [47.5 kB]
+Get:7 https://download.docker.com/linux/ubuntu resolute/stable amd64 docker-ce amd64 5:29.7.2-1~ubuntu.26.04~resolute [24.0 MB]
+Get:8 http://archive.ubuntu.com/ubuntu resolute/main amd64 libnftnl11 amd64 1.3.1-1 [72.3 kB]
+Get:9 http://archive.ubuntu.com/ubuntu resolute/main amd64 iptables amd64 1.8.11-2ubuntu3 [381 kB]
+Get:10 http://archive.ubuntu.com/ubuntu resolute/main amd64 libnftables1 amd64 1.1.6-1 [390 kB]
+Get:11 http://archive.ubuntu.com/ubuntu resolute/main amd64 nftables amd64 1.1.6-1 [76.2 kB]
+Get:12 http://archive.ubuntu.com/ubuntu resolute/universe amd64 pigz amd64 2.8-1build1 [66.8 kB]
+Get:13 https://download.docker.com/linux/ubuntu resolute/stable amd64 docker-buildx-plugin amd64 0.36.1-1~ubuntu.26.04~resolute [17.2 MB]
+Get:14 https://download.docker.com/linux/ubuntu resolute/stable amd64 docker-ce-rootless-extras amd64 5:29.7.2-1~ubuntu.26.04~resolute [10.2 MB]
+Get:15 https://download.docker.com/linux/ubuntu resolute/stable amd64 docker-compose-plugin amd64 5.4.0-1~ubuntu.26.04~resolute [11.1 MB]
+Fetched 103 MB in 10s (10.6 MB/s)
+Selecting previously unselected package containerd.io.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 58024 files and directories currently installed.)
+Preparing to unpack .../00-containerd.io_2.3.3-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking containerd.io (2.3.3-1~ubuntu.26.04~resolute) ...
+Selecting previously unselected package docker-ce-cli.
+Preparing to unpack .../01-docker-ce-cli_5%3a29.7.2-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking docker-ce-cli (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Selecting previously unselected package libip4tc2:amd64.
+Preparing to unpack .../02-libip4tc2_1.8.11-2ubuntu3_amd64.deb ...
+Unpacking libip4tc2:amd64 (1.8.11-2ubuntu3) ...
+Selecting previously unselected package libip6tc2:amd64.
+Preparing to unpack .../03-libip6tc2_1.8.11-2ubuntu3_amd64.deb ...
+Unpacking libip6tc2:amd64 (1.8.11-2ubuntu3) ...
+Selecting previously unselected package libnfnetlink0:amd64.
+Preparing to unpack .../04-libnfnetlink0_1.0.2-3build1_amd64.deb ...
+Unpacking libnfnetlink0:amd64 (1.0.2-3build1) ...
+Selecting previously unselected package libnetfilter-conntrack3:amd64.
+Preparing to unpack .../05-libnetfilter-conntrack3_1.1.1-1_amd64.deb ...
+Unpacking libnetfilter-conntrack3:amd64 (1.1.1-1) ...
+Selecting previously unselected package libnftnl11:amd64.
+Preparing to unpack .../06-libnftnl11_1.3.1-1_amd64.deb ...
+Unpacking libnftnl11:amd64 (1.3.1-1) ...
+Selecting previously unselected package iptables.
+Preparing to unpack .../07-iptables_1.8.11-2ubuntu3_amd64.deb ...
+Unpacking iptables (1.8.11-2ubuntu3) ...
+Selecting previously unselected package libnftables1:amd64.
+Preparing to unpack .../08-libnftables1_1.1.6-1_amd64.deb ...
+Unpacking libnftables1:amd64 (1.1.6-1) ...
+Selecting previously unselected package nftables.
+Preparing to unpack .../09-nftables_1.1.6-1_amd64.deb ...
+Unpacking nftables (1.1.6-1) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../10-docker-ce_5%3a29.7.2-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking docker-ce (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Selecting previously unselected package pigz.
+Preparing to unpack .../11-pigz_2.8-1build1_amd64.deb ...
+Unpacking pigz (2.8-1build1) ...
+Selecting previously unselected package docker-buildx-plugin.
+Preparing to unpack .../12-docker-buildx-plugin_0.36.1-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking docker-buildx-plugin (0.36.1-1~ubuntu.26.04~resolute) ...
+Selecting previously unselected package docker-ce-rootless-extras.
+Preparing to unpack .../13-docker-ce-rootless-extras_5%3a29.7.2-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking docker-ce-rootless-extras (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Selecting previously unselected package docker-compose-plugin.
+Preparing to unpack .../14-docker-compose-plugin_5.4.0-1~ubuntu.26.04~resolute_amd64.deb ...
+Unpacking docker-compose-plugin (5.4.0-1~ubuntu.26.04~resolute) ...
+Setting up libip4tc2:amd64 (1.8.11-2ubuntu3) ...
+Setting up libip6tc2:amd64 (1.8.11-2ubuntu3) ...
+Setting up libnftnl11:amd64 (1.3.1-1) ...
+Setting up docker-buildx-plugin (0.36.1-1~ubuntu.26.04~resolute) ...
+Setting up containerd.io (2.3.3-1~ubuntu.26.04~resolute) ...
+Created symlink '/etc/systemd/system/multi-user.target.wants/containerd.service' → '/usr/lib/systemd/system/containerd.service'.
+Setting up docker-compose-plugin (5.4.0-1~ubuntu.26.04~resolute) ...
+Setting up docker-ce-cli (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Setting up pigz (2.8-1build1) ...
+Setting up libnfnetlink0:amd64 (1.0.2-3build1) ...
+Setting up docker-ce-rootless-extras (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Setting up libnftables1:amd64 (1.1.6-1) ...
+Setting up nftables (1.1.6-1) ...
+Setting up libnetfilter-conntrack3:amd64 (1.1.1-1) ...
+Setting up iptables (1.8.11-2ubuntu3) ...
+update-alternatives: using /usr/sbin/iptables-legacy to provide /usr/sbin/iptables (iptables) in auto mode
+update-alternatives: using /usr/sbin/ip6tables-legacy to provide /usr/sbin/ip6tables (ip6tables) in auto mode
+update-alternatives: using /usr/sbin/iptables-nft to provide /usr/sbin/iptables (iptables) in auto mode
+update-alternatives: using /usr/sbin/ip6tables-nft to provide /usr/sbin/ip6tables (ip6tables) in auto mode
+update-alternatives: using /usr/sbin/arptables-nft to provide /usr/sbin/arptables (arptables) in auto mode
+update-alternatives: using /usr/sbin/ebtables-nft to provide /usr/sbin/ebtables (ebtables) in auto mode
+Setting up docker-ce (5:29.7.2-1~ubuntu.26.04~resolute) ...
+Created symlink '/etc/systemd/system/multi-user.target.wants/docker.service' → '/usr/lib/systemd/system/docker.service'.
+Created symlink '/etc/systemd/system/sockets.target.wants/docker.socket' → '/usr/lib/systemd/system/docker.socket'.
+Processing triggers for man-db (2.13.1-1build1) ...
+Processing triggers for libc-bin (2.43-2ubuntu2.3) ...
+Synchronizing state of docker.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable docker
+Client: Docker Engine - Community
+ Version:           29.7.2
+ API version:       1.55
+ Go version:        go1.26.5
+ Git commit:        a7dcaa6
+ Built:             Wed Aug  5 18:28:40 2026
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          29.7.2
+  API version:      1.55 (minimum version 1.40)
+  Go version:       go1.26.5
+  Git commit:       6a43e3d
+  Built:            Wed Aug  5 18:28:40 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.3.3
+  GitCommit:        aad11006b869517fcd3009450b6f82da282e1a9b
+ runc:
+  Version:          1.4.3
+  GitCommit:        v1.4.3-0-gbb14dabe
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+Client: Docker Engine - Community
+ Version:    29.7.2
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.36.1
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v5.4.0
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+
+Server:
+ Containers: 0
+  Running: 0
+  Paused: 0
+  Stopped: 0
+ Images: 0
+ Server Version: 29.7.2
+ Storage Driver: overlayfs
+  driver-type: io.containerd.snapshotter.v1
+ Logging Driver: json-file
+ Cgroup Driver: systemd
+ Cgroup Version: 2
+ Plugins:
+  Volume: local
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+ CDI spec directories:
+  /etc/cdi
+  /var/run/cdi
+ Swarm: inactive
+ Runtimes: io.containerd.runc.v2 runc
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: aad11006b869517fcd3009450b6f82da282e1a9b
+ runc version: v1.4.3-0-gbb14dabe
+ init version: de40ad0
+ Security Options:
+  seccomp
+added ciaran to docker group (newgrp needed for non-sudo)
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+4f55086f7dd0: Pulling fs layer
+d5e71e642bf5: Download complete
+4f55086f7dd0: Download complete
+4f55086f7dd0: Pull complete
+Digest: sha256:7f4da0fc94bcece205a8c0b6f4d11c8196924654ffe5c4d1aa439b7f632048b2
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+=== 2026-08-08T19:43:49+08:00 Docker install OK ===

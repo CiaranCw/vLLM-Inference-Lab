@@ -1,0 +1,163 @@
+=== 2026-08-08T19:44:25+08:00 pull start nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3 ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sdd       1007G  395G  562G  42% /
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sdd       1007G  395G  562G  42% /
+26.07-vllm-python-py3: Pulling from nvidia/tritonserver
+8fb9533217fc: Pulling fs layer
+60f0d9979840: Pulling fs layer
+9c2df3880d3b: Pulling fs layer
+bfb97d3b15ad: Pulling fs layer
+ea66597d9230: Pulling fs layer
+8682a11b36f0: Pulling fs layer
+5a695bfa57a7: Pulling fs layer
+c987c6e71a10: Pulling fs layer
+76cee1d1d390: Pulling fs layer
+1059ecb3f674: Pulling fs layer
+74253c060e2c: Pulling fs layer
+9dd9bfc7895f: Pulling fs layer
+2a4b325f5546: Pulling fs layer
+8dbd4f5ecea6: Pulling fs layer
+114d4cd2691e: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+aabb6ec2b2bc: Pulling fs layer
+53311e2f66af: Pulling fs layer
+511dfeba44e0: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+adf8e0f2bdb3: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+60ea6583626c: Pulling fs layer
+833fc76d2e22: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+26ebab9c6f29: Pulling fs layer
+ed67ea62fab6: Pulling fs layer
+4e1f00bee99c: Pulling fs layer
+d92def67958a: Pulling fs layer
+7cdb95b60590: Pulling fs layer
+a3a2130a8919: Pulling fs layer
+0b82d801c0c6: Pulling fs layer
+9ec5442983cf: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+55697542d5a1: Pulling fs layer
+0ee6dcaf9b9c: Pulling fs layer
+d8e8cf7d3aff: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+e3bf184944b1: Pulling fs layer
+e412fb88280d: Pulling fs layer
+ff19c267d4f1: Pulling fs layer
+af98ea6c255a: Pulling fs layer
+3dad40aa8a2c: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+22f98aac78ed: Pulling fs layer
+dfe9ef9e08b8: Pulling fs layer
+9d64825cbc4a: Pulling fs layer
+1a53de032a15: Pulling fs layer
+c69493b2a1e2: Pulling fs layer
+ca2678b20700: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+2311c65168c3: Pulling fs layer
+18d11a87037d: Pulling fs layer
+ea94f88cd7d5: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+9c2df3880d3b: Download complete
+ea66597d9230: Download complete
+5a695bfa57a7: Download complete
+74253c060e2c: Download complete
+60f0d9979840: Download complete
+bfb97d3b15ad: Download complete
+c987c6e71a10: Download complete
+76cee1d1d390: Download complete
+4f4fb700ef54: Download complete
+aabb6ec2b2bc: Download complete
+8fb9533217fc: Download complete
+53311e2f66af: Download complete
+1059ecb3f674: Download complete
+511dfeba44e0: Download complete
+9dd9bfc7895f: Download complete
+2a4b325f5546: Download complete
+114d4cd2691e: Download complete
+60ea6583626c: Download complete
+8dbd4f5ecea6: Download complete
+adf8e0f2bdb3: Download complete
+ed67ea62fab6: Download complete
+26ebab9c6f29: Download complete
+a3a2130a8919: Download complete
+833fc76d2e22: Download complete
+7cdb95b60590: Download complete
+4e1f00bee99c: Download complete
+ff19c267d4f1: Download complete
+9ec5442983cf: Download complete
+d92def67958a: Download complete
+0ee6dcaf9b9c: Download complete
+0b82d801c0c6: Download complete
+3dad40aa8a2c: Download complete
+e3bf184944b1: Download complete
+8682a11b36f0: Download complete
+e412fb88280d: Download complete
+af98ea6c255a: Download complete
+dfe9ef9e08b8: Download complete
+22f98aac78ed: Download complete
+d8e8cf7d3aff: Download complete
+1a53de032a15: Download complete
+c69493b2a1e2: Download complete
+9d64825cbc4a: Download complete
+18d11a87037d: Download complete
+ca2678b20700: Download complete
+ca2678b20700: Pull complete
+5a695bfa57a7: Pull complete
+4f4fb700ef54: Pull complete
+dfe9ef9e08b8: Pull complete
+ea94f88cd7d5: Download complete
+bfb97d3b15ad: Pull complete
+74253c060e2c: Pull complete
+9c2df3880d3b: Pull complete
+ea94f88cd7d5: Pull complete
+53311e2f66af: Pull complete
+adf8e0f2bdb3: Pull complete
+76cee1d1d390: Pull complete
+d8e8cf7d3aff: Pull complete
+e3bf184944b1: Pull complete
+af98ea6c255a: Pull complete
+aabb6ec2b2bc: Pull complete
+2311c65168c3: Download complete
+8fb9533217fc: Pull complete
+8682a11b36f0: Pull complete
+d92def67958a: Pull complete
+1059ecb3f674: Pull complete
+22f98aac78ed: Pull complete
+2311c65168c3: Pull complete
+511dfeba44e0: Pull complete
+8dbd4f5ecea6: Pull complete
+26ebab9c6f29: Pull complete
+ed67ea62fab6: Pull complete
+4e1f00bee99c: Pull complete
+7cdb95b60590: Pull complete
+a3a2130a8919: Pull complete
+0b82d801c0c6: Pull complete
+9ec5442983cf: Pull complete
+55697542d5a1: Download complete
+55697542d5a1: Pull complete
+ea66597d9230: Pull complete
+c987c6e71a10: Pull complete
+833fc76d2e22: Pull complete
+c69493b2a1e2: Pull complete
+18d11a87037d: Pull complete
+60ea6583626c: Pull complete
+3dad40aa8a2c: Pull complete
+2a4b325f5546: Pull complete
+ff19c267d4f1: Pull complete
+9dd9bfc7895f: Pull complete
+114d4cd2691e: Pull complete
+0ee6dcaf9b9c: Pull complete
+e412fb88280d: Pull complete
+9d64825cbc4a: Pull complete
+60f0d9979840: Pull complete
+1a53de032a15: Pull complete
+Digest: sha256:31e20bfbc65055d6b85553a00d45342a62c506874aa996c11ae53650151f05b1
+Status: Downloaded newer image for nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3
+nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3
+Id=sha256:31e20bfbc65055d6b85553a00d45342a62c506874aa996c11ae53650151f05b1 Size=11045220229 Created=2026-07-25T19:45:17.373789941Z Digests=["nvcr.io/nvidia/tritonserver@sha256:31e20bfbc65055d6b85553a00d45342a62c506874aa996c11ae53650151f05b1"]
+=== 2026-08-08T20:31:17+08:00 pull OK ===

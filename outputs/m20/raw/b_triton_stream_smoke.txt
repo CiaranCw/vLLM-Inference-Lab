@@ -1,0 +1,39 @@
+=== 2026-08-08T20:36:24+08:00 generate_stream endpoint ===
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":" Hello"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":","}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":" world"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"!"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":""}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":""}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":" 🎉"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍"}
+
+data: {"model_name":"qwen25_05b","model_version":"1","text_output":"🌍🌍"}
+
+
+HTTP:200
+
+=== health after stream ===
+curl: (56) Recv failure: Connection reset by peer
+ready:000
+
+NOTE: ready curl after stream got connection reset because parallel cleanup stopped the Triton container during the same window; stream itself returned HTTP 200 with SSE chunks.

@@ -183,7 +183,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / **M22(TP)** 已收口；M20 正式 C、M18 等待继续。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / ~~M20~~ / **M22(TP)** 已收口；M18 / M21 等待继续。**
 
 ---
 
@@ -328,12 +328,15 @@
 
 ## 阶段 F · 在线服务与生产化（T+E+O）
 
-### M20 服务化生产部署 + Triton（承接 M12）　🔄　**T + A + B smoke 完成；C 可行性已确认；正式 C 未跑 → overall NOT COMPLETE**
-- **修订目标**：求职向「能部署并解释 Triton+vLLM Backend，并在 **same-runtime** 下与 Native 对照」。**不重复** M12 Online SLO 网格；不把 host-M12 与 container 混减称 overhead。
-- **已完成**：Gate0→安装 Docker 29.7.2 + NVIDIA Container Toolkit 1.19.1；拉取 `nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3`（digest `sha256:31e20bf…`）；M20-A host smoke；**M20-B** Triton health/load/`generate`/`generate_stream`/metrics PASS（0.5B bind-mount）；**same-runtime**：同镜像内 `vllm serve` PASS。见 `notes/m20/b_triton_runtime_unblocked.md`。
-- **容器 vs host**：container vLLM `0.24.0+092c4842.nv26.7…` / torch `2.13.0a0…nv26.07` / CUDA 13.3 ≠ lab `ee0da84` / torch 2.11+cu130 → 正式 C **必须**同镜像串行对照。
-- **未完成**：M20-C 正式定点（主 QPS **32/40**）+ 报告/图。**延后至 M22 H20 窗口结束、数据安全落地之后**。
-- 产出：`serving/triton_model_repository/`、`outputs/m20/`、`logs/m20/`；正式报告待 C。
+### M20 服务化生产部署 + Triton（承接 M12）　✅　**T+A+B+C COMPLETE**（2026-08-10）
+- **目标**：求职向「能部署并解释 Triton+vLLM Backend，并在 **same-runtime** 下与 Native 对照」。**不重复** M12 Online SLO 网格；不把 host-M12 与 container 混减称 overhead。
+- **✅ 已完成**：
+  - Gate0→Docker 29.7.2 + NVIDIA Container Toolkit 1.19.1；镜像 `tritonserver:26.07-vllm-python-py3`（digest `sha256:31e20bf…`）。
+  - **M20-A** host smoke；**M20-B** Triton health/load/`generate_stream`/metrics PASS。
+  - **M20-C** 同镜像串行对照 C0=`vllm serve` vs C1=`tritonserver+backend`：Shape A in256/out128，Poisson QPS **20/32/40**，每点 30 warmup+200 measure，success=1.0；TTFT/E2E 的 C0−C1 Bootstrap CI **全程排除 0**；高 QPS 下差距主要在 TTFT 排队（ITL 接近）。见 `notes/m20/results.md`、`figures/fig10_m20_same_runtime.png`。
+- **容器 vs host**：container vLLM `0.24.0+092c4842…` ≠ lab `ee0da84` → C **必须**同镜像对照（已遵守）。
+- **⬜ 可选未做**：按 M12 SLO 重测 Triton「最大稳定 QPS」；Triton OpenAI frontend；compiled。
+- 产出：`serving/triton_model_repository/`、`scripts/m20_*.py`、`outputs/m20/`、`logs/m20/`、`notes/m20/results.md`。
 
 ### M21 监控与容量规划　⬜　T+E+O
 - 搭 Prometheus + Grafana + GPU 指标 + vLLM/Triton 服务指标 + 压测结果。回答：**最大稳定 QPS、并发到哪 P99 失控、瓶颈是 GPU/显存/KV/CPU/队列、一张卡承载多少用户、OOM/超时/worker 退出如何定位**。理论只能定义指标，替代不了真实压测与面板。
@@ -452,9 +455,9 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步（2026-08-08 更新）**：第一阶段已收口。第二阶段 **M17 主线已收口**，
-  **M19 N-gram 主线 T+E+O 已闭环**（语义收口完成；draft-model / EAGLE / MTP / Medusa / k sweep 等为 Optional，不阻塞）。
+- **当前下一步（2026-08-10 更新）**：第一阶段已收口。第二阶段 **M17 / M19 / M20 / M22(TP)** 主线已收口。
+  **M20**：**T+A+B+C COMPLETE**（`notes/m20/results.md`）。
   **M22** TP：**T+E+O+H COMPLETE**（4×H20 / 2026-08-09，`notes/m22/results.md`）；PP/DP/EP 仍 ⬜。
-  → 单卡学习主线：可进入下一单卡模块（如 M18，下载须授权）；**不要**把 Optional 的 M19 深化当作阻塞项。
+  → 下一优先：M18（下载须授权）或 M21 监控；**不要**把 Optional 的 M19 深化当作阻塞项。
   M13 若收到 maintainer review，优先回应迭代。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

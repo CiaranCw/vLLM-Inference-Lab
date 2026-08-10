@@ -1,0 +1,115 @@
+
+=============================
+== Triton Inference Server ==
+=============================
+
+NVIDIA Release 26.07 (build 59591852)
+Triton Server Version 2.71.0
+
+Copyright (c) 2018-2026, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+I0810 03:08:51.442754 1 pinned_memory_manager.cc:277] "Pinned memory pool is created at '0x204c00000' with size 268435456"
+I0810 03:08:51.442848 1 cuda_memory_manager.cc:107] "CUDA memory pool is created on device 0 with size 67108864"
+E0810 03:08:51.443776 1 server.cc:248] "CudaDriverHelper has not been initialized."
+I0810 03:08:51.444481 1 model_lifecycle.cc:473] "loading: qwen25_05b:1"
+I0810 03:08:58.240280 1 python_be.cc:2542] "TRITONBACKEND_ModelInstanceInitialize: qwen25_05b_0_0 (MODEL device 0)"
+WARNING 08-10 03:09:02 [envs.py:2033] Unknown vLLM environment variable detected: VLLM_VERSION
+WARNING 08-10 03:09:02 [envs.py:2033] Unknown vLLM environment variable detected: VLLM_FLASH_ATTN_SRC_DIR
+INFO 08-10 03:09:08 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 08-10 03:09:08 [model.py:1725] Using max model len 2048
+INFO 08-10 03:09:08 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=4096.
+INFO 08-10 03:09:08 [vllm.py:1006] Asynchronous scheduling is enabled.
+WARNING 08-10 03:09:08 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 08-10 03:09:08 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 08-10 03:09:08 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 08-10 03:09:08 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 08-10 03:09:08 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+W0810 03:09:08.408835 1 vllm_backend_utils.py:131] "V1 is enabled, but got --disable-frontend-multiprocessing."
+WARNING 08-10 03:09:10 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: WSL is detected and NVML is not compatible with fork
+(EngineCore pid=429) INFO 08-10 03:09:14 [core.py:114] Initializing a V1 LLM engine (v0.24.0+092c4842.dev) with config: model='/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775', speculative_config=None, tokenizer='/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [4096], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+(EngineCore pid=429) INFO 08-10 03:09:15 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.17.0.2:46985 backend=nccl
+(EngineCore pid=429) INFO 08-10 03:09:15 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=429) INFO 08-10 03:09:15 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(EngineCore pid=429) INFO 08-10 03:09:15 [gpu_model_runner.py:5160] Starting to load model /models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775...
+(EngineCore pid=429) INFO 08-10 03:09:16 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=429) INFO 08-10 03:09:16 [flash_attn.py:670] Using FlashAttention version 2
+(EngineCore pid=429) INFO 08-10 03:09:16 [weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 0.92 GiB. Available RAM: 51.80 GiB.
+(EngineCore pid=429) INFO 08-10 03:09:16 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=429) Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+(EngineCore pid=429) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.94it/s]
+(EngineCore pid=429) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  8.92it/s]
+(EngineCore pid=429) 
+(EngineCore pid=429) INFO 08-10 03:09:16 [default_loader.py:430] Loading weights took 0.11 seconds
+(EngineCore pid=429) INFO 08-10 03:09:16 [gpu_model_runner.py:5255] Model loading took 0.93 GiB memory and 0.779613 seconds
+(EngineCore pid=429) INFO 08-10 03:09:22 [gpu_worker.py:508] Available KV cache memory: 5.9 GiB
+(EngineCore pid=429) INFO 08-10 03:09:22 [kv_cache_utils.py:2146] GPU KV cache size: 515,200 tokens
+(EngineCore pid=429) INFO 08-10 03:09:22 [kv_cache_utils.py:2147] Maximum concurrency for 2,048 tokens per request: 251.56x
+(EngineCore pid=429) INFO 08-10 03:09:22 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(EngineCore pid=429) INFO 08-10 03:09:22 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(EngineCore pid=429) 2026-08-10 03:09:22,227 - INFO - autotuner.py:651 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=429) 2026-08-10 03:09:22,242 - INFO - autotuner.py:674 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=429) INFO 08-10 03:09:22 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(EngineCore pid=429) INFO 08-10 03:09:22 [core.py:344] init engine (profile, create kv cache, warmup model) took 5.61 s
+(EngineCore pid=429) INFO 08-10 03:09:22 [vllm.py:1006] Asynchronous scheduling is enabled.
+(EngineCore pid=429) WARNING 08-10 03:09:22 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(EngineCore pid=429) WARNING 08-10 03:09:22 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(EngineCore pid=429) INFO 08-10 03:09:22 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+(EngineCore pid=429) INFO 08-10 03:09:22 [vllm.py:1288] Cudagraph is disabled under eager mode
+(EngineCore pid=429) INFO 08-10 03:09:22 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+I0810 03:09:22.867653 1 model_lifecycle.cc:849] "successfully loaded 'qwen25_05b'"
+I0810 03:09:22.867747 1 server.cc:640] 
++------------------+------+
+| Repository Agent | Path |
++------------------+------+
++------------------+------+
+
+I0810 03:09:22.867771 1 server.cc:667] 
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Backend | Path                                                  | Config                                                                                                                                                        |
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| python  | /opt/tritonserver/backends/python/libtriton_python.so | {"cmdline":{"auto-complete-config":"true","backend-directory":"/opt/tritonserver/backends","min-compute-capability":"6.000000","default-max-batch-size":"4"}} |
+| vllm    | /opt/tritonserver/backends/vllm/model.py              | {"cmdline":{"auto-complete-config":"true","backend-directory":"/opt/tritonserver/backends","min-compute-capability":"6.000000","default-max-batch-size":"4"}} |
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+I0810 03:09:22.867793 1 server.cc:710] 
++------------+---------+--------+
+| Model      | Version | Status |
++------------+---------+--------+
+| qwen25_05b | 1       | READY  |
++------------+---------+--------+
+
+I0810 03:09:22.909556 1 metrics.cc:889] "Collecting metrics for GPU 0: NVIDIA GeForce RTX 5080"
+I0810 03:09:22.911337 1 metrics.cc:782] "Collecting CPU metrics"
+I0810 03:09:22.911430 1 tritonserver.cc:2598] 
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Option                           | Value                                                                                                                                                                                                           |
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| server_id                        | triton                                                                                                                                                                                                          |
+| server_version                   | 2.71.0                                                                                                                                                                                                          |
+| server_extensions                | classification sequence model_repository model_repository(unload_dependents) schedule_policy model_configuration system_shared_memory cuda_shared_memory binary_tensor_data parameters statistics trace logging |
+| model_repository_path[0]         | /models_repo                                                                                                                                                                                                    |
+| model_control_mode               | MODE_EXPLICIT                                                                                                                                                                                                   |
+| startup_models_0                 | qwen25_05b                                                                                                                                                                                                      |
+| strict_model_config              | 0                                                                                                                                                                                                               |
+| model_config_name                |                                                                                                                                                                                                                 |
+| rate_limit                       | OFF                                                                                                                                                                                                             |
+| pinned_memory_pool_byte_size     | 268435456                                                                                                                                                                                                       |
+| cuda_memory_pool_byte_size{0}    | 67108864                                                                                                                                                                                                        |
+| min_supported_compute_capability | 6.0                                                                                                                                                                                                             |
+| strict_readiness                 | 1                                                                                                                                                                                                               |
+| exit_timeout                     | 30                                                                                                                                                                                                              |
+| cache_enabled                    | 0                                                                                                                                                                                                               |
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+I0810 03:09:22.914130 1 grpc_server.cc:2579] "Started GRPCInferenceService at 0.0.0.0:8001"
+I0810 03:09:22.914478 1 http_server.cc:4961] "Started HTTPService at 0.0.0.0:8000"
+I0810 03:09:22.956139 1 http_server.cc:400] "Started Metrics Service at 0.0.0.0:8002"
+WARNING 08-10 03:09:23 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+(EngineCore pid=429) WARNING 08-10 03:09:24 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.

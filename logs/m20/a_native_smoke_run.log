@@ -1,0 +1,14 @@
+
+===== a1-stream =====
+[a1] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m20/raw/a1_stream_smoke.json
+[a1] non_stream first_byte_ms med≈216.647
+[a1] stream     first_byte_ms med≈12.498
+
+===== a2-prefix =====
+[a2] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m20/raw/a2_prefix_smoke.json
+
+===== a3-health =====
+[a3] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m20/raw/a3_health_restart_smoke.json
+[a3] timeline: [{"step": "running", "health": 200}, {"step": "metrics_while_up", "metrics_ok": true}, {"step": "after_stop", "health": null}, {"step": "after_restart", "health": 200, "ready_s": 27.02769637107849}, {"step": "generate_after_restart", "ok": true}]
+
+[m20-a] all requested shards done (lightweight smoke only)

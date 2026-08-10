@@ -1,0 +1,239 @@
+{
+  "shard": "a1-stream",
+  "ready_s": 29.53126335144043,
+  "cmd": [
+    "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "Qwen/Qwen2.5-0.5B-Instruct",
+    "--enforce-eager",
+    "--dtype",
+    "auto",
+    "--max-model-len",
+    "2048",
+    "--gpu-memory-utilization",
+    "0.6",
+    "--max-num-seqs",
+    "64",
+    "--max-num-batched-tokens",
+    "4096",
+    "--no-async-scheduling",
+    "--enable-chunked-prefill",
+    "--disable-uvicorn-access-log",
+    "--port",
+    "8020",
+    "--host",
+    "127.0.0.1",
+    "--no-enable-prefix-caching"
+  ],
+  "log": "/home/ciaran/projects/vllm-inference-lab/logs/m20/a1_server.log",
+  "semantics": {
+    "non_stream": "单次 JSON 响应；t_first_byte≈整包到达，不能拆 streaming ITL",
+    "stream": "SSE data: 行；t_first_byte=首包；ITL 需逐 token 时间戳（本 smoke 不做）"
+  },
+  "trials": [
+    {
+      "shard": "a1",
+      "trial": 0,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 216.673,
+      "t_e2e_ms": 216.681,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-8a2b7cb77d649bc5",
+        "object": "chat.completion",
+        "created": 1786189124,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "KV Cache，即键值对缓存系统，是一种高效的数据存储和检索机制，通过使用哈希表",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 37,
+          "total_tokens": 61,
+          "completion_tokens": 24,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "shard": "a1",
+      "trial": 1,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 216.647,
+      "t_e2e_ms": 216.655,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-8fd83f7e85f4cd50",
+        "object": "chat.completion",
+        "created": 1786189124,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "KV Cache，即键值对缓存，是一种在计算机系统中用于存储和检索数据的机制。它",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 37,
+          "total_tokens": 61,
+          "completion_tokens": 24,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "shard": "a1",
+      "trial": 2,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 205.941,
+      "t_e2e_ms": 205.95,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-9c41e6e975c6609a",
+        "object": "chat.completion",
+        "created": 1786189124,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "KV Cache，即键值对缓存系统，是一种高效的数据存储和检索机制，通过使用哈希表",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 37,
+          "total_tokens": 61,
+          "completion_tokens": 24,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "shard": "a1",
+      "trial": 0,
+      "mode": "stream",
+      "http_status": 200,
+      "t_first_byte_ms": 14.692,
+      "t_e2e_ms": 215.956,
+      "n_sse_lines": 26,
+      "first_sse": "data: {\"id\":\"chatcmpl-b9204204e37195a7\",\"object\":\"chat.completion.chunk\",\"created\":1786189125,\"model\":\"Qwen/Qwen2.5-0.5B-Instruct\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"logprobs\":null,\"finish_reason\":null}],\"prompt_token_ids\":null,\"prompt_text\":null}",
+      "note": "streaming ITL 需逐 token timestamp；本 smoke 只记 first-byte 与 E2E"
+    },
+    {
+      "shard": "a1",
+      "trial": 1,
+      "mode": "stream",
+      "http_status": 200,
+      "t_first_byte_ms": 11.495,
+      "t_e2e_ms": 200.281,
+      "n_sse_lines": 26,
+      "first_sse": "data: {\"id\":\"chatcmpl-b038b318b83b9273\",\"object\":\"chat.completion.chunk\",\"created\":1786189125,\"model\":\"Qwen/Qwen2.5-0.5B-Instruct\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"logprobs\":null,\"finish_reason\":null}],\"prompt_token_ids\":null,\"prompt_text\":null}",
+      "note": "streaming ITL 需逐 token timestamp；本 smoke 只记 first-byte 与 E2E"
+    },
+    {
+      "shard": "a1",
+      "trial": 2,
+      "mode": "stream",
+      "http_status": 200,
+      "t_first_byte_ms": 12.498,
+      "t_e2e_ms": 205.422,
+      "n_sse_lines": 26,
+      "first_sse": "data: {\"id\":\"chatcmpl-986cac283756aeb5\",\"object\":\"chat.completion.chunk\",\"created\":1786189125,\"model\":\"Qwen/Qwen2.5-0.5B-Instruct\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"logprobs\":null,\"finish_reason\":null}],\"prompt_token_ids\":null,\"prompt_text\":null}",
+      "note": "streaming ITL 需逐 token timestamp；本 smoke 只记 first-byte 与 E2E"
+    }
+  ],
+  "metrics": {
+    "ok": true,
+    "n_chars": 54431,
+    "sample_metric_names": [
+      "python_gc_objects_collected_total",
+      "python_gc_objects_uncollectable_total",
+      "python_gc_collections_total",
+      "python_info",
+      "process_virtual_memory_bytes",
+      "process_resident_memory_bytes",
+      "process_start_time_seconds",
+      "process_cpu_seconds_total",
+      "process_open_fds",
+      "process_max_fds",
+      "vllm:estimated_flops_per_gpu_total",
+      "vllm:estimated_flops_per_gpu_created",
+      "vllm:estimated_read_bytes_per_gpu_total",
+      "vllm:estimated_read_bytes_per_gpu_created",
+      "vllm:estimated_write_bytes_per_gpu_total",
+      "vllm:estimated_write_bytes_per_gpu_created",
+      "vllm:num_requests_running",
+      "vllm:num_requests_waiting",
+      "vllm:num_requests_waiting_by_reason",
+      "vllm:engine_sleep_state",
+      "vllm:kv_cache_usage_perc",
+      "vllm:prefix_cache_queries_total",
+      "vllm:prefix_cache_queries_created",
+      "vllm:prefix_cache_hits_total",
+      "vllm:prefix_cache_hits_created"
+    ]
+  }
+}

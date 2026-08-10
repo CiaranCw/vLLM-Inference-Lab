@@ -42,13 +42,13 @@
 | M13 | 首次上游 PR ★ | 🟡 | **PR #51017 已提交，等待 maintainer**（详见 §3） |
 | M16 | 项目整理 + 面试表达 | ✅ | README/图/三档表达 |
 
-### 第二阶段（M17–M26）：M17 / M19 / M22(TP) 主线收口
+### 第二阶段（M17–M26）：M17 / M19 / M20 / M22(TP) 主线收口
 | 模块 | 主题 | 状态 | 备注 |
 |---|---|:--:|---|
 | **M17** | Prefix Caching & Chunked Prefill | ✅ | **主线已收口**；三项可选扩展未执行、不阻塞后续（见 §4） |
 | **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | ⬜ | 需先获授权下载量化模型，见 §5 |
 | **M19** | Speculative Decoding | ✅ | **N-gram T+E+O CLOSED**（见 §4.2）；draft/EAGLE/MTP/Medusa/`k` sweep = Optional |
-| M20 | 服务化 + Triton | 🔄 | T+A+B smoke PASS；runtime 已解阻；same-runtime C 可行；**正式 C 未跑** → NOT COMPLETE；见 `notes/m20/b_triton_runtime_unblocked.md` |
+| M20 | 服务化 + Triton | ✅ | **T+A+B+C COMPLETE**（same-runtime QPS 20/32/40；见 `notes/m20/results.md`） |
 | M21 | 监控 + 容量规划（Prom/Grafana） | ⬜ | 单机起 |
 | **M22** | TP/PP/DP/EP | ✅/⬜ | **TP T+E+O+H COMPLETE**（4×H20，`notes/m22/results.md`）；**PP/DP/EP 未做** |
 | M23 | TensorRT-LLM 跨引擎 | ⬜ | 单卡可做但工程量大 |
@@ -153,10 +153,9 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-08-09 更新（M22 TP 已收口）**
-> - **M22 TP**：4×H20 E/H 完成 → `notes/m22/results.md`；运营 Prompt/Runbook 已删，入口 `notes/m22/README.md`。
-> - **建议优先**：M20 正式 C（主 QPS 32/40）—— Triton runtime 已解阻，此前为等 H20 数据落地而延后。
-> - 其次：M18（需授权下载量化模型）或 M21 监控。
+> **2026-08-10 更新**
+> - **M22 TP** 与 **M20（含正式 C）** 均已收口。
+> - **建议优先**：M18（需授权下载量化模型）或 M21 监控；M13 PR 仍等 maintainer label。
 >
 > 以下保留为背景（交接早期选项）。
 

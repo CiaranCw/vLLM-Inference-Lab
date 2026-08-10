@@ -1,0 +1,250 @@
+{
+  "shard": "a2-prefix",
+  "ready_s": 26.525776863098145,
+  "cmd": [
+    "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "Qwen/Qwen2.5-0.5B-Instruct",
+    "--enforce-eager",
+    "--dtype",
+    "auto",
+    "--max-model-len",
+    "2048",
+    "--gpu-memory-utilization",
+    "0.6",
+    "--max-num-seqs",
+    "64",
+    "--max-num-batched-tokens",
+    "4096",
+    "--no-async-scheduling",
+    "--enable-chunked-prefill",
+    "--disable-uvicorn-access-log",
+    "--port",
+    "8020",
+    "--host",
+    "127.0.0.1",
+    "--enable-prefix-caching"
+  ],
+  "log": "/home/ciaran/projects/vllm-inference-lab/logs/m20/a2_server.log",
+  "prefix_caching": "enabled via --enable-prefix-caching",
+  "performance_claim": "NONE — APC 性能见 notes/m17；此处只验证 serving 可启用与可观测",
+  "trials": [
+    {
+      "trial": 0,
+      "prompt_chars": 812,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 36.095,
+      "t_e2e_ms": 36.102,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-ac0ef564521ff244",
+        "object": "chat.completion",
+        "created": 1786189152,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "共享前缀",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "stop",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 319,
+          "total_tokens": 323,
+          "completion_tokens": 4,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "trial": 1,
+      "prompt_chars": 812,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 38.504,
+      "t_e2e_ms": 38.512,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-8fe6b67d7a8516e4",
+        "object": "chat.completion",
+        "created": 1786189152,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "共享前缀",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "stop",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 319,
+          "total_tokens": 323,
+          "completion_tokens": 4,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "trial": 2,
+      "prompt_chars": 812,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 36.129,
+      "t_e2e_ms": 36.137,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-b8ae11362e50346f",
+        "object": "chat.completion",
+        "created": 1786189153,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "共享前缀",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "stop",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 319,
+          "total_tokens": 323,
+          "completion_tokens": 4,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    },
+    {
+      "trial": 3,
+      "prompt_chars": 812,
+      "mode": "non_stream",
+      "http_status": 200,
+      "t_first_byte_ms": 37.966,
+      "t_e2e_ms": 37.973,
+      "content_type": "application/json",
+      "body": {
+        "id": "chatcmpl-b2ecfa3ea62d45e9",
+        "object": "chat.completion",
+        "created": 1786189153,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "共享前缀",
+              "refusal": null,
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "reasoning": null
+            },
+            "logprobs": null,
+            "finish_reason": "stop",
+            "stop_reason": null,
+            "token_ids": null,
+            "routed_experts": null
+          }
+        ],
+        "service_tier": null,
+        "system_fingerprint": "vllm-0.24.1.dev0+gee0da84ab.d20260714-nohash",
+        "usage": {
+          "prompt_tokens": 319,
+          "total_tokens": 323,
+          "completion_tokens": 4,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null,
+        "prompt_token_ids": null,
+        "prompt_text": null,
+        "kv_transfer_params": null
+      }
+    }
+  ],
+  "metrics": {
+    "ok": true,
+    "n_chars": 54419,
+    "sample_metric_names": [
+      "python_gc_objects_collected_total",
+      "python_gc_objects_uncollectable_total",
+      "python_gc_collections_total",
+      "python_info",
+      "process_virtual_memory_bytes",
+      "process_resident_memory_bytes",
+      "process_start_time_seconds",
+      "process_cpu_seconds_total",
+      "process_open_fds",
+      "process_max_fds",
+      "vllm:estimated_flops_per_gpu_total",
+      "vllm:estimated_flops_per_gpu_created",
+      "vllm:estimated_read_bytes_per_gpu_total",
+      "vllm:estimated_read_bytes_per_gpu_created",
+      "vllm:estimated_write_bytes_per_gpu_total",
+      "vllm:estimated_write_bytes_per_gpu_created",
+      "vllm:num_requests_running",
+      "vllm:num_requests_waiting",
+      "vllm:num_requests_waiting_by_reason",
+      "vllm:engine_sleep_state",
+      "vllm:kv_cache_usage_perc",
+      "vllm:prefix_cache_queries_total",
+      "vllm:prefix_cache_queries_created",
+      "vllm:prefix_cache_hits_total",
+      "vllm:prefix_cache_hits_created"
+    ]
+  }
+}

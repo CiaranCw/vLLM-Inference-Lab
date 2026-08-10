@@ -1,0 +1,10 @@
+80:                "name": "stream",
+544:                # the response state if streaming. If not streaming, cancellation state
+547:                if not request.stream:
+554:                    if request.stream:
+571:                # Send each response if streaming.
+572:                if request.stream:
+585:            # Send the last response which contains all the outputs if not streaming.
+586:            if not request.stream:
+603:                f"[vllm] Error generating stream: {traceback.format_exc()}"
+605:            error = pb_utils.TritonError(f"Error generating stream: {e}")

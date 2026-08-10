@@ -1,0 +1,25 @@
+M20 Gate0 read-only probe
+timestamp: 2026-08-08T19:36:08+08:00
+G0.1 docker: ABSENT
+G0.1 podman: ABSENT
+G0.2 container run as user: N/A (no runtime)
+G0.3 nvidia-container-cli: ABSENT
+G0.3 nvidia-ctk: ABSENT
+G0.4 docker --gpus: N/A
+G0.5 host driver: 610.62 (RTX 5080); candidate Triton 26.07 matrix lists CUDA Driver 610.43.02 — host newer, expected OK after toolkit install
+G0.6 nvcr.io: reachable (HTTP 401 auth challenge = registry up)
+G0.6 catalog.ngc.nvidia.com: HTTP 200
+G0.7 HF cache Qwen2.5-0.5B-Instruct: present ~954M
+G0.8 disk free: ~563G; GPU mem total 16303 MiB, used ~4451 MiB at probe (no compute apps listed)
+lab_vllm: 0.24.1.dev0+gee0da84ab editable → vllm-src
+torch: 2.11.0+cu130
+candidate_image_unfrozen: nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3
+  matrix_vllm: 0.24.0+092c4842.nv26.7.57386851 (NVIDIA build ≠ lab ee0da84)
+  matrix_size: ~10.28 GB
+  matrix_cuda: 13.3
+verdict: BLOCKED_ON_TRITON_RUNTIME — need authorized install of Docker + NVIDIA Container Toolkit + image pull
+passwordless_sudo: PRESENT but NOT used (AGENTS: no sudo without owner auth)
+
+=== SUPERSEDED 2026-08-08T20:37 Asia/Shanghai ===
+BLOCKED_ON_TRITON_RUNTIME cleared after authorized install.
+See notes/m20/b_triton_runtime_unblocked.md and outputs/m20/raw/b_triton_runtime_summary.json

@@ -1,0 +1,24 @@
+[m20c] building prompts…
+[m20c] C0 vllm serve ready (26.0s): http://127.0.0.1:8021/health
+[m20c] c0 warmup n=30
+[m20c] warmup success=30/30
+[m20c] c0 measure rate=20.0 n=200
+[m20c] c0 qps=20.0 success=1.000 ttft_p50=19.4 e2e_p50=1193.3 wall=12.6s -> c_c0_qps20.jsonl
+[m20c] c0 measure rate=32.0 n=200
+[m20c] c0 qps=32.0 success=1.000 ttft_p50=24.2 e2e_p50=1415.5 wall=7.6s -> c_c0_qps32.jsonl
+[m20c] c0 measure rate=40.0 n=200
+[m20c] c0 qps=40.0 success=1.000 ttft_p50=26.1 e2e_p50=1482.3 wall=5.9s -> c_c0_qps40.jsonl
+[m20c] stopped m20c-vllm-serve
+[m20c] building prompts…
+[m20c] C1 triton ready (33.0s): http://127.0.0.1:8000/v2/health/ready
+[m20c] c1 warmup n=30
+[m20c] warmup success=30/30
+[m20c] c1 measure rate=20.0 n=200
+[m20c] c1 qps=20.0 success=1.000 ttft_p50=41.3 e2e_p50=1357.3 wall=11.1s -> c_c1_qps20.jsonl
+[m20c] c1 measure rate=32.0 n=200
+[m20c] c1 qps=32.0 success=1.000 ttft_p50=718.7 e2e_p50=2137.1 wall=7.4s -> c_c1_qps32.jsonl
+[m20c] c1 measure rate=40.0 n=200
+[m20c] c1 qps=40.0 success=1.000 ttft_p50=951.6 e2e_p50=2351.7 wall=6.7s -> c_c1_qps40.jsonl
+[m20c] stopped m20c-triton
+[m20c] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m20/c_same_runtime_sweep.csv
+[m20c] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m20/c_same_runtime_effect.csv

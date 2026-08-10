@@ -1,0 +1,126 @@
+=== 2026-08-08T19:43:56+08:00 NVIDIA Container Toolkit install start ===
+deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /
+#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/experimental/deb/$(ARCH) /
+Ign:1 file:/var/cuda-repo-wsl-ubuntu-11-6-local  InRelease
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Get:2 file:/var/cuda-repo-wsl-ubuntu-12-8-local  InRelease [1572 B]
+Get:3 file:/var/cuda-repo-wsl-ubuntu-11-6-local  Release [564 B]
+Get:5 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  InRelease [1477 B]
+Get:6 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  Packages [26.1 kB]
+Hit:7 https://download.docker.com/linux/ubuntu resolute InRelease
+Hit:8 http://security.ubuntu.com/ubuntu resolute-security InRelease
+Hit:9 http://archive.ubuntu.com/ubuntu resolute InRelease
+Hit:10 http://archive.ubuntu.com/ubuntu resolute-updates InRelease
+Hit:11 http://archive.ubuntu.com/ubuntu resolute-backports InRelease
+Fetched 27.6 kB in 1s (23.7 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Solving dependencies...
+The following additional packages will be installed:
+  libnvidia-container-tools libnvidia-container1 nvidia-container-toolkit-base
+The following NEW packages will be installed:
+  libnvidia-container-tools libnvidia-container1 nvidia-container-toolkit
+  nvidia-container-toolkit-base
+0 upgraded, 4 newly installed, 0 to remove and 40 not upgraded.
+Need to get 8155 kB of archives.
+After this operation, 35.3 MB of additional disk space will be used.
+Get:1 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  libnvidia-container1 1.19.1-1 [1191 kB]
+Get:2 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  libnvidia-container-tools 1.19.1-1 [20.8 kB]
+Get:3 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  nvidia-container-toolkit-base 1.19.1-1 [5609 kB]
+Get:4 https://nvidia.github.io/libnvidia-container/stable/deb/amd64  nvidia-container-toolkit 1.19.1-1 [1334 kB]
+Fetched 8155 kB in 2s (5171 kB/s)
+Selecting previously unselected package libnvidia-container1:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 58536 files and directories currently installed.)
+Preparing to unpack .../libnvidia-container1_1.19.1-1_amd64.deb ...
+Unpacking libnvidia-container1:amd64 (1.19.1-1) ...
+Selecting previously unselected package libnvidia-container-tools.
+Preparing to unpack .../libnvidia-container-tools_1.19.1-1_amd64.deb ...
+Unpacking libnvidia-container-tools (1.19.1-1) ...
+Selecting previously unselected package nvidia-container-toolkit-base.
+Preparing to unpack .../nvidia-container-toolkit-base_1.19.1-1_amd64.deb ...
+Unpacking nvidia-container-toolkit-base (1.19.1-1) ...
+Selecting previously unselected package nvidia-container-toolkit.
+Preparing to unpack .../nvidia-container-toolkit_1.19.1-1_amd64.deb ...
+Unpacking nvidia-container-toolkit (1.19.1-1) ...
+Setting up nvidia-container-toolkit-base (1.19.1-1) ...
+Created symlink '/etc/systemd/system/multi-user.target.wants/nvidia-cdi-refresh.path' → '/etc/systemd/system/nvidia-cdi-refresh.path'.
+Created symlink '/etc/systemd/system/multi-user.target.wants/nvidia-cdi-refresh.service' → '/etc/systemd/system/nvidia-cdi-refresh.service'.
+Regenerating NVIDIA CDI specification...
+Setting up libnvidia-container1:amd64 (1.19.1-1) ...
+Setting up libnvidia-container-tools (1.19.1-1) ...
+Setting up nvidia-container-toolkit (1.19.1-1) ...
+Processing triggers for libc-bin (2.43-2ubuntu2.3) ...
+time="2026-08-08T19:44:02+08:00" level=info msg="Config file does not exist; using empty config"
+time="2026-08-08T19:44:02+08:00" level=info msg="Wrote updated config to /etc/docker/daemon.json"
+time="2026-08-08T19:44:02+08:00" level=info msg="It is recommended that docker daemon be restarted."
+--- nvidia-ctk version ---
+NVIDIA Container Toolkit CLI version 1.19.1
+commit: 09ceee5dde66ba9ce25c7cc69b1ebd5e6e3266fa
+--- docker info runtimes ---
+  cdi: nvidia.com/gpu=all
+ Swarm: inactive
+ Runtimes: io.containerd.runc.v2 nvidia runc
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: aad11006b869517fcd3009450b6f82da282e1a9b
+ runc version: v1.4.3-0-gbb14dabe
+ init version: de40ad0
+ Security Options:
+  seccomp
+   Profile: builtin
+  cgroupns
+ Kernel Version: 6.18.33.2-microsoft-standard-WSL2
+ Operating System: Ubuntu 26.04 LTS
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 24
+ Total Memory: 62.48GiB
+ Name: CIARANXU-PC0
+ ID: 72c5d932-d142-4ba8-9901-b4441348b416
+ Docker Root Dir: /var/lib/docker
+ Debug Mode: false
+ Experimental: false
+--- gpu smoke (cuda base image nvidia-smi) ---
+Unable to find image 'nvidia/cuda:12.6.3-base-ubuntu24.04' locally
+12.6.3-base-ubuntu24.04: Pulling from nvidia/cuda
+afad30e59d72: Pulling fs layer
+150ae9de14cf: Pulling fs layer
+bd06d3ff2532: Pulling fs layer
+8c0575e6ec2e: Pulling fs layer
+95c4042ee7b4: Pulling fs layer
+150ae9de14cf: Download complete
+95c4042ee7b4: Download complete
+bd06d3ff2532: Download complete
+afad30e59d72: Download complete
+afad30e59d72: Pull complete
+bd06d3ff2532: Pull complete
+8c0575e6ec2e: Download complete
+8c0575e6ec2e: Pull complete
+150ae9de14cf: Pull complete
+95c4042ee7b4: Pull complete
+Digest: sha256:c87e78933f4c16e3272123bf2f75537306596d0fbaa395a29696a22786e5ee0e
+Status: Downloaded newer image for nvidia/cuda:12.6.3-base-ubuntu24.04
+Sat Aug  8 11:44:19 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 610.43.02              KMD Version: 610.62        CUDA UMD Version: 13.3     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 5080        On  |   00000000:02:00.0  On |                  N/A |
+| 32%   40C    P0             42W /  360W |    4110MiB /  16303MiB |      2%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+=== 2026-08-08T19:44:20+08:00 NVIDIA Container Toolkit install OK ===

@@ -1,0 +1,446 @@
+
+=============================
+== Triton Inference Server ==
+=============================
+
+NVIDIA Release 26.07 (build 59591852)
+Triton Server Version 2.71.0
+
+Copyright (c) 2018-2026, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+I0808 12:32:29.711148 1 cache_manager.cc:480] "Create CacheManager with cache_dir: '/opt/tritonserver/caches'"
+I0808 12:32:29.974769 1 pinned_memory_manager.cc:277] "Pinned memory pool is created at '0x204c00000' with size 268435456"
+I0808 12:32:29.974871 1 cuda_memory_manager.cc:107] "CUDA memory pool is created on device 0 with size 67108864"
+E0808 12:32:29.975894 1 server.cc:248] "CudaDriverHelper has not been initialized."
+I0808 12:32:29.976937 1 model_config_utils.cc:756] "Server side auto-completed config: "
+name: "qwen25_05b"
+instance_group {
+  kind: KIND_MODEL
+}
+parameters {
+  key: "REPORT_CUSTOM_METRICS"
+  value {
+    string_value: "true"
+  }
+}
+backend: "vllm"
+
+I0808 12:32:29.976991 1 model_lifecycle.cc:473] "loading: qwen25_05b:1"
+I0808 12:32:29.977168 1 backend_model.cc:530] "Adding default backend config setting: default-max-batch-size,4"
+I0808 12:32:29.977185 1 shared_library.cc:149] "OpenLibraryHandle: /opt/tritonserver/backends/python/libtriton_python.so"
+I0808 12:32:29.978022 1 python_be.cc:2237] "'vllm' TRITONBACKEND API version: 1.19"
+I0808 12:32:29.978028 1 python_be.cc:2259] "backend configuration:\n{\"cmdline\":{\"auto-complete-config\":\"true\",\"backend-directory\":\"/opt/tritonserver/backends\",\"min-compute-capability\":\"6.000000\",\"default-max-batch-size\":\"4\"}}"
+I0808 12:32:29.978040 1 python_be.cc:2397] "Shared memory configuration is shm-default-byte-size=1048576,shm-growth-byte-size=1048576,stub-timeout-seconds=30"
+I0808 12:32:29.978478 1 python_be.cc:2726] "TRITONBACKEND_GetBackendAttribute: setting attributes"
+I0808 12:32:29.978495 1 python_be.cc:2498] "TRITONBACKEND_ModelInitialize: qwen25_05b (version 1)"
+I0808 12:32:29.978737 1 model_config_utils.cc:2017] "ModelConfig 64-bit fields:"
+I0808 12:32:29.978744 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::default_priority_level"
+I0808 12:32:29.978745 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::default_queue_policy::default_timeout_microseconds"
+I0808 12:32:29.978746 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::max_queue_delay_microseconds"
+I0808 12:32:29.978747 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::priority_levels"
+I0808 12:32:29.978748 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::priority_queue_policy::key"
+I0808 12:32:29.978749 1 model_config_utils.cc:2019] "\tModelConfig::dynamic_batching::priority_queue_policy::value::default_timeout_microseconds"
+I0808 12:32:29.978750 1 model_config_utils.cc:2019] "\tModelConfig::ensemble_scheduling::step::model_version"
+I0808 12:32:29.978751 1 model_config_utils.cc:2019] "\tModelConfig::input::dims"
+I0808 12:32:29.978751 1 model_config_utils.cc:2019] "\tModelConfig::input::reshape::shape"
+I0808 12:32:29.978752 1 model_config_utils.cc:2019] "\tModelConfig::instance_group::secondary_devices::device_id"
+I0808 12:32:29.978753 1 model_config_utils.cc:2019] "\tModelConfig::model_warmup::inputs::value::dims"
+I0808 12:32:29.978754 1 model_config_utils.cc:2019] "\tModelConfig::optimization::cuda::graph_spec::graph_lower_bound::input::value::dim"
+I0808 12:32:29.978755 1 model_config_utils.cc:2019] "\tModelConfig::optimization::cuda::graph_spec::input::value::dim"
+I0808 12:32:29.978756 1 model_config_utils.cc:2019] "\tModelConfig::output::dims"
+I0808 12:32:29.978756 1 model_config_utils.cc:2019] "\tModelConfig::output::reshape::shape"
+I0808 12:32:29.978757 1 model_config_utils.cc:2019] "\tModelConfig::sequence_batching::direct::max_queue_delay_microseconds"
+I0808 12:32:29.978758 1 model_config_utils.cc:2019] "\tModelConfig::sequence_batching::max_sequence_idle_microseconds"
+I0808 12:32:29.978759 1 model_config_utils.cc:2019] "\tModelConfig::sequence_batching::oldest::max_queue_delay_microseconds"
+I0808 12:32:29.978760 1 model_config_utils.cc:2019] "\tModelConfig::sequence_batching::state::dims"
+I0808 12:32:29.978761 1 model_config_utils.cc:2019] "\tModelConfig::sequence_batching::state::initial_state::dims"
+I0808 12:32:29.978762 1 model_config_utils.cc:2019] "\tModelConfig::version_policy::specific::versions"
+I0808 12:32:29.979284 1 stub_launcher.cc:501] "Starting Python backend stub: '/opt/tritonserver/backends/python/triton_python_backend_stub' '/models_repo/qwen25_05b/1/model.py' 'triton_vllm_backend_shm_region_9614e301-9e7e-412c-9e84-8cb1739f2306' '1048576' '1048576' '1' '/opt/tritonserver/backends/python' '336' 'qwen25_05b' '/opt/tritonserver/backends/vllm'"
+I0808 12:32:29.980194 1 stub_launcher.cc:554] "Waiting for the stub health monitoring thread to start"
+I0808 12:32:36.711210 1 python_be.cc:2193] "model configuration:\n{\n    \"name\": \"qwen25_05b\",\n    \"platform\": \"\",\n    \"backend\": \"vllm\",\n    \"runtime\": \"model.py\",\n    \"version_policy\": {\n        \"latest\": {\n            \"num_versions\": 1\n        }\n    },\n    \"max_batch_size\": 0,\n    \"input\": [\n        {\n            \"name\": \"text_input\",\n            \"data_type\": \"TYPE_STRING\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"image\",\n            \"data_type\": \"TYPE_STRING\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                -1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"stream\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"sampling_parameters\",\n            \"data_type\": \"TYPE_STRING\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"exclude_input_in_output\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"return_finish_reason\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"return_cumulative_logprob\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"return_logprobs\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"return_num_input_tokens\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"return_num_output_tokens\",\n            \"data_type\": \"TYPE_BOOL\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"embedding_request\",\n            \"data_type\": \"TYPE_STRING\",\n            \"format\": \"FORMAT_NONE\",\n            \"dims\": [\n                1\n            ],\n            \"is_shape_tensor\": false,\n            \"allow_ragged_batch\": false,\n            \"optional\": true,\n            \"is_non_linear_format_io\": false\n        }\n    ],\n    \"output\": [\n        {\n            \"name\": \"text_output\",\n            \"data_type\": \"TYPE_STRING\",\n            \"dims\": [\n                -1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"finish_reason\",\n            \"data_type\": \"TYPE_STRING\",\n            \"dims\": [\n                -1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"cumulative_logprob\",\n            \"data_type\": \"TYPE_FP32\",\n            \"dims\": [\n                -1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"logprobs\",\n            \"data_type\": \"TYPE_STRING\",\n            \"dims\": [\n                -1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"num_input_tokens\",\n            \"data_type\": \"TYPE_UINT32\",\n            \"dims\": [\n                1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        },\n        {\n            \"name\": \"num_output_tokens\",\n            \"data_type\": \"TYPE_UINT32\",\n            \"dims\": [\n                -1\n            ],\n            \"label_filename\": \"\",\n            \"is_shape_tensor\": false,\n            \"is_non_linear_format_io\": false\n        }\n    ],\n    \"batch_input\": [],\n    \"batch_output\": [],\n    \"optimization\": {\n        \"priority\": \"PRIORITY_DEFAULT\",\n        \"input_pinned_memory\": {\n            \"enable\": true\n        },\n        \"output_pinned_memory\": {\n            \"enable\": true\n        },\n        \"gather_kernel_buffer_threshold\": 0,\n        \"eager_batching\": false\n    },\n    \"instance_group\": [\n        {\n            \"name\": \"qwen25_05b_0\",\n            \"kind\": \"KIND_MODEL\",\n            \"count\": 1,\n            \"gpus\": [],\n            \"secondary_devices\": [],\n            \"profile\": [],\n            \"passive\": false,\n            \"host_policy\": \"\"\n        }\n    ],\n    \"default_model_filename\": \"\",\n    \"cc_model_filenames\": {},\n    \"metric_tags\": {},\n    \"parameters\": {\n        \"REPORT_CUSTOM_METRICS\": {\n            \"string_value\": \"true\"\n        }\n    },\n    \"model_warmup\": [],\n    \"model_transaction_policy\": {\n        \"decoupled\": true\n    }\n}"
+I0808 12:32:36.711641 1 python_be.cc:2542] "TRITONBACKEND_ModelInstanceInitialize: qwen25_05b_0_0 (MODEL device 0)"
+I0808 12:32:36.711656 1 backend_model_instance.cc:77] "Creating instance qwen25_05b_0_0 on model-specified devices using artifact ''"
+I0808 12:32:36.711977 1 stub_launcher.cc:501] "Starting Python backend stub: '/opt/tritonserver/backends/python/triton_python_backend_stub' '/models_repo/qwen25_05b/1/model.py' 'triton_vllm_backend_shm_region_5f071f1f-0648-4249-bc3f-1c51274b374d' '1048576' '1048576' '1' '/opt/tritonserver/backends/python' '336' 'qwen25_05b_0_0' '/opt/tritonserver/backends/vllm'"
+I0808 12:32:36.712858 1 stub_launcher.cc:554] "Waiting for the stub health monitoring thread to start"
+I0808 12:32:36.720646 1 stub_launcher.cc:700] "Waiting for the stub process initialization response"
+WARNING 08-08 12:32:40 [envs.py:2033] Unknown vLLM environment variable detected: VLLM_VERSION
+WARNING 08-08 12:32:40 [envs.py:2033] Unknown vLLM environment variable detected: VLLM_FLASH_ATTN_SRC_DIR
+WARNING 08-08 12:32:40 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 08-08 12:32:46 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 08-08 12:32:46 [model.py:1725] Using max model len 2048
+INFO 08-08 12:32:46 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=4096.
+INFO 08-08 12:32:46 [vllm.py:1006] Asynchronous scheduling is enabled.
+WARNING 08-08 12:32:46 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 08-08 12:32:46 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 08-08 12:32:46 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 08-08 12:32:46 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 08-08 12:32:46 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+W0808 12:32:46.710276 1 vllm_backend_utils.py:131] "V1 is enabled, but got --disable-frontend-multiprocessing."
+WARNING 08-08 12:32:48 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: WSL is detected and NVML is not compatible with fork
+(EngineCore pid=429) INFO 08-08 12:32:52 [core.py:114] Initializing a V1 LLM engine (v0.24.0+092c4842.dev) with config: model='/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775', speculative_config=None, tokenizer='/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [4096], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+(EngineCore pid=429) INFO 08-08 12:32:53 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:48725 backend=nccl
+(EngineCore pid=429) INFO 08-08 12:32:53 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=429) INFO 08-08 12:32:53 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(EngineCore pid=429) INFO 08-08 12:32:53 [gpu_model_runner.py:5160] Starting to load model /models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775...
+(EngineCore pid=429) INFO 08-08 12:32:54 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=429) INFO 08-08 12:32:54 [flash_attn.py:670] Using FlashAttention version 2
+(EngineCore pid=429) INFO 08-08 12:32:54 [weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 0.92 GiB. Available RAM: 55.72 GiB.
+(EngineCore pid=429) INFO 08-08 12:32:54 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=429) Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+(EngineCore pid=429) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.91it/s]
+(EngineCore pid=429) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  1.90it/s]
+(EngineCore pid=429) 
+(EngineCore pid=429) INFO 08-08 12:32:55 [default_loader.py:430] Loading weights took 0.53 seconds
+(EngineCore pid=429) INFO 08-08 12:32:55 [gpu_model_runner.py:5255] Model loading took 0.93 GiB memory and 1.212989 seconds
+(EngineCore pid=429) INFO 08-08 12:33:00 [gpu_worker.py:508] Available KV cache memory: 5.13 GiB
+(EngineCore pid=429) INFO 08-08 12:33:00 [kv_cache_utils.py:2146] GPU KV cache size: 448,544 tokens
+(EngineCore pid=429) INFO 08-08 12:33:00 [kv_cache_utils.py:2147] Maximum concurrency for 2,048 tokens per request: 219.02x
+(EngineCore pid=429) INFO 08-08 12:33:00 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(EngineCore pid=429) INFO 08-08 12:33:00 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(EngineCore pid=429) 2026-08-08 12:33:00,874 - INFO - autotuner.py:651 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=429) 2026-08-08 12:33:00,995 - INFO - autotuner.py:674 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=429) INFO 08-08 12:33:01 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(EngineCore pid=429) INFO 08-08 12:33:01 [core.py:344] init engine (profile, create kv cache, warmup model) took 5.65 s
+(EngineCore pid=429) INFO 08-08 12:33:01 [vllm.py:1006] Asynchronous scheduling is enabled.
+(EngineCore pid=429) WARNING 08-08 12:33:01 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(EngineCore pid=429) WARNING 08-08 12:33:01 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(EngineCore pid=429) INFO 08-08 12:33:01 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+(EngineCore pid=429) INFO 08-08 12:33:01 [vllm.py:1288] Cudagraph is disabled under eager mode
+(EngineCore pid=429) INFO 08-08 12:33:01 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+I0808 12:33:01.590185 1 python_be.cc:2563] "TRITONBACKEND_ModelInstanceInitialize: instance initialization successful qwen25_05b_0_0 (device 0)"
+I0808 12:33:01.590291 1 backend_model_instance.cc:802] "Starting backend thread for qwen25_05b_0_0 at nice 0 on device 0..."
+I0808 12:33:01.590504 1 model_lifecycle.cc:849] "successfully loaded 'qwen25_05b'"
+I0808 12:33:01.590613 1 server.cc:640] 
++------------------+------+
+| Repository Agent | Path |
++------------------+------+
++------------------+------+
+
+I0808 12:33:01.590641 1 server.cc:667] 
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Backend | Path                                                  | Config                                                                                                                                                        |
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| python  | /opt/tritonserver/backends/python/libtriton_python.so | {"cmdline":{"auto-complete-config":"true","backend-directory":"/opt/tritonserver/backends","min-compute-capability":"6.000000","default-max-batch-size":"4"}} |
+| vllm    | /opt/tritonserver/backends/vllm/model.py              | {"cmdline":{"auto-complete-config":"true","backend-directory":"/opt/tritonserver/backends","min-compute-capability":"6.000000","default-max-batch-size":"4"}} |
++---------+-------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+I0808 12:33:01.590663 1 server.cc:710] 
++------------+---------+--------+
+| Model      | Version | Status |
++------------+---------+--------+
+| qwen25_05b | 1       | READY  |
++------------+---------+--------+
+
+I0808 12:33:01.633638 1 metrics.cc:889] "Collecting metrics for GPU 0: NVIDIA GeForce RTX 5080"
+I0808 12:33:01.635076 1 metrics.cc:782] "Collecting CPU metrics"
+I0808 12:33:01.635167 1 tritonserver.cc:2598] 
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Option                           | Value                                                                                                                                                                                                           |
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| server_id                        | triton                                                                                                                                                                                                          |
+| server_version                   | 2.71.0                                                                                                                                                                                                          |
+| server_extensions                | classification sequence model_repository model_repository(unload_dependents) schedule_policy model_configuration system_shared_memory cuda_shared_memory binary_tensor_data parameters statistics trace logging |
+| model_repository_path[0]         | /models_repo                                                                                                                                                                                                    |
+| model_control_mode               | MODE_NONE                                                                                                                                                                                                       |
+| strict_model_config              | 0                                                                                                                                                                                                               |
+| model_config_name                |                                                                                                                                                                                                                 |
+| rate_limit                       | OFF                                                                                                                                                                                                             |
+| pinned_memory_pool_byte_size     | 268435456                                                                                                                                                                                                       |
+| cuda_memory_pool_byte_size{0}    | 67108864                                                                                                                                                                                                        |
+| min_supported_compute_capability | 6.0                                                                                                                                                                                                             |
+| strict_readiness                 | 1                                                                                                                                                                                                               |
+| exit_timeout                     | 30                                                                                                                                                                                                              |
+| cache_enabled                    | 0                                                                                                                                                                                                               |
++----------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+I0808 12:33:01.635499 1 grpc_server.cc:2385] 
++----------------------------------------------+---------+
+| GRPC KeepAlive Option                        | Value   |
++----------------------------------------------+---------+
+| keepalive_time_ms                            | 7200000 |
+| keepalive_timeout_ms                         | 20000   |
+| keepalive_permit_without_calls               | 0       |
+| http2_max_pings_without_data                 | 2       |
+| http2_min_recv_ping_interval_without_data_ms | 300000  |
+| http2_max_ping_strikes                       | 2       |
++----------------------------------------------+---------+
+
+I0808 12:33:01.636587 1 grpc_server.cc:100] "Ready for RPC 'Check', 0"
+I0808 12:33:01.636600 1 grpc_server.cc:100] "Ready for RPC 'ServerLive', 0"
+I0808 12:33:01.636604 1 grpc_server.cc:100] "Ready for RPC 'ServerReady', 0"
+I0808 12:33:01.636607 1 grpc_server.cc:100] "Ready for RPC 'ModelReady', 0"
+I0808 12:33:01.636609 1 grpc_server.cc:100] "Ready for RPC 'ServerMetadata', 0"
+I0808 12:33:01.636612 1 grpc_server.cc:100] "Ready for RPC 'ModelMetadata', 0"
+I0808 12:33:01.636615 1 grpc_server.cc:100] "Ready for RPC 'ModelConfig', 0"
+I0808 12:33:01.636619 1 grpc_server.cc:100] "Ready for RPC 'SystemSharedMemoryStatus', 0"
+I0808 12:33:01.636621 1 grpc_server.cc:100] "Ready for RPC 'SystemSharedMemoryRegister', 0"
+I0808 12:33:01.636626 1 grpc_server.cc:100] "Ready for RPC 'SystemSharedMemoryUnregister', 0"
+I0808 12:33:01.636631 1 grpc_server.cc:100] "Ready for RPC 'CudaSharedMemoryStatus', 0"
+I0808 12:33:01.636634 1 grpc_server.cc:100] "Ready for RPC 'CudaSharedMemoryRegister', 0"
+I0808 12:33:01.636635 1 grpc_server.cc:100] "Ready for RPC 'CudaSharedMemoryUnregister', 0"
+I0808 12:33:01.636638 1 grpc_server.cc:100] "Ready for RPC 'RepositoryIndex', 0"
+I0808 12:33:01.636640 1 grpc_server.cc:100] "Ready for RPC 'RepositoryModelLoad', 0"
+I0808 12:33:01.636645 1 grpc_server.cc:100] "Ready for RPC 'RepositoryModelUnload', 0"
+I0808 12:33:01.636647 1 grpc_server.cc:100] "Ready for RPC 'ModelStatistics', 0"
+I0808 12:33:01.636650 1 grpc_server.cc:100] "Ready for RPC 'Trace', 0"
+I0808 12:33:01.636652 1 grpc_server.cc:100] "Ready for RPC 'Logging', 0"
+I0808 12:33:01.636668 1 grpc_server.cc:364] "Thread started for CommonHandler"
+I0808 12:33:01.636772 1 infer_handler.cc:684] "New request handler for ModelInferHandler, 0"
+I0808 12:33:01.636801 1 infer_handler.h:1558] "Thread started for ModelInferHandler"
+I0808 12:33:01.636883 1 infer_handler.cc:684] "New request handler for ModelInferHandler, 0"
+I0808 12:33:01.636909 1 infer_handler.h:1558] "Thread started for ModelInferHandler"
+I0808 12:33:01.636982 1 stream_infer_handler.cc:128] "New request handler for ModelStreamInferHandler, 0"
+I0808 12:33:01.637006 1 infer_handler.h:1558] "Thread started for ModelStreamInferHandler"
+I0808 12:33:01.637013 1 grpc_server.cc:2579] "Started GRPCInferenceService at 0.0.0.0:8001"
+I0808 12:33:01.637145 1 http_server.cc:4961] "Started HTTPService at 0.0.0.0:8000"
+I0808 12:33:01.678427 1 http_server.cc:400] "Started Metrics Service at 0.0.0.0:8002"
+I0808 12:36:06.858250 1 http_server.cc:4847] "HTTP request: 0 /v2/health/ready"
+I0808 12:36:06.861871 1 http_server.cc:4847] "HTTP request: 0 /v2/health/live"
+I0808 12:36:06.864965 1 http_server.cc:4847] "HTTP request: 0 /v2/health/ready"
+I0808 12:36:06.868159 1 http_server.cc:4847] "HTTP request: 0 /v2/models/qwen25_05b"
+I0808 12:36:06.871733 1 http_server.cc:4847] "HTTP request: 0 /v2/health/ready"
+I0808 12:36:11.803588 1 http_server.cc:4847] "HTTP request: 2 /v2/models/qwen25_05b/generate"
+I0808 12:36:11.803757 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to INITIALIZED"
+I0808 12:36:11.803766 1 infer_request.cc:929] "[request id: <id_unknown>] prepared: [0x0x75ef0c0057c0] request id: , model: qwen25_05b, requested version: -1, actual version: 1, flags: 0x0, correlation id: 0, batch size: 0, priority: 0, timeout (us): 0\noriginal inputs:\n[0x0x75ef0c003ac8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c003fe8] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\noverride inputs:\ninputs:\n[0x0x75ef0c003fe8] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c003ac8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\noriginal requested outputs:\nrequested outputs:\ncumulative_logprob\nfinish_reason\nlogprobs\nnum_input_tokens\nnum_output_tokens\ntext_output\n"
+I0808 12:36:11.803773 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to PENDING"
+I0808 12:36:11.803849 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from PENDING to EXECUTING"
+I0808 12:36:11.803923 1 python_be.cc:1603] "model qwen25_05b, instance qwen25_05b_0_0, executing 1 requests"
+I0808 12:36:11.804827 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from EXECUTING to RELEASED"
+I0808 12:36:11.804838 1 python_be.cc:2662] "TRITONBACKEND_ModelInstanceExecute: model instance name qwen25_05b_0_0 released 1 requests"
+WARNING 08-08 12:36:11 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+(EngineCore pid=429) WARNING 08-08 12:36:11 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+I0808 12:36:12.377547 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.377590 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 175, addr: 0x75f060001e60"
+I0808 12:36:12.377637 1 http_server.cc:1400] "HTTP release: size 175, addr 0x75f060001e60"
+I0808 12:36:12.385109 1 http_server.cc:4847] "HTTP request: 2 /v2/models/qwen25_05b/generate"
+I0808 12:36:12.385214 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to INITIALIZED"
+I0808 12:36:12.385221 1 infer_request.cc:929] "[request id: <id_unknown>] prepared: [0x0x75ef0c0057c0] request id: , model: qwen25_05b, requested version: -1, actual version: 1, flags: 0x0, correlation id: 0, batch size: 0, priority: 0, timeout (us): 0\noriginal inputs:\n[0x0x75ef0c005eb8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c003928] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\noverride inputs:\ninputs:\n[0x0x75ef0c003928] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c005eb8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\noriginal requested outputs:\nrequested outputs:\ncumulative_logprob\nfinish_reason\nlogprobs\nnum_input_tokens\nnum_output_tokens\ntext_output\n"
+I0808 12:36:12.385227 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to PENDING"
+I0808 12:36:12.385275 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from PENDING to EXECUTING"
+I0808 12:36:12.385289 1 python_be.cc:1603] "model qwen25_05b, instance qwen25_05b_0_0, executing 1 requests"
+I0808 12:36:12.385586 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from EXECUTING to RELEASED"
+I0808 12:36:12.385597 1 python_be.cc:2662] "TRITONBACKEND_ModelInstanceExecute: model instance name qwen25_05b_0_0 released 1 requests"
+I0808 12:36:12.404073 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.404113 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 10, addr: 0x75f064001e40"
+I0808 12:36:12.404150 1 http_server.cc:1400] "HTTP release: size 10, addr 0x75f064001e40"
+I0808 12:36:12.417238 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.417279 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 5, addr: 0x75f058001e40"
+I0808 12:36:12.417314 1 http_server.cc:1400] "HTTP release: size 5, addr 0x75f058001e40"
+I0808 12:36:12.420565 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.420582 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 10, addr: 0x75f05c001e40"
+I0808 12:36:12.420600 1 http_server.cc:1400] "HTTP release: size 10, addr 0x75f05c001e40"
+I0808 12:36:12.430510 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.430551 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 5, addr: 0x75f050001e40"
+I0808 12:36:12.430586 1 http_server.cc:1400] "HTTP release: size 5, addr 0x75f050001e40"
+I0808 12:36:12.439259 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.439294 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 4, addr: 0x75f038001e40"
+I0808 12:36:12.439326 1 http_server.cc:1400] "HTTP release: size 4, addr 0x75f038001e40"
+I0808 12:36:12.446458 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.446479 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 4, addr: 0x75f040001e40"
+I0808 12:36:12.446502 1 http_server.cc:1400] "HTTP release: size 4, addr 0x75f040001e40"
+I0808 12:36:12.453346 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.453375 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 9, addr: 0x75f030001e40"
+I0808 12:36:12.453400 1 http_server.cc:1400] "HTTP release: size 9, addr 0x75f030001e40"
+I0808 12:36:12.460409 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.460428 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f044001e40"
+I0808 12:36:12.460449 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f044001e40"
+I0808 12:36:12.466941 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.466959 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f048001e40"
+I0808 12:36:12.466979 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f048001e40"
+I0808 12:36:12.473455 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.473478 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f04c001e40"
+I0808 12:36:12.473501 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f04c001e40"
+I0808 12:36:12.481164 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.481188 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f028001e40"
+I0808 12:36:12.481216 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f028001e40"
+I0808 12:36:12.489211 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.489233 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f02c001e40"
+I0808 12:36:12.489256 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f02c001e40"
+I0808 12:36:12.496217 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.496234 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f020001e40"
+I0808 12:36:12.496254 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f020001e40"
+I0808 12:36:12.504130 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.504186 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f024001e40"
+I0808 12:36:12.504245 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f024001e40"
+I0808 12:36:12.510391 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.510410 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f018001e40"
+I0808 12:36:12.510431 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f018001e40"
+I0808 12:36:12.510731 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:12.510743 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f01c001e40"
+I0808 12:36:12.510759 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f01c001e40"
+I0808 12:36:12.518409 1 http_server.cc:355] "HTTP request: 0 /metrics"
+I0808 12:36:12.521961 1 http_server.cc:355] "HTTP request: 0 /metrics"
+I0808 12:36:24.102452 1 http_server.cc:4847] "HTTP request: 2 /v2/models/qwen25_05b/generate_stream"
+I0808 12:36:24.102570 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to INITIALIZED"
+I0808 12:36:24.102579 1 infer_request.cc:929] "[request id: <id_unknown>] prepared: [0x0x75ef0c0057c0] request id: , model: qwen25_05b, requested version: -1, actual version: 1, flags: 0x0, correlation id: 0, batch size: 0, priority: 0, timeout (us): 0\noriginal inputs:\n[0x0x75ef0c005eb8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c003928] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\noverride inputs:\ninputs:\n[0x0x75ef0c003928] input: text_input, type: BYTES, original shape: [1], batch + shape: [1], shape: [1]\n[0x0x75ef0c005eb8] input: stream, type: BOOL, original shape: [1], batch + shape: [1], shape: [1]\noriginal requested outputs:\nrequested outputs:\ncumulative_logprob\nfinish_reason\nlogprobs\nnum_input_tokens\nnum_output_tokens\ntext_output\n"
+I0808 12:36:24.102586 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from INITIALIZED to PENDING"
+I0808 12:36:24.102626 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from PENDING to EXECUTING"
+I0808 12:36:24.102645 1 python_be.cc:1603] "model qwen25_05b, instance qwen25_05b_0_0, executing 1 requests"
+I0808 12:36:24.103036 1 infer_request.cc:133] "[request id: <id_unknown>] Setting state from EXECUTING to RELEASED"
+I0808 12:36:24.103048 1 python_be.cc:2662] "TRITONBACKEND_ModelInstanceExecute: model instance name qwen25_05b_0_0 released 1 requests"
+I0808 12:36:24.175231 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.175275 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 10, addr: 0x75f00c001e40"
+I0808 12:36:24.175356 1 http_server.cc:1400] "HTTP release: size 10, addr 0x75f00c001e40"
+I0808 12:36:24.240913 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.241004 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 5, addr: 0x75f008001e40"
+I0808 12:36:24.241043 1 http_server.cc:1400] "HTTP release: size 5, addr 0x75f008001e40"
+I0808 12:36:24.300274 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.300313 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 10, addr: 0x75f010001e40"
+I0808 12:36:24.300356 1 http_server.cc:1400] "HTTP release: size 10, addr 0x75f010001e40"
+I0808 12:36:24.360560 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.360614 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 5, addr: 0x75f000001e40"
+I0808 12:36:24.360662 1 http_server.cc:1400] "HTTP release: size 5, addr 0x75f000001e40"
+I0808 12:36:24.370465 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.370509 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 4, addr: 0x75eff8001e40"
+I0808 12:36:24.370554 1 http_server.cc:1400] "HTTP release: size 4, addr 0x75eff8001e40"
+I0808 12:36:24.380193 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.380234 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 4, addr: 0x75f004001e40"
+I0808 12:36:24.380268 1 http_server.cc:1400] "HTTP release: size 4, addr 0x75f004001e40"
+I0808 12:36:24.389125 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.389168 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 9, addr: 0x75eff0001e40"
+I0808 12:36:24.389204 1 http_server.cc:1400] "HTTP release: size 9, addr 0x75eff0001e40"
+I0808 12:36:24.398502 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.398541 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efe8001e40"
+I0808 12:36:24.398574 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efe8001e40"
+I0808 12:36:24.406314 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.406352 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75f014001e40"
+I0808 12:36:24.406386 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75f014001e40"
+I0808 12:36:24.414844 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.414884 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efec001e40"
+I0808 12:36:24.414921 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efec001e40"
+I0808 12:36:24.424449 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.424492 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efe0001e40"
+I0808 12:36:24.424528 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efe0001e40"
+I0808 12:36:24.434555 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.434598 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efe4001e40"
+I0808 12:36:24.434644 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efe4001e40"
+I0808 12:36:24.445783 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.445826 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efd8001e40"
+I0808 12:36:24.445865 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efd8001e40"
+I0808 12:36:24.454463 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.454502 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 8, addr: 0x75efdc001e40"
+I0808 12:36:24.454540 1 http_server.cc:1400] "HTTP release: size 8, addr 0x75efdc001e40"
+Signal (15) received.
+I0808 12:36:24.459694 1 http_server.cc:251] "Timeout 30: Found 1 HTTP service connections"
+I0808 12:36:24.464933 1 infer_response.cc:193] "add response output: output: text_output, type: BYTES, shape: [1]"
+I0808 12:36:24.464969 1 http_server.cc:1326] "HTTP using buffer for: 'text_output', size: 12, addr: 0x75efd0001e40"
+I0808 12:36:24.465002 1 http_server.cc:1400] "HTTP release: size 12, addr 0x75efd0001e40"
+I0808 12:36:25.460807 1 http_server.cc:1230] "~HTTPAPIServer()"
+I0808 12:36:25.460923 1 grpc_server.cc:2657] "Timeout 29: Found 3 gRPC service connections and inference handlers"
+I0808 12:36:25.461109 1 grpc_server.cc:150] "Process for ServerLive, rpc_ok=0, 0 step START"
+I0808 12:36:25.461120 1 grpc_server.cc:356] "Done for ServerLive, 0"
+I0808 12:36:25.461126 1 grpc_server.cc:150] "Process for ServerReady, rpc_ok=0, 0 step START"
+I0808 12:36:25.461127 1 grpc_server.cc:356] "Done for ServerReady, 0"
+I0808 12:36:25.461130 1 grpc_server.cc:150] "Process for ModelReady, rpc_ok=0, 0 step START"
+I0808 12:36:25.461132 1 grpc_server.cc:356] "Done for ModelReady, 0"
+I0808 12:36:25.461131 1 stream_infer_handler.cc:168] "Process for ModelStreamInferHandler, rpc_ok=0, context 0, 0 step START"
+I0808 12:36:25.461135 1 grpc_server.cc:150] "Process for ServerMetadata, rpc_ok=0, 0 step START"
+I0808 12:36:25.461136 1 grpc_server.cc:356] "Done for ServerMetadata, 0"
+I0808 12:36:25.461136 1 infer_handler.h:1545] "Done for ModelStreamInferHandler, 0"
+I0808 12:36:25.461139 1 grpc_server.cc:150] "Process for ModelMetadata, rpc_ok=0, 0 step START"
+I0808 12:36:25.461141 1 grpc_server.cc:356] "Done for ModelMetadata, 0"
+I0808 12:36:25.461143 1 grpc_server.cc:150] "Process for ModelConfig, rpc_ok=0, 0 step START"
+I0808 12:36:25.461144 1 grpc_server.cc:356] "Done for ModelConfig, 0"
+I0808 12:36:25.461152 1 grpc_server.cc:150] "Process for ModelStatistics, rpc_ok=0, 0 step START"
+I0808 12:36:25.461155 1 grpc_server.cc:356] "Done for ModelStatistics, 0"
+I0808 12:36:25.461158 1 grpc_server.cc:150] "Process for RepositoryIndex, rpc_ok=0, 0 step START"
+I0808 12:36:25.461159 1 grpc_server.cc:356] "Done for RepositoryIndex, 0"
+I0808 12:36:25.461162 1 grpc_server.cc:150] "Process for RepositoryModelLoad, rpc_ok=0, 0 step START"
+I0808 12:36:25.461164 1 grpc_server.cc:356] "Done for RepositoryModelLoad, 0"
+I0808 12:36:25.461166 1 grpc_server.cc:150] "Process for RepositoryModelUnload, rpc_ok=0, 0 step START"
+I0808 12:36:25.461168 1 grpc_server.cc:356] "Done for RepositoryModelUnload, 0"
+I0808 12:36:25.461142 1 infer_handler.cc:754] "Process for ModelInferHandler, rpc_ok=0, 0 step START"
+I0808 12:36:25.461179 1 infer_handler.cc:754] "Process for ModelInferHandler, rpc_ok=0, 0 step START"
+I0808 12:36:25.461170 1 grpc_server.cc:150] "Process for SystemSharedMemoryStatus, rpc_ok=0, 0 step START"
+I0808 12:36:25.461191 1 infer_handler.h:1545] "Done for ModelInferHandler, 0"
+I0808 12:36:25.461192 1 grpc_server.cc:356] "Done for SystemSharedMemoryStatus, 0"
+I0808 12:36:25.461198 1 grpc_server.cc:150] "Process for SystemSharedMemoryRegister, rpc_ok=0, 0 step START"
+I0808 12:36:25.461200 1 grpc_server.cc:356] "Done for SystemSharedMemoryRegister, 0"
+I0808 12:36:25.461202 1 grpc_server.cc:150] "Process for SystemSharedMemoryUnregister, rpc_ok=0, 0 step START"
+I0808 12:36:25.461204 1 grpc_server.cc:356] "Done for SystemSharedMemoryUnregister, 0"
+I0808 12:36:25.461206 1 grpc_server.cc:150] "Process for CudaSharedMemoryStatus, rpc_ok=0, 0 step START"
+I0808 12:36:25.461207 1 grpc_server.cc:356] "Done for CudaSharedMemoryStatus, 0"
+I0808 12:36:25.461209 1 grpc_server.cc:150] "Process for CudaSharedMemoryRegister, rpc_ok=0, 0 step START"
+I0808 12:36:25.461211 1 grpc_server.cc:356] "Done for CudaSharedMemoryRegister, 0"
+I0808 12:36:25.461213 1 grpc_server.cc:150] "Process for CudaSharedMemoryUnregister, rpc_ok=0, 0 step START"
+I0808 12:36:25.461217 1 grpc_server.cc:356] "Done for CudaSharedMemoryUnregister, 0"
+I0808 12:36:25.461183 1 infer_handler.h:1545] "Done for ModelInferHandler, 0"
+I0808 12:36:25.461219 1 grpc_server.cc:150] "Process for Trace, rpc_ok=0, 0 step START"
+I0808 12:36:25.461240 1 grpc_server.cc:356] "Done for Trace, 0"
+I0808 12:36:25.461248 1 grpc_server.cc:150] "Process for Logging, rpc_ok=0, 0 step START"
+I0808 12:36:25.461249 1 grpc_server.cc:356] "Done for Logging, 0"
+I0808 12:36:25.461252 1 grpc_server.cc:150] "Process for Check, rpc_ok=0, 0 step START"
+I0808 12:36:25.461253 1 grpc_server.cc:356] "Done for Check, 0"
+I0808 12:36:26.461041 1 server.cc:312] "Waiting for in-flight requests to complete."
+I0808 12:36:26.461085 1 server.cc:328] "Timeout 28: Found 0 model versions that have in-flight inferences"
+I0808 12:36:26.461242 1 server.cc:343] "All models are stopped, unloading models"
+I0808 12:36:26.461249 1 server.cc:352] "Timeout 28: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:26.461250 1 server.cc:358] "qwen25_05b v1: UNLOADING"
+I0808 12:36:26.461354 1 backend_model_instance.cc:825] "Stopping backend thread for qwen25_05b_0_0..."
+I0808 12:36:26.461427 1 python_be.cc:2712] "TRITONBACKEND_ModelInstanceFinalize: delete instance state"
+I0808 12:36:27.461379 1 server.cc:352] "Timeout 27: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:27.461417 1 server.cc:358] "qwen25_05b v1: UNLOADING"
+I0808 12:36:27.462738 1 model.py:680] "[vllm] Issuing finalize to vllm backend"
+INFO 08-08 12:36:27 [core_client.py:655] [shutdown] MPClient: start timeout=default
+INFO 08-08 12:36:27 [core_client.py:657] [shutdown] MPClient: stopping engine manager
+(EngineCore pid=429) INFO 08-08 12:36:27 [core.py:1214] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=429) INFO 08-08 12:36:27 [core.py:1333] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=429) INFO 08-08 12:36:27 [core.py:1364] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=429) INFO 08-08 12:36:27 [core.py:1227] [shutdown] EngineCore: exiting busy loop
+(EngineCore pid=429) [rank0]: Traceback (most recent call last):
+(EngineCore pid=429) [rank0]:   File "/usr/lib/python3.12/weakref.py", line 666, in _exitfunc
+(EngineCore pid=429) [rank0]:     f()
+(EngineCore pid=429) [rank0]:   File "/usr/lib/python3.12/weakref.py", line 590, in __call__
+(EngineCore pid=429) [rank0]:     return info.func(*info.args, **(info.kwargs or {}))
+(EngineCore pid=429) [rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=429) [rank0]:   File "/usr/local/lib/python3.12/dist-packages/torch/library.py", line 663, in _del_library
+(EngineCore pid=429) [rank0]:     _clear_torch_ops_cache(op_defs)
+(EngineCore pid=429) [rank0]:   File "/usr/local/lib/python3.12/dist-packages/torch/library.py", line 628, in _clear_torch_ops_cache
+(EngineCore pid=429) [rank0]:     if not hasattr(namespace, name):
+(EngineCore pid=429) [rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=429) [rank0]:   File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 1387, in __getattr__
+(EngineCore pid=429) [rank0]:     op, overload_names = _get_packet(qualified_op_name, module_name)
+(EngineCore pid=429) [rank0]:                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=429) [rank0]:   File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 1412, in _get_packet
+(EngineCore pid=429) [rank0]:     op, overload_names = torch._C._jit_get_operation(qualname)
+(EngineCore pid=429) [rank0]:                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=429) [rank0]: UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf3 in position 181: invalid continuation byte
+I0808 12:36:28.461535 1 server.cc:352] "Timeout 26: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:28.461572 1 server.cc:358] "qwen25_05b v1: UNLOADING"
+INFO 08-08 12:36:29 [core_client.py:659] [shutdown] MPClient: engine manager stopped
+INFO 08-08 12:36:29 [core_client.py:660] [shutdown] MPClient: cleaning up background resources
+INFO 08-08 12:36:29 [core_client.py:662] [shutdown] MPClient: complete
+I0808 12:36:29.412338 1 model.py:309] "[vllm] Shutdown complete"
+I0808 12:36:29.413413 1 model.py:700] "[vllm] Running Garbage Collector on finalize..."
+I0808 12:36:29.461713 1 server.cc:352] "Timeout 25: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:29.461769 1 server.cc:358] "qwen25_05b v1: UNLOADING"
+I0808 12:36:29.699049 1 model.py:702] "[vllm] Garbage Collector on finalize... done"
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/weakref.py", line 666, in _exitfunc
+    f()
+  File "/usr/lib/python3.12/weakref.py", line 590, in __call__
+    return info.func(*info.args, **(info.kwargs or {}))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/library.py", line 663, in _del_library
+    _clear_torch_ops_cache(op_defs)
+  File "/usr/local/lib/python3.12/dist-packages/torch/library.py", line 628, in _clear_torch_ops_cache
+    if not hasattr(namespace, name):
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 1387, in __getattr__
+    op, overload_names = _get_packet(qualified_op_name, module_name)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 1412, in _get_packet
+    op, overload_names = torch._C._jit_get_operation(qualname)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xae in position 183: invalid start byte
+I0808 12:36:30.461904 1 server.cc:352] "Timeout 24: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:30.461944 1 server.cc:358] "qwen25_05b v1: UNLOADING"
+I0808 12:36:31.462063 1 server.cc:352] "Timeout 23: Found 1 live models and 0 in-flight non-inference requests"
+I0808 12:36:31.462106 1 server.cc:358] "qwen25_05b v1: UNLOADING"

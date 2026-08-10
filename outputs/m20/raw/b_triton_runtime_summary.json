@@ -1,0 +1,19 @@
+{
+  "status": "RUNTIME_UNBLOCKED_M20B_SMOKE_PASS",
+  "image": "nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3",
+  "digest": "sha256:31e20bfbc65055d6b85553a00d45342a62c506874aa996c11ae53650151f05b1",
+  "triton_release": "26.07",
+  "triton_server_version": "2.71.0",
+  "container_python": "3.12.3",
+  "container_torch": "2.13.0a0+9186a08b2c.nv26.07",
+  "container_cuda": "13.3",
+  "container_vllm": "0.24.0+092c4842.nv26.7.59534043",
+  "host_vllm": "0.24.1.dev0+gee0da84ab.d20260714",
+  "host_torch": "2.11.0+cu130",
+  "model_bind": "/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct -> /models/qwen05b",
+  "generate_non_stream": "HTTP 200",
+  "generate_stream_endpoint": "/v2/models/qwen25_05b/generate_stream HTTP 200",
+  "metrics": "http://:8002/metrics includes vllm: prefix",
+  "same_runtime_vllm_serve": "PASS on same image port 8021 chat completions",
+  "formal_m20c": "NOT_RUN"
+}

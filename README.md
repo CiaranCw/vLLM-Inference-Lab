@@ -20,6 +20,7 @@
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
 - **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
+- **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
 
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
 >
@@ -91,6 +92,10 @@
 ![M22 TP scaling](figures/fig9_m22_tp_scaling_h20_formal.png)
 > 左：稳态 decode 单步 TP 全程更慢（~+19–24%，CI 排除 0）。中：吞吐 `speedup_vs_tp1` 在大 batch 可 >1——**主要来自并发 prefill**。右：长 prompt first-token 随 TP 加速（P=4096 TP4≈3.39×）。边界：H20 / 7B / eager / in-process；**PP/DP/EP 未做**。
 
+**M20 · Same-runtime：vllm serve vs Triton+vLLM backend**
+![M20 same-runtime](figures/fig10_m20_same_runtime.png)
+> 同镜像 / 同 EngineArgs / Poisson Shape A。高 QPS 下 Triton 侧 TTFT 显著变差（32: 24→719ms；40: 26→952ms），ITL 接近 → **入口排队税**，不是逐步解码变慢。
+
 ---
 
 ## 逐模块成果（M0–M13 + M17，不遗漏信息）
@@ -113,6 +118,7 @@
 | **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
 | **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线已收口，3 项可选扩展未执行** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
 | **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
+| **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
 ★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
@@ -129,6 +135,7 @@
 7. **投机解码优化的是串行 execution depth，不是保证少算**：M19 直接计数 engine execution rounds（强 proxy，非严格纯 Decode Target Forward），高初始 prompt 重叠 workload 从 128→33。Acceptance 重要但非充分；还需 Proposal Coverage 与 Round Cost。教科书「batch 增大收益消失」在本机 batch≤16 **未触及**——仍是 M7 的 CPU 提交受限区，**不等于规律不成立**。
 8. **"输出不一致"不等于"实现有 bug"**：M19 有 15/126 请求 baseline↔ngram 不完全一致。batch-shape control 证明 **baseline 自己**换 batch 组成也可在相近位置分歧——现有证据与有限精度 batch-shape sensitivity **一致**，**未发现明确 Spec Decode correctness bug**，但也不是严格逐例排除。**先找对照组，再定证据强度。**
 9. **TP 的「吞吐加速」≠「decode 单步变快」**：M22 在 4×H20 / 7B 上，稳态 decode 单步 TP 全程显著更慢（~+19–24%，CI 排除 0）；bs=64 时 `speedup_vs_tp1>1` 主要来自并发 prefill 的 first-token（804→230ms）。**口径拆不开就会把通信税说成加速。**
+10. **Triton overhead 主要在 TTFT 排队，不在逐步 ITL**：M20 same-runtime 下 QPS 32/40 时 Triton+backend 相对同镜像 `vllm serve`，TTFT median 从 ~24ms 涨到 ~0.7–1.0s（CI 排除 0），而 ITL 仍 ~11ms 量级。
 
 > 完整证据链见 [`notes/evidence_index.md`](notes/evidence_index.md)；每个结论都可回溯到 trace/log/jsonl/csv。
 
@@ -179,6 +186,7 @@ python scripts/m16_figures.py    # -> figures/fig1..4
 python scripts/m17_figures.py    # -> figures/fig5..6
 python scripts/m19_figures.py    # -> figures/fig7..8
 python scripts/m22_figures.py --tag h20_formal  # -> figures/fig9_m22_tp_scaling_h20_formal.png
+python scripts/m20_figures.py                    # -> figures/fig10_m20_same_runtime.png
 ```
 
 关键运行约定（本机 WSL2/sm_120）：`VLLM_USE_FLASHINFER_SAMPLER=0`（无 nvcc，FlashInfer sampler JIT 会失败）、`VLLM_ENABLE_V1_MULTIPROCESSING=0`、`seed=0`、`temperature=0`。

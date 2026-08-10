@@ -1,0 +1,3 @@
+health_ok=1
+
+{"id":"chatcmpl-8ae4dff02dd100c5","object":"chat.completion","created":1786192625,"model":"/models/qwen05b/snapshots/7ae557604adf67be50417f59c2c2f167def9a775","choices":[{"index":0,"message":{"role":"assistant","content":"I'm sorry, but I can't","refusal":null,"annotations":null,"audio":null,"function_call":null,"reasoning":null},"logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":null,"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-0.24.0+092c4842.dev-d152a9d0","usage":{"prompt_tokens":30,"total_tokens":38,"completion_tokens":8,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"prompt_text":null,"kv_transfer_params":null}

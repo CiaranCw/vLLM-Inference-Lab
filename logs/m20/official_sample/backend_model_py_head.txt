@@ -1,0 +1,120 @@
+# Copyright 2023-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#  * Neither the name of NVIDIA CORPORATION nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import asyncio
+import gc
+import json
+import os
+import queue
+import threading
+import traceback
+from collections import Counter
+from typing import Dict, List
+
+import numpy as np
+import triton_python_backend_utils as pb_utils
+from vllm.engine.arg_utils import AsyncEngineArgs
+
+from utils.metrics import VllmStatLoggerFactory
+from utils.request import EmbedRequest, GenerateRequest
+from utils.vllm_backend_utils import build_async_engine_client_from_engine_args
+
+_VLLM_ENGINE_ARGS_FILENAME = "model.json"
+_MULTI_LORA_ARGS_FILENAME = "multi_lora.json"
+
+
+class TritonPythonModel:
+    @classmethod
+    def auto_complete_config(cls, auto_complete_model_config):
+        # Add inputs/outputs to the model config.
+        cls._auto_complete_inputs_and_outputs(auto_complete_model_config)
+
+        # We need to use decoupled transaction policy for saturating
+        # vLLM engine for max throughtput.
+        # TODO [DLIS:5233]: Allow asynchronous execution to lift this
+        # restriction for cases there is exactly a single response to
+        # a single request.
+        auto_complete_model_config.set_model_transaction_policy(dict(decoupled=True))
+
+        # Disabling batching in Triton, let vLLM handle the batching on its own.
+        auto_complete_model_config.set_max_batch_size(0)
+
+        return auto_complete_model_config
+
+    @staticmethod
+    def _auto_complete_inputs_and_outputs(auto_complete_model_config):
+        # Inputs expected by the backend.
+        inputs = [
+            # TODO: Support array input
+            {"name": "text_input", "data_type": "TYPE_STRING", "dims": [1]},
+            {
+                "name": "image",
+                "data_type": "TYPE_STRING",
+                "dims": [-1],  # can be multiple images as separate elements
+                "optional": True,
+            },
+            {
+                "name": "stream",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "sampling_parameters",
+                "data_type": "TYPE_STRING",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "exclude_input_in_output",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "return_finish_reason",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "return_cumulative_logprob",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "return_logprobs",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
+            {
+                "name": "return_num_input_tokens",
+                "data_type": "TYPE_BOOL",
+                "dims": [1],
+                "optional": True,
+            },
