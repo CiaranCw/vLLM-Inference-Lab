@@ -1,0 +1,68 @@
+# M21 监控栈
+#
+# network_mode: host —— Prometheus 需要抓 host 上的 vllm serve(:8000) 与自写 exporter(:9836)。
+# WSL2 + Docker Engine 下 host 网络可用（已实测），故不引入 host.docker.internal 这类桥接技巧。
+#
+# 启动（注意本机需经 wrapper 拿到 docker 组）：
+#   ~/bin/docker compose -f monitoring/docker-compose.yml up -d
+# 停止：
+#   ~/bin/docker compose -f monitoring/docker-compose.yml down
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: m21-prometheus
+    network_mode: host
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+      - m21-prom-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --web.listen-address=127.0.0.1:9090
+      - --web.enable-lifecycle
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: m21-grafana
+    network_mode: host
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - m21-grafana-data:/var/lib/grafana
+    environment:
+      # 本机自用、仅监听 127.0.0.1；匿名只读免登录，方便截图取证。
+      GF_SERVER_HTTP_ADDR: 127.0.0.1
+      GF_SERVER_HTTP_PORT: "3000"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_DEFAULT_THEME: light
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    container_name: m21-dcgm-exporter
+    network_mode: host
+    # -c 1000：dcgm-exporter 默认 30000ms 采集一次，Prometheus 每秒抓到的会是同一份
+    # 最多 30 秒前的旧值 —— 实测中 DCGM 报 GPU_UTIL=2% 而 NVML 同期为 33%，
+    # 正是被 NVML 这个正交第二证据源抓出来的（见 notes/m21/results.md）。
+    command: ["-c", "1000"]
+    cap_add:
+      - SYS_ADMIN
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  m21-prom-data:
+  m21-grafana-data:

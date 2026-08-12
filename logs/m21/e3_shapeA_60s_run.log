@@ -1,0 +1,27 @@
+[m21] GPU before: {'mem_used_mib': 4602, 'mem_total_mib': 16303, 'gpu_util_pct': 2}
+[m21] server ready 28.01s pid=1452759
+[m21] global warmup (冷启动 JIT 与 measure 分离)...
+[m21] e3_shapeA_60s_qps8_s0: client_p99_ttft=31.164391255006194ms server_hist_p99=39.08571428571429ms waiting_max=0.0 gpu_util_max=36.0
+[m21] e3_shapeA_60s_qps16_s0: client_p99_ttft=36.127016809768975ms server_hist_p99=39.53387533875338ms waiting_max=0.0 gpu_util_max=39.0
+[m21] e3_shapeA_60s_qps24_s0: client_p99_ttft=46.12713771639392ms server_hist_p99=44.800000000000146ms waiting_max=0.0 gpu_util_max=39.0
+[m21] e3_shapeA_60s_qps32_s0: client_p99_ttft=414.8637679684907ms server_hist_p99=464.4444444444444ms waiting_max=11.0 gpu_util_max=45.0
+[m21] e3_shapeA_60s_qps40_s0: client_p99_ttft=7024.154351018368ms server_hist_p99=7409.3655589123855ms waiting_max=251.0 gpu_util_max=48.0
+[m21] e3_shapeA_60s_qps44_s0: client_p99_ttft=14648.900517909788ms server_hist_p99=19654.450261780104ms waiting_max=515.0 gpu_util_max=46.0
+[m21] e3_shapeA_60s_qps48_s0: client_p99_ttft=20976.947633186355ms server_hist_p99=35278.688524590165ms waiting_max=705.0 gpu_util_max=51.0
+[m21] e3_shapeA_60s_qps8_s1: client_p99_ttft=36.118379158433505ms server_hist_p99=39.6205533596838ms waiting_max=0.0 gpu_util_max=34.0
+[m21] e3_shapeA_60s_qps16_s1: client_p99_ttft=40.59583142166955ms server_hist_p99=39.84192439862542ms waiting_max=0.0 gpu_util_max=36.0
+[m21] e3_shapeA_60s_qps24_s1: client_p99_ttft=45.88564500445471ms server_hist_p99=43.00000000000112ms waiting_max=0.0 gpu_util_max=41.0
+[m21] e3_shapeA_60s_qps32_s1: client_p99_ttft=176.62520753918196ms server_hist_p99=203.54838709677412ms waiting_max=5.0 gpu_util_max=43.0
+[m21] e3_shapeA_60s_qps40_s1: client_p99_ttft=2936.1410816316466ms server_hist_p99=4695.43147208122ms waiting_max=108.0 gpu_util_max=53.0
+[m21] e3_shapeA_60s_qps44_s1: client_p99_ttft=13908.78132056212ms server_hist_p99=19544.82758620689ms waiting_max=511.0 gpu_util_max=52.0
+[m21] e3_shapeA_60s_qps48_s1: client_p99_ttft=18991.045912997797ms server_hist_p99=19781.81818181818ms waiting_max=704.0 gpu_util_max=50.0
+[m21] e3_shapeA_60s_qps8_s2: client_p99_ttft=41.89533679746083ms server_hist_p99=43.99999999999955ms waiting_max=0.0 gpu_util_max=97.0
+[m21] e3_shapeA_60s_qps16_s2: client_p99_ttft=43.023012301418916ms server_hist_p99=39.8801996672213ms waiting_max=0.0 gpu_util_max=61.0
+[m21] e3_shapeA_60s_qps24_s2: client_p99_ttft=46.32990851532664ms server_hist_p99=41.500000000000604ms waiting_max=0.0 gpu_util_max=42.0
+[m21] e3_shapeA_60s_qps32_s2: client_p99_ttft=339.24260658211915ms server_hist_p99=366.66666666666646ms waiting_max=10.0 gpu_util_max=43.0
+[m21] e3_shapeA_60s_qps40_s2: client_p99_ttft=5921.840187865306ms server_hist_p99=7344.1558441558445ms waiting_max=224.0 gpu_util_max=91.0
+[m21] e3_shapeA_60s_qps44_s2: client_p99_ttft=10185.931076048873ms server_hist_p99=16228.571428571417ms waiting_max=399.0 gpu_util_max=58.0
+[m21] e3_shapeA_60s_qps48_s2: client_p99_ttft=12689.818982980214ms server_hist_p99=19624.511082138197ms waiting_max=524.0 gpu_util_max=57.0
+[m21] server stopped; GPU after: {'mem_used_mib': 4305, 'mem_total_mib': 16303, 'gpu_util_pct': 2}
+[m21] -> outputs/m21/e3_shapeA_60s.csv  (21 runs)
+[m21] -> outputs/m21/raw/e3_shapeA_60s_runs.jsonl

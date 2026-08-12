@@ -1,0 +1,188 @@
+{
+  "uid": "m21-vllm-capacity",
+  "title": "M21 · vLLM 容量与瓶颈面板",
+  "description": "面板按「学习主线的 5 个工程问题」分区：延迟/队列(Q1,Q2)、瓶颈归因四象限(Q3)、吞吐(Q4)、存活与抢占(Q5)。注意：GPU 忙碌只有粗粒度 GPU_UTIL，本环境 DCGM_FI_PROF_*(SM active) 全为 N/A。",
+  "tags": ["m21", "vllm", "capacity"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1s",
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Q1/Q2 · 延迟与队列（容量拐点看这里）",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "服务端 TTFT 分位数（直方图近似，≠ 客户端真值）",
+      "description": "histogram_quantile 受 bucket 边界离散化影响，与 vllm bench serve 的 np.percentile 不是同一个数。E2 已量化两者偏差。",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 1 } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(vllm:time_to_first_token_seconds_bucket[30s])))",
+          "legendFormat": "server hist P50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(vllm:time_to_first_token_seconds_bucket[30s])))",
+          "legendFormat": "server hist P95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(vllm:time_to_first_token_seconds_bucket[30s])))",
+          "legendFormat": "server hist P99"
+        },
+        {
+          "refId": "D",
+          "expr": "0.3",
+          "legendFormat": "M12 冻结 SLO 300ms"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "调度队列：running / waiting",
+      "description": "waiting 持续 > 0 = offered QPS 超过容量；running 顶到 max_num_seqs(64) = 调度上限。",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum(vllm:num_requests_running)", "legendFormat": "running" },
+        { "refId": "B", "expr": "sum(vllm:num_requests_waiting)", "legendFormat": "waiting" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "服务端 ITL 分位数",
+      "description": "ITL 反映逐步解码的卡顿；M20 已证 Triton 入口排队税主要抬 TTFT 而非 ITL。",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(vllm:inter_token_latency_seconds_bucket[30s])))",
+          "legendFormat": "ITL P50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(vllm:inter_token_latency_seconds_bucket[30s])))",
+          "legendFormat": "ITL P99"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "吞吐：请求完成率 / token 速率（Q4 容量推导输入）",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(vllm:request_success_total[30s]))", "legendFormat": "完成 req/s" },
+        { "refId": "B", "expr": "sum(rate(vllm:prompt_tokens_total[30s]))", "legendFormat": "prompt tok/s" },
+        { "refId": "C", "expr": "sum(rate(vllm:generation_tokens_total[30s]))", "legendFormat": "generation tok/s" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Q3 · 瓶颈归因四象限：GPU 算力 / 显存 / KV / CPU / 队列",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "GPU 忙碌（粗粒度）：DCGM vs NVML 交叉校验",
+      "description": "两条线来自互相独立的采集路径，用于验证读数可信。本环境拿不到 SM 占用率，因此高延迟 + 低 GPU_UTIL 应读作『不是 GPU 算力受限』，不可反推 SM 空闲程度。",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "max(DCGM_FI_DEV_GPU_UTIL)", "legendFormat": "DCGM GPU_UTIL" },
+        { "refId": "B", "expr": "max(m21_nvml_gpu_util_percent)", "legendFormat": "NVML gpu util" }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "CPU：服务进程 vs 整机（M7 的 CPU 提交受限在面板上的投影）",
+      "description": "100% = 一个逻辑核跑满。decode 场景若延迟高但 GPU_UTIL 低而进程 CPU 高 → CPU 提交受限签名。",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "m21_target_cpu_percent", "legendFormat": "vllm 进程(含子进程)" },
+        { "refId": "B", "expr": "m21_host_cpu_percent", "legendFormat": "整机" }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "KV Cache 使用率 + 抢占累计（KV 受限的正交双证据）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "max(vllm:kv_cache_usage_perc)", "legendFormat": "kv_cache_usage" },
+        { "refId": "B", "expr": "sum(increase(vllm:num_preemptions_total[1m]))", "legendFormat": "抢占次数/分钟" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "GPU 显存：DCGM FB_USED vs NVML used",
+      "description": "WSL2 下 nvidia-smi 看不到进程级显存，故只能做整卡口径，无法把显存归因到单个进程。",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "max(DCGM_FI_DEV_FB_USED) * 1024 * 1024", "legendFormat": "DCGM FB_USED" },
+        { "refId": "B", "expr": "max(m21_nvml_fb_used_bytes)", "legendFormat": "NVML used" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Q5 · 存活与故障定位",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "抓取目标存活（up）与进程存活",
+      "description": "两者同时归零 = 进程真的退出；只有 up 归零 = HTTP/端口层问题。这是 worker 退出演练的判据。",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 35 },
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "max": 1 }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "up{job=\"vllm\"}", "legendFormat": "up vllm" },
+        { "refId": "B", "expr": "up{job=\"dcgm\"}", "legendFormat": "up dcgm" },
+        { "refId": "C", "expr": "up{job=\"host\"}", "legendFormat": "up host" },
+        { "refId": "D", "expr": "m21_target_up", "legendFormat": "服务进程存活" }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "请求结束原因分布（超时/异常定位入口）",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 35 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (finished_reason) (rate(vllm:request_success_total[30s]))",
+          "legendFormat": "{{finished_reason}}"
+        }
+      ]
+    }
+  ]
+}

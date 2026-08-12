@@ -1,0 +1,13 @@
+[e4] GPU before: {'mem_used_mib': 7090, 'mem_total_mib': 16303, 'gpu_util_pct': 41}
+Traceback (most recent call last):
+  File "/home/ciaran/projects/vllm-inference-lab/s[e4] B3b_kv_long_output_util0.15: kv_max=0.7231467473524962 preempt=0.0 started=True
+[e4] B3b_kv_long_output 未能造出抢占 —— 如实记录，不得假装成功
+[e4] -> outputs/m21/e4_bottleneck.json
+ = measure(scn, ["--gpu-memory-utilization", util], rid)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_bottleneck.py", line 77, in measure
+    rec["server_ready_s"] = server.start(log_path, expect_failure=True)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_common.py", line 212, in start
+    raise RuntimeError(f"port {self.port} already in use")
+RuntimeError: port 8014 already in use

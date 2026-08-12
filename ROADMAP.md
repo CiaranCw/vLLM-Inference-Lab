@@ -183,7 +183,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / ~~M20~~ / **M22(TP)** 已收口；M18 / M21 等待继续。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / **M22(TP)** 已收口；M18 等待继续。**
 
 ---
 
@@ -338,8 +338,15 @@
 - **⬜ 可选未做**：按 M12 SLO 重测 Triton「最大稳定 QPS」；Triton OpenAI frontend；compiled。
 - 产出：`serving/triton_model_repository/`、`scripts/m20_*.py`、`outputs/m20/`、`logs/m20/`、`notes/m20/results.md`。
 
-### M21 监控与容量规划　⬜　T+E+O
-- 搭 Prometheus + Grafana + GPU 指标 + vLLM/Triton 服务指标 + 压测结果。回答：**最大稳定 QPS、并发到哪 P99 失控、瓶颈是 GPU/显存/KV/CPU/队列、一张卡承载多少用户、OOM/超时/worker 退出如何定位**。理论只能定义指标，替代不了真实压测与面板。
+### M21 监控与容量规划　✅　**T+E+O COMPLETE**（2026-08-12）
+- **栈**：`vllm serve`(8014) + `dcgm-exporter`(9400) + 自写 `m21_host_exporter`(9836) → Prometheus(1s 抓取, 7 条告警) → Grafana(provisioning 加载面板)。配置全部入库 `monitoring/`。
+- **E2 指标可信度先过关**：21 个压测窗口的服务端 counter 增量与客户端 bench 汇总**逐条精确相等**；但**服务端 `histogram_quantile` P99 ≠ 客户端真值 P99**（TTFT 中位 +9.7%，最大 +68%）→ 面板数字只能看趋势/告警，不能当 SLA 验收。
+- **E3 容量**：Shape A 7 档 × 3 seed × 60s 窗口，本次最大稳定 QPS **24**（区间 (24,32]）；过载先堆队列（waiting 705）而 **GPU 窗口均值仅 25→32%**。**采样窗口决定结论**：5s 窗口把 QPS32 测成 35ms（达标），60s 窗口是 415ms（破线）。
+- **与 M12(≈40) 的差异**：E7 单变量 A/B 证明**监控栈开销 ≲1%**（非原因）；NVML 时钟/温度排除降频；单流 ITL 9.40ms 说明机器没整体变慢；差异出在**高并发 TPOT +30%**（9.3→12.1ms）→ Little's law 所需并发 48→62 顶到 `max_num_seqs=64` 硬闸 → 正反馈。**根因未定**（M12 无环境指纹），本模块补了 `env_fingerprint.json`。**容量跨会话不稳定（24–32），不宣称复现 40，也不宣称 40 是错的。**
+- **E4 瓶颈签名**：B1 CPU 提交受限(GPU 31%/进程 CPU 110%)、B2 GPU 计算受限(66%)、B3b KV 受限(kv 0.9997 + 抢占 290)、B4 队列受限(waiting 1196)。**负结果**：只压 `--gpu-memory-utilization` 到 0.10 也造不出抢占（需求侧被 `max_num_seqs×384 tokens` 封顶），必须用长输出从需求侧构造。
+- **E6 故障演练 4/4 PASS，7 条告警规则全部真实 firing**。核心发现：**`SIGKILL` vLLM API server 不会杀死持有显存的 `EngineCore` 子进程** —— `up==0` 但显存 90s 不回收，新实例撞 `No available memory for the cache blocks`；清掉已记录的子进程 PID 后 5s 回收、28s 恢复。
+- **⬜ 未做**：K8s/多副本/长时 soak/跨机 SLA/Triton 面板/compiled 对照；`DCGM_FI_PROF_*`(SM active) 在本环境全 N/A，**拿不到 SM 占用率**；WSL2 下无进程级显存归因。
+- 产出：`monitoring/*`、`scripts/m21_*.py`、`outputs/m21/*`、`logs/m21/*`、`notes/m21/{monitoring_and_capacity,results}.md`、`figures/fig1{1,2}_m21_*.png`；`check_invariants.py --module m21`（11 PASS）。
 
 ## 阶段 G · 分布式与并行（T+E+O+H，★资源门控）　`docs/serving/parallelism_scaling.md`
 
@@ -455,9 +462,10 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步（2026-08-10 更新）**：第一阶段已收口。第二阶段 **M17 / M19 / M20 / M22(TP)** 主线已收口。
+- **当前下一步（2026-08-12 更新）**：第一阶段已收口。第二阶段 **M17 / M19 / M20 / M21 / M22(TP)** 主线已收口。
   **M20**：**T+A+B+C COMPLETE**（`notes/m20/results.md`）。
   **M22** TP：**T+E+O+H COMPLETE**（4×H20 / 2026-08-09，`notes/m22/results.md`）；PP/DP/EP 仍 ⬜。
-  → 下一优先：M18（下载须授权）或 M21 监控；**不要**把 Optional 的 M19 深化当作阻塞项。
+  **M21**：**T+E+O COMPLETE**（`notes/m21/results.md`，监控栈 + 容量 + 瓶颈签名 + 故障演练）。
+  → 下一优先：M18（量化，下载须授权）；**不要**把 Optional 的 M19 深化当作阻塞项。
   M13 若收到 maintainer review，优先回应迭代。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

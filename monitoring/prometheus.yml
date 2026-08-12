@@ -1,0 +1,35 @@
+# M21 监控栈 · Prometheus 配置
+# scrape_interval=1s：本模块要看的是秒级的队列堆积/抢占瞬态，15s 默认值会把拐点抹平。
+# 代价是存储与 CPU 开销更高 —— 仅用于短时压测，不是长期运行配置。
+global:
+  scrape_interval: 1s
+  scrape_timeout: 900ms
+  evaluation_interval: 1s
+  external_labels:
+    lab: vllm-inference-lab
+    module: m21
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  # vLLM OpenAI server 自带指标（host 侧 vllm serve，commit ee0da84）
+  # 端口沿用 M12 的 8014，保证与 M12 冻结配置同源、便于交叉验证
+  - job_name: vllm
+    static_configs:
+      - targets: ["127.0.0.1:8014"]
+
+  # GPU 指标（NVIDIA 官方 dcgm-exporter）
+  # 注意：本环境 DCGM_FI_PROF_*（SM active 等）全为 N/A，只有粗粒度 GPU_UTIL 可用
+  - job_name: dcgm
+    static_configs:
+      - targets: ["127.0.0.1:9400"]
+
+  # 自写 host exporter：进程级 CPU/RSS + NVML 交叉校验读数
+  - job_name: host
+    static_configs:
+      - targets: ["127.0.0.1:9836"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]

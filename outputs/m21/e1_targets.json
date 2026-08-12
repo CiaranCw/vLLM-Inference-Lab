@@ -1,0 +1,117 @@
+{
+  "started_at": "2026-08-11 20:18:12+0800",
+  "gpu_before": {
+    "mem_used_mib": 4479,
+    "mem_total_mib": 16303,
+    "gpu_util_pct": 2
+  },
+  "server_cmd": [
+    "vllm",
+    "serve",
+    "Qwen/Qwen2.5-0.5B-Instruct",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "8014",
+    "--seed",
+    "0",
+    "--enforce-eager",
+    "--dtype",
+    "auto",
+    "--max-model-len",
+    "2048",
+    "--gpu-memory-utilization",
+    "0.6",
+    "--max-num-seqs",
+    "64",
+    "--max-num-batched-tokens",
+    "4096",
+    "--no-enable-prefix-caching",
+    "--no-async-scheduling",
+    "--enable-chunked-prefill",
+    "--disable-uvicorn-access-log"
+  ],
+  "server_ready_s": 32.02,
+  "server_pid": 1269816,
+  "cold_start_ttft_p99_in_window_s": 0.41584000000000043,
+  "alerts_firing_cold_window": [
+    "VLLMTTFTP99AboveSLO"
+  ],
+  "vllm_metric_sample_path": "logs/m21/vllm_metrics_sample.txt",
+  "vllm_metric_series_count": 122,
+  "targets": {
+    "dcgm": {
+      "health": "up",
+      "lastError": ""
+    },
+    "host": {
+      "health": "up",
+      "lastError": ""
+    },
+    "prometheus": {
+      "health": "up",
+      "lastError": ""
+    },
+    "vllm": {
+      "health": "up",
+      "lastError": ""
+    }
+  },
+  "G1_1_all_targets_up": true,
+  "alert_rules_loaded": {
+    "m21_availability": [
+      "VLLMServerDown",
+      "HostExporterTargetDown"
+    ],
+    "m21_latency_and_queue": [
+      "VLLMTTFTP99AboveSLO",
+      "VLLMQueueBacklog"
+    ],
+    "m21_memory_and_kv": [
+      "VLLMKVCacheNearFull",
+      "VLLMPreemptionHappening",
+      "GPUMemoryNearFull"
+    ]
+  },
+  "alert_rule_count": 7,
+  "alerts_firing_idle": [],
+  "G1_2_rules_loaded_no_firing": true,
+  "promql_values": {
+    "vllm_running": 0.0,
+    "vllm_waiting": 0.0,
+    "vllm_kv_usage": 0.0,
+    "vllm_ttft_p99": NaN,
+    "vllm_itl_p99": NaN,
+    "vllm_success_rate": 0.0,
+    "vllm_prompt_tok_rate": 0.0,
+    "vllm_gen_tok_rate": 0.0,
+    "vllm_preemptions": 0.0,
+    "dcgm_gpu_util": 2.0,
+    "dcgm_fb_used_mib": 14452.0,
+    "nvml_gpu_util": 2.0,
+    "nvml_fb_used_bytes": 15490191360.0,
+    "proc_cpu_percent": 1.0,
+    "proc_rss_bytes": 3648618496.0,
+    "target_up": 1.0
+  },
+  "promql_missing": [],
+  "G1_3_all_exprs_resolve": true,
+  "grafana": {
+    "datasources": [
+      "Prometheus"
+    ],
+    "dashboards": [
+      {
+        "title": "M21 · vLLM 容量与瓶颈面板",
+        "uid": "m21-vllm-capacity"
+      }
+    ]
+  },
+  "G1_4_grafana_provisioned": true,
+  "gpu_after_stop": {
+    "mem_used_mib": 4270,
+    "mem_total_mib": 16303,
+    "gpu_util_pct": 2
+  },
+  "PASS": true
+}

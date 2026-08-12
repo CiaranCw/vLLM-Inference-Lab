@@ -1,0 +1,156 @@
+=== date ===
+2026-08-11T20:06:05+08:00
+=== /dev nvidia/dxg device nodes ===
+crw-rw-rw- 1 root root  10, 258 Jul 28 19:54 /dev/dxg
+crw-rw-rw- 1 root root 195, 255 Jul 28 19:54 /dev/nvidiactl
+=== libdcgm present? ===
+ls: cannot access '/usr/lib/x86_64-linux-gnu/libdcgm*': No such file or directory
+ls: cannot access '/usr/lib/wsl/lib/libdcgm*': No such file or directory
+=== dcgmi binary? ===
+dcgmi: not found
+=== nvidia-smi -q accounting/persistence support ===
+12:    Product Name                                       : NVIDIA GeForce RTX 5080
+18:    Persistence Mode                                   : Enabled
+23:    Accounting Mode                                    : Disabled
+24:    Accounting Mode Buffer Size                        : 4000
+25:    Driver Model
+60:    GPU Virtualization Mode
+61:        Virtualization Mode                            : None
+126:    Compute Mode                                       : Default
+=== G0-a: attempt DCGM inside existing Triton image (avoids extra 1.3GB pull) ===
+
+=============================
+== Triton Inference Server ==
+=============================
+
+NVIDIA Release 26.07 (build 59591852)
+Triton Server Version 2.71.0
+
+Copyright (c) 2018-2026, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+-- which dcgmi --
+/usr/bin/dcgmi
+-- libdcgm --
+lrwxrwxrwx 1 root root      12 Apr  1 07:46 /usr/lib/x86_64-linux-gnu/libdcgm.so -> libdcgm.so.4
+lrwxrwxrwx 1 root root      16 Apr  1 07:46 /usr/lib/x86_64-linux-gnu/libdcgm.so.4 -> libdcgm.so.4.5.3
+-rw-r--r-- 1 root root 5911784 Apr  1 07:46 /usr/lib/x86_64-linux-gnu/libdcgm.so.4.5.3
+-rw-r--r-- 1 root root  315922 Apr  1 07:19 /usr/lib/x86_64-linux-gnu/libdcgm_stub.a
+lrwxrwxrwx 1 root root      28 Apr  1 07:46 /usr/lib/x86_64-linux-gnu/libdcgmmoduleconfig.so.4 -> libdcgmmoduleconfig.so.4.5.3
+-- nv-hostengine --
+/usr/bin/nv-hostengine
+-- dcgmi discovery -l --
+Error: unable to establish a connection to the specified host: localhost
+Error: Unable to connect to host engine. Host engine connection invalid/disconnected.
+-- exit code above: 0 --
+=== G0-a step2: start nv-hostengine then query ===
+
+=============================
+== Triton Inference Server ==
+=============================
+
+NVIDIA Release 26.07 (build 59591852)
+Triton Server Version 2.71.0
+
+Copyright (c) 2018-2026, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+Started host engine version 4.5.3 using port number: 5555
+-- hostengine rc=0 --
+-- dcgmi discovery -l --
+1 GPU found (Active).
++--------+----------------------------------------------------------------------+
+| GPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
+| 0      | Name: NVIDIA GeForce RTX 5080                                        |
+|        | PCI Bus ID: 00000000:02:00.0                                         |
+|        | Device UUID: GPU-250dd0ac-380f-5343-8f75-c87b558c5bf6                |
++--------+----------------------------------------------------------------------+
+0 NvSwitches found.
++-----------+
+| Switch ID |
++-----------+
++-----------+
+0 ConnectX found.
++----------+
+| ConnectX |
++----------+
++----------+
+0 CPUs found.
++--------+----------------------------------------------------------------------+
+| CPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
++--------+----------------------------------------------------------------------+
+-- rc=0 --
+-- dcgmi dmon (util/mem) --
+#Entity         GPUTL             FBUSD             POWER             
+ID                                                   W                
+GPU 0           2                 4146              41.696            
+GPU 0           2                 4148              41.631            
+-- rc=0 --
+=== G0-a step3: DCGM PROF fields (SM active / tensor / mem bw) on WSL2 + GeForce ===
+
+=============================
+== Triton Inference Server ==
+=============================
+
+NVIDIA Release 26.07 (build 59591852)
+Triton Server Version 2.71.0
+
+Copyright (c) 2018-2026, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+-- profile list --
++----------------+----------+------------------------------------------------------+
+| Group.Subgroup | Field ID | Field Tag                                            |
++----------------+----------+------------------------------------------------------+
+| A.0            | 1001     | gr_engine_active                                     |
+| A.0            | 1002     | sm_active                                            |
+| A.0            | 1003     | sm_occupancy                                         |
+| A.0            | 1004     | tensor_active                                        |
+| A.0            | 1005     | dram_active                                          |
+| A.0            | 1006     | fp64_active                                          |
+| A.0            | 1007     | fp32_active                                          |
+| A.0            | 1008     | fp16_active                                          |
+| A.0            | 1009     | pcie_tx_bytes                                        |
+| A.0            | 1010     | pcie_rx_bytes                                        |
+| A.0            | 1011     | nvlink_tx_bytes                                      |
+| A.0            | 1012     | nvlink_rx_bytes                                      |
+| A.0            | 1013     | tensor_imma_active                                   |
+| A.0            | 1014     | tensor_hmma_active                                   |
+| A.0            | 1015     | tensor_dfma_active                                   |
+| A.0            | 1016     | integer_active                                       |
+| A.0            | 1017     | nvdec0_active                                        |
+| A.0            | 1018     | nvdec1_active                                        |
+| A.0            | 1019     | nvdec2_active                                        |
+| A.0            | 1020     | nvdec3_active                                        |
+| A.0            | 1021     | nvdec4_active                                        |
+| A.0            | 1022     | nvdec5_active                                        |
+| A.0            | 1023     | nvdec6_active                                        |
+| A.0            | 1024     | nvdec7_active                                        |
+| A.0            | 1025     | nvjpg0_active                                        |
+| A.0            | 1026     | nvjpg1_active                                        |
+| A.0            | 1027     | nvjpg2_active                                        |
+-- dmon PROF 1001(SM active) 1002(SM occupancy) 1005(mem bw) --
+#Entity         GRACT        SMACT        DRAMA        
+ID                                                     
+GPU 0           N/A          N/A          N/A          
+GPU 0           N/A          N/A          N/A          

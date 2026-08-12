@@ -1,0 +1,8 @@
+[e4] GPU before: {'mem_used_mib': 4107, 'mem_total_mib': 16303, 'gpu_util_pct': 2}
+[e4] B3_kv_pressure_util0.20: kv_max=0.3378310844577711 preempt=0.0 started=True
+[e4] B3_kv_pressure_util0.15: kv_max=0.5947856827220503 preempt=0.0 started=True
+[e4] B3_kv_pressure_util0.12: kv_max=0.3353323338330835 preempt=0.0 started=True
+[e4] B3_kv_pressure_util0.10: kv_max=0.5850640742377375 preempt=0.0 started=True
+[e4] B3 未能造出抢占 —— 如实记录，不得假装成功
+[e4] -> outputs/m21/e4_bottleneck.json
+

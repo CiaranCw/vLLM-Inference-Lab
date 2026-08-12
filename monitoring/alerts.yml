@@ -1,0 +1,90 @@
+# M21 告警规则
+#
+# 纪律：每条规则都必须在 E6 演练中**真实 firing 过一次**，并把 Prometheus API 的
+# 查询结果落盘到 outputs/m21/e6_drills.json。没触发过的规则在 results.md 里标 [ ] 未验证。
+#
+# 阈值来源：TTFT 阈值直接沿用 M12 冻结 SLO（P99 TTFT ≤ 300ms），不另造新标准。
+# for: 3s —— 秒级 scrape 下用短 for 抑制单点抖动，同时保证演练能在分钟内看到 firing。
+
+groups:
+  - name: m21_availability
+    rules:
+      - alert: VLLMServerDown
+        expr: up{job="vllm"} == 0
+        for: 3s
+        labels:
+          severity: critical
+          drill: worker_exit
+        annotations:
+          summary: "vLLM server 抓取失败（进程退出 / 端口不通）"
+          runbook: "查 logs/m21/*server*.log 末尾；确认 PID 是否已消失；查 NVML 显存是否回收"
+
+      - alert: HostExporterTargetDown
+        expr: m21_target_up == 0
+        for: 3s
+        labels:
+          severity: warning
+          drill: worker_exit
+        annotations:
+          summary: "被监控的服务进程不存在（exporter 仍在跑，但目标 PID 已消失）"
+          runbook: "与 VLLMServerDown 联合判断：两者同时红=进程真的没了；只有 up 红=端口/HTTP 层问题"
+
+  - name: m21_latency_and_queue
+    rules:
+      - alert: VLLMTTFTP99AboveSLO
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le) (rate(vllm:time_to_first_token_seconds_bucket[30s]))
+          ) > 0.3
+        for: 5s
+        labels:
+          severity: warning
+          drill: overload
+        annotations:
+          summary: "服务端直方图 P99 TTFT 超过 M12 冻结 SLO(300ms)"
+          runbook: "同时看 num_requests_waiting 与 GPU_UTIL：waiting 高=排队；GPU 高=算力；两者都低=CPU 提交受限(M7)"
+
+      - alert: VLLMQueueBacklog
+        expr: sum(vllm:num_requests_waiting) > 5
+        for: 5s
+        labels:
+          severity: warning
+          drill: overload
+        annotations:
+          summary: "调度队列出现持续积压（waiting > 5）"
+          runbook: "offered QPS 已超容量；对照 E3 容量表判断该降 QPS 还是扩容"
+
+  - name: m21_memory_and_kv
+    rules:
+      - alert: VLLMKVCacheNearFull
+        expr: max(vllm:kv_cache_usage_perc) > 0.9
+        for: 5s
+        labels:
+          severity: warning
+          drill: kv_pressure
+        annotations:
+          summary: "KV Cache 使用率 > 90%，抢占风险"
+          runbook: "看 num_preemptions_total 是否同步上升；处理手段=降并发/降 max-model-len/提高 gpu-memory-utilization"
+
+      - alert: VLLMPreemptionHappening
+        expr: increase(vllm:num_preemptions_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: warning
+          drill: kv_pressure
+        annotations:
+          summary: "发生请求抢占（KV 不足被迫回收）"
+          runbook: "抢占=已经在丢工作重算；与 kv_cache_usage_perc 联合作为 KV 受限的正交双证据"
+
+      - alert: GPUMemoryNearFull
+        expr: |
+          max(DCGM_FI_DEV_FB_USED)
+            / (max(DCGM_FI_DEV_FB_USED) + max(DCGM_FI_DEV_FB_FREE)) > 0.92
+        for: 5s
+        labels:
+          severity: critical
+          drill: oom
+        annotations:
+          summary: "GPU 显存接近打满（OOM 前兆）"
+          runbook: "OOM 后核对三件事：进程已退出 / NVML 显存回收到基线 / server 可重新启动"

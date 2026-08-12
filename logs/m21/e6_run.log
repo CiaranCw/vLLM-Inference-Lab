@@ -1,0 +1,15 @@
+[e6] GPU before: {'mem_used_mib': 4289, 'mem_total_mib': 16303, 'gpu_util_pct': 2}
+
+[e6] ===== worker_exit =====
+[e6] worker_exit: PASS=False alerts={'VLLMTTFTP99AboveSLO': 0.0, 'HostExporterTargetDown': 4.0, 'VLLMServerDown': 6.0}
+
+[e6] ===== oom =====
+[e6] oom: PASS=False alerts=None
+
+[e6] ===== timeout =====
+[e6] timeout: PASS=True alerts={'VLLMTTFTP99AboveSLO': 0.0, 'VLLMQueueBacklog': 0.0, 'GPUMemoryNearFull': 0.0}
+
+[e6] ===== preemption =====
+[e6] preemption: PASS=True alerts={'VLLMTTFTP99AboveSLO': 4.0, 'VLLMPreemptionHappening': 28.0, 'VLLMKVCacheNearFull': 32.0, 'VLLMQueueBacklog': 36.0}
+
+[e6] -> outputs/m21/e6_drills.json

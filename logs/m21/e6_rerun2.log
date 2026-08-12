@@ -1,0 +1,9 @@
+[e6] GPU before: {'mem_used_mib': 2948, 'mem_total_mib': 16303, 'gpu_util_pct': 1}
+
+[e6] ===== worker_exit =====
+[e6] worker_exit: PASS=True alerts={'VLLMServerDown': 4.0, 'HostExporterTargetDown': 4.0}
+
+[e6] ===== oom =====
+[e6] oom: PASS=True alerts=None
+
+[e6] -> outputs/m21/e6_drills.json

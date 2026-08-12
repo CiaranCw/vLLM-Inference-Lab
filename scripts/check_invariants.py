@@ -96,6 +96,14 @@ def load_jsonl(rel):
         return [json.loads(line) for line in f if line.strip()]
 
 
+def load_json(rel):
+    path = _p(rel)
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        return json.load(f)
+
+
 def load_csv(rel):
     path = _p(rel)
     if not os.path.exists(path):
@@ -1677,6 +1685,97 @@ def check_m22(rep):
     )
 
 
+def check_m21(rep):
+    """M21 不变量：服务端指标是否可信 + 各实验的完整性。
+
+    核心是 E2：服务端 counter 增量必须与客户端 bench 汇总守恒。**这条不过，
+    后面所有基于面板的结论都不该信**，所以它是硬 FAIL 而不是「观察项」。
+
+    刻意**不**把「容量 = 某个数」写成不变量：容量随会话漂移（见 results.md §4），
+    把它当不变量只会逼出假结论。
+    """
+    M = "m21"
+    runs = load_jsonl("outputs/m21/raw/e3_shapeA_60s_runs.jsonl")
+    if not runs:
+        rep.pending(M, "m21_e3_ladder", "缺 outputs/m21/raw/e3_shapeA_60s_runs.jsonl")
+        return
+
+    rep.check(M, "m21_e3_sample_count", len(runs) == 21,
+              f"期望 7 档 × 3 seed = 21 条，实得 {len(runs)}",
+              f"{len(runs)} 条 measure 记录")
+
+    bad = []
+    for r in runs:
+        d = r.get("counter_delta", {})
+        if d.get("vllm:request_success_total") != r.get("client_completed"):
+            bad.append((r["run_id"], "I1 完成数"))
+        if d.get("vllm:prompt_tokens_total") != r.get("client_total_input_tokens"):
+            bad.append((r["run_id"], "I2 prompt tokens"))
+        if d.get("vllm:generation_tokens_total") != r.get("client_total_output_tokens"):
+            bad.append((r["run_id"], "I3 generation tokens"))
+    rep.check(M, "m21_e2_server_client_conservation", not bad,
+              f"{len(bad)} 处服务端 counter 与客户端汇总不符：{bad[:3]}",
+              f"{len(runs)} 个窗口的 I1/I2/I3 全部精确相等")
+
+    over = [r["run_id"] for r in runs if (r.get("running_max") or 0) > 64]
+    rep.check(M, "m21_i4_running_le_max_num_seqs", not over,
+              f"{len(over)} 条 running 超过 max_num_seqs=64：{over[:3]}",
+              "全程 running ≤ 64")
+
+    badkv = [r["run_id"] for r in runs
+             if r.get("kv_usage_max") is not None and not 0.0 <= r["kv_usage_max"] <= 1.0]
+    rep.check(M, "m21_i5_kv_usage_in_range", not badkv,
+              f"kv_cache_usage_perc 越界：{badkv[:3]}", "kv_cache_usage_perc ∈ [0,1]")
+
+    neg = [r["run_id"] for r in runs
+           if any(v is not None and v < 0 for v in (r.get("counter_delta") or {}).values())]
+    rep.check(M, "m21_i6_counter_monotonic", not neg,
+              f"counter 增量为负（回绕/重置）：{neg[:3]}", "所有 counter 增量非负")
+
+    lowcov = [(r["run_id"], round((r.get("waiting_samples") or 0) / max(r.get("duration_s") or 1, 1), 2))
+              for r in runs
+              if (r.get("waiting_samples") or 0) / max(r.get("duration_s") or 1, 1) < 0.8]
+    rep.check(M, "m21_i7_scrape_coverage", not lowcov,
+              f"1s 抓取覆盖率 < 0.8：{lowcov[:3]}", "每个窗口的抓取覆盖率 ≥ 0.8")
+
+    e4 = load_json("outputs/m21/e4_bottleneck.json")
+    if e4:
+        names = {r["scenario"] for r in e4["runs"]}
+        preempt = [r for r in e4["runs"]
+                   if (r.get("counter_delta") or {}).get("vllm:num_preemptions_total", 0) > 0]
+        rep.check(M, "m21_e4_scenarios", {"B1_cpu_submit", "B2_gpu_compute", "B4_queue"} <= names,
+                  f"E4 场景缺失，实得 {sorted(names)}", f"E4 场景齐全：{sorted(names)}")
+        rep.check(M, "m21_e4_preemption_constructed", bool(preempt),
+                  "没有任何场景真的触发抢占 —— 结论里不得声称验证了 KV 受限签名",
+                  f"抢占已构造成功：{preempt[0]['run_id']}，"
+                  f"{preempt[0]['counter_delta']['vllm:num_preemptions_total']:.0f} 次")
+        supply_only = [r for r in e4["runs"] if r["scenario"] == "B3_kv_pressure"]
+        if supply_only:
+            rep.ok(M, "m21_e4_supply_side_negative(diagnostic)",
+                   "只压显存预算（B3，Shape A）到 util=0.10 仍只到 "
+                   f"{max(r.get('kv_usage_max') or 0 for r in supply_only):.2f} 且零抢占 —— "
+                   "如实记为负结果，抢占是靠需求侧（B3b 长输出）才造出来的")
+    else:
+        rep.pending(M, "m21_e4", "缺 outputs/m21/e4_bottleneck.json")
+
+    e6 = load_json("outputs/m21/e6_drills.json")
+    if e6:
+        fired = set()
+        for d in e6["drills"]:
+            fired |= set((d.get("alerts_firing") or {}).keys())
+        expected = {"VLLMServerDown", "HostExporterTargetDown", "VLLMTTFTP99AboveSLO",
+                    "VLLMQueueBacklog", "VLLMKVCacheNearFull", "VLLMPreemptionHappening",
+                    "GPUMemoryNearFull"}
+        rep.check(M, "m21_e6_all_alert_rules_fired", expected <= fired,
+                  f"未真实触发过的规则：{sorted(expected - fired)}（必须在文档里标未验证）",
+                  f"7 条规则全部真实 firing 过：{sorted(fired)}")
+        failed = [d["drill"] for d in e6["drills"] if not d.get("PASS")]
+        rep.check(M, "m21_e6_drills_pass", not failed, f"未通过的演练：{failed}",
+                  f"{len(e6['drills'])} 个演练全部 PASS")
+    else:
+        rep.pending(M, "m21_e6", "缺 outputs/m21/e6_drills.json")
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -1693,6 +1792,7 @@ CHECKS = {
         check_m19_csv_vs_jsonl,
         check_m19_equivalence,
     ],
+    "m21": [check_m21],
     "m22": [check_m22],
 }
 

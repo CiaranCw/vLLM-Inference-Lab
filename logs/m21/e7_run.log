@@ -1,0 +1,45 @@
+[e7] GPU before: {'mem_used_mib': 4361, 'mem_total_mib': 16303, 'gpu_util_pct': 4}
+[e7] server ready 28.01s pid=2917537
+[e7] e7_qps32_s0_on: achieved=31.2 p99_ttft=44ms containers=3
+[e7] e7_qps32_s0_off: achieved=31.3 p99_ttft=41ms containers=0
+[e7] e7_qps40_s0_on: achieved=39.0 p99_ttft=503ms containers=3
+[e7] e7_qps40_s0_off: achieved=39.0 p99_ttft=603ms containers=0
+[e7] e7_qps32_s1_off: achieved=31.3 p99_ttft=41ms containers=0
+[e7] e7_qps32_s1_on: achieved=31.3 p99_ttft=44ms containers=3
+[e7] e7_qps40_s1_off: achieved=38.6 p99_ttft=795ms containers=0
+[e7] e7_qps40_s1_on: achieved=38.8 p99_ttft=807ms containers=3
+[e7] e7_qps32_s2_on: achieved=31.2 p99_ttft=174ms containers=3
+[e7] e7_qps32_s2_off: achieved=31.2 p99_ttft=147ms containers=0
+[e7] e7_qps40_s2_on: achieved=39.0 p99_ttft=1033ms containers=3
+[e7] e7_qps40_s2_off: achieved=38.7 p99_ttft=1870ms containers=0
+[e7] server stopped; containers: ['m21-dcgm-exporter', 'm21-grafana', 'm21-prometheus']
+{
+  "qps32_on": {
+    "n": 3,
+    "achieved_median": 31.229926803350537,
+    "p99_ttft_median_ms": 44.375518623273805,
+    "p99_ttft_worst_ms": 174.39428861718602,
+    "median_itl_median_ms": 11.439883499406278
+  },
+  "qps32_off": {
+    "n": 3,
+    "achieved_median": 31.25194853462297,
+    "p99_ttft_median_ms": 40.98744924878701,
+    "p99_ttft_worst_ms": 146.97447355836601,
+    "median_itl_median_ms": 11.340550379827619
+  },
+  "qps40_on": {
+    "n": 3,
+    "achieved_median": 38.98468858561132,
+    "p99_ttft_median_ms": 807.3032425902783,
+    "p99_ttft_worst_ms": 1032.9286516387929,
+    "median_itl_median_ms": 11.748177581466734
+  },
+  "qps40_off": {
+    "n": 3,
+    "achieved_median": 38.70225975105009,
+    "p99_ttft_median_ms": 795.442568059079,
+    "p99_ttft_worst_ms": 1870.1834909501479,
+    "median_itl_median_ms": 11.862691026180983
+  }
+}

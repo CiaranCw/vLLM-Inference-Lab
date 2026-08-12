@@ -1,0 +1,9 @@
+[e4] GPU before: {'mem_used_mib': 4192, 'mem_total_mib': 16303, 'gpu_util_pct': 3}
+[e4] B1_cpu_submit: gpu_util_max=46.0 proc_cpu_max=113.0 waiting_max=0.0 itl_med=8.732227608561516
+[e4] B2_gpu_compute: gpu_util_max=62.0 proc_cpu_max=131.0 waiting_max=1.0 itl_med=9.6896318718791
+[e4] B3_kv_pressure_util0.40: kv_max=0.04677743676579538 preempt=0.0 started=True
+[e4] B3_kv_pressure_util0.38: kv_max=0.04972188815393863 preempt=0.0 started=True
+[e4] B3_kv_pressure_util0.36: kv_max=0.052555390244883204 preempt=0.0 started=True
+[e4] B3 未能造出抢占 —— 如实记录，不得假装成功
+[e4] B4_queue: gpu_util_max=74.0 proc_cpu_max=152.0 waiting_max=1065.0 itl_med=10.644662543199956
+[e4] -> outputs/m21/e4_bottleneck.json

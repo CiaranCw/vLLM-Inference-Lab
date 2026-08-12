@@ -1,0 +1,16 @@
+[e6] GPU before: {'mem_used_mib': 5030, 'mem_total_mib': 16303, 'gpu_util_pct': 2}
+
+[e6] ===== worker_exit =====
+Traceback (most recent call last):
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_fault_drills.py", line 316, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_fault_drills.py", line 298, in main
+    rec = fn(kv_util=args.kv_util) if name == "preemption" else fn()
+                                                                ^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_fault_drills.py", line 104, in drill_worker_exit
+    rec["restart_ready_s"] = server2.start(os.path.join(C.LOGD, "e6_worker_exit_server.log"))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m21_common.py", line 231, in start
+    raise RuntimeError(f"server exited early rc={rc}; 见 {log_path}")
+RuntimeError: server exited early rc=1; 见 logs/m21/e6_worker_exit_server.log

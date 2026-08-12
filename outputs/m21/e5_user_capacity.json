@@ -1,0 +1,110 @@
+{
+  "method": "Little's law: N_users = QPS_stable × (E2EL + think_time)",
+  "assumptions": {
+    "A1": "每用户串行：收到完整回答后思考 think_time 秒再发下一条",
+    "A2": "请求形状固定 Shape A (in256/out128)，真实流量不会这么整齐",
+    "A3": "SLO = M12 冻结口径 P99 TTFT ≤ 300ms 且 success ≥ 0.99；容量取 3-seed worst 仍达标的最大档",
+    "A4": "边界：单卡 RTX 5080 / WSL2 / Qwen2.5-0.5B-Instruct / enforce_eager / 单副本 / 监控栈同机运行"
+  },
+  "ladder": [
+    {
+      "offered_qps": 8,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 41.89533679746083,
+      "median_seed_p99_ttft_ms": 36.118379158433505,
+      "median_e2el_ms": 1485.10299785994,
+      "achieved_qps_mean": 7.811026334934258,
+      "min_success_rate": 1.0,
+      "waiting_max": 0,
+      "slo_pass_all_seeds": true
+    },
+    {
+      "offered_qps": 16,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 43.023012301418916,
+      "median_seed_p99_ttft_ms": 40.59583142166955,
+      "median_e2el_ms": 1590.3793369652703,
+      "achieved_qps_mean": 15.59617353100752,
+      "min_success_rate": 1.0,
+      "waiting_max": 0,
+      "slo_pass_all_seeds": true
+    },
+    {
+      "offered_qps": 24,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 46.32990851532664,
+      "median_seed_p99_ttft_ms": 46.12713771639392,
+      "median_e2el_ms": 1724.7207940090448,
+      "achieved_qps_mean": 23.326502638931213,
+      "min_success_rate": 1.0,
+      "waiting_max": 0,
+      "slo_pass_all_seeds": true
+    },
+    {
+      "offered_qps": 32,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 414.8637679684907,
+      "median_seed_p99_ttft_ms": 339.24260658211915,
+      "median_e2el_ms": 1726.3374470639974,
+      "achieved_qps_mean": 31.058541459104056,
+      "min_success_rate": 1.0,
+      "waiting_max": 11.0,
+      "slo_pass_all_seeds": false
+    },
+    {
+      "offered_qps": 40,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 7024.154351018368,
+      "median_seed_p99_ttft_ms": 5921.840187865306,
+      "median_e2el_ms": 4428.696151007898,
+      "achieved_qps_mean": 35.816156946003986,
+      "min_success_rate": 1.0,
+      "waiting_max": 251.0,
+      "slo_pass_all_seeds": false
+    },
+    {
+      "offered_qps": 44,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 14648.900517909788,
+      "median_seed_p99_ttft_ms": 13908.78132056212,
+      "median_e2el_ms": 9034.555161022581,
+      "achieved_qps_mean": 35.41754680292522,
+      "min_success_rate": 1.0,
+      "waiting_max": 515.0,
+      "slo_pass_all_seeds": false
+    },
+    {
+      "offered_qps": 48,
+      "seeds": 3,
+      "worst_seed_p99_ttft_ms": 20976.947633186355,
+      "median_seed_p99_ttft_ms": 18991.045912997797,
+      "median_e2el_ms": 10413.762980140746,
+      "achieved_qps_mean": 36.43598196770721,
+      "min_success_rate": 1.0,
+      "waiting_max": 705.0,
+      "slo_pass_all_seeds": false
+    }
+  ],
+  "qps_stable_req_s": 24,
+  "first_qps_over_slo": 32,
+  "capacity_interval_note": "容量落在 (24, 32] 之间，网格步长决定分辨率；不是系统精确极限",
+  "e2el_at_qps_stable_ms": 1724.7207940090448,
+  "user_capacity_sensitivity": [
+    {
+      "think_time_s": 5,
+      "cycle_s": 6.725,
+      "estimated_concurrent_users": 161.4
+    },
+    {
+      "think_time_s": 15,
+      "cycle_s": 16.725,
+      "estimated_concurrent_users": 401.4
+    },
+    {
+      "think_time_s": 30,
+      "cycle_s": 31.725,
+      "estimated_concurrent_users": 761.4
+    }
+  ],
+  "headline": "在 P99 TTFT ≤ 300ms 的 SLO 下，本机本配置最大稳定 offered QPS = 24 req/s；按思考时间 5–30s 折算，可承载并发用户约 161.4–761.4 人"
+}

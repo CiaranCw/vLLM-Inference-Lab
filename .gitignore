@@ -34,3 +34,4 @@ outputs/m22/traces/
 *.safetensors
 *.whl
 wheelhouse/
+outputs/m21/raw/.m21_experiment.lock

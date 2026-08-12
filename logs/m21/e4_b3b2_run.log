@@ -1,0 +1,3 @@
+[e4] GPU before: {'mem_used_mib': 4275, 'mem_total_mib': 16303, 'gpu_util_pct': 4}
+[e4] B3b_kv_long_output_util0.12: kv_max=1.0 preempt=330.0 started=True
+[e4] -> outputs/m21/e4_bottleneck.json
