@@ -1,0 +1,12 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  4.15it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  4.15it/s]
+
+2026-08-13 20:30:35,382 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-08-13 20:30:35,415 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+Rendering prompts:   0%|          | 0/6 [00:00<?, ?it/s]Rendering prompts: 100%|██████████| 6/6 [00:00<00:00, 624.56it/s]
+Processed prompts:   0%|          | 0/6 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:  17%|█▋        | 1/6 [00:01<00:05,  1.09s/it, est. speed input: 4.57 toks/s, output: 58.51 toks/s]Processed prompts: 100%|██████████| 6/6 [00:01<00:00,  1.09s/it, est. speed input: 67.65 toks/s, output: 351.04 toks/s]Processed prompts: 100%|██████████| 6/6 [00:01<00:00,  5.48it/s, est. speed input: 67.65 toks/s, output: 351.04 toks/s]
+[rank0]:[W813 20:30:36.489701449 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

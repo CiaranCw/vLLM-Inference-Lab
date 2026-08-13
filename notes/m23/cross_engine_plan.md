@@ -1,6 +1,7 @@
-# M23 · TensorRT-LLM 与跨引擎对照 —— **设计冻结 / DESIGN FROZEN**（v3，2026-08-13）
+# M23 · TensorRT-LLM 与跨引擎对照 —— **设计冻结 / DESIGN FROZEN**（v4，2026-08-13）
 
-> **状态：🔒 DESIGN FROZEN。未执行任何实验、未拉取任何镜像、未启动任何 Gate。**
+> **状态：🔒 DESIGN FROZEN（v4）。Gate 0/1/2 已全部 PASS（见 [`gate_results.md`](gate_results.md)）；
+> 对照实验尚未执行。**
 > 冻结之后**不得**为了让结论好看而改网格、改样本量、改判据或挑档位；
 > 需要改动时必须先说明理由并重新走审查。
 >
@@ -14,6 +15,12 @@
 > ② 收窄显存对照口径，禁止残差推导（§5.3）。
 > ③ 引入 **Primary cross-engine metrics / Engine-internal explanatory metrics** 两层分级（§5.2）。
 > ④ 冻结唯一镜像 tag 与授权状态（§6.1、§7）。
+>
+> **v4 修订（所有者就 Gate 2 暴露的 A1 做出决策后，走审查改的设计）**：
+> 把原「单组对照」改为 **2×2 execution-mode 对照**（§5.0）——
+> Gate 2 实测发现 TRT-P **默认开启 CUDA Graph** 而本 lab 全线 `enforce_eager`，
+> 而 M7 已证该差异在本机可达单步 7.44→2.50ms、提交 257→15，**足以主导结论**，
+> 因此不能只跑一组。同时新增 **V-O correctness smoke 前置门**（§5.0.3）。
 >
 > 边界：单卡 RTX 5080(sm_120) / WSL2 / Qwen2.5-0.5B(+1.5B) / 单副本。
 
@@ -144,6 +151,52 @@ vLLM = dynamic PyTorch   vs   TRT-LLM = prebuilt TensorRT engine
 ---
 
 ## 5. 对照设计（Gate 全过后执行）
+
+### 5.0 **2×2 execution-mode 对照**（v4 新增，所有者决策）
+
+Gate 2 实测：TRT-P **默认开启 CUDA Graph**（`cuda_graph_config` 带 batch_sizes 列表），
+而本 lab 全部既有模块（M6/M7/M17/M18）都是 `enforce_eager=True`。
+M7 已实测本机该差异极大（单步 **7.44→2.50ms**、kernel 提交 **257→15**）——
+**它会主导跨引擎结论**，所以必须把它当作一个显式变量控制，而不是让它混在引擎差异里。
+
+#### 5.0.1 四个组（**不叫「eager vs compiled」**）
+
+**命名纪律**：这是 **execution-mode** 的两条 lane，**不是**「解释执行 vs 编译执行」的二分
+（TRT-P 与 vLLM 各自的优化栈内容并不相同，用 eager/compiled 会暗示一种并不存在的对应关系）。
+
+| 组 | 引擎 | execution-mode lane | 用途 |
+|---|---|---|---|
+| **V-E** | vLLM（容器内） | **Graph / optimization OFF** | 与 M6/M7/M17/M18 的历史口径对接；控制 CUDA Graph 这个大混杂变量 |
+| **T-E** | TRT-P（容器内） | **Graph / optimization OFF** | 同上 |
+| **V-O** | vLLM（容器内） | **optimized ON**（各自当前优化栈） | 比较双方**实际**优化后的性能 |
+| **T-O** | TRT-P（容器内） | **optimized ON** | 同上 |
+
+#### 5.0.2 结论表述纪律（**硬约束**）
+
+- 正式跨引擎结论**分别报告** **`T-E vs V-E`** 与 **`T-O vs V-O`**，两条 lane **各自成文**。
+- **任一差值都不得称为「纯 engine intrinsic speedup」** ——
+  OFF lane 的差值里仍混着两套 runtime 的实现差异；ON lane 的差值里还叠加了
+  **两侧优化栈内容本就不同**这一事实。能说的只有「在该 lane 的口径下，A 比 B 快/慢多少」。
+- **不得**跨 lane 相减（例如用 T-O 减 V-E）。
+- 四组**都必须回读并保存实际 execution / graph 配置**（不信入参，只信回读），
+  且**显存分别测量**（口径见 §5.3：total GPU memory 为 Primary，分项按可得性标注）。
+
+#### 5.0.3 **前置门：V-O correctness smoke**（跑性能之前必须先过）
+
+**理由**：本 lab **从未验证过** `enforce_eager=False` 在当前 RTX 5080 + pinned vLLM 上的**生成正确性** ——
+M5 只验证了本机实际执行路径，M6 的 compiled 数字是性能而非正确性。
+在没验证正确性之前就拿 V-O 的性能数字做对照，等于把一个未验证的前提当结论基础。
+
+**判据**（跑前冻结）：
+- **硬失败（→ 停止 optimized lane）**：进程崩溃 / 输出为空 / 输出长度不符 / 明显乱码。
+- **诊断项（不自动判失败）**：V-O 与 V-E 在 greedy + 同 seed 下的 **exact-match 率**。
+  不完全一致**不等于**有 bug —— M5/M19 已有先例：数值与 batch-shape 敏感性可让贪心 argmax 翻转。
+  但**必须如实报告该比率**，并在结论里带上。
+
+**若 V-O correctness 硬失败**：**停止 optimized lane 的性能比较并如实记录**，
+只交付 `T-E vs V-E` 一条 lane，**不为了凑满 2×2 矩阵而继续跑**。
+
+---
 
 ### 5.1 三点测量与**措辞纪律**
 

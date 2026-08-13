@@ -1,0 +1,38 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.06it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.06it/s]
+
+In file included from /home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/include/python3.12/Python.h:12,
+                 from /tmp/tmp3_i7jxfa/__triton_launcher.c:7:
+/home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/include/python3.12/pyconfig.h:1877:9: warning: ‘_POSIX_C_SOURCE’ redefined
+ 1877 | #define _POSIX_C_SOURCE 200809L
+      |         ^~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:33,
+                 from /usr/include/stdlib.h:26,
+                 from /home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/triton/backends/nvidia/include/cuda.h:56,
+                 from /tmp/tmp3_i7jxfa/__triton_launcher.c:2:
+/usr/include/features.h:319:10: note: this is the location of the previous definition
+  319 | # define _POSIX_C_SOURCE        202405L
+      |          ^~~~~~~~~~~~~~~
+2026-08-13 20:31:04,343 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-08-13 20:31:04,350 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/19 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  26%|██▋       | 5/19 [00:00<00:00, 46.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  53%|█████▎    | 10/19 [00:00<00:00, 46.09it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  79%|███████▉  | 15/19 [00:00<00:00, 46.81it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 19/19 [00:00<00:00, 40.96it/s]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/11 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):  45%|████▌     | 5/11 [00:00<00:00, 44.47it/s]Capturing CUDA graphs (decode, FULL):  91%|█████████ | 10/11 [00:00<00:00, 44.51it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 11/11 [00:00<00:00, 45.16it/s]
+Rendering prompts:   0%|          | 0/6 [00:00<?, ?it/s]Rendering prompts: 100%|██████████| 6/6 [00:00<00:00, 703.70it/s]
+Processed prompts:   0%|          | 0/6 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]In file included from /home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/include/python3.12/Python.h:12,
+                 from /tmp/tmpw1cvhkmy/__triton_launcher.c:7:
+/home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/include/python3.12/pyconfig.h:1877:9: warning: ‘_POSIX_C_SOURCE’ redefined
+ 1877 | #define _POSIX_C_SOURCE 200809L
+      |         ^~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:33,
+                 from /usr/include/stdlib.h:26,
+                 from /home/ciaran/projects/vllm-inference-lab/.venv/lib/python3.12/site-packages/triton/backends/nvidia/include/cuda.h:56,
+                 from /tmp/tmpw1cvhkmy/__triton_launcher.c:2:
+/usr/include/features.h:319:10: note: this is the location of the previous definition
+  319 | # define _POSIX_C_SOURCE        202405L
+      |          ^~~~~~~~~~~~~~~
+Processed prompts:  17%|█▋        | 1/6 [00:00<00:02,  2.11it/s, est. speed input: 10.53 toks/s, output: 134.83 toks/s]Processed prompts: 100%|██████████| 6/6 [00:00<00:00,  2.11it/s, est. speed input: 155.85 toks/s, output: 808.72 toks/s]Processed prompts: 100%|██████████| 6/6 [00:00<00:00, 12.63it/s, est. speed input: 155.85 toks/s, output: 808.72 toks/s]
+[rank0]:[W813 20:31:06.131823025 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

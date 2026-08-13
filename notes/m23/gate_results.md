@@ -84,7 +84,7 @@ cuda_graph_config      = batch_sizes=[1..32, 64, 128], max_batch_size=128     �
 
 | # | 项 | TRT-P 默认 | vLLM 侧（M18 口径） | 处理 |
 |---|---|---|---|---|
-| **A1** | **CUDA Graph** | **默认开启**（`cuda_graph_config` 有 batch_sizes 列表） | **`enforce_eager=True`（全程关闭）** | **⚠️ 需所有者决策，见下** |
+| **A1** | **CUDA Graph** | **默认开启**（`cuda_graph_config` 有 batch_sizes 列表） | **`enforce_eager=True`（全程关闭）** | ✅ **所有者已决策**：改为 **2×2 execution-mode 对照**（冻结稿 v4 §5.0），OFF/ON 两条 lane 分别报告 |
 | A2 | 激活 dtype | `auto` | 显式 `bfloat16` | 两侧显式冻结同一 dtype（M18 教训） |
 | A3 | 显存预算 | `free_gpu_memory_fraction=0.9` | `gpu_memory_utilization=0.6` | 统一到同一值 |
 | A4 | 批与 token 上限 | `max_batch_size=2048` / `max_num_tokens=8192` | `max_num_seqs=64` / `max_num_batched_tokens=4096` | 统一 |
@@ -114,3 +114,37 @@ M7 已实测本机 CUDA Graph 影响巨大（eager→compiled 单步 7.44→2.50
 2. 按 A2–A6 写死两侧配置，实现 `scripts/m23_bench.py`（Primary metrics 优先：
    端到端延迟 / 吞吐 / 总 GPU 显存 / 冷启动；prefill/decode proxy 仅作解释性指标）。
 3. 三点测量 `V-host` / `V-ctr` / `T-ctr`，同会话内跑完，前后各落环境指纹。
+
+
+---
+
+## 附：A1 决策落地 + V-O correctness 前置门（2026-08-13）
+
+**所有者决策**：不二选一，改为 **2×2 execution-mode 对照**（冻结稿 v4 §5.0）：
+
+```text
+V-E / T-E ：Graph / optimization OFF   → 与 M6/M7/M17/M18 历史口径对接，控住 CUDA Graph 这个大混杂变量
+V-O / T-O ：optimized ON               → 比较双方各自当前优化栈的实际性能
+```
+
+**表述纪律**：正式结论**分别报告** `T-E vs V-E` 与 `T-O vs V-O`；
+**任一差值都不得称为「纯 engine intrinsic speedup」**；不得跨 lane 相减；
+四组都要回读并保存实际 execution/graph 配置，显存分别测量。
+**不叫「eager vs compiled」** —— 两侧优化栈内容本就不同，那种叫法会暗示不存在的对应关系。
+
+### V-O correctness smoke 结果　✅ **无硬失败**（证据 `outputs/m23/vo_correctness.json`）
+
+| 项 | 结果 |
+|---|---|
+| 进程/输出/长度 | 6/6 正常，无崩溃、无空输出、长度精确 64 |
+| **V-E 生效配置** | `cudagraph_mode=NONE`，`compilation_mode=0` |
+| **V-O 生效配置** | `cudagraph_mode=FULL_AND_PIECEWISE`，`compilation_mode=3`，capture_sizes `[1,2,4,8,16,24,...]` |
+| **exact-match（诊断项）** | **2/6 = 33.3%** |
+
+**人工检视 4 处分歧**（自动判据查不出「乱码」，故必须人看）：**全部连贯、切题、无退化** ——
+capital of France 两侧都答 Paris 只在 "third/second largest" 分叉；张量并行前 ~90 token 完全相同、
+尾部各自通顺续写；fibonacci 两侧都产出可用代码只差提示字符串；北京仅选项顺序不同。
+
+→ **判定**：属**贪心解码下的数值分歧**（与 M5/M19 先例一致），**不是正确性破坏**，
+**optimized lane 可以继续**。但 **exact-match 2/6 必须随所有 V-O 结论一起呈现**，
+且 V-O 与 V-E 的输出不可互相替代做正确性论证。
