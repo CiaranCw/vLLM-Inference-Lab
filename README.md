@@ -24,7 +24,9 @@
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。
 
-> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
+> **招聘者请先看这两个**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md) —— 四个项目（A/B/C/D）按同一模板写成 5 分钟能看懂的形式，并用「🟢已验证 / 🟡只读源码 / ⚪仅理论」三档**明确标注能力边界**（含**未完成项与其阻塞原因**）；[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件。
+>
+> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。面试三档表达：[第一阶段](notes/m16/interview_and_presentation.md) · [第二阶段](notes/m26/interview_second_stage.md)。
 >
 > **接手/协作者请先读**：[`HANDOFF.md`](HANDOFF.md)（当前进度、下一步选项、已知坑）与 [`AGENTS.md`](AGENTS.md)（硬性工作规则：诚实性红线 / Git 署名 / GPU 安全 / 必需环境变量）。
 
