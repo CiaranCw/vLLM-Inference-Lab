@@ -1,0 +1,89 @@
+{
+  "captured_at": "2026-08-13 15:19:09+0800",
+  "host": {
+    "uname": {
+      "system": "Linux",
+      "node": "CIARANXU-PC0",
+      "release": "6.18.33.2-microsoft-standard-WSL2",
+      "version": "#1 SMP PREEMPT_DYNAMIC Thu Jun 18 21:54:43 UTC 2026",
+      "machine": "x86_64",
+      "processor": ""
+    },
+    "python": "3.12.13",
+    "cpu_model": "Intel(R) Core(TM) Ultra 9 285K",
+    "cpu_logical_cores": 24,
+    "mem_total_kb": "MemTotal:       65519224 kB",
+    "wsl": true
+  },
+  "gpu": {
+    "nvidia_smi_header": "Thu Aug 13 15:19:09 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 610.43.02              KMD Version: 610.62        CUDA UMD Version: 13.3     |\n+-----------------------------------------+------------------------+----------------------+",
+    "driver_version": "610.62",
+    "name": "NVIDIA GeForce RTX 5080",
+    "memory_total_mib": "16303 MiB",
+    "clocks_max_sm_mhz": "3090 MHz",
+    "power_limit_w": "360.00 W",
+    "snapshot_at_capture": {
+      "mem_used_mib": 2700,
+      "mem_total_mib": 16303,
+      "gpu_util_pct": 2
+    }
+  },
+  "runtime_versions": {
+    "python_executable": "/home/ciaran/projects/vllm-inference-lab/.venv/bin/python",
+    "python_version": "3.12.13",
+    "vllm": "0.24.1.dev0+gee0da84ab.d20260714",
+    "torch": "2.11.0+cu130",
+    "triton": "3.6.0",
+    "transformers": "5.13.1",
+    "torch_version_cuda": "13.0",
+    "torch_cuda_is_available_flag": true
+  },
+  "env_vars": {
+    "CUDA_VISIBLE_DEVICES": "<unset>",
+    "CUDA_DEVICE_ORDER": "<unset>",
+    "HF_HOME": "<unset>",
+    "HUGGING_FACE_HUB_CACHE": "<unset>",
+    "OMP_NUM_THREADS": "<unset>",
+    "TOKENIZERS_PARALLELISM": "<unset>",
+    "VLLM_*": "<none set>",
+    "required_by_agents_md": {
+      "expected": {
+        "VLLM_USE_FLASHINFER_SAMPLER": "0",
+        "VLLM_ENABLE_V1_MULTIPROCESSING": "0"
+      },
+      "observed_at_capture": {
+        "VLLM_USE_FLASHINFER_SAMPLER": "<unset>",
+        "VLLM_ENABLE_V1_MULTIPROCESSING": "<unset>"
+      },
+      "captured_in_experiment_equivalent_shell": false,
+      "note": "若为 false，说明指纹是在**未导出必需变量**的 shell 里采的 —— 指纹本身仍有效，但跨会话比对时要注意实验 shell 与此不同。"
+    }
+  },
+  "cpu_power_state": {
+    "scaling_governor": "unavailable <CalledProcessError: Command 'cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null' returned non-zero exit status 1.>",
+    "scaling_driver": "unavailable <CalledProcessError: Command 'cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver 2>/dev/null' returned non-zero exit status 1.>",
+    "available_governors": "unavailable <CalledProcessError: Command 'cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors 2>/dev/null' returned non-zero exit status 1.>",
+    "note": "WSL2 通常不暴露 cpufreq sysfs；显示 unavailable 即为读不到，不做推测"
+  },
+  "python_packages": "flashinfer-cubin==0.6.12\nflashinfer-python==0.6.12\nnumpy==2.3.5\npsutil==7.2.2\ntorch==2.11.0+cu130\ntorch_c_dlpack_ext==0.1.5\ntorchaudio==2.11.0+cu130\ntorchvision==0.26.0+cu130\ntransformers==5.13.1\ntriton==3.6.0",
+  "vllm_src": {
+    "head_sha_full": "ee0da84ab9e04ac7610e28580af62c365e898389",
+    "head_short": "ee0da84 Sun Jun 28 00:04:08 2026 -0700 [KV-Offloading] Fix tensors_per_block stride (#46888)",
+    "dirty_file_count": "22",
+    "is_dirty": "true",
+    "porcelain": "M vllm/entrypoints/llm.py\n M vllm/entrypoints/offline_utils.py\n M vllm/model_executor/layers/attention/attention.py\n M vllm/v1/attention/backend.py\n M vllm/v1/attention/backends/fa_utils.py\n M vllm/v1/attention/backends/flash_attn.py\n M vllm/v1/attention/backends/registry.py\n M vllm/v1/attention/selector.py\n M vllm/v1/core/block_pool.py\n M vllm/v1/core/kv_cache_coordinator.py\n M vllm/v1/core/kv_cache_manager.py\n M vllm/v1/core/kv_cache_utils.py\n M vllm/v1/core/sched/scheduler.py\n M vllm/v1/core/single_type_kv_cache_manager.py\n M vllm/v1/engine/core.py\n M vllm/v1/engine/core_client.py\n M vllm/v1/engine/llm_engine.py\n M vllm/v1/worker/block_table.py\n M vllm/v1/worker/gpu_input_batch.py\n M vllm/v1/worker/gpu_model_runner.py\n M vllm/v1/worker/utils.py\n?? vllm/_lab_trace.py",
+    "note": "本仓基线是 22 个脏文件（所有者的中文学习注释），不等于产品源码被改"
+  },
+  "lab_repo": {
+    "head_sha_full": "c2c72f0a7b5b3c46e9e04f361381176bacdc68dc",
+    "is_dirty": "true",
+    "dirty_file_count": "54"
+  },
+  "monitoring_stack": {
+    "containers": "unavailable",
+    "dcgm_exporter_digest": "nvcr.io/nvidia/k8s/dcgm-exporter@sha256:613ab03c11d442fd960ff515f547e9921537454a712d08160bc8f677f89f1c35",
+    "prometheus_digest": "prom/prometheus@sha256:508729e0e2d18e11fd742a5a5ca70e557b940a93948c3c95fd0123a6fd538b69",
+    "grafana_digest": "grafana/grafana@sha256:ab5cb380e3ff3172d6c8bd2e7cfd31cce977d2881b260e1f5bc089bf0b759b43"
+  },
+  "note": "M12(2026-07-24) 未留指纹，故 M12→M21 的高并发 TPOT 回归无法归因；本文件是为后续模块留的基线。2026-08-12 audit 扩充：补 vLLM/torch/triton/transformers 运行时版本、vllm-src 完整 SHA 与 dirty flag、VLLM_* 环境变量、CPU 能耗状态（读不到即记 unavailable，不猜）。"
+}

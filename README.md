@@ -21,6 +21,7 @@
 - **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
+- **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。
 
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。每条结论 → 证据文件见 [`notes/evidence_index.md`](notes/evidence_index.md)。面试三档表达见 [`notes/m16/interview_and_presentation.md`](notes/m16/interview_and_presentation.md)。
@@ -126,6 +127,7 @@
 | **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
 | **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线收口，2 项可选扩展已补齐（I5-b 相对降幅 61.2%→3.4%、no-chunk 正确性 9/9）** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
 | **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
+| **M18** 量化 W4A16 ★ | AWQ/GPTQ vs BF16，受控到只差量化算法 | 权重 −53.6%/−62.8%（可量化部分 −74.0%）、KV 容量 +5.9%/+30.1%；**速度 28 点 0 个变快**（23 点 CI 显著变慢）；ΔPPL +1.4~+5.0%；**COMPLETE** | 无 | `notes/m18/results.md`、`outputs/m18/*`、`figures/fig13_m18_w4a16.png` |
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
@@ -199,6 +201,7 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 python scripts/m19_figures.py    # -> figures/fig7..8
 python scripts/m22_figures.py --tag h20_formal  # -> figures/fig9_m22_tp_scaling_h20_formal.png
 python scripts/m20_figures.py                    # -> figures/fig10_m20_same_runtime.png
+python scripts/m18_figures.py                    # -> figures/fig13_m18_w4a16.png
 python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity.png, fig12_m21_bottleneck_signature.png
 ```
 
@@ -350,3 +353,39 @@ batch↔prompt confounding。正确性：111/126 exact match；batch-shape contr
 > **2026-08-12 evidence audit**：修正了 E5 闭环 population 语义、E6 timeout 的秒/毫秒单位（19.57ms → **19568ms**）、
 > E2 因果归因过强、「5s 窗口」表述、OOM 与 GPU-compute 术语、容量记号共 8 项口径问题。
 > **未修改任何原始实验数据，未重跑 E3/E4/E7**；derived artifact 由已落盘 raw 离线重算。逐条见 [`results.md §10`](notes/m21/results.md)。
+
+---
+
+## §11 M18 W4A16 量化：AWQ / GPTQ vs BF16（T+E+O COMPLETE）
+
+**先探后下**：本模块没有「先下载几 GB 再碰运气」。因为 `VLLM_USE_PRECOMPILED=1` 不自编译 CUDA，
+「源码支持」不等于「wheel 里有 sm_120 cubin」，所以先做零成本探针——读准入门槛、让 vLLM 自己选 kernel
+（三种 W4A16 配置全部选中 `MarlinLinearKernel`），再用**极小张量真 launch** 一次 `marlin_gemm`。
+通过后才申请下载。这个顺序来自 M10 的教训（FP8 KV 纸面支持、实测必须换 `TRITON_ATTN` 后端）。
+
+**受控到只剩一个变量**：AWQ 与 GPTQ 的 `bits=4` / `group_size=128` 完全相同，只差算法与 zero-point。
+并且**显式冻结激活 dtype 为 bfloat16**——量化 checkpoint 的 config 声明 `float16`、BF16 基线声明 `bfloat16`，
+用 `dtype="auto"` 就会把「4bit 量化」和「fp16 vs bf16 激活」混成一个数。
+
+![M18 W4A16](figures/fig13_m18_w4a16.png)
+
+| 轴 | 结果 |
+|---|---|
+| **显存** | 整体权重 0.5B **−53.6%** / 1.5B **−62.8%**；但 `embed`/`lm_head` **完全未被量化**（不变量核对：三配置字节数一模一样），剔除后**可量化部分 −74.0%**，几乎就是 4bit 理论值 |
+| **稀释规律** | embed 占基线权重 0.5B **27.6%** / 1.5B **15.1%** → **模型越小，量化的整体收益被摊薄得越厉害**。报「省了多少显存」必须说清分母 |
+| **KV 容量** | +5.9%（0.5B）/ **+30.1%**（1.5B） |
+| **速度** | **28 个对照点，0 个变快**；23 个 Bootstrap 95% CI 排除 0 的显著变慢 |
+| **质量** | ΔPPL 0.5B +5.0%(AWQ)/+4.8%(GPTQ)；1.5B **+1.4%(AWQ)**/+4.4%(GPTQ) |
+
+**一个不能推给「地板效应」的观察**：M7 已证本机 eager decode 是 CPU 提交受限，那 decode 不受益还说得通；
+但 M7 同时证了**长 prefill(n=2000) 是 GPU 计算受限**（gpu_frac 0.88），而 W4A16 在这一段**仍然更慢**
+（+9.2% / +6.6%，CI 均排除 0）→ 慢的来源包含 **Marlin W4A16 GEMM 本身**。
+更细的机制（dequant 开销 vs sm_120 未优化）**没做 kernel profiling，因此不下判断**。
+
+**执行前假设被推翻并如实记录**：设计冻结里我写的 H5 是「1.5B 比 0.5B 更容易显现收益」，
+实测**相反**（1.5B decode 惩罚 +28.6% > 0.5B +12.9%）。加 1.5B 本是为控住 M7 地板效应这个混淆，
+结果它反而证明了：在这两个规模上，W4A16 的速度劣势都不是地板效应造成的。
+
+**留痕**：[`results.md`](notes/m18/results.md) · [`quantization_w4a16.md`](notes/m18/quantization_w4a16.md) ·
+`outputs/m18/{memory,perf,quality}.csv` + `raw/*.jsonl` · `logs/m18/*`。
+`check_invariants.py --module m18`（**11 PASS / 0 FAIL**）。**零产品源码改动。**

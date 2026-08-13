@@ -46,7 +46,7 @@
 | 模块 | 主题 | 状态 | 备注 |
 |---|---|:--:|---|
 | **M17** | Prefix Caching & Chunked Prefill | ✅ | **主线已收口**；三项可选扩展未执行、不阻塞后续（见 §4） |
-| **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | 🚧 | Gate 0 + Gate 0-b 已通过；模型已授权下载完成；实验待设计，见 §5 |
+| **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | ✅ | **T+E+O COMPLETE**：省显存显著但**本机 28 个对照点 0 个变快**；见 `notes/m18/results.md` |
 | **M19** | Speculative Decoding | ✅ | **N-gram T+E+O CLOSED**（见 §4.2）；draft/EAGLE/MTP/Medusa/`k` sweep = Optional |
 | M20 | 服务化 + Triton | ✅ | **T+A+B+C COMPLETE**（same-runtime QPS 20/32/40；见 `notes/m20/results.md`） |
 | M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；2026-08-12 已做 evidence audit，见 `notes/m21/results.md` §10） |
@@ -156,9 +156,11 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 > **2026-08-10 更新**
 > - **M22 TP**、**M20（含正式 C）**、**M21（监控与容量）** 均已收口。
 > - **M21 监控与容量规划已收口**（2026-08-12）。
-> - **M18 进行中**：Gate 0（sm_120 上 Marlin kernel 可用）与 Gate 0-b（4 个官方 checkpoint 加载 smoke）**均已通过**，
->   模型下载已获授权并完成（0.5B/1.5B × AWQ/GPTQ-Int4）。**下一步是实验设计冻结**，注意已发现的隐藏变量：
->   量化 checkpoint 声明 `float16`、BF16 基线声明 `bfloat16`，必须显式冻结激活 dtype 再做对照。
+> - **M18 已收口**（2026-08-13）：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)、KV 容量 +5.9%/+30.1%，
+>   但**速度 28 个对照点 0 个变快**（23 个显著变慢），连计算受限的长 prefill 也更慢。
+>   **给后续模块的两条经验**：① 报「量化省了多少显存」必须说清分母 —— embed/lm_head 不被量化，
+>   模型越小稀释越狠（0.5B 27.6% vs 1.5B 15.1%）；② 量化 checkpoint 声明 `float16`、BF16 基线声明 `bfloat16`，
+>   不显式冻结激活 dtype 就会把两个变量混在一起。
 > - M13 PR 仍等 maintainer label。
 > - **M21 留给后续模块的两条注意事项**：① 性能实验前先跑 `scripts/m21_env_fingerprint.py` 落环境指纹
 >   （M12 没留，导致 M21 无法归因高并发 TPOT 回归）；② 拐点附近的容量数字**跨会话不可复现**，

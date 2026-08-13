@@ -1,0 +1,55 @@
+{
+  "config": "Q0",
+  "model_key": "0.5b",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "common_frozen": {
+    "dtype": "bfloat16",
+    "max_model_len": 2048,
+    "gpu_memory_utilization": 0.6,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true,
+    "seed": 0,
+    "max_num_seqs": 64,
+    "max_num_batched_tokens": 4096,
+    "enable_prefix_caching": false,
+    "async_scheduling": false,
+    "disable_log_stats": true
+  },
+  "effective": {
+    "dtype": "torch.bfloat16",
+    "quantization": null,
+    "hf_quantization_config": null,
+    "kv_cache_dtype": "auto",
+    "num_gpu_blocks": 45737,
+    "block_size": 16,
+    "kv_cache_size_tokens": 731792,
+    "attention_backend": "<unset:default>",
+    "max_model_len": 2048
+  },
+  "grid": {
+    "prefill_lengths": [
+      128,
+      512,
+      2000
+    ],
+    "decode_matrix": [
+      [
+        64,
+        [
+          1,
+          64
+        ]
+      ],
+      [
+        1024,
+        [
+          1,
+          8
+        ]
+      ]
+    ],
+    "warmup": 5,
+    "measure": 15
+  },
+  "engine_init_s_single_obs": 10.394
+}

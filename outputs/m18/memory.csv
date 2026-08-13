@@ -1,0 +1,7 @@
+model,config,weight_total_MiB,weight_bf16_MiB,weight_int32_MiB,embed_lm_head_MiB,embed_share_of_total_pct,quantizable_part_MiB,weight_scale_MiB,kv_cache_size_tokens,num_gpu_blocks,dtype,quantization,weight_total_vs_Q0_pct,quantizable_part_vs_Q0_pct,kv_tokens_vs_Q0_pct
+0.5b,Q0,942.29,942.29,0.0,259.66,27.56,682.64,0.0,731792,45737,torch.bfloat16,,0.0,0.0,0.0
+0.5b,Q1,437.08,265.12,171.96,259.66,59.41,177.43,5.332,775104,48444,torch.bfloat16,auto_awq,-53.61,-74.01,5.92
+0.5b,Q2,435.75,265.12,170.62,259.66,59.59,176.09,5.332,775216,48451,torch.bfloat16,auto_gptq,-53.76,-74.2,5.93
+1.5b,Q0,2944.4,2944.4,0.0,445.12,15.12,2499.28,0.0,233856,14616,torch.bfloat16,,0.0,0.0,0.0
+1.5b,Q1,1094.56,464.93,629.63,445.12,40.67,649.43,19.5234,304224,19014,torch.bfloat16,auto_awq,-62.83,-74.02,30.09
+1.5b,Q2,1089.67,464.93,624.75,445.12,40.85,644.55,19.5234,304288,19018,torch.bfloat16,auto_gptq,-62.99,-74.21,30.12

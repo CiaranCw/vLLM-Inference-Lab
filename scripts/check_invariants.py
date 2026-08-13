@@ -1840,6 +1840,125 @@ def check_m21(rep):
         rep.pending(M, "m21_e6", "缺 outputs/m21/e6_drills.json")
 
 
+def check_m18(rep):
+    """M18 不变量（设计冻结 `notes/m18/quantization_w4a16.md` §5）。
+
+    核心是「除模型与量化外没有第二个变量」：dtype / attention backend / kv_cache_dtype
+    三者必须跨配置一致，否则测出来的差异不能归因给量化（M10 的教训：TRITON_ATTN
+    后端本身就比 FLASH 慢，混进来会把后端开销算成量化收益）。
+    """
+    M = "m18"
+    models, configs = ["0.5b", "1.5b"], ["Q0", "Q1", "Q2"]
+
+    confs, mems, quals = {}, {}, {}
+    missing = []
+    for m in models:
+        for c in configs:
+            tag = f"{m}_{c}"
+            cf = load_json(f"outputs/m18/configs/{tag}.json")
+            mm = load_json(f"outputs/m18/memory/{tag}.json")
+            qq = load_json(f"outputs/m18/quality/{tag}.json")
+            if not (cf and mm and qq):
+                missing.append(tag)
+                continue
+            confs[tag], mems[tag], quals[tag] = cf, mm, qq
+    if missing:
+        rep.pending(M, "m18_artifacts", f"缺少配置产物：{missing}")
+        return
+
+    # I1 三配置的生效 dtype 必须都是 bfloat16（设计 §3 V1 写死的隐藏变量）
+    dtypes = {t: c["effective"]["dtype"] for t, c in confs.items()}
+    rep.check(M, "m18_i1_dtype_frozen_bfloat16",
+              all(v == "torch.bfloat16" for v in dtypes.values()),
+              f"存在非 bfloat16 的生效 dtype：{dtypes}",
+              "6 个配置的生效 dtype 全部为 torch.bfloat16（量化 checkpoint 声明 float16，已被显式覆盖）")
+
+    # I2 attention backend 跨配置一致
+    backends = {t: c["effective"]["attention_backend"] for t, c in confs.items()}
+    rep.check(M, "m18_i2_same_attention_backend", len(set(backends.values())) == 1,
+              f"attention backend 不一致：{backends}",
+              f"全部一致：{next(iter(set(backends.values())))}")
+
+    # I3 kv_cache_dtype 一致（KV 不是本模块的变量）
+    kvd = {t: c["effective"]["kv_cache_dtype"] for t, c in confs.items()}
+    rep.check(M, "m18_i3_same_kv_cache_dtype", len(set(kvd.values())) == 1,
+              f"kv_cache_dtype 不一致：{kvd}", f"全部一致：{next(iter(set(kvd.values())))}")
+
+    # I5 W4A16 侧必须出现 int32 打包权重；且 embed/lm_head 未被量化（跨配置字节数相同）
+    bad_int32, bad_embed = [], []
+    for m in models:
+        embeds = {c: mems[f"{m}_{c}"]["tensor_sum"]["embed_lm_head_MiB"] for c in configs}
+        if len(set(round(v, 2) for v in embeds.values())) != 1:
+            bad_embed.append((m, embeds))
+        for c in ("Q1", "Q2"):
+            by = mems[f"{m}_{c}"]["tensor_sum"]["weight_bytes_by_dtype"]
+            if by.get("torch.int32", 0) <= 0:
+                bad_int32.append(f"{m}_{c}")
+    rep.check(M, "m18_i5a_w4a16_has_int32_packed_weights", not bad_int32,
+              f"W4A16 配置缺少 int32 打包权重：{bad_int32}",
+              "Q1/Q2 均存在 int32 打包权重（Marlin repack 后的布局）")
+    rep.check(M, "m18_i5b_embed_lm_head_not_quantized", not bad_embed,
+              f"embed/lm_head 字节数跨配置不一致（本应未被量化）：{bad_embed}",
+              "embed/lm_head 在三配置中字节数完全相同 → 未被量化，这解释了整体降幅达不到理论 75%")
+
+    # I6 权重变小 ⇒ KV token 不减（同 gpu_memory_utilization 下的显存预算守恒方向）
+    viol = []
+    for m in models:
+        base_w = sum(mems[f"{m}_Q0"]["tensor_sum"]["weight_bytes_by_dtype"].values())
+        base_kv = confs[f"{m}_Q0"]["effective"]["kv_cache_size_tokens"]
+        for c in ("Q1", "Q2"):
+            w = sum(mems[f"{m}_{c}"]["tensor_sum"]["weight_bytes_by_dtype"].values())
+            kv = confs[f"{m}_{c}"]["effective"]["kv_cache_size_tokens"]
+            if w < base_w and kv < base_kv:
+                viol.append(f"{m}_{c}: 权重 {base_w:.0f}->{w:.0f} MiB 但 KV {base_kv}->{kv}")
+    rep.check(M, "m18_i6_kv_capacity_not_decreasing", not viol,
+              f"权重变小但 KV 容量反降：{viol}",
+              "权重下降的配置，KV 容量均不减（显存预算守恒方向正确）")
+
+    # I7/I8 性能样本：只用 valid=True，且样本量达冻结值
+    grid_bad, invalid = [], []
+    for m in models:
+        for c in configs:
+            rows = load_jsonl(f"outputs/m18/raw/{m}_{c}_perf.jsonl") or []
+            n_invalid = sum(1 for r in rows if not r.get("valid", True))
+            if n_invalid:
+                invalid.append(f"{m}_{c}:{n_invalid}")
+            buckets = {}
+            for r in rows:
+                key = (("prefill", r["prompt_tokens"], None) if r["experiment"] == "prefill"
+                       else ("decode", r["context_len"], r["batch_size"]))
+                buckets[key] = buckets.get(key, 0) + 1
+            for key, n in buckets.items():
+                if n != 15:
+                    grid_bad.append(f"{m}_{c}{key}={n}")
+    rep.check(M, "m18_i7_measure_sample_count", not grid_bad,
+              f"measure 样本数不等于冻结的 15：{grid_bad[:5]}",
+              "全部网格点均为 15 个 measure 样本（warmup 未写入 raw）")
+    rep.check(M, "m18_i8_all_samples_valid", not invalid,
+              f"存在 valid=False 的样本（调度形态不符）：{invalid}",
+              "所有性能样本 valid=True（decode 每步 scheduled_tokens 与 running 数均符合预期）")
+
+    # I9 PPL 评分 token 数跨配置相同，否则 ΔPPL 不可比
+    scored = {t: q["overall"]["scored_tokens"] for t, q in quals.items()}
+    rep.check(M, "m18_i9_same_scored_tokens", len(set(scored.values())) == 1,
+              f"PPL 评分 token 数不一致：{scored}",
+              f"六个配置的评分 token 数均为 {next(iter(set(scored.values())))}")
+
+    # 诊断项（非判据）：把「实际降幅 vs 理论降幅」的差距如实记下来
+    for m in models:
+        base = mems[f"{m}_Q0"]["tensor_sum"]
+        base_tot = sum(base["weight_bytes_by_dtype"].values())
+        q1 = mems[f"{m}_Q1"]["tensor_sum"]
+        q1_tot = sum(q1["weight_bytes_by_dtype"].values())
+        embed = base["embed_lm_head_MiB"]
+        whole = 100 * (q1_tot - base_tot) / base_tot
+        part = 100 * ((q1_tot - embed) - (base_tot - embed)) / (base_tot - embed)
+        rep.ok(M, f"m18_weight_saving_record[{m}](diagnostic)",
+               f"整体权重 {base_tot:.0f}→{q1_tot:.0f} MiB（{whole:+.1f}%），"
+               f"但**可量化部分** {base_tot - embed:.0f}→{q1_tot - embed:.0f} MiB（{part:+.1f}%，接近 4bit 理论值）；"
+               f"差距来自未被量化的 embed/lm_head（{embed:.0f} MiB，占基线 {100 * embed / base_tot:.0f}%）")
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -1856,6 +1975,7 @@ CHECKS = {
         check_m19_csv_vs_jsonl,
         check_m19_equivalence,
     ],
+    "m18": [check_m18],
     "m21": [check_m21],
     "m22": [check_m22],
 }

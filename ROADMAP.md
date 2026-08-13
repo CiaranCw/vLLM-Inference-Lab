@@ -183,7 +183,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / **M22(TP)** 已收口；M18 等待继续。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M18~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / **M22(TP)** 已收口；余 M23/M24/M25/M26。**
 
 ---
 
@@ -279,7 +279,7 @@
   并发实验仅 1 decode + 1 长 prefill，未扫并发度；
   `max_num_partial_prefills` 本版本不可调（`arg_utils.py:2350` 直接 NotImplementedError）；不外推 compiled/大模型/多卡/在线服务。
 
-### M18 量化执行路径深化（承接 M10）　🚧　T+E+O　**Gate 0 已通过（2026-08-13），实验未设计/未执行**
+### M18 量化执行路径深化（承接 M10）　✅　**T+E+O COMPLETE**（2026-08-13）
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。
 - 实验：BF16 vs 权重量化 vs（硬件可行时）FP8 KV；比显存/KV 容量/启动/TTFT/TPOT/吞吐/质量。源码聚焦：`QuantizationConfig`、量化 Linear 替换、权重加载、scale 保存传递、实际 GEMM/dequant kernel、backend 如何消费 KV scale。
 - 注：M10 已做 BF16 / FP8 W8A8 / FP8 KV（含 scale 审计与"decode +36% 反常"诚实结论）；本模块补 **W4A16/AWQ/GPTQ** 与跨引擎对照预备。**不为补表格伪造不支持的 FP8/FP4 路径**。
@@ -293,7 +293,19 @@
 - **⚠️ 已发现必须写死的隐藏变量**：AWQ/GPTQ checkpoint 的 `config.json` 声明 `torch_dtype: float16`，
   而 M10 基线模型声明 `bfloat16`，两边都用 `dtype="auto"` 的话会把**量化效应与激活 dtype 混在一起**。
   M18 设计阶段必须显式冻结激活 dtype（Gate 0 探针已验证 Marlin GEMM 接受 bf16 激活）。
-- **⬜ 未做**：实验设计冻结、正式对照实验、结论。
+- **✅ 正式实验完成**（2 模型 × 3 配置 = 6 引擎，串行、一进程一引擎；激活 dtype 显式冻结 bfloat16）：
+  - **显存**：整体权重 0.5B **−53.6%** / 1.5B **−62.8%**；但 `embed`/`lm_head` **完全未被量化**（不变量核对：三配置字节数相同），
+    剔除后**可量化部分 −74.0%**（≈4bit 理论值）。**模型越小，未量化 embedding 占比越高（0.5B 27.6% vs 1.5B 15.1%），整体收益被稀释越多**。
+  - **KV 容量**：+5.9%（0.5B）/ **+30.1%**（1.5B）。
+  - **速度**：**28 个对照点 0 个变快**，23 个显著变慢（Bootstrap 95% CI 排除 0）。
+    **连 M7 已证为计算受限的长 prefill(n=2000) 也更慢**（+9.2% / +6.6%）→ 慢的来源包含 Marlin GEMM 本身，不只是 CPU 提交地板的伪影。
+  - **执行前假设 H5 被推翻**：预期「模型越大越易显现收益」，实测 1.5B 的 decode 惩罚反而更大（+28.6% vs 0.5B +12.9%），如实记录。
+  - **质量**：ΔPPL 0.5B +5.0%(AWQ)/+4.8%(GPTQ)；1.5B **+1.4%(AWQ)** / +4.4%(GPTQ)。评分 token 数六配置相同。
+  - 与 M10 只做**定性**对照（样本量与会话不同，不相减）：FP8 至少在长 prefill 换到 −27% 真加速，**W4A16 连这一段都没换到**；
+    两者共同点是 decode 都更慢、价值都主要在显存。
+- **⬜ 未做**：kernel 级 profiling（故「Marlin 为何慢」只有现象与区间证据、无时间线归因）；W8A8-INT8（Marlin 明确不支持，不伪造）；
+  W4A16×FP8 KV 组合；compiled/多卡/在线口径；自做量化校准。质量只用 PPL，非下游任务准确率。
+- 产出：`scripts/m18_*.py`、`outputs/m18/*`、`logs/m18/*`、`notes/m18/{quantization_w4a16,results}.md`、`figures/fig13_m18_w4a16.png`；`check_invariants.py --module m18`（11 PASS）。
 
 ### M19 Speculative Decoding　✅　T+E+O（**N-gram 主线已闭环**；draft-model family 为 Optional / Future）
 
@@ -479,6 +491,7 @@
   **M20**：**T+A+B+C COMPLETE**（`notes/m20/results.md`）。
   **M22** TP：**T+E+O+H COMPLETE**（4×H20 / 2026-08-09，`notes/m22/results.md`）；PP/DP/EP 仍 ⬜。
   **M21**：**T+E+O COMPLETE**（`notes/m21/results.md`，监控栈 + 容量 + 瓶颈签名 + 故障演练）。
-  → 下一优先：M18（量化，下载须授权）；**不要**把 Optional 的 M19 深化当作阻塞项。
+  **M18**：**T+E+O COMPLETE**（`notes/m18/results.md`，W4A16 省显存但本机全面不提速）。
+  → 下一优先：M26 第二阶段收口，或 M23 TRT-LLM（工程量最大）。
   M13 若收到 maintainer review，优先回应迭代。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

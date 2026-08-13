@@ -1,0 +1,105 @@
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 0, "latency_ms": 9.3237, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 1, "latency_ms": 10.326, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 2, "latency_ms": 9.8651, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 3, "latency_ms": 10.6083, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 4, "latency_ms": 9.5102, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 5, "latency_ms": 9.3601, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 6, "latency_ms": 8.8759, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 7, "latency_ms": 9.5307, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 8, "latency_ms": 10.0132, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 9, "latency_ms": 9.2784, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 10, "latency_ms": 9.2212, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 11, "latency_ms": 10.5114, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 12, "latency_ms": 9.507, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 13, "latency_ms": 9.2052, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 128, "repeat": 14, "latency_ms": 8.8456, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 0, "latency_ms": 18.8468, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 1, "latency_ms": 18.6472, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 2, "latency_ms": 19.5984, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 3, "latency_ms": 18.8775, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 4, "latency_ms": 18.3833, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 5, "latency_ms": 19.0455, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 6, "latency_ms": 19.5014, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 7, "latency_ms": 19.2914, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 8, "latency_ms": 18.8135, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 9, "latency_ms": 20.7145, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 10, "latency_ms": 18.8828, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 11, "latency_ms": 18.9508, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 12, "latency_ms": 18.8976, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 13, "latency_ms": 18.1022, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 512, "repeat": 14, "latency_ms": 19.1746, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 0, "latency_ms": 67.5685, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 1, "latency_ms": 69.6167, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 2, "latency_ms": 71.9835, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 3, "latency_ms": 69.411, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 4, "latency_ms": 69.7173, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 5, "latency_ms": 69.9872, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 6, "latency_ms": 72.7035, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 7, "latency_ms": 72.0738, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 8, "latency_ms": 65.3218, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 9, "latency_ms": 68.1225, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 10, "latency_ms": 79.9469, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 11, "latency_ms": 79.0861, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 12, "latency_ms": 79.0583, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 13, "latency_ms": 79.2778, "valid": true}
+{"config": "1.5b_Q2", "experiment": "prefill", "prompt_tokens": 2000, "repeat": 14, "latency_ms": 75.9993, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 0, "latency_ms": 10.7795, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 1, "latency_ms": 11.8162, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 2, "latency_ms": 11.2971, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 3, "latency_ms": 12.9405, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 4, "latency_ms": 10.3378, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 5, "latency_ms": 10.9835, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 6, "latency_ms": 11.666, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 7, "latency_ms": 11.1914, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 8, "latency_ms": 14.5454, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 9, "latency_ms": 11.0441, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 10, "latency_ms": 11.1366, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 11, "latency_ms": 11.6448, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 12, "latency_ms": 10.9755, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 13, "latency_ms": 12.7749, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 1, "repeat": 14, "latency_ms": 11.2314, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 0, "latency_ms": 11.8162, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 1, "latency_ms": 12.2582, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 2, "latency_ms": 13.7156, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 3, "latency_ms": 14.8656, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 4, "latency_ms": 15.1641, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 5, "latency_ms": 11.4603, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 6, "latency_ms": 10.8196, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 7, "latency_ms": 10.7475, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 8, "latency_ms": 10.4784, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 9, "latency_ms": 10.6595, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 10, "latency_ms": 10.6235, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 11, "latency_ms": 11.4513, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 12, "latency_ms": 11.8691, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 13, "latency_ms": 12.3777, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 64, "batch_size": 64, "repeat": 14, "latency_ms": 10.8922, "scheduled_tokens": 64, "running_requests": 64, "seq_len": 70, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 0, "latency_ms": 11.393, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 1, "latency_ms": 10.7963, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 2, "latency_ms": 12.1609, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 3, "latency_ms": 13.9592, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 4, "latency_ms": 11.1043, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 5, "latency_ms": 12.999, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 6, "latency_ms": 18.8083, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 7, "latency_ms": 16.2663, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 8, "latency_ms": 10.6575, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 9, "latency_ms": 12.4717, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 10, "latency_ms": 14.4162, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 11, "latency_ms": 12.8767, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 12, "latency_ms": 10.1926, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 13, "latency_ms": 12.8472, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 1, "repeat": 14, "latency_ms": 11.8997, "scheduled_tokens": 1, "running_requests": 1, "seq_len": 1030, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 0, "latency_ms": 12.0994, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 1, "latency_ms": 10.8012, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 2, "latency_ms": 11.1358, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 3, "latency_ms": 11.4619, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 4, "latency_ms": 11.0893, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 5, "latency_ms": 13.0121, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 6, "latency_ms": 12.2305, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 7, "latency_ms": 12.0682, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 8, "latency_ms": 12.9605, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 9, "latency_ms": 10.7722, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 10, "latency_ms": 12.3645, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 11, "latency_ms": 16.6907, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 12, "latency_ms": 12.9852, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 13, "latency_ms": 13.6256, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}
+{"config": "1.5b_Q2", "experiment": "decode", "context_len": 1024, "batch_size": 8, "repeat": 14, "latency_ms": 12.3931, "scheduled_tokens": 8, "running_requests": 8, "seq_len": 1032, "valid": true}

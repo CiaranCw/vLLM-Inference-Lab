@@ -1,0 +1,78 @@
+{
+  "config": "Q2",
+  "model_key": "0.5b",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct-GPTQ-Int4",
+  "common_frozen": {
+    "dtype": "bfloat16",
+    "max_model_len": 2048,
+    "gpu_memory_utilization": 0.6,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true,
+    "seed": 0,
+    "max_num_seqs": 64,
+    "max_num_batched_tokens": 4096,
+    "enable_prefix_caching": false,
+    "async_scheduling": false,
+    "disable_log_stats": true
+  },
+  "effective": {
+    "dtype": "torch.bfloat16",
+    "quantization": "auto_gptq",
+    "hf_quantization_config": {
+      "batch_size": 1,
+      "bits": 4,
+      "block_name_to_quantize": null,
+      "cache_block_outputs": true,
+      "damp_percent": 0.01,
+      "dataset": null,
+      "desc_act": false,
+      "exllama_config": {
+        "version": 1
+      },
+      "group_size": 128,
+      "max_input_length": null,
+      "model_seqlen": null,
+      "module_name_preceding_first_block": null,
+      "modules_in_block_to_quantize": null,
+      "pad_token_id": null,
+      "quant_method": "gptq",
+      "sym": true,
+      "tokenizer": null,
+      "true_sequential": true,
+      "use_cuda_fp16": false,
+      "use_exllama": true
+    },
+    "kv_cache_dtype": "auto",
+    "num_gpu_blocks": 48451,
+    "block_size": 16,
+    "kv_cache_size_tokens": 775216,
+    "attention_backend": "<unset:default>",
+    "max_model_len": 2048
+  },
+  "grid": {
+    "prefill_lengths": [
+      128,
+      512,
+      2000
+    ],
+    "decode_matrix": [
+      [
+        64,
+        [
+          1,
+          64
+        ]
+      ],
+      [
+        1024,
+        [
+          1,
+          8
+        ]
+      ]
+    ],
+    "warmup": 5,
+    "measure": 15
+  },
+  "engine_init_s_single_obs": 12.564
+}

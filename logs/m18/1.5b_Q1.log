@@ -1,0 +1,56 @@
+[m18 1.5b_Q1] building engine: Qwen/Qwen2.5-1.5B-Instruct-AWQ
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING 08-13 15:18:14 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 08-13 15:18:15 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+WARNING 08-13 15:18:15 [model.py:2063] Casting torch.float16 to torch.bfloat16.
+INFO 08-13 15:18:15 [model.py:1725] Using max model len 2048
+INFO 08-13 15:18:16 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=4096.
+INFO 08-13 15:18:17 [vllm.py:1006] Asynchronous scheduling is disabled.
+WARNING 08-13 15:18:17 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 08-13 15:18:17 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 08-13 15:18:17 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 08-13 15:18:17 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 08-13 15:18:17 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+INFO 08-13 15:18:21 [core.py:258] Initializing a V1 LLM engine (v0.24.1.dev0+gee0da84ab.d20260714) with config: model='Qwen/Qwen2.5-1.5B-Instruct-AWQ', speculative_config=None, tokenizer='Qwen/Qwen2.5-1.5B-Instruct-AWQ', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=2048, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=auto_awq, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen2.5-1.5B-Instruct-AWQ, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [4096], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+INFO 08-13 15:18:21 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://172.26.116.220:48595 backend=nccl
+INFO 08-13 15:18:21 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+INFO 08-13 15:18:21 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+INFO 08-13 15:18:21 [gpu_model_runner.py:5366] Starting to load model Qwen/Qwen2.5-1.5B-Instruct-AWQ...
+INFO 08-13 15:18:22 [auto_awq.py:470] Using MarlinLinearKernel for AutoAWQMarlinLinearMethod
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+Failed to get device capability: SM 12.x requires CUDA >= 12.9.
+INFO 08-13 15:18:22 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+INFO 08-13 15:18:22 [flash_attn.py:673] Using FlashAttention version 2
+INFO 08-13 15:18:23 [weight_utils.py:574] No model.safetensors.index.json found in remote.
+INFO 08-13 15:18:23 [weight_utils.py:849] Filesystem type for checkpoints: EXT4. Checkpoint size: 1.50 GiB. Available RAM: 59.30 GiB.
+INFO 08-13 15:18:23 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.55it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.55it/s]
+
+INFO 08-13 15:18:23 [default_loader.py:430] Loading weights took 0.40 seconds
+INFO 08-13 15:18:24 [gpu_model_runner.py:5461] Model loading took 1.1 GiB memory and 2.098513 seconds
+INFO 08-13 15:18:24 [marlin_utils.py:566] Marlin kernel can achieve better performance for small size_n with experimental use_atomic_add feature. You can consider set environment variable VLLM_MARLIN_USE_ATOMIC_ADD to 1 if possible.
+INFO 08-13 15:18:25 [gpu_worker.py:508] Available KV cache memory: 8.12 GiB
+INFO 08-13 15:18:25 [kv_cache_utils.py:2158] GPU KV cache size: 304,224 tokens
+INFO 08-13 15:18:25 [kv_cache_utils.py:2159] Maximum concurrency for 2,048 tokens per request: 148.55x
+INFO 08-13 15:18:25 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+INFO 08-13 15:18:25 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+2026-08-13 15:18:25,917 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-08-13 15:18:25,933 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+INFO 08-13 15:18:25 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+INFO 08-13 15:18:26 [core.py:495] init engine (profile, create kv cache, warmup model) took 1.65 s
+[m18 1.5b_Q1] dtype=torch.bfloat16 quant=auto_awq kv_tokens=304224 init=12.461s
+[m18 1.5b_Q1] weight_by_dtype={'torch.bfloat16': 464.925, 'torch.int32': 629.631} embed_lm_head_MiB=445.125
+WARNING 08-13 15:18:26 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+WARNING 08-13 15:18:26 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[m18 1.5b_Q1] PPL overall=2.5039 zh=2.5501 en=2.4586 scored=5364
+  prefill n=128: median=12.3272ms
+  prefill n=512: median=19.9497ms
+  prefill n=2000: median=69.5634ms
+  decode ctx=64 b=1: median=12.359ms thru=80.91 valid=True
+  decode ctx=64 b=64: median=12.5993ms thru=5079.65 valid=True
+  decode ctx=1024 b=1: median=11.3976ms thru=87.74 valid=True
+  decode ctx=1024 b=8: median=12.4017ms thru=645.07 valid=True
+[m18 1.5b_Q1] done -> outputs/m18
+[rank0]:[W813 15:18:30.941683825 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

@@ -1,0 +1,97 @@
+{
+  "config": "1.5b_Q1",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct-AWQ",
+  "prefill": [
+    {
+      "sample_count": 15,
+      "median_ms": 12.3272,
+      "mean_ms": 12.404,
+      "stdev_ms": 1.3642,
+      "p95_ms": 15.2627,
+      "min_ms": 10.3323,
+      "max_ms": 15.2627,
+      "prompt_tokens": 128,
+      "metric": "engine_first_step_latency_ms"
+    },
+    {
+      "sample_count": 15,
+      "median_ms": 19.9497,
+      "mean_ms": 20.4743,
+      "stdev_ms": 1.0017,
+      "p95_ms": 22.7588,
+      "min_ms": 19.4368,
+      "max_ms": 22.7588,
+      "prompt_tokens": 512,
+      "metric": "engine_first_step_latency_ms"
+    },
+    {
+      "sample_count": 15,
+      "median_ms": 69.5634,
+      "mean_ms": 69.891,
+      "stdev_ms": 0.9508,
+      "p95_ms": 72.9649,
+      "min_ms": 69.1197,
+      "max_ms": 72.9649,
+      "prompt_tokens": 2000,
+      "metric": "engine_first_step_latency_ms"
+    }
+  ],
+  "decode": [
+    {
+      "sample_count": 15,
+      "median_ms": 12.359,
+      "mean_ms": 13.207,
+      "stdev_ms": 2.5078,
+      "p95_ms": 19.9325,
+      "min_ms": 10.1091,
+      "max_ms": 19.9325,
+      "context_len": 64,
+      "batch_size": 1,
+      "seq_len": 70,
+      "all_valid": true,
+      "throughput_tok_s_median": 80.91
+    },
+    {
+      "sample_count": 15,
+      "median_ms": 12.5993,
+      "mean_ms": 13.8503,
+      "stdev_ms": 3.2852,
+      "p95_ms": 24.9467,
+      "min_ms": 10.9654,
+      "max_ms": 24.9467,
+      "context_len": 64,
+      "batch_size": 64,
+      "seq_len": 70,
+      "all_valid": true,
+      "throughput_tok_s_median": 5079.65
+    },
+    {
+      "sample_count": 15,
+      "median_ms": 11.3976,
+      "mean_ms": 11.9302,
+      "stdev_ms": 1.8636,
+      "p95_ms": 17.0385,
+      "min_ms": 9.7041,
+      "max_ms": 17.0385,
+      "context_len": 1024,
+      "batch_size": 1,
+      "seq_len": 1030,
+      "all_valid": true,
+      "throughput_tok_s_median": 87.74
+    },
+    {
+      "sample_count": 15,
+      "median_ms": 12.4017,
+      "mean_ms": 12.6229,
+      "stdev_ms": 1.5935,
+      "p95_ms": 17.5233,
+      "min_ms": 11.0974,
+      "max_ms": 17.5233,
+      "context_len": 1024,
+      "batch_size": 8,
+      "seq_len": 1032,
+      "all_valid": true,
+      "throughput_tok_s_median": 645.07
+    }
+  ]
+}
