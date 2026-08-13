@@ -63,8 +63,9 @@ def fig_capacity():
 
     # (a) 容量拐点：worst-seed P99 TTFT
     ax = axes[0]
-    for runs, label, style in ((long_runs, "60s window (M12 protocol)", "-o"),
-                               (short_runs, "~5s window (200 samples)", "--s")):
+    for runs, label, style in (
+            (long_runs, "60s offered-arrival horizon (M12 protocol)", "-o"),
+            (short_runs, "fixed 200-request short run", "--s")):
         if not runs:
             continue
         w = worst_by_qps(runs, "client_p99_ttft_ms")
@@ -73,19 +74,21 @@ def fig_capacity():
     ax.set_xlabel("offered QPS (req/s)")
     ax.set_ylabel("worst-seed client P99 TTFT (ms)")
     ax.set_yscale("log")
-    ax.set_title("(a) Capacity knee is highly sensitive\nto measurement window")
+    ax.set_title("(a) Knee depends on arrival horizon\n"
+                 "(200-req run: horizon = 200/QPS = 25.0s@8 ... 4.2s@48)")
     ax.legend(fontsize=7)
 
-    # (b) 服务端直方图分位数 vs 客户端真值
+    # (b) 服务端直方图**近似**分位数 vs 客户端 exact percentile（两种口径，不是对错关系）
     ax = axes[1]
     cli = median_by_qps(long_runs, "client_p99_ttft_ms")
     srv = median_by_qps(long_runs, "server_hist_ttft_p99_ms")
-    ax.plot(list(cli), list(cli.values()), "-o", ms=4, label="client ground truth P99 (np.percentile)")
+    ax.plot(list(cli), list(cli.values()), "-o", ms=4,
+            label="client exact P99 (np.percentile)")
     ax.plot(list(srv), list(srv.values()), "-^", ms=4,
-            label="server histogram P99 (histogram_quantile)")
+            label="server histogram approx. P99 (histogram_quantile)")
     ax.set_xlabel("offered QPS (req/s)")
     ax.set_ylabel("P99 TTFT (ms)")
-    ax.set_title("(b) Server histogram P99 != client P99")
+    ax.set_title("(b) Server histogram approx. P99\n!= client exact percentile")
     ax.legend(fontsize=7)
 
     # (c) 队列与 GPU 忙碌
@@ -100,7 +103,8 @@ def fig_capacity():
     ax2.set_ylabel("window-mean DCGM GPU util, seed median (%)", color="tab:blue")
     ax2.set_ylim(0, 100)
     ax2.grid(False)
-    ax.set_title("(c) Overload queues up first;\nGPU never saturates")
+    ax.set_title("(c) Overload queues up first;\n"
+                 "coarse GPU util stays low (no SM-active metric)")
 
     fig.suptitle("M21 - single RTX 5080 / WSL2 / Qwen2.5-0.5B / enforce_eager / Shape A (in256,out128)",
                  fontsize=8, y=1.02)

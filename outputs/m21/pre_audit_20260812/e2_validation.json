@@ -1,0 +1,271 @@
+{
+  "n_runs": 21,
+  "failures": [],
+  "per_run": [
+    {
+      "run_id": "e3_shapeA_60s_qps8_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.001
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps16_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.001
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps24_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.007
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps32_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.005
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps40_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.01
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps44_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.008
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps48_s0",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.01
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps8_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.0
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps16_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.008
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps24_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.01
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps32_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.001
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps40_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.004
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps44_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.008
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps48_s1",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.001
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps8_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.003
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps16_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.005
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps24_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.01
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps32_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.014
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps40_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.009
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps44_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.005
+    },
+    {
+      "run_id": "e3_shapeA_60s_qps48_s2",
+      "I1": true,
+      "I2": true,
+      "I3": true,
+      "I4": true,
+      "I5": true,
+      "I6": true,
+      "I7": true,
+      "scrape_coverage": 1.004
+    }
+  ],
+  "hist_vs_client": [
+    {
+      "label": "TTFT p99",
+      "n": 21,
+      "rel_diff_median": 0.097,
+      "rel_diff_min": -0.1043,
+      "rel_diff_max": 0.6818,
+      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+    },
+    {
+      "label": "ITL p99",
+      "n": 21,
+      "rel_diff_median": 0.0896,
+      "rel_diff_min": -0.06,
+      "rel_diff_max": 0.5042,
+      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+    },
+    {
+      "label": "E2EL p99",
+      "n": 21,
+      "rel_diff_median": 0.1265,
+      "rel_diff_min": 0.019,
+      "rel_diff_max": 0.3213,
+      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+    }
+  ],
+  "I8_dcgm_vs_nvml_gpu_util_abs_gap": {
+    "median": 2.0,
+    "max": 66.0,
+    "n": 21,
+    "note": "两条独立路径的 GPU util 峰值差；曾用它抓出 dcgm-exporter 默认 30s 采集间隔的过期读数"
+  },
+  "PASS": true,
+  "source": "outputs/m21/raw/e3_shapeA_60s_runs.jsonl"
+}

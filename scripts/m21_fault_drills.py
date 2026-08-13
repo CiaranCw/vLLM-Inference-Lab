@@ -5,7 +5,8 @@
   1. 只操作本脚本自己 Popen 出来、且 PID 已落盘的 server 进程；
   2. 禁止 pkill/killall 等模糊匹配；kill 前用 /proc/<pid>/cmdline 校验身份（见 Server.kill_self_pid）；
   3. 禁止 nvidia-smi --reset、禁止重启系统/WSL/Docker daemon、禁止碰任何其他进程；
-  4. OOM 必须是**可恢复的进程级 CUDA OOM**，事后逐条验证：进程已退出 / 显存已回收 / server 可重启；
+  4. OOM 注入必须**可恢复**，事后逐条验证：进程已退出 / 显存已回收 / server 可重启；
+     （实测落到的是**启动期显存预算拒绝** `startup_memory_rejection`，不是 runtime CUDA allocator OOM，见下）；
   5. 出现 GPU/driver 异常（NVML 报错、显存不回收）→ 立即中止后续演练并上报。
 
 每个演练都要拿到两类证据：① 原始报错或原始指标；② 告警是否**真的 firing**。
@@ -25,7 +26,10 @@ import urllib.request
 import m21_common as C
 
 NVML_FREE_TOL_MIB = 800   # 显存回收判据容差（桌面进程本身会波动）
-OOM_UTIL = "0.97"         # 制造进程级 CUDA OOM 的显存预算
+# 把显存预算调到远超实际可用 → vLLM 在**启动期**校验失败、EngineCore 拒绝初始化。
+# 注意：这是 startup memory-budget rejection，**不是** runtime CUDA allocator OOM
+# (torch.cuda.OutOfMemoryError)；后者本模块未注入，属 scope boundary / optional extension。
+OOM_UTIL = "0.97"
 
 
 def watch_alerts(seconds, interval=2.0):
@@ -178,9 +182,14 @@ def drill_timeout(overload_qps=64, probe_timeout_s=0.5, probes=60):
             "sum(vllm:num_requests_waiting)", t0, t1)["max"]
         rec["server_running_max_during_probe"] = C.prom_range_agg(
             "sum(vllm:num_requests_running)", t0, t1)["max"]
-        rec["server_hist_ttft_p99_ms_during_probe"] = C.prom_scalar_at(
+        # 单位陷阱：vllm:time_to_first_token_seconds 的单位是**秒**，prom_scalar_at 不做换算。
+        # 首版直接把秒值存进 *_ms 字段，导致 19.57s 被读成 19.57ms（差 1000 倍）。
+        _ttft_p99_s = C.prom_scalar_at(
             "histogram_quantile(0.99, sum by (le) "
             "(increase(vllm:time_to_first_token_seconds_bucket[30s])))", t1)
+        rec["server_hist_ttft_p99_s_during_probe"] = _ttft_p99_s
+        rec["server_hist_ttft_p99_ms_during_probe"] = (
+            None if _ttft_p99_s is None else _ttft_p99_s * 1000.0)
         rec["alerts_firing"] = watch_alerts(25)
         th.join(timeout=600)
         res = (bench_result.get("r") or {}).get("result") or {}
@@ -196,8 +205,13 @@ def drill_timeout(overload_qps=64, probe_timeout_s=0.5, probes=60):
 
 # --------------------------------------------------------------------- D3 OOM
 def drill_oom():
-    """进程级、可恢复的 CUDA OOM：把显存预算调到远超实际可用，令 server 启动期失败。"""
-    rec = {"drill": "oom", "gpu_memory_utilization": OOM_UTIL,
+    """启动期显存预算拒绝（startup_memory_rejection），可恢复。
+
+    **不是** runtime CUDA allocator OOM —— vLLM 在启动期就判定预算不可满足并拒绝初始化。
+    场景 key 保留 `oom` 以兼容既有 artifact，显示名见 `display_name`。
+    """
+    rec = {"drill": "oom", "display_name": "startup_memory_rejection",
+           "gpu_memory_utilization": OOM_UTIL,
            "purpose": "OOM 的原始报错长什么样、事后如何确认显存已回收且可恢复"}
     baseline = nvml_fb_used_mib()
     rec["nvml_fb_used_mib_before"] = baseline

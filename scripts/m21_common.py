@@ -114,7 +114,12 @@ def wait_idle(timeout=40, need=3, interval=0.5):
 
 
 def warmup(n=10):
-    """打若干条极短请求，避开 Triton JIT 冷启动（AGENTS.md §5）。"""
+    """打若干条极短请求，避开 **Triton GPU-kernel JIT** 冷启动（AGENTS.md §5）。
+
+    这里的 Triton 指 **OpenAI Triton GPU 编程语言/编译器**的 kernel JIT，
+    **不是** NVIDIA Triton Inference Server（M21 主实验没有用到推理服务器，
+    Triton Inference Server 是 M20 的对象）。下文简称 Triton kernel JIT。
+    """
     url = f"http://{HOST}:{PORT}/v1/completions"
     body = json.dumps({"model": MODEL, "prompt": "warmup", "max_tokens": 8,
                        "temperature": 0}).encode()
@@ -146,7 +151,12 @@ def prom_scalar(expr, default=None):
 
 
 def prom_scalar_at(expr, ts, default=None):
-    """在指定时刻求值（用于「对整个压测窗口做 increase() 后取分位数」这类查询）。"""
+    """在指定时刻求值（用于「对整个压测窗口做 increase() 后取分位数」这类查询）。
+
+    **单位警告**：本函数原样返回 PromQL 的数值，**不做任何单位换算**。
+    vLLM 的延迟直方图是 `*_seconds_bucket`，返回值单位是**秒**；
+    存进名为 `*_ms` 的字段前必须自己 ×1000（E6 首版漏了这一步，19.57s 被记成 19.57ms）。
+    """
     q = urllib.parse.urlencode({"query": expr, "time": ts})
     try:
         d = json.loads(http_get(f"{PROM}/api/v1/query?{q}", timeout=20))

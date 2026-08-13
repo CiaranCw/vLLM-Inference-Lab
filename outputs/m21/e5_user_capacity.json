@@ -1,5 +1,11 @@
 {
-  "method": "Little's law: N_users = QPS_stable × (E2EL + think_time)",
+  "method": "Interactive Response Time Law（闭环 population）：N = X × (R + Z)；由 Little's law 推出。X=稳定吞吐, R=E2EL 服务响应时间, Z=用户思考时间",
+  "quantity_definitions": {
+    "average_in_system_requests": "L = X × R —— 平均**在服务系统内**的请求数",
+    "estimated_thinking_users": "T = X × Z —— 正在思考、**不在**服务系统内的用户数",
+    "estimated_closed_loop_users": "N = X × (R + Z) = L + T —— 闭环**用户总数**",
+    "WARNING": "N 是用户 population，**不能**读作「同时有 N 个请求在服务器里执行」；后者是 L。首版把 N 命名为 estimated_concurrent_users，属误导，已修正"
+  },
   "assumptions": {
     "A1": "每用户串行：收到完整回答后思考 think_time 秒再发下一条",
     "A2": "请求形状固定 Shape A (in256/out128)，真实流量不会这么整齐",
@@ -87,24 +93,36 @@
   ],
   "qps_stable_req_s": 24,
   "first_qps_over_slo": 32,
-  "capacity_interval_note": "容量落在 (24, 32] 之间，网格步长决定分辨率；不是系统精确极限",
+  "capacity_notation": {
+    "last_measured_passing_point_req_s": 24,
+    "first_measured_failing_point_req_s": 32,
+    "knee_localized_to": "(24, 32]",
+    "knee_meaning": "在测试网格上，拐点（从达标翻转为不达标）落在这个半开区间内",
+    "unknown_true_capacity_C": "24 <= C < 32  即 C ∈ [24, 32)",
+    "C_meaning": "C = 未知的真实最大 SLO 达标容量。已知 24 达标故 C ≥ 24；已知 32 不达标故 C < 32。两种记号含义不同，不可互换",
+    "grid_step_req_s": 8
+  },
   "e2el_at_qps_stable_ms": 1724.7207940090448,
-  "user_capacity_sensitivity": [
+  "average_in_system_requests": 41.4,
+  "user_population_sensitivity": [
     {
       "think_time_s": 5,
-      "cycle_s": 6.725,
-      "estimated_concurrent_users": 161.4
+      "cycle_s_R_plus_Z": 6.725,
+      "estimated_thinking_users": 120,
+      "estimated_closed_loop_users": 161.4
     },
     {
       "think_time_s": 15,
-      "cycle_s": 16.725,
-      "estimated_concurrent_users": 401.4
+      "cycle_s_R_plus_Z": 16.725,
+      "estimated_thinking_users": 360,
+      "estimated_closed_loop_users": 401.4
     },
     {
       "think_time_s": 30,
-      "cycle_s": 31.725,
-      "estimated_concurrent_users": 761.4
+      "cycle_s_R_plus_Z": 31.725,
+      "estimated_thinking_users": 720,
+      "estimated_closed_loop_users": 761.4
     }
   ],
-  "headline": "在 P99 TTFT ≤ 300ms 的 SLO 下，本机本配置最大稳定 offered QPS = 24 req/s；按思考时间 5–30s 折算，可承载并发用户约 161.4–761.4 人"
+  "headline": "在 P99 TTFT ≤ 300ms 的 SLO 下，本机本配置最大稳定 offered QPS = 24 req/s，平均**在系统内的请求数** ≈ 41.4；若按闭环交互模型（思考时间 5–30s）折算，可支撑的**闭环用户总数**约 161.4–761.4 人（含正在思考、不在系统内的用户）"
 }

@@ -1,6 +1,10 @@
 # M21 · 监控与容量规划 —— 设计冻结（规划稿）
 
-> **状态：⬜ 规划中，未执行任何实验。** 本文件只冻结「要测什么 / 判据是什么 / 不做什么」，
+> **状态：本文件是 M21 的设计冻结稿；实验已全部执行，结论见 [`results.md`](results.md)。**
+> **2026-08-12 evidence audit** 已同步修正本文中的口径表述（E5 闭环 population 语义、E2 归因、
+> OOM 与 GPU-compute 术语）；原始设计意图与「不做的事」保持不变。
+> 下面这段是规划当时的原文状态说明：
+> ~~**状态：⬜ 规划中，未执行任何实验。**~~ 本文件只冻结「要测什么 / 判据是什么 / 不做什么」，
 > 所有表格中的数字位一律留空，**执行后才填**，且必须能回溯到 `outputs/m21/`。
 > 边界：单卡 RTX 5080(sm_120) / WSL2 / Qwen2.5-0.5B-Instruct / `enforce_eager` / 单机单副本。
 
@@ -35,8 +39,11 @@ Triton 服务指标（可选，M20-B 已验证 `/metrics` 可用）/ 自定义�
 
 **口径红线（写进脚本注释，防止事后混淆）**：
 - **服务端 histogram 分位数**（`histogram_quantile(0.99, rate(vllm:time_to_first_token_seconds_bucket[...]))`）
-  与 **客户端真值分位数**（`vllm bench serve` 的 `np.percentile`）**不是同一个数**——前者受 bucket 边界离散化影响。
-  两者分别命名 `server_hist_p99_*` / `client_p99_*`，**禁止混用、禁止相减后称"误差"以外的任何含义**。
+  与 **客户端 exact percentile**（`vllm bench serve` 的 `np.percentile`）**不是同一个数**。
+  差异至少可能同时来自：① histogram 只存 bucket 计数、`histogram_quantile()` 是近似估计；
+  ② server 与 client 的观测边界不同；③ scrape/窗口聚合的近似。**本实验无法把偏差归因到单一项**。
+  两者分别命名 `server_hist_p99_*` / `client_p99_*`，**禁止混用**；客户端 exact percentile 是
+  **client/SLO 口径**的 ground truth，**不是** server metric 的 ground truth。
 - host `vllm serve`（lab commit `ee0da84`）与 M20 容器内 vLLM `0.24.0+092c4842` **不是同一版本**，
   M21 主线只用 host，**不得跨版本相减**。
 
@@ -137,7 +144,7 @@ E4 的 B1/B2 判据必须建立在这个粗粒度指标上，**不得声称测�
 | 场景 | 构造方式（单变量） | 预期签名（**执行前假设，可能被推翻**） |
 |---|---|---|
 | B1 CPU 提交受限 | Shape A 低 QPS、小 batch（承接 M7） | 延迟不低但 **GPU util 低**、proc CPU% 高 |
-| B2 GPU 计算受限 | Shape B in1024/out32（prefill 重） | **GPU util 高**、TTFT 高、waiting 低 |
+| B2 prefill 计算压力 | Shape B in1024/out32（prefill 重） | **粗粒度 GPU util 更高**、TTFT 高、waiting 低（只能说 compute pressure 更强，**不能**断言算力饱和——本环境无 SM-active 指标） |
 | B3 KV Cache 受限 | 降 `--gpu-memory-utilization` / 拉长输出 | **kv_cache_usage_perc 逼近 1**、`num_preemptions` > 0 |
 | B4 队列受限 | QPS 超容量（48） | **waiting 堆积**、TTFT 尾爆、吞吐仍跟随（M12 已见） |
 
@@ -147,7 +154,9 @@ E4 的 B1/B2 判据必须建立在这个粗粒度指标上，**不得声称测�
   不得把 M7 的旧结论搬过来充数。
 
 ### E5 · 一张卡承载多少用户（Q4）
-- 用 Little's law：`并发用户数 N ≈ QPS_stable × (服务时间 + 用户思考时间)`。
+- 用 **Interactive Response Time Law**（可由 Little's law 推出）：
+  `闭环用户总数 N = X × (R + Z)`；同时必须分开报告 `平均在系统内请求数 L = X × R` 与 `思考中用户 T = X × Z`。
+  **N 是用户 population，不是「系统内并发请求数」**（后者是 L），两者量级差一个数量级。
 - **必须显式写出假设**：会话长度、思考时间、输入/输出 token 形状、SLO 口径。
 - 输出**区间 + 敏感性**（思考时间 5s/15s/30s 三档），**不给单点数字**，
   且必须标注边界：0.5B / eager / 单卡 / 本 shape。
@@ -165,7 +174,7 @@ E4 的 B1/B2 判据必须建立在这个粗粒度指标上，**不得声称测�
 2. **禁止**模糊 `pkill` / `killall`（M12 曾因 `pkill -f "vllm serve"` 自匹配 kill 掉执行 shell）；
    只允许 `kill <已记录PID>`，且 kill 前需校验 `/proc/<pid>/cmdline` 匹配预期。
 3. **禁止** `nvidia-smi --reset`、**禁止**重启系统 / WSL / Docker daemon、**禁止**操作任何其他进程。
-4. OOM 注入必须是**可恢复的进程级 CUDA OOM**；失败后必须逐条验证：
+4. OOM 注入必须**可恢复**（实测落到的是**启动期显存预算拒绝**，非 runtime CUDA allocator OOM）；失败后必须逐条验证：
    ① 进程已退出　② NVML 显存已回收（回到注入前基线 ±阈值）　③ 正常 server 能重新启动。
 5. 一旦出现 GPU / driver 异常（NVML 报错、显存不回收、`nvidia-smi` 挂起）→ **立即停止该类实验并上报**。
 

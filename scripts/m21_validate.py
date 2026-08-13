@@ -14,7 +14,8 @@
   I7 抓取覆盖率：1s 采样点数 ≈ 窗口秒数（丢点率）
   I8 DCGM 与 NVML 的 GPU util / 显存读数一致（正交第二证据源）
 
-另产出**量化结论（非判据）**：服务端直方图分位数 vs 客户端真值分位数的偏差。
+另产出**量化结论（非判据）**：服务端直方图**近似**分位数 vs 客户端 **exact percentile** 的偏差。
+注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth。
 
 用法：python scripts/m21_validate.py [--runs outputs/m21/raw/e3_shapeA_60s_runs.jsonl]
 """
@@ -28,6 +29,17 @@ import m21_common as C
 
 MAX_NUM_SEQS = 64
 SCRAPE_COVERAGE_MIN = 0.8   # 采样点数 / 窗口秒数 的下限
+
+# 两种 P99 的差异**不能**单归因于某一个机制（2026-08-12 audit 修正：
+# 首版写成「bucket 上界向上取整所致」，属于过强的因果归因）。
+HIST_VS_CLIENT_NOTE = (
+    "两者不是同一个量，差异至少可能由三类原因共同产生，本实验**无法**把 +9.7% 归因到其中任何单一项："
+    "① Prometheus classic histogram 只保存 bucket 计数，`histogram_quantile()` 是基于 bucket 分布的"
+    "**近似**估计，不是客户端原始样本的精确分位数；"
+    "② server-side TTFT 与 client-observed TTFT 的**观测边界不同**（客户端含 HTTP/网络栈与客户端调度）；"
+    "③ scrape 与窗口聚合（1s 抓取 + increase() over window）本身带来的近似。"
+    "结论只能是：**两者不可互换**。客户端 exact percentile 是 client/SLO 口径的 ground truth，"
+    "**不是** server metric 的 ground truth；面板 P99 更适合趋势与告警，SLO 验收以客户端 exact percentile 为准。")
 
 
 def load(path):
@@ -74,13 +86,14 @@ def check(runs):
         if r.get("dcgm_fb_used_mib_max") is not None and r.get("proc_rss_bytes_max") is not None:
             pass  # 显存交叉校验在 e1/e4 快照里做，这里只留 util
 
-        # 服务端直方图 vs 客户端真值
+        # 服务端直方图近似分位数 vs 客户端 exact percentile（两种口径，不是对错关系）
         for cli, srv, box in (("client_p99_ttft_ms", "server_hist_ttft_p99_ms", dev_ttft),
                               ("client_p99_itl_ms", "server_hist_itl_p99_ms", dev_itl),
                               ("client_p99_e2el_ms", "server_hist_e2el_p99_ms", dev_e2el)):
             a, b = r.get(cli), r.get(srv)
             if a and b:
-                box.append({"run_id": rid, "client_ms": a, "server_hist_ms": b,
+                box.append({"run_id": rid, "client_exact_p99_ms": a,
+                            "server_hist_p99_ms": b,
                             "rel_diff": (b - a) / a})
 
     def summarize(box, label):
@@ -91,7 +104,9 @@ def check(runs):
                 "rel_diff_median": round(statistics.median(rel), 4),
                 "rel_diff_min": round(min(rel), 4),
                 "rel_diff_max": round(max(rel), 4),
-                "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"}
+                "definition": ("rel_diff = (server_hist_p99 − client_p99) / client_p99；"
+                               "正值 = 服务端直方图近似分位数高于客户端 exact percentile"),
+                "interpretation": HIST_VS_CLIENT_NOTE}
 
     res["hist_vs_client"] = [summarize(dev_ttft, "TTFT p99"),
                              summarize(dev_itl, "ITL p99"),
@@ -120,7 +135,7 @@ def main():
     print(f"E2 校验：{res['n_runs']} runs, PASS={res['PASS']}, 失败 {len(res['failures'])} 条")
     for s in res["hist_vs_client"]:
         if s.get("n"):
-            print(f"  {s['label']}: 服务端直方图相对客户端真值 "
+            print(f"  {s['label']}: 服务端直方图近似分位数相对客户端 exact percentile "
                   f"中位偏差 {s['rel_diff_median'] * 100:+.1f}%  "
                   f"(范围 {s['rel_diff_min'] * 100:+.1f}% ~ {s['rel_diff_max'] * 100:+.1f}%)")
     if g := res.get("I8_dcgm_vs_nvml_gpu_util_abs_gap"):

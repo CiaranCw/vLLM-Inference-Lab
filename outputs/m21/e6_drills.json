@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-08-12 11:02:49+0800",
-  "note": "worker_exit / oom 为 2026-08-12 设备重启后重跑（含子进程 PID 记录与孤儿清理）；request_timeout / preemption 为 2026-08-11 首轮，未受影响。早期未通过的尝试保留在 outputs/m21/e6_drills_attempt*.json 与 raw/e6_drills_attempt1.jsonl。",
+  "generated_at": "2026-08-12 11:35:23+0800",
+  "generated_by": "scripts/m21_e6_consolidate.py（离线，从 raw jsonl 重建）",
+  "note": "worker_exit / startup_memory_rejection 为 2026-08-12 设备重启后重跑（含子进程 PID 记录与孤儿清理）；request_timeout / preemption 为 2026-08-11 首轮。早期未通过的尝试保留在 outputs/m21/e6_drills_attempt*.json 与 raw/e6_drills_attempt1.jsonl。",
+  "corrections_applied": [
+    "单位：server_hist_ttft_p99_ms_during_probe 由秒换算为毫秒（见各记录的 _unit_correction）",
+    "术语：oom → display_name=startup_memory_rejection（非 runtime CUDA allocator OOM）"
+  ],
   "drills": [
     {
       "drill": "worker_exit",
@@ -68,7 +73,8 @@
       "restart_ok": true,
       "PASS": true,
       "finished_at": "2026-08-12 11:01:00+0800",
-      "_source_file": "e6_drills.jsonl"
+      "_source_file": "e6_drills.jsonl",
+      "display_name": "worker_exit"
     },
     {
       "drill": "oom",
@@ -107,7 +113,9 @@
       "recovery_ok": true,
       "PASS": true,
       "finished_at": "2026-08-12 11:01:46+0800",
-      "_source_file": "e6_drills.jsonl"
+      "_source_file": "e6_drills.jsonl",
+      "display_name": "startup_memory_rejection",
+      "scope_note": "实际注入 = 启动期显存预算校验失败（vLLM 主动拒绝初始化，报 `ValueError: Free memory on device cuda:0 ... is less than desired gpu_memory_utilization`）。**本模块没有注入 runtime CUDA allocator OOM**（`torch.cuda.OutOfMemoryError`），那属于 scope boundary / optional extension。"
     },
     {
       "drill": "request_timeout",
@@ -125,7 +133,7 @@
       ],
       "server_waiting_max_during_probe": 774.0,
       "server_running_max_during_probe": 64.0,
-      "server_hist_ttft_p99_ms_during_probe": 19.56753246753247,
+      "server_hist_ttft_p99_ms_during_probe": 19567.53246753247,
       "alerts_firing": {
         "VLLMTTFTP99AboveSLO": 0.0,
         "VLLMQueueBacklog": 0.0,
@@ -135,7 +143,10 @@
       "background_load_p99_ttft_ms": 17373.806186325382,
       "PASS": true,
       "finished_at": "2026-08-11 22:33:32+0800",
-      "_source_file": "e6_drills_attempt1.jsonl"
+      "_source_file": "e6_drills_attempt1.jsonl",
+      "server_hist_ttft_p99_s_during_probe": 19.56753246753247,
+      "_unit_correction": "raw 中 server_hist_ttft_p99_ms_during_probe=19.56753246753247 实为**秒**（PromQL 源指标 vllm:time_to_first_token_seconds，脚本首版漏了 ×1000）；此处 derived 值已换算为 19567.53246753247 ms。raw 文件未修改。",
+      "display_name": "request_timeout"
     },
     {
       "drill": "preemption",
@@ -158,7 +169,8 @@
       "drained": true,
       "PASS": true,
       "finished_at": "2026-08-11 22:35:56+0800",
-      "_source_file": "e6_drills_attempt1.jsonl"
+      "_source_file": "e6_drills_attempt1.jsonl",
+      "display_name": "preemption"
     }
   ]
 }

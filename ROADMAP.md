@@ -340,13 +340,15 @@
 
 ### M21 监控与容量规划　✅　**T+E+O COMPLETE**（2026-08-12）
 - **栈**：`vllm serve`(8014) + `dcgm-exporter`(9400) + 自写 `m21_host_exporter`(9836) → Prometheus(1s 抓取, 7 条告警) → Grafana(provisioning 加载面板)。配置全部入库 `monitoring/`。
-- **E2 指标可信度先过关**：21 个压测窗口的服务端 counter 增量与客户端 bench 汇总**逐条精确相等**；但**服务端 `histogram_quantile` P99 ≠ 客户端真值 P99**（TTFT 中位 +9.7%，最大 +68%）→ 面板数字只能看趋势/告警，不能当 SLA 验收。
-- **E3 容量**：Shape A 7 档 × 3 seed × 60s 窗口，本次最大稳定 QPS **24**（区间 (24,32]）；过载先堆队列（waiting 705）而 **GPU 窗口均值仅 25→32%**。**采样窗口决定结论**：5s 窗口把 QPS32 测成 35ms（达标），60s 窗口是 415ms（破线）。
+- **E2 指标可信度先过关**：21 个压测窗口的服务端 counter 增量与客户端 bench 汇总**逐条精确相等**；但**服务端 `histogram_quantile` 近似分位数 ≠ 客户端 exact percentile**（TTFT 中位 +9.7%，最大 +68%；差异同时来自统计表示、观测边界与窗口聚合，**不可归因到单一项**）→ 面板数字只能看趋势/告警，SLO 验收以客户端 exact percentile 为准。
+- **E3 容量**：Shape A 7 档 × 3 seed × 60s offered-arrival horizon，本次**最后一个达标档 24 / 第一个不达标档 32**（拐点定位到 (24,32]；真实容量 **C ∈ [24,32)**）；过载先堆队列（waiting 705）而**粗粒度 GPU util 窗口均值仅 25→32%**。**到达时长决定结论**：固定 200-request 短实验（nominal horizon 随 QPS 从 25.0s 变到 4.2s）把 QPS32 测成 35ms（达标），60s horizon 是 415ms（破线）。
 - **与 M12(≈40) 的差异**：E7 单变量 A/B 证明**监控栈开销 ≲1%**（非原因）；NVML 时钟/温度排除降频；单流 ITL 9.40ms 说明机器没整体变慢；差异出在**高并发 TPOT +30%**（9.3→12.1ms）→ Little's law 所需并发 48→62 顶到 `max_num_seqs=64` 硬闸 → 正反馈。**根因未定**（M12 无环境指纹），本模块补了 `env_fingerprint.json`。**容量跨会话不稳定（24–32），不宣称复现 40，也不宣称 40 是错的。**
-- **E4 瓶颈签名**：B1 CPU 提交受限(GPU 31%/进程 CPU 110%)、B2 GPU 计算受限(66%)、B3b KV 受限(kv 0.9997 + 抢占 290)、B4 队列受限(waiting 1196)。**负结果**：只压 `--gpu-memory-utilization` 到 0.10 也造不出抢占（需求侧被 `max_num_seqs×384 tokens` 封顶），必须用长输出从需求侧构造。
-- **E6 故障演练 4/4 PASS，7 条告警规则全部真实 firing**。核心发现：**`SIGKILL` vLLM API server 不会杀死持有显存的 `EngineCore` 子进程** —— `up==0` 但显存 90s 不回收，新实例撞 `No available memory for the cache blocks`；清掉已记录的子进程 PID 后 5s 回收、28s 恢复。
+- **E4 瓶颈签名**：B1 CPU 提交受限(GPU 31%/进程 CPU 110%)、B2 prefill 计算压力更强(粗粒度 GPU util 66%；**无 SM-active 指标，不断言算力饱和**)、B3b KV 受限(kv 0.9997 + 抢占 290)、B4 队列受限(waiting 1196)。**负结果**：只压 `--gpu-memory-utilization` 到 0.10 也造不出抢占（需求侧被 `max_num_seqs×384 tokens` 封顶），必须用长输出从需求侧构造。
+- **E6 故障演练 4/4 PASS，7 条告警规则全部真实 firing**（其中 "OOM" 实为**启动期显存预算拒绝** `startup_memory_rejection`，**未注入** runtime CUDA allocator OOM）。核心发现：**`SIGKILL` vLLM API server 不会杀死持有显存的 `EngineCore` 子进程** —— `up==0` 但显存 90s 不回收，新实例撞 `No available memory for the cache blocks`；清掉已记录的子进程 PID 后 5s 回收、28s 恢复。
 - **⬜ 未做**：K8s/多副本/长时 soak/跨机 SLA/Triton 面板/compiled 对照；`DCGM_FI_PROF_*`(SM active) 在本环境全 N/A，**拿不到 SM 占用率**；WSL2 下无进程级显存归因。
-- 产出：`monitoring/*`、`scripts/m21_*.py`、`outputs/m21/*`、`logs/m21/*`、`notes/m21/{monitoring_and_capacity,results}.md`、`figures/fig1{1,2}_m21_*.png`；`check_invariants.py --module m21`（11 PASS）。
+- **E5**：Interactive Response Time Law。X=24 时平均**在系统内请求数** L≈**41.4**；闭环**用户总数** N（含思考中用户）按 Z=5/15/30s 为 **161/401/761**——N 是 population，**不是**并发请求数。
+- 产出：`monitoring/*`、`scripts/m21_*.py`、`outputs/m21/*`、`logs/m21/*`、`notes/m21/{monitoring_and_capacity,results}.md`、`figures/fig1{1,2}_m21_*.png`；`check_invariants.py --module m21`（14 PASS）。
+- **2026-08-12 evidence audit**：修正 E5 闭环 population 语义、E6 timeout 秒/毫秒单位（19.57ms→**19568ms**）、E2 因果归因过强、「5s 窗口」表述、OOM 与 GPU-compute 术语、容量记号；**未改原始数据、未重跑 E3/E4/E7**，derived 由 raw 离线重算（旧版备份 `outputs/m21/pre_audit_20260812/`）。逐条见 `notes/m21/results.md` §10。
 
 ## 阶段 G · 分布式与并行（T+E+O+H，★资源门控）　`docs/serving/parallelism_scaling.md`
 

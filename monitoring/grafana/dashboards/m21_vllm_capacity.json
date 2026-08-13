@@ -21,8 +21,8 @@
     {
       "id": 1,
       "type": "timeseries",
-      "title": "服务端 TTFT 分位数（直方图近似，≠ 客户端真值）",
-      "description": "histogram_quantile 受 bucket 边界离散化影响，与 vllm bench serve 的 np.percentile 不是同一个数。E2 已量化两者偏差。",
+      "title": "服务端 TTFT 分位数（histogram 近似，≠ 客户端 exact percentile）",
+      "description": "histogram_quantile 是基于 bucket 计数的**近似**分位数，与 vllm bench serve 的 np.percentile（exact percentile）不是同一个量：统计表示、观测边界、窗口聚合三者都不同，无法归因到单一项。E2 已量化偏差（TTFT 中位 +9.7%）。本面板适合看趋势与告警，SLO 验收以客户端 exact percentile 为准。",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
       "fieldConfig": {
         "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 1 } },
@@ -106,7 +106,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "GPU 忙碌（粗粒度）：DCGM vs NVML 交叉校验",
-      "description": "两条线来自互相独立的采集路径，用于验证读数可信。本环境拿不到 SM 占用率，因此高延迟 + 低 GPU_UTIL 应读作『不是 GPU 算力受限』，不可反推 SM 空闲程度。",
+      "description": "两条线来自互相独立的采集路径，用于验证读数可信。本环境拿不到 SM 占用率（DCGM_FI_PROF_* 全 N/A），因此只能读出 GPU compute pressure 的强弱：高延迟 + 低 GPU_UTIL 与『GPU 算力饱和』不符，但不可反推 SM 空闲程度，也不能断言算力已饱和。",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
       "targets": [

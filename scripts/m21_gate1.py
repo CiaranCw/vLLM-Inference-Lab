@@ -18,20 +18,23 @@ import time
 
 import m21_common as C
 
+# 单位约定（2026-08-12 audit）：vLLM 的 *_seconds_* 直方图返回**秒**，PromQL 不做换算，
+# 因此这里的 key 一律带显式单位后缀，避免再出现「秒值被存进 _ms 字段」那类错误
+# （E6 request_timeout 首版就栽在这上面）。
 CHECK_EXPRS = {
     "vllm_running": "sum(vllm:num_requests_running)",
     "vllm_waiting": "sum(vllm:num_requests_waiting)",
     "vllm_kv_usage": "max(vllm:kv_cache_usage_perc)",
-    "vllm_ttft_p99": ("histogram_quantile(0.99, sum by (le) "
+    "vllm_ttft_p99_seconds": ("histogram_quantile(0.99, sum by (le) "
                       "(rate(vllm:time_to_first_token_seconds_bucket[30s])))"),
-    "vllm_itl_p99": ("histogram_quantile(0.99, sum by (le) "
+    "vllm_itl_p99_seconds": ("histogram_quantile(0.99, sum by (le) "
                      "(rate(vllm:inter_token_latency_seconds_bucket[30s])))"),
     "vllm_success_rate": "sum(rate(vllm:request_success_total[30s]))",
     "vllm_prompt_tok_rate": "sum(rate(vllm:prompt_tokens_total[30s]))",
     "vllm_gen_tok_rate": "sum(rate(vllm:generation_tokens_total[30s]))",
     "vllm_preemptions": "sum(vllm:num_preemptions_total)",
     "dcgm_gpu_util": "max(DCGM_FI_DEV_GPU_UTIL)",
-    "dcgm_fb_used_mib": "max(DCGM_FI_DEV_FB_USED)",
+    "dcgm_fb_used_mib": "max(DCGM_FI_DEV_FB_USED)",  # DCGM 该字段单位为 MiB
     "nvml_gpu_util": "max(m21_nvml_gpu_util_percent)",
     "nvml_fb_used_bytes": "max(m21_nvml_fb_used_bytes)",
     "proc_cpu_percent": "m21_target_cpu_percent",
@@ -73,10 +76,11 @@ def main():
 
     try:
         C.warmup(5)
-        # 冷启动观察：warmup 首请求含 JIT/图构建，TTFT 会远高于稳态（AGENTS.md §5）。
+        # 冷启动观察：warmup 首请求含 Triton GPU-kernel JIT / 图构建，TTFT 会远高于稳态
+        # （AGENTS.md §5）。此处 Triton = GPU kernel 编译器，**不是** NVIDIA Triton Inference Server。
         # 先在 rate 窗口内取一次读数，作为「冷启动确实会打破 SLO 告警」的证据。
         time.sleep(15)
-        report["cold_start_ttft_p99_in_window_s"] = C.prom_scalar(CHECK_EXPRS["vllm_ttft_p99"])
+        report["cold_start_ttft_p99_in_window_s"] = C.prom_scalar(CHECK_EXPRS["vllm_ttft_p99_seconds"])
         report["alerts_firing_cold_window"] = [
             a["labels"]["alertname"] for a in C.prom_alerts() if a["state"] == "firing"]
 

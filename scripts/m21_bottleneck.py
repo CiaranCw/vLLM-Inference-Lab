@@ -7,7 +7,7 @@
 | 场景 | 构造 | 预期签名（执行前假设，允许被推翻） |
 |---|---|---|
 | B1 CPU 提交受限 | Shape A，低 QPS（并发≈1） | GPU util 低 + ITL 卡在 ~7ms 地板（承接 M7） |
-| B2 GPU 计算受限 | Shape B(in1024/out32) 高 QPS，prefill 重 | GPU util 显著更高 |
+| B2 prefill 计算压力 | Shape B(in1024/out32) 高 QPS，prefill 重 | 粗粒度 GPU util 显著更高 |
 | B3 KV 受限     | 压低 --gpu-memory-utilization + 满并发长输出 | kv_usage→1 且 preemption>0（正交双证据） |
 | B4 队列受限    | Shape A 超容量 QPS | waiting 持续堆积、TTFT 尾爆，但吞吐仍跟随 |
 
@@ -29,8 +29,12 @@ WARMUP_PROMPTS = 20
 SCENARIOS = [
     {"name": "B1_cpu_submit", "shape": "A", "rate": 1, "extra_args": [],
      "hypothesis": "GPU util 低但延迟有地板 → CPU 提交受限(M7)"},
+    # 场景 key 保留 B2_gpu_compute 以兼容既有 artifact；**表述**一律降到「compute pressure 更强」：
+    # 本环境 DCGM_FI_PROF_*(SM/GR/DRAM active) 全为 N/A，仅凭粗粒度 GPU_UTIL 不能断言算力饱和。
+    # 长 prefill 是 compute-bound 的底层机制证据来自 M7 profiler(gpu_frac 0.88)，不是本模块能证的。
     {"name": "B2_gpu_compute", "shape": "B", "rate": 24, "extra_args": [],
-     "hypothesis": "prefill 重 → GPU util 明显高于 B1/B4"},
+     "display_name": "B2_prefill_compute_pressure",
+     "hypothesis": "prefill 重 → 粗粒度 GPU util 明显高于 B1/B4（= compute pressure 更强，非「已饱和」）"},
     # B3 的 util 由 --gpu-memory-utilization 压低制造 KV 压力；多档递降直到出现抢占
     {"name": "B3_kv_pressure", "shape": "A", "rate": 40,
      "extra_args": ["--gpu-memory-utilization", "0.40"],

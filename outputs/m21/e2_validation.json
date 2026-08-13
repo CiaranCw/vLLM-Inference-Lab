@@ -241,7 +241,8 @@
       "rel_diff_median": 0.097,
       "rel_diff_min": -0.1043,
       "rel_diff_max": 0.6818,
-      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+      "definition": "rel_diff = (server_hist_p99 − client_p99) / client_p99；正值 = 服务端直方图近似分位数高于客户端 exact percentile",
+      "interpretation": "两者不是同一个量，差异至少可能由三类原因共同产生，本实验**无法**把 +9.7% 归因到其中任何单一项：① Prometheus classic histogram 只保存 bucket 计数，`histogram_quantile()` 是基于 bucket 分布的**近似**估计，不是客户端原始样本的精确分位数；② server-side TTFT 与 client-observed TTFT 的**观测边界不同**（客户端含 HTTP/网络栈与客户端调度）；③ scrape 与窗口聚合（1s 抓取 + increase() over window）本身带来的近似。结论只能是：**两者不可互换**。客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth；面板 P99 更适合趋势与告警，SLO 验收以客户端 exact percentile 为准。"
     },
     {
       "label": "ITL p99",
@@ -249,7 +250,8 @@
       "rel_diff_median": 0.0896,
       "rel_diff_min": -0.06,
       "rel_diff_max": 0.5042,
-      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+      "definition": "rel_diff = (server_hist_p99 − client_p99) / client_p99；正值 = 服务端直方图近似分位数高于客户端 exact percentile",
+      "interpretation": "两者不是同一个量，差异至少可能由三类原因共同产生，本实验**无法**把 +9.7% 归因到其中任何单一项：① Prometheus classic histogram 只保存 bucket 计数，`histogram_quantile()` 是基于 bucket 分布的**近似**估计，不是客户端原始样本的精确分位数；② server-side TTFT 与 client-observed TTFT 的**观测边界不同**（客户端含 HTTP/网络栈与客户端调度）；③ scrape 与窗口聚合（1s 抓取 + increase() over window）本身带来的近似。结论只能是：**两者不可互换**。客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth；面板 P99 更适合趋势与告警，SLO 验收以客户端 exact percentile 为准。"
     },
     {
       "label": "E2EL p99",
@@ -257,7 +259,8 @@
       "rel_diff_median": 0.1265,
       "rel_diff_min": 0.019,
       "rel_diff_max": 0.3213,
-      "note": "正值=服务端直方图分位数高于客户端真值（bucket 上界向上取整所致）"
+      "definition": "rel_diff = (server_hist_p99 − client_p99) / client_p99；正值 = 服务端直方图近似分位数高于客户端 exact percentile",
+      "interpretation": "两者不是同一个量，差异至少可能由三类原因共同产生，本实验**无法**把 +9.7% 归因到其中任何单一项：① Prometheus classic histogram 只保存 bucket 计数，`histogram_quantile()` 是基于 bucket 分布的**近似**估计，不是客户端原始样本的精确分位数；② server-side TTFT 与 client-observed TTFT 的**观测边界不同**（客户端含 HTTP/网络栈与客户端调度）；③ scrape 与窗口聚合（1s 抓取 + increase() over window）本身带来的近似。结论只能是：**两者不可互换**。客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth；面板 P99 更适合趋势与告警，SLO 验收以客户端 exact percentile 为准。"
     }
   ],
   "I8_dcgm_vs_nvml_gpu_util_abs_gap": {

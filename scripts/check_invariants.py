@@ -26,9 +26,11 @@ import argparse
 import csv
 import json
 import os
+import py_compile
 import re
 import statistics
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1695,6 +1697,34 @@ def check_m21(rep):
     把它当不变量只会逼出假结论。
     """
     M = "m21"
+
+    # ---- artifact 可执行性守卫（2026-08-12 audit 新增）----
+    # 教训：`m21_gate1.py` 曾因把逗号写进行尾注释而 SyntaxError，但当时 13 条 invariant
+    # 全部 PASS —— 因为没有任何一条要求「模块脚本至少得是可解析的 Python」。
+    # 这里**真实编译**（py_compile.compile + doraise），不是检查文件是否存在。
+    m21_scripts = [
+        "m21_common.py", "m21_host_exporter.py", "m21_gate1.py", "m21_capacity_sweep.py",
+        "m21_validate.py", "m21_bottleneck.py", "m21_capacity_users.py",
+        "m21_fault_drills.py", "m21_e6_consolidate.py", "m21_observability_cost.py",
+        "m21_env_fingerprint.py", "m21_figures.py",
+    ]
+    missing, broken = [], []
+    with tempfile.TemporaryDirectory(prefix="m21_pyc_") as tmpd:
+        for name in m21_scripts:
+            path = _p("scripts", name)
+            if not os.path.exists(path):
+                missing.append(name)
+                continue
+            try:
+                # 写到临时目录：py_compile 拒绝 /dev/null 这类非常规文件，
+                # 且不能污染仓库里的 __pycache__
+                py_compile.compile(path, cfile=os.path.join(tmpd, name + "c"), doraise=True)
+            except py_compile.PyCompileError as e:
+                broken.append(f"{name}: {str(e).strip().splitlines()[-1][:120]}")
+    rep.check(M, "m21_scripts_compile", not missing and not broken,
+              f"缺失 {missing}；编译失败 {broken}",
+              f"{len(m21_scripts)} 个 M21 正式脚本全部 py_compile 通过")
+
     runs = load_jsonl("outputs/m21/raw/e3_shapeA_60s_runs.jsonl")
     if not runs:
         rep.pending(M, "m21_e3_ladder", "缺 outputs/m21/raw/e3_shapeA_60s_runs.jsonl")
@@ -1758,8 +1788,42 @@ def check_m21(rep):
     else:
         rep.pending(M, "m21_e4", "缺 outputs/m21/e4_bottleneck.json")
 
+    # ---- 2026-08-12 audit 新增：两条**更严格**的判据（不是放宽既有判据）----
+    e5 = load_json("outputs/m21/e5_user_capacity.json")
+    if e5:
+        # E5 语义回归守卫：闭环 population 与「系统内并发请求数」必须分开报告，
+        # 且不得再出现 estimated_concurrent_users 这种把 X·(R+Z) 说成并发请求的命名。
+        blob = json.dumps(e5, ensure_ascii=False)
+        has_split = ("average_in_system_requests" in e5
+                     and "user_population_sensitivity" in e5
+                     and all("estimated_closed_loop_users" in x
+                             for x in e5["user_population_sensitivity"]))
+        rep.check(M, "m21_e5_closed_loop_semantics",
+                  has_split and "estimated_concurrent_users" not in blob.replace(
+                      "首版把 N 命名为 estimated_concurrent_users，属误导，已修正", ""),
+                  "E5 未把「闭环用户 population」与「系统内并发请求数」分开报告，"
+                  "或仍在用 estimated_concurrent_users 这一误导命名",
+                  f"E5 已分列：L=X·R={e5.get('average_in_system_requests')} 与 "
+                  f"N=X·(R+Z)={[x['estimated_closed_loop_users'] for x in e5['user_population_sensitivity']]}")
+    else:
+        rep.pending(M, "m21_e5", "缺 outputs/m21/e5_user_capacity.json")
+
     e6 = load_json("outputs/m21/e6_drills.json")
     if e6:
+        # 单位回归守卫：PromQL 的 *_seconds_* 直方图返回秒，存进 _ms 字段必须 ×1000。
+        # 判据用「服务端 ms 与客户端 ms 同量级（0.1×~10×）」这一物理约束来兜，
+        # 首版把 19.57s 写成 19.57ms 时该比值是 0.0011，会直接 FAIL。
+        for d in e6["drills"]:
+            srv = d.get("server_hist_ttft_p99_ms_during_probe")
+            cli = d.get("background_load_p99_ttft_ms")
+            if srv and cli:
+                ratio = srv / cli
+                rep.check(M, "m21_e6_ttft_unit_consistency", 0.1 <= ratio <= 10.0,
+                          f"服务端/客户端 TTFT P99 比值 {ratio:.4f} 偏离量级 —— "
+                          f"多半是秒/毫秒单位错（srv={srv}, cli={cli}）",
+                          f"服务端 {srv / 1000:.2f}s vs 客户端 {cli / 1000:.2f}s，"
+                          f"比值 {ratio:.2f}（同量级，单位一致）")
+
         fired = set()
         for d in e6["drills"]:
             fired |= set((d.get("alerts_firing") or {}).keys())

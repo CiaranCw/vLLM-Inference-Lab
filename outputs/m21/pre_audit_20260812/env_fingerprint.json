@@ -1,0 +1,40 @@
+{
+  "captured_at": "2026-08-11 21:42:27+0800",
+  "host": {
+    "uname": {
+      "system": "Linux",
+      "node": "CIARANXU-PC0",
+      "release": "6.18.33.2-microsoft-standard-WSL2",
+      "version": "#1 SMP PREEMPT_DYNAMIC Thu Jun 18 21:54:43 UTC 2026",
+      "machine": "x86_64",
+      "processor": ""
+    },
+    "python": "3.12.13",
+    "cpu_model": "Intel(R) Core(TM) Ultra 9 285K",
+    "cpu_logical_cores": 24,
+    "mem_total_kb": "MemTotal:       65519244 kB",
+    "wsl": true
+  },
+  "gpu": {
+    "nvidia_smi_header": "Tue Aug 11 21:42:27 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 610.43.02              KMD Version: 610.62        CUDA UMD Version: 13.3     |\n+-----------------------------------------+------------------------+----------------------+",
+    "driver_version": "610.62",
+    "name": "NVIDIA GeForce RTX 5080",
+    "memory_total_mib": "16303 MiB",
+    "clocks_max_sm_mhz": "3090 MHz",
+    "power_limit_w": "360.00 W",
+    "snapshot_at_capture": {
+      "mem_used_mib": 4184,
+      "mem_total_mib": 16303,
+      "gpu_util_pct": 3
+    }
+  },
+  "python_packages": "flashinfer-cubin==0.6.12\nflashinfer-python==0.6.12\nnumpy==2.3.5\npsutil==7.2.2\ntorch==2.11.0+cu130\ntorch_c_dlpack_ext==0.1.5\ntorchaudio==2.11.0+cu130\ntorchvision==0.26.0+cu130\ntransformers==5.13.1\ntriton==3.6.0",
+  "vllm_src_commit": "ee0da84 Sun Jun 28 00:04:08 2026 -0700 [KV-Offloading] Fix tensors_per_block stride (#46888)",
+  "monitoring_stack": {
+    "containers": "m21-dcgm-exporter nvcr.io/nvidia/k8s/dcgm-exporter:latest Up 5 minutes\nm21-grafana grafana/grafana:latest Up 5 minutes\nm21-prometheus prom/prometheus:latest Up 5 minutes",
+    "dcgm_exporter_digest": "nvcr.io/nvidia/k8s/dcgm-exporter@sha256:613ab03c11d442fd960ff515f547e9921537454a712d08160bc8f677f89f1c35",
+    "prometheus_digest": "prom/prometheus@sha256:508729e0e2d18e11fd742a5a5ca70e557b940a93948c3c95fd0123a6fd538b69",
+    "grafana_digest": "grafana/grafana@sha256:ab5cb380e3ff3172d6c8bd2e7cfd31cce977d2881b260e1f5bc089bf0b759b43"
+  },
+  "note": "M12(2026-07-24) 未留指纹，故 M12→M21 的解码变慢无法归因；本文件是为后续模块留的基线。"
+}

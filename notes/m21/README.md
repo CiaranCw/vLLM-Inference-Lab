@@ -10,4 +10,4 @@
 脚本：`scripts/m21_{host_exporter,gate1,capacity_sweep,validate,bottleneck,capacity_users,fault_drills,observability_cost,env_fingerprint,figures}.py`
 配置：`monitoring/{docker-compose.yml,prometheus.yml,alerts.yml,grafana/**}`
 数据：`outputs/m21/` · 日志：`logs/m21/` · 图：`figures/fig11_m21_capacity.png`、`figures/fig12_m21_bottleneck_signature.png`
-不变量：`python scripts/check_invariants.py --module m21`（11 PASS / 0 FAIL）
+不变量：`python scripts/check_invariants.py --module m21`（14 PASS / 0 FAIL）

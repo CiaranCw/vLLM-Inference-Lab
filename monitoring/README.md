@@ -42,7 +42,8 @@ python scripts/m21_gate1.py
 3. **进程 CPU 必须复用 `psutil.Process` 对象**：每次 scrape 重新 `children()` 构造新对象的话，
    每个对象的 `cpu_percent()` 都是首次调用、恒返回 0 —— 会把 vLLM V1 跑在**子进程**里的
    EngineCore 的 CPU 全漏掉（正是最该看的那个）。
-4. **告警在「冷启动」时会真的响**：warmup 首请求含 JIT，TTFT ~0.42s > 300ms SLO，
+4. **告警在「冷启动」时会真的响**：warmup 首请求含 **Triton GPU-kernel JIT**（指 Triton GPU
+   编程语言/编译器的 kernel JIT，**不是** NVIDIA Triton Inference Server），TTFT ~0.42s > 300ms SLO，
    30s rate 窗口里会触发 `VLLMTTFTP99AboveSLO`。这不是误报，是判据要写清「空载」得等样本滑出窗口。
 5. **脚本必须互斥**：并发跑两个实验会轮流抢 8014 端口，写出交错且标签错位的记录
    （M21 的 B3 阶梯就这么废过一次）。现由 `m21_common.acquire_lock()` 兜住。

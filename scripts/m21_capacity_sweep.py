@@ -2,7 +2,8 @@
 """M21 · E2（指标真值校验）+ E3（容量阶梯）—— 共用一次 server 生命周期。
 
 E2：每个 measure 窗口都核对服务端 counter 增量 vs 客户端 bench 汇总（不变量 I1–I3、I6），
-    并量化「服务端直方图分位数」与「客户端真值分位数」的偏差（结论，非判据）。
+    并量化「服务端直方图**近似**分位数」与「客户端 exact percentile」的偏差（结论，非判据）。
+    注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth。
 E3：QPS 阶梯 → 服务端指标视角复核 M12 的容量拐点（客户端口径也一并记录，便于对照）。
 
 纪律：
@@ -111,7 +112,8 @@ def main():
     runs_path = os.path.join(C.RAW, f"{tag}_runs.jsonl")
     os.makedirs(C.RAW, exist_ok=True)
     try:
-        print("[m21] global warmup (冷启动 JIT 与 measure 分离)...", flush=True)
+        # 这里的 JIT = Triton GPU-kernel JIT（编译器），与 NVIDIA Triton Inference Server 无关
+        print("[m21] global warmup (Triton kernel JIT 冷启动与 measure 分离)...", flush=True)
         C.warmup(10)
         time.sleep(5)
 

@@ -49,7 +49,7 @@
 | **M18** | 量化路径深化（W4A16/AWQ/GPTQ） | ⬜ | 需先获授权下载量化模型，见 §5 |
 | **M19** | Speculative Decoding | ✅ | **N-gram T+E+O CLOSED**（见 §4.2）；draft/EAGLE/MTP/Medusa/`k` sweep = Optional |
 | M20 | 服务化 + Triton | ✅ | **T+A+B+C COMPLETE**（same-runtime QPS 20/32/40；见 `notes/m20/results.md`） |
-| M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；见 `notes/m21/results.md`） |
+| M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；2026-08-12 已做 evidence audit，见 `notes/m21/results.md` §10） |
 | **M22** | TP/PP/DP/EP | ✅/⬜ | **TP T+E+O+H COMPLETE**（4×H20，`notes/m22/results.md`）；**PP/DP/EP 未做** |
 | M23 | TensorRT-LLM 跨引擎 | ⬜ | 单卡可做但工程量大 |
 | M24 | CP / Ring Attention / P-D 分离 | ⬜ | ★**多卡门控** |
@@ -159,7 +159,9 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 > - **建议优先**：M18（需授权下载量化模型）；M13 PR 仍等 maintainer label。
 > - **M21 留给后续模块的两条注意事项**：① 性能实验前先跑 `scripts/m21_env_fingerprint.py` 落环境指纹
 >   （M12 没留，导致 M21 无法归因高并发 TPOT 回归）；② 拐点附近的容量数字**跨会话不可复现**，
->   引用时必须带会话与窗口口径。
+>   引用时必须带会话与 arrival horizon 口径，并区分「拐点定位 (24,32]」与「真实容量 C ∈ [24,32)」；
+>   ③ 引用 E5 时注意 `X×(R+Z)` 是**闭环用户 population**，「系统内并发请求数」是 `X×R`（≈41.4），别混；
+>   ④ PromQL 的 `*_seconds_*` 直方图返回**秒**，存进 `_ms` 字段前必须 ×1000（E6 首版栽过）。
 >
 > 以下保留为背景（交接早期选项）。
 
