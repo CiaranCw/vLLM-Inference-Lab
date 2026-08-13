@@ -391,10 +391,35 @@
 
 ## 阶段 H · 跨引擎对比（T+E+O）
 
-### M23 TensorRT-LLM 与跨引擎对照　⬜　T+E+O
+### M23 TensorRT-LLM 与跨引擎对照　⬜　T+E+O　（**设计冻结 v3** 见 [`notes/m23/cross_engine_plan.md`](notes/m23/cross_engine_plan.md)）
+
+> **⚠️ 上游事实修正（2026-08-13，所有者指出）**：本节下面两条原文写于 TensorRT backend 尚存的时期，**前提已失效**：
+> **TensorRT engine backend 已被上游移除，PyTorch backend 成为唯一执行后端**；
+> **v1.3.0rc20 是最后一个支持 TensorRT engine backend 的版本**（release notes 原文：
+> "This RC version will be the last one supporting the TensorRT backend, in the next version the TensorRT backend will be removed!"）。
+> 随之移除的还有 `trtllm-build` / `trtllm-refit` / `trtllm-prune`、每模型 `convert_checkpoint.py`、
+> `LLM(backend="tensorrt")`、`tensorrt` pip 依赖，**以及服务 legacy TensorRT engine 的那条 Triton backend**
+> （**注意边界**：这不等于 Triton 与当前 TRT-LLM PyTorch/LLM-API 集成全部消失）。
+> → **M23 必须区分「当前 TRT-LLM（PyTorch backend）」与「legacy TensorRT engine backend（已退役，止于 v1.3.0rc20）」**，
+> **不得**再把 engine 构建 / tactic / 固定 runtime 描述成当前 TRT-LLM 的唯一或主执行路径。
+> 另修正一处技术表述：legacy engine 的 build-time `max_batch_size` / `max_seq_len` 是
+> **optimization profile 的上界**，**不是固定 shape** —— runtime 在 profile 范围内仍可动态执行，超界才需重建。
+> 下面两条保留为**历史原文**，实际执行以**设计冻结稿 v3** 为准。
+
 - TRT-LLM：checkpoint 准备 → engine 构建 → 加载 → 离线推理 → 在线服务 → benchmark；**理解 vLLM 动态 PyTorch 路径 vs TRT-LLM engine 构建/tactic/runtime 路径**。
 - 同模型同硬件严格对照 Transformers vs vLLM vs TRT-LLM（固定精度/GPU/长度/并发/warmup/采样/benchmark 方法）；比安装转换复杂度、模型准备、启动、TTFT、TPOT、吞吐、显存、量化能力、动态请求适配、调试、扩展性。
 - Triton + TRT-LLM Backend 把 vLLM / TRT-LLM / Triton 串成完整栈。产出：`reports/09_vllm_vs_tensorrt_llm.md`、`results/cross_engine_benchmark.csv`、`scripts/reproduce_cross_engine.sh`。
+  （**被移除的是 legacy TensorRT-engine 的 Triton backend**，**不等于** Triton 与**当前** TRT-LLM
+  （PyTorch / LLM-API）的集成全部消失 —— 该类现行集成路线仍存在，只需按现行官方方式重新定义。
+  故此项是**「可行但本轮不批准」，不是「不可行」**；待 L1/L2 结果后再评估边际价值。）
+- **授权状态（2026-08-13 冻结）**：**只批准 L1**（Gate 0–2 + 离线跨引擎对照）；L2/L3/L4 **未批准**
+  （L3 属**可行但未批准**）。**唯一镜像已冻结为 `nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24`（TRT-P 路线）**；
+  **container-only，禁止 host 新建 TRT-LLM venv**；**禁止自动换 tag**；**禁止自动租机**。
+  Gate 0/1 任意失败 → **保存完整证据 → 停止 → 回报所有者**，不自行进入下一补救路线。
+- **规划稿已冻结**：[`notes/m23/cross_engine_plan.md`](notes/m23/cross_engine_plan.md) 状态为 **DESIGN FROZEN (v3)**。
+  技术主线定为：**「既然当前 vLLM 和 TRT-LLM 都以 PyTorch runtime 为核心，它们为什么仍是两套不同的 inference engine？」**
+  —— 研究 Scheduler / KV management / kernel-runtime 优化 / 量化支持 / 请求适配 / 内存行为 / 部署复杂度 / 可观测性；
+  **弃用**「vLLM=dynamic PyTorch vs TRT-LLM=prebuilt TensorRT engine」这一已被上游推翻的对立。
 
 ## 阶段 I · 长上下文与解耦（T+E+O+H，★资源门控）
 
