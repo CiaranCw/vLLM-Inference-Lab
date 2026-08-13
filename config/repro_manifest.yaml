@@ -180,7 +180,7 @@ modules:
           - outputs/m17/chunked_prefill_concurrency.csv
         status: done
 
-      # ---------- P0 · no-chunk 生成正确性（实现完成，待 GPU 执行） ----------
+      # ---------- P0 · no-chunk 生成正确性（2026-08-13 已执行：9/9 case 输出逐一相同） ----------
       - id: e3-correctness-chunked
         desc: >-
           P0 · chunked 侧生成正确性 probe。场景 A（单长请求 2048/64）+ 场景 B
@@ -211,7 +211,7 @@ modules:
         outputs: [outputs/m17/e3_correctness.csv]
         status: optional
 
-      # ---------- P2 · I5-b 输出长度定量实验（实现完成，待 GPU 执行） ----------
+      # ---------- P2 · I5-b 输出长度定量实验（2026-08-13 已执行：相对降幅 61.2%→3.4%） ----------
       - id: e1-output-len-on
         desc: I5-b · APC on，固定 2048 前缀，max_tokens ∈ {1,8,32,128}
         cmd: [python, scripts/m17_prefix_cache.py, --shard, e1-output-len-on]

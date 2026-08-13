@@ -22,6 +22,20 @@
     python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode nochunk
     python scripts/m17_prefix_cache.py --shard summarize    # 不建引擎、不需 GPU
 
+后续追加的两组实验（**实现完成，待 GPU 执行**；同样一个进程一个引擎）：
+    # P0 · E3 no-chunk 生成正确性对照（补 M17 未验证的一环）
+    python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode chunked
+    python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode nochunk
+    python scripts/m17_prefix_cache.py --shard e3-correctness-summarize   # 不建引擎
+
+    # P2 · I5-b 输出长度定量实验
+    python scripts/m17_prefix_cache.py --shard e1-output-len-on
+    python scripts/m17_prefix_cache.py --shard e1-output-len-off
+    python scripts/m17_prefix_cache.py --shard e1-output-len-summarize    # 不建引擎
+
+**新增 shard 一律写独立文件**（e3_correctness.csv / apc_output_length*.csv），
+不并入、不覆盖 M17 已核验的 prefix_cache_*.csv 与 chunked_prefill*.csv。
+
 设计 / 源码定位 / 不变量：notes/m17/prefix_cache_and_chunked_prefill.md
 ============================================================================
 
@@ -91,6 +105,34 @@ CONC_MBT = 4096  # 两侧相同的全局 token 预算（保证单变量）
 CONC_LONG_THRESHOLD = 512  # 仅 chunked 侧：强制长 prefill 每步最多 512 token
 CONC_WARMUP = 5
 CONC_REPEATS = 15
+
+# ---- P0 · E3 no-chunk 生成正确性对照（chunked vs nochunk 的输出 token 是否逐一相同）----
+# 动机：上游在 runner_type=="generate" 且手动 enable_chunked_prefill=False 时告警
+# （vllm/engine/arg_utils.py:2476-2480：'This model does not officially support
+# disabling chunked prefill. Disabling this manually may cause the engine to crash
+# or produce incorrect outputs.'）。M17 E3 只验证了调度守恒与延迟，**没有比较两侧
+# 生成的 token**——本 shard 专门补这一环。
+CORR_MBT = 4096  # 两侧相同
+CORR_LONG_THRESHOLD = 512  # 仅 chunked 侧
+CORR_A_PROMPT_LEN = 2048  # 场景 A：单个长请求
+CORR_A_MAX_TOKENS = 64
+CORR_B_D_PROMPT_LEN = 64  # 场景 B：复现 E3-concurrency 的 D + P
+CORR_B_D_MAX_TOKENS = 96
+CORR_B_D_PRIMING_STEPS = 4  # 与 run_e3_concurrency 一致：先让 D 进入稳定 decode
+CORR_B_P_PROMPT_LEN = 2048
+CORR_B_P_MAX_TOKENS = 64
+CORR_WARMUP = 1  # 吸收首次 Triton JIT；warmup 样本不参与比对
+CORR_REPEATS = 3
+
+# ---- P2 · I5-b 输出长度定量实验（APC 只省 prefill 不省 decode 的定量边界）----
+# 冻结网格：只有当 128 档仍看不到相对收益下降趋势时，才可**再次征求用户确认**后追加 256；
+# 严禁跑完再挑有利档位。
+I5B_PREFIX_LEN = 2048
+I5B_SUFFIX_LEN = 16
+I5B_MAX_TOKENS = [1, 8, 32, 128]
+I5B_MBT = 8192  # 与 E1 同侧配置（2064-token prompt 单步算完，prefill_step_count=1）
+I5B_WARMUP = 5
+I5B_REPEATS = 15
 
 _LONG = (
     "推理引擎的连续批处理与分页注意力机制通过按块管理键值缓存来提升吞吐与显存利用率。"
@@ -226,6 +268,133 @@ def _prefill_once(engine, spy, rid, ids):
     actual = len(outs[0].prompt_token_ids) if outs else len(ids)
     drain(engine)
     return round(dt * 1000, 4), scheduled, actual
+
+
+class OutputCollector:
+    """累积每个请求的完整输出 token 序列。
+
+    vLLM 的 `SamplingParams.output_kind` 默认是 **CUMULATIVE**
+    （`vllm/sampling_params.py:301`），因此每次 `RequestOutput` 携带的
+    `outputs[0].token_ids` 是**到目前为止的全量序列**而非增量
+    （`vllm/v1/engine/output_processor.py:389-390`：非 DELTA 时直接取
+    `detokenizer.output_token_ids`）。
+
+    两个必须防的坑：
+      1. `token_ids` 是引擎内部会继续 append 的**同一个 list 对象** → 必须 `list(...)` 拷贝，
+         否则记录下来的"历史快照"会被后续 step 就地改写。
+      2. 若上游哪天改成 DELTA 语义，长度会突然变短——此时直接把样本标为失败并记录原因，
+         **不能让它静默产生一个"看起来相等"的错误结论**。
+    """
+
+    def __init__(self):
+        self.by_req: dict[str, dict] = {}
+        self.semantics_violation: str = ""
+
+    def observe(self, outs, rids):
+        for o in outs:
+            for rid in rids:
+                if not _same_req(o.request_id, rid):
+                    continue
+                if not o.outputs:
+                    continue
+                co = o.outputs[0]
+                ids = list(co.token_ids)  # 必须拷贝：CUMULATIVE 复用同一 list 对象
+                prev = self.by_req.get(rid)
+                if prev is not None and len(ids) < len(prev["token_ids"]):
+                    # 长度回退 → 不是 CUMULATIVE 语义，本次比对不可信
+                    self.semantics_violation = (
+                        f"{rid}: token_ids 长度回退 "
+                        f"{len(prev['token_ids'])} -> {len(ids)}"
+                        "（疑似 DELTA 语义，累积逻辑失效）"
+                    )
+                self.by_req[rid] = {
+                    "token_ids": ids,
+                    "finished": bool(o.finished),
+                    "finish_reason": co.finish_reason,
+                    "prompt_token_ids": list(o.prompt_token_ids or []),
+                }
+
+    def get(self, rid) -> dict:
+        return self.by_req.get(
+            rid,
+            {
+                "token_ids": [],
+                "finished": False,
+                "finish_reason": None,
+                "prompt_token_ids": [],
+            },
+        )
+
+
+def _run_request_to_completion(engine, spy, rid, ids, max_tokens, collector=None):
+    """跑单个多 token 请求直到结束，返回逐样本计时与调度事实。
+
+    prefill / decode 的分界：**该请求产出第一个 token 之前**被调度的 token 计入
+    prefill chunk，之后每步 1 token 计入 decode——与 E3-single 同口径，避免把
+    decode step 误计为 prompt chunk。
+
+    计时：先 `torch.cuda.synchronize()` 再取 t0；首 token 与收尾各再 sync 一次。
+    只在这两个点 sync（不逐 step sync），以免把测量开销灌进 decode 路径。
+    """
+    coll = collector if collector is not None else OutputCollector()
+    engine.add_request(
+        rid,
+        {"prompt_token_ids": ids},
+        SamplingParams(
+            temperature=0.0, max_tokens=max_tokens, ignore_eos=True, seed=SEED
+        ),
+    )
+    prefill_chunks: list[int] = []
+    decode_steps = 0
+    seen_first = False
+    first_s = None
+    steps = 0
+    torch.cuda.synchronize()
+    t0 = time.perf_counter()
+    while engine.has_unfinished_requests() and steps < 100000:
+        outs = engine.step()
+        n = _sched_for(spy.last, rid)
+        if not seen_first:
+            if n > 0:
+                prefill_chunks.append(n)
+        elif n > 0:
+            decode_steps += 1
+        coll.observe(outs, [rid])
+        if not seen_first and any(_same_req(o.request_id, rid) for o in outs):
+            torch.cuda.synchronize()
+            first_s = time.perf_counter() - t0
+            seen_first = True
+        steps += 1
+    torch.cuda.synchronize()
+    completion_s = time.perf_counter() - t0
+
+    got = coll.get(rid)
+    return {
+        "prefill_chunks": prefill_chunks,
+        "prefill_step_count": len(prefill_chunks),
+        "scheduled_prompt_tokens": sum(prefill_chunks),
+        "decode_steps": decode_steps,
+        "first_token_s": first_s,
+        "completion_s": completion_s,
+        "output_token_ids": got["token_ids"],
+        "finished": got["finished"],
+        "finish_reason": got["finish_reason"],
+        "actual_prompt_tokens": len(got["prompt_token_ids"]) or len(ids),
+        "collector": coll,
+        "steps": steps,
+    }
+
+
+def _latency_fields(first_s, completion_s, n_out):
+    """首 token / 完成 / 首 token 之后 / TPOT 四个口径（全为 in-process，非在线 E2E）。"""
+    ft = None if first_s is None else round(first_s * 1000, 4)
+    comp = round(completion_s * 1000, 4)
+    post = None if ft is None else round(comp - ft, 4)
+    if post is not None and n_out is not None and n_out > 1:
+        tpot = round(post / (n_out - 1), 4)
+    else:
+        tpot = None  # 只有 1 个输出 token 时 TPOT 无定义
+    return ft, comp, post, tpot
 
 
 # ============================ E1：长共享前缀 on/off ============================
@@ -509,6 +678,345 @@ def run_e3_concurrency(mode: str):
                     ),
                 }
             )
+    finally:
+        spy.restore()
+        del engine
+        torch.cuda.empty_cache()
+    return samples
+
+
+# ============ P0 · E3-correctness：chunked vs nochunk 的生成一致性（新增） ============
+def _corr_sample(scenario, case, r, phase, mode, eff, ids, res, expected_out):
+    """把一个请求的观测组装成逐样本记录（两侧共用同一份 schema，便于离线逐字段比对）。"""
+    out_ids = res["output_token_ids"]
+    n_out = len(out_ids)
+    ft, comp, post, tpot = _latency_fields(
+        res["first_token_s"], res["completion_s"], n_out
+    )
+    coll = res["collector"]
+    ok = (
+        n_out == expected_out
+        and res["finished"]
+        and n_out > 0
+        and not coll.semantics_violation
+    )
+    reasons = []
+    if n_out != expected_out:
+        reasons.append(f"output_tokens={n_out} != expected {expected_out}")
+    if not res["finished"]:
+        reasons.append("request 未正常结束")
+    if coll.semantics_violation:
+        reasons.append(coll.semantics_violation)
+    return {
+        "experiment": "E3_correctness",
+        "metric_scope": "in-process",
+        "mode": mode,
+        "scenario": scenario,
+        "case": case,
+        "repeat": r,
+        "phase": phase,
+        "effective_cfg": eff,
+        "prompt_len": len(ids),
+        "prompt_hash": _h(ids),
+        "actual_prompt_tokens": res["actual_prompt_tokens"],
+        "scheduled_prompt_tokens": res["scheduled_prompt_tokens"],
+        "prefill_step_count": res["prefill_step_count"],
+        "chunk_sizes": res["prefill_chunks"],
+        "sum_prefill_scheduled": sum(res["prefill_chunks"]),
+        "decode_steps": res["decode_steps"],
+        "max_tokens_requested": expected_out,
+        "actual_output_tokens": n_out,
+        "output_token_ids": out_ids,
+        "output_token_ids_hash": _h(out_ids) if out_ids else "",
+        "finish_reason": res["finish_reason"],
+        "in_process_first_token_latency_ms": ft,
+        "request_completion_latency_ms": comp,
+        "post_first_token_latency_ms": post,
+        "tpot_ms": tpot,
+        "success": ok,
+        "invalid_reason": "; ".join(reasons),
+    }
+
+
+def run_e3_correctness(mode: str):
+    """P0：验证「关闭 chunked prefill」这一侧生成的 token 与 chunked 侧是否逐一相同。
+
+    背景：`enable_chunked_prefill=False` 在本模型上会触发上游告警
+    （arg_utils.py:2476-2480，"may cause the engine to crash or produce incorrect
+    outputs"）。M17 E3 已验证调度守恒与延迟，但**从未比较过两侧的输出 token**——
+    调度守恒不等于生成正确。本 shard 补这一环。
+
+    两个场景：
+      A：单个长请求（prompt 2048 / max_tokens 64）；
+      B：复现 E3-concurrency（D 稳定 decode 后插入长 prefill P），比较 D 与 P 的完整输出。
+
+    prompt 由 TokenFactory 确定性构造（uniq 串**不含 mode**），故两个独立进程
+    构造出的 prompt token ids 必然逐一相同——由落盘的 prompt_hash 事后核验，
+    不依赖任何进程内随机状态。
+    """
+    chunked = mode == "chunked"
+    samples = []
+    engine = build_engine(
+        enable_prefix_caching=False,  # 关 APC，隔离 chunked 行为
+        max_num_batched_tokens=CORR_MBT,
+        enable_chunked_prefill=chunked,
+        long_prefill_token_threshold=CORR_LONG_THRESHOLD if chunked else 0,
+        max_num_partial_prefills=1,
+    )
+    spy = ScheduleSpy(get_scheduler(engine))
+    tf = TokenFactory(engine)
+    sched_cfg = get_scheduler(engine).scheduler_config
+    eff = {
+        "enable_chunked_prefill": bool(sched_cfg.enable_chunked_prefill),
+        "long_prefill_token_threshold": int(sched_cfg.long_prefill_token_threshold),
+        "max_num_partial_prefills": int(sched_cfg.max_num_partial_prefills),
+        "max_num_batched_tokens": int(sched_cfg.max_num_batched_tokens),
+    }
+    print(f"[m17] e3-correctness effective scheduler cfg: {eff}")
+    try:
+        for r in range(CORR_WARMUP + CORR_REPEATS):
+            phase = "warmup" if r < CORR_WARMUP else "measure"
+
+            # ---------------- 场景 A：单个长请求 ----------------
+            a_ids = tf.ids(CORR_A_PROMPT_LEN, uniq=f"corrA_{r}：")
+            res_a = _run_request_to_completion(
+                engine, spy, f"corrA-{mode}-{r}", a_ids, CORR_A_MAX_TOKENS
+            )
+            samples.append(
+                _corr_sample(
+                    "A",
+                    "single_long",
+                    r,
+                    phase,
+                    mode,
+                    eff,
+                    a_ids,
+                    res_a,
+                    CORR_A_MAX_TOKENS,
+                )
+            )
+            drain(engine)
+
+            # ---------------- 场景 B：复现 E3-concurrency ----------------
+            drid, prid = f"corrB-D-{mode}-{r}", f"corrB-P-{mode}-{r}"
+            d_ids = tf.ids(CORR_B_D_PROMPT_LEN, uniq=f"corrBD_{r}：")
+            p_ids = tf.ids(CORR_B_P_PROMPT_LEN, uniq=f"corrBP_{r}：")
+            coll = OutputCollector()
+
+            engine.add_request(
+                drid,
+                {"prompt_token_ids": d_ids},
+                SamplingParams(
+                    temperature=0.0,
+                    max_tokens=CORR_B_D_MAX_TOKENS,
+                    ignore_eos=True,
+                    seed=SEED,
+                ),
+            )
+            d_chunks: list[int] = []
+            d_first = False
+            d_decode = 0
+            torch.cuda.synchronize()
+            t_d0 = time.perf_counter()
+            d_first_s = None
+            for _ in range(CORR_B_D_PRIMING_STEPS):  # D 进入稳定 decode
+                outs = engine.step()
+                n = _sched_for(spy.last, drid)
+                if not d_first:
+                    if n > 0:
+                        d_chunks.append(n)
+                elif n > 0:
+                    d_decode += 1
+                coll.observe(outs, [drid])
+                if not d_first and any(_same_req(o.request_id, drid) for o in outs):
+                    torch.cuda.synchronize()
+                    d_first_s = time.perf_counter() - t_d0
+                    d_first = True
+
+            engine.add_request(  # 插入长 prefill P
+                prid,
+                {"prompt_token_ids": p_ids},
+                SamplingParams(
+                    temperature=0.0,
+                    max_tokens=CORR_B_P_MAX_TOKENS,
+                    ignore_eos=True,
+                    seed=SEED,
+                ),
+            )
+            p_chunks: list[int] = []
+            p_first = False
+            p_decode = 0
+            p_first_s = None
+            t_p0 = time.perf_counter()
+            steps = 0
+            while engine.has_unfinished_requests() and steps < 100000:
+                outs = engine.step()
+                dn, pn = _sched_for(spy.last, drid), _sched_for(spy.last, prid)
+                if not d_first:
+                    if dn > 0:
+                        d_chunks.append(dn)
+                elif dn > 0:
+                    d_decode += 1
+                if not p_first:
+                    if pn > 0:
+                        p_chunks.append(pn)
+                elif pn > 0:
+                    p_decode += 1
+                coll.observe(outs, [drid, prid])
+                if not d_first and any(_same_req(o.request_id, drid) for o in outs):
+                    torch.cuda.synchronize()
+                    d_first_s = time.perf_counter() - t_d0
+                    d_first = True
+                if not p_first and any(_same_req(o.request_id, prid) for o in outs):
+                    torch.cuda.synchronize()
+                    p_first_s = time.perf_counter() - t_p0
+                    p_first = True
+                steps += 1
+            torch.cuda.synchronize()
+            t_end = time.perf_counter()
+
+            for case, rid, ids, chunks, first_s, t_base, decode_n, want in (
+                (
+                    "conc_decode_D",
+                    drid,
+                    d_ids,
+                    d_chunks,
+                    d_first_s,
+                    t_d0,
+                    d_decode,
+                    CORR_B_D_MAX_TOKENS,
+                ),
+                (
+                    "conc_long_prefill_P",
+                    prid,
+                    p_ids,
+                    p_chunks,
+                    p_first_s,
+                    t_p0,
+                    p_decode,
+                    CORR_B_P_MAX_TOKENS,
+                ),
+            ):
+                got = coll.get(rid)
+                res = {
+                    "prefill_chunks": chunks,
+                    "prefill_step_count": len(chunks),
+                    "scheduled_prompt_tokens": sum(chunks),
+                    "decode_steps": decode_n,
+                    "first_token_s": first_s,
+                    "completion_s": t_end - t_base,
+                    "output_token_ids": got["token_ids"],
+                    "finished": got["finished"],
+                    "finish_reason": got["finish_reason"],
+                    "actual_prompt_tokens": len(got["prompt_token_ids"]) or len(ids),
+                    "collector": coll,
+                    "steps": steps,
+                }
+                samples.append(
+                    _corr_sample("B", case, r, phase, mode, eff, ids, res, want)
+                )
+            drain(engine)
+    finally:
+        spy.restore()
+        del engine
+        torch.cuda.empty_cache()
+    return samples
+
+
+# ============ P2 · I5-b：APC 收益随输出长度变化（新增） ============
+def run_e1_output_len(prefix_on: bool):
+    """I5-b：固定 2048 共享前缀，扫 max_tokens ∈ {1,8,32,128}，看 APC 的**相对**收益
+    是否随输出变长而下降（APC 只省 prefill、不省 decode 的定量边界）。
+
+    与 E1 同一引擎配置（mbt=8192、chunked on），prompt 2064 token 单步算完
+    → prefill_step_count 恒为 1，不与 chunked 行为混淆。
+    每个 repeat 使用独立前缀族，避免跨 repeat 意外命中。
+    """
+    samples = []
+    engine = build_engine(
+        enable_prefix_caching=prefix_on,
+        max_num_batched_tokens=I5B_MBT,
+        enable_chunked_prefill=True,
+    )
+    spy = ScheduleSpy(get_scheduler(engine))
+    tf = TokenFactory(engine)
+    P, S = I5B_PREFIX_LEN, I5B_SUFFIX_LEN
+    try:
+        for mt in I5B_MAX_TOKENS:
+            for r in range(I5B_WARMUP + I5B_REPEATS):
+                phase = "warmup" if r < I5B_WARMUP else "measure"
+                fam = f"i5b族{mt}_{r}："
+                prefix_ids = tf.ids(P, uniq=fam)
+                sfx_a = tf.ids(P + S, uniq=fam)[P:]
+                sfx_b = tf.ids(P + S, uniq=fam + "B")[P:]
+                cold = (prefix_ids + sfx_a)[: P + S]
+                hot = (prefix_ids + sfx_b)[: P + S]
+                assert len(cold) == P + S, f"cold len {len(cold)}"
+                assert len(hot) == P + S, f"hot len {len(hot)}"
+                assert cold[:P] == hot[:P], "cold/hot 前缀必须完全相同"
+                assert cold[P:] != hot[P:], "cold/hot 后缀必须不同（否则会完全命中）"
+
+                # APC on：cold 填缓存 → hot 命中；APC off：只跑与 hot 完全相同的 prompt
+                seq = [("cold", cold), ("hot", hot)] if prefix_on else [("off", hot)]
+                for kind, ids in seq:
+                    rid = f"i5b-{mt}-{kind}-{r}"
+                    res = _run_request_to_completion(engine, spy, rid, ids, mt)
+                    out_ids = res["output_token_ids"]
+                    n_out = len(out_ids)
+                    ft, comp, post, tpot = _latency_fields(
+                        res["first_token_s"], res["completion_s"], n_out
+                    )
+                    hit = res["actual_prompt_tokens"] - res["scheduled_prompt_tokens"]
+                    ok = (
+                        n_out == mt
+                        and res["finished"]
+                        and ft is not None
+                        and ft >= 0
+                        and post is not None
+                        and post >= 0
+                        and not res["collector"].semantics_violation
+                    )
+                    reasons = []
+                    if n_out != mt:
+                        reasons.append(f"output_tokens={n_out} != max_tokens {mt}")
+                    if not res["finished"]:
+                        reasons.append("request 未正常结束")
+                    if ft is None or post is None or ft < 0 or post < 0:
+                        reasons.append(f"latency 异常 ft={ft} post={post}")
+                    if res["collector"].semantics_violation:
+                        reasons.append(res["collector"].semantics_violation)
+                    samples.append(
+                        {
+                            "experiment": "E1_output_len",
+                            "metric_scope": "in-process",
+                            "prefix_caching": "on" if prefix_on else "off",
+                            "kind": kind,
+                            "prefix_len": P,
+                            "suffix_len": S,
+                            "max_tokens_requested": mt,
+                            "repeat": r,
+                            "phase": phase,
+                            "actual_prompt_tokens": res["actual_prompt_tokens"],
+                            "scheduled_prompt_tokens": res["scheduled_prompt_tokens"],
+                            "hit_tokens": hit,
+                            "prefix_cache_hit": hit > 0,
+                            "prefill_step_count": res["prefill_step_count"],
+                            "chunk_sizes": res["prefill_chunks"],
+                            "decode_steps": res["decode_steps"],
+                            "actual_output_tokens": n_out,
+                            "in_process_first_token_latency_ms": ft,
+                            "request_completion_latency_ms": comp,
+                            "post_first_token_latency_ms": post,
+                            "tpot_ms": tpot,
+                            "finish_reason": res["finish_reason"],
+                            "output_token_ids_hash": _h(out_ids) if out_ids else "",
+                            "prompt_hash": _h(ids),
+                            "prefix_hash": _h(prefix_ids),
+                            "suffix_hash": _h(list(ids[P:])),
+                            "success": ok,
+                            "invalid_reason": "; ".join(reasons),
+                        }
+                    )
     finally:
         spy.restore()
         del engine
@@ -801,19 +1309,315 @@ def summarize():
     )
 
 
+def _first_divergence(a: list, b: list):
+    """返回 (首个不同的下标, 公共前缀长度)；完全相等时下标为 None。"""
+    n = min(len(a), len(b))
+    for i in range(n):
+        if a[i] != b[i]:
+            return i, i
+    if len(a) == len(b):
+        return None, n
+    return n, n  # 一方是另一方的前缀（长度不同）
+
+
+def summarize_e3_correctness():
+    """P0 汇总：逐 case 比对 chunked / nochunk 两侧的完整输出 token 序列。
+
+    只读已落盘 JSONL，不建引擎、不需 GPU。任何一个 measure case 不一致 → 非零退出，
+    并把「首个分歧下标 / 公共前缀长度」一并落盘，便于判断是哪一类失败
+    （首 token 就分歧、长度不对、还是长尾分歧）。
+    """
+    os.makedirs(OUT, exist_ok=True)
+    rows = {}
+    for mode in ("chunked", "nochunk"):
+        path = os.path.join(RAW, f"e3_correctness_{mode}.jsonl")
+        if not os.path.exists(path):
+            print(f"[m17] 缺少 {path} —— E3-correctness 尚未执行，无法汇总。")
+            return False
+        with open(path) as f:
+            rows[mode] = [json.loads(line) for line in f if line.strip()]
+
+    idx = {
+        mode: {(r["scenario"], r["case"], r["repeat"]): r for r in _measure(rs)}
+        for mode, rs in rows.items()
+    }
+    keys = sorted(set(idx["chunked"]) & set(idx["nochunk"]))
+    only_c = sorted(set(idx["chunked"]) - set(idx["nochunk"]))
+    only_n = sorted(set(idx["nochunk"]) - set(idx["chunked"]))
+    if only_c or only_n:
+        print(f"[m17][WARN] 两侧 case 不成对：仅 chunked={only_c} 仅 nochunk={only_n}")
+
+    out_rows, failures = [], []
+    for k in keys:
+        c, n = idx["chunked"][k], idx["nochunk"][k]
+        ci, common = _first_divergence(c["output_token_ids"], n["output_token_ids"])
+        exact = ci is None
+        prompt_match = c["prompt_hash"] == n["prompt_hash"]
+        hash_match = c["output_token_ids_hash"] == n["output_token_ids_hash"]
+        len_ok = (
+            c["actual_output_tokens"]
+            == n["actual_output_tokens"]
+            == c["max_tokens_requested"]
+        )
+        conserved = (
+            c["sum_prefill_scheduled"] == n["sum_prefill_scheduled"] == c["prompt_len"]
+        )
+        ok = bool(
+            prompt_match
+            and exact
+            and hash_match
+            and len_ok
+            and conserved
+            and c["success"]
+            and n["success"]
+        )
+        why = []
+        if not prompt_match:
+            why.append("prompt_hash 不一致")
+        if not len_ok:
+            why.append(
+                f"输出长度 chunked={c['actual_output_tokens']} "
+                f"nochunk={n['actual_output_tokens']} "
+                f"expected={c['max_tokens_requested']}"
+            )
+        if not exact:
+            why.append(f"token 序列首个分歧下标={ci}（公共前缀 {common}）")
+        if not hash_match:
+            why.append("output hash 不一致")
+        if not conserved:
+            why.append("prefill 调度守恒不成立")
+        if not (c["success"] and n["success"]):
+            why.append(f"样本自检失败: {c['invalid_reason']} | {n['invalid_reason']}")
+        if not ok:
+            failures.append((k, "; ".join(why)))
+        out_rows.append(
+            {
+                "scenario": k[0],
+                "case": k[1],
+                "repeat": k[2],
+                "prompt_len": c["prompt_len"],
+                "prompt_hash_chunked": c["prompt_hash"],
+                "prompt_hash_nochunk": n["prompt_hash"],
+                "prompt_hash_match": prompt_match,
+                "max_tokens_requested": c["max_tokens_requested"],
+                "out_tokens_chunked": c["actual_output_tokens"],
+                "out_tokens_nochunk": n["actual_output_tokens"],
+                "out_hash_chunked": c["output_token_ids_hash"],
+                "out_hash_nochunk": n["output_token_ids_hash"],
+                "out_hash_match": hash_match,
+                "token_ids_exact_match": exact,
+                "first_divergence_index": "" if ci is None else ci,
+                "common_prefix_len": common,
+                "finish_reason_chunked": c["finish_reason"],
+                "finish_reason_nochunk": n["finish_reason"],
+                "prefill_steps_chunked": c["prefill_step_count"],
+                "chunk_sizes_chunked": c["chunk_sizes"],
+                "sum_chunked": c["sum_prefill_scheduled"],
+                "prefill_steps_nochunk": n["prefill_step_count"],
+                "chunk_sizes_nochunk": n["chunk_sizes"],
+                "sum_nochunk": n["sum_prefill_scheduled"],
+                "verdict": "PASS" if ok else "FAIL",
+                "fail_reason": "; ".join(why),
+            }
+        )
+
+    path = os.path.join(OUT, "e3_correctness.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(out_rows[0].keys()) if out_rows else [])
+        if out_rows:
+            w.writeheader()
+            w.writerows(out_rows)
+    print(f"[m17] wrote {path} ({len(out_rows)} paired cases)")
+
+    if not out_rows:
+        print("[m17][FAIL] 没有可比对的 measure case。")
+        return False
+    if failures:
+        print(f"[m17][FAIL] {len(failures)}/{len(out_rows)} 个 case 不一致：")
+        for k, why in failures:
+            print(f"  - {k}: {why}")
+        return False
+    print(
+        f"[m17][PASS] {len(out_rows)}/{len(out_rows)} 个 case 的输出 token 逐一相同。"
+    )
+    return True
+
+
+def summarize_e1_output_len():
+    """I5-b 汇总：按 max_tokens 比较 off 与 hot 的首 token / 完成延迟。
+
+    统计口径与 M17 其余部分一致：median difference 的 Bootstrap 95% CI
+    （10000 次，固定 seed=0，仅 stdlib）。**不使用 σ**；CI 含 0 只能写
+    「未观察到稳定差异」。写独立 CSV，不并入 prefix_cache_*.csv。
+    """
+    os.makedirs(OUT, exist_ok=True)
+    rows = _measure(_load_shards("e1_output_len_"))
+    if not rows:
+        print("[m17] 未找到 e1_output_len_*.jsonl 的 measure 样本 —— I5-b 尚未执行。")
+        return False
+
+    groups: dict[tuple, list] = {}
+    for r in rows:
+        groups.setdefault(
+            (r["prefix_caching"], r["kind"], r["max_tokens_requested"]), []
+        ).append(r)
+
+    def col(v, key):
+        return [x[key] for x in v if x.get(key) is not None]
+
+    path = os.path.join(OUT, "apc_output_length.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(
+            [
+                "prefix_caching",
+                "kind",
+                "max_tokens",
+                "n",
+                "ft_median_ms",
+                "ft_stdev_ms",
+                "ft_p95_ms",
+                "completion_median_ms",
+                "completion_stdev_ms",
+                "completion_p95_ms",
+                "post_ft_median_ms",
+                "post_ft_stdev_ms",
+                "tpot_median_ms",
+                "hit_tokens",
+                "scheduled_prompt_tokens",
+                "actual_prompt_tokens",
+                "actual_output_tokens",
+                "prefill_step_count",
+                "metric_scope",
+            ]
+        )
+        for k in sorted(groups, key=lambda x: (x[0], x[1], x[2])):
+            v = groups[k]
+            ft = _stats(col(v, "in_process_first_token_latency_ms"))
+            cp = _stats(col(v, "request_completion_latency_ms"))
+            pf = _stats(col(v, "post_first_token_latency_ms"))
+            tp = _stats(col(v, "tpot_ms"))
+            w.writerow(
+                [
+                    k[0],
+                    k[1],
+                    k[2],
+                    len(v),
+                    ft.get("median"),
+                    ft.get("stdev"),
+                    ft.get("p95"),
+                    cp.get("median"),
+                    cp.get("stdev"),
+                    cp.get("p95"),
+                    pf.get("median"),
+                    pf.get("stdev"),
+                    tp.get("median", "") if tp else "",
+                    v[0]["hit_tokens"],
+                    v[0]["scheduled_prompt_tokens"],
+                    v[0]["actual_prompt_tokens"],
+                    v[0]["actual_output_tokens"],
+                    v[0]["prefill_step_count"],
+                    "in-process",
+                ]
+            )
+    print(f"[m17] wrote {path}")
+
+    path2 = os.path.join(OUT, "apc_output_length_effect.csv")
+    with open(path2, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(
+            [
+                "max_tokens",
+                "off_completion_median_ms",
+                "hot_completion_median_ms",
+                "completion_median_diff_ms",
+                "completion_ci95_lo_ms",
+                "completion_ci95_hi_ms",
+                "completion_ci_excludes_zero",
+                "completion_rel_reduction_pct",
+                "off_ft_median_ms",
+                "hot_ft_median_ms",
+                "ft_median_diff_ms",
+                "ft_ci95_lo_ms",
+                "ft_ci95_hi_ms",
+                "ft_ci_excludes_zero",
+                "off_post_ft_median_ms",
+                "hot_post_ft_median_ms",
+                "off_tpot_median_ms",
+                "hot_tpot_median_ms",
+                "n_per_group",
+                "metric_scope",
+            ]
+        )
+        for mt in I5B_MAX_TOKENS:
+            ko, kh = ("off", "off", mt), ("on", "hot", mt)
+            if ko not in groups or kh not in groups:
+                continue
+            o, h = groups[ko], groups[kh]
+            oc = col(o, "request_completion_latency_ms")
+            hc = col(h, "request_completion_latency_ms")
+            of = col(o, "in_process_first_token_latency_ms")
+            hf = col(h, "in_process_first_token_latency_ms")
+            cd, clo, chi = _boot_ci_median_diff(oc, hc)
+            fd, flo, fhi = _boot_ci_median_diff(of, hf)
+            om, hm = statistics.median(oc), statistics.median(hc)
+            otp, htp = col(o, "tpot_ms"), col(h, "tpot_ms")
+            w.writerow(
+                [
+                    mt,
+                    round(om, 4),
+                    round(hm, 4),
+                    cd,
+                    clo,
+                    chi,
+                    "yes" if (clo > 0 or chi < 0) else "no",
+                    round((om - hm) / om * 100, 2),
+                    round(statistics.median(of), 4),
+                    round(statistics.median(hf), 4),
+                    fd,
+                    flo,
+                    fhi,
+                    "yes" if (flo > 0 or fhi < 0) else "no",
+                    round(statistics.median(col(o, "post_first_token_latency_ms")), 4),
+                    round(statistics.median(col(h, "post_first_token_latency_ms")), 4),
+                    round(statistics.median(otp), 4) if otp else "",
+                    round(statistics.median(htp), 4) if htp else "",
+                    len(oc),
+                    "in-process",
+                ]
+            )
+    print(f"[m17] wrote {path2}")
+    print(f"[m17] I5-b summarize done. measure samples: {len(rows)}")
+    return True
+
+
 def main():
     p = argparse.ArgumentParser(
         description="M17 prefix caching & chunked prefill (需 GPU；一个进程一个引擎)"
     )
     p.add_argument(
         "--shard",
-        choices=["e1-on", "e1-off", "e3", "e3-conc", "summarize"],
+        choices=[
+            "e1-on",
+            "e1-off",
+            "e3",
+            "e3-conc",
+            "summarize",
+            # 新增（实现完成，待 GPU 执行）
+            "e3-correctness",
+            "e3-correctness-summarize",
+            "e1-output-len-on",
+            "e1-output-len-off",
+            "e1-output-len-summarize",
+        ],
         required=True,
     )
     p.add_argument("--e3-chunked", choices=["on", "off"], help="--shard e3 必填")
     p.add_argument("--e3-mbt", type=int, help="--shard e3 必填")
     p.add_argument(
-        "--conc-mode", choices=["chunked", "nochunk"], help="--shard e3-conc 必填"
+        "--conc-mode",
+        choices=["chunked", "nochunk"],
+        help="--shard e3-conc / e3-correctness 必填",
     )
     a = p.parse_args()
     os.makedirs(OUT, exist_ok=True)
@@ -835,6 +1639,20 @@ def main():
         if a.conc_mode is None:
             p.error("--shard e3-conc 必须提供 --conc-mode {chunked,nochunk}")
         _dump(run_e3_concurrency(a.conc_mode), f"e3_conc_{a.conc_mode}")
+    elif a.shard == "e3-correctness":
+        if a.conc_mode is None:
+            p.error("--shard e3-correctness 必须提供 --conc-mode {chunked,nochunk}")
+        _dump(run_e3_correctness(a.conc_mode), f"e3_correctness_{a.conc_mode}")
+    elif a.shard == "e3-correctness-summarize":
+        if not summarize_e3_correctness():
+            raise SystemExit(1)  # 不一致必须让调用方看见非零退出
+    elif a.shard == "e1-output-len-on":
+        _dump(run_e1_output_len(prefix_on=True), "e1_output_len_on")
+    elif a.shard == "e1-output-len-off":
+        _dump(run_e1_output_len(prefix_on=False), "e1_output_len_off")
+    elif a.shard == "e1-output-len-summarize":
+        if not summarize_e1_output_len():
+            raise SystemExit(1)
     else:
         summarize()
 

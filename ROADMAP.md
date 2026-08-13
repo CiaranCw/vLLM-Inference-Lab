@@ -216,7 +216,7 @@
 
 ### M17 Prefix Caching & Chunked Prefill 深化（承接 M3/M6）　✅　T+E+O　**主线已收口**
 > **收口口径**：核心实验（E1 / E3-single / E3-concurrency）完成并核验；
-> **P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期属于可选扩展，不阻塞后续模块**
+> **P0 no-chunk correctness 与 I5-b 已于 2026-08-13 执行完毕；仅 E2 block 生命周期内省仍未做（脚本未实现）**
 > （已在 `config/repro_manifest.yaml` 标为 `status: optional`，`reproduce.py --run` 不会自动执行）。
 > **no-chunk 限制说明（须随结论一起呈现）**：当前模型不正式支持关闭 chunked prefill
 > （`vllm/engine/arg_utils.py:2476-2480` 有明确告警），因此现有结果**主要支持调度形态与延迟观察，
@@ -262,22 +262,22 @@
 - 产出：`scripts/m17_prefix_cache.py`（`--shard` 单引擎模式）、`scripts/m17_figures.py`（离线出图，无需 GPU）、
   `notes/m17/{prefix_cache_and_chunked_prefill.md,results.md}`、
   `outputs/m17/{prefix_cache_sweep,prefix_cache_effect,chunked_prefill,chunked_prefill_concurrency}.csv` + `raw/*.jsonl`、
-  `logs/m17/*`（含 `environment.txt`）、`figures/{fig5_m17_apc,fig6_m17_chunked}.png`（已并入 README 核心图）。**零 vLLM 源码改动。**
-- **未做（如实）**：**I5-b 输出长度定量实验（扫 `max_tokens` 验证 APC 相对收益随输出变长而下降）——
-  未执行**，本轮全部请求 `max_tokens=1`；E2 block 生命周期内省（可选）；并发实验仅 1 decode + 1 长 prefill，未扫并发度；
+  `logs/m17/*`（含 `environment.txt`）、`figures/{fig5_m17_apc,fig6_m17_chunked,m17_apc_output_length}.png`（已并入 README 核心图）、`outputs/m17/{apc_output_length,apc_output_length_effect,e3_correctness}.csv`。**零 vLLM 源码改动。**
+- **✅ 两项可选扩展已于 2026-08-13 执行完毕**（`check_invariants.py --module m17`：**53 PASS / 0 FAIL**）：
+  - `[x]` **E3 no-chunk 生成正确性** —— **9/9 个 case 输出 token 逐一相同**（场景 A 单长请求 2048/64 +
+    场景 B 复现 E3-concurrency 的 D/P 两侧，各 3 repeat；两侧 prompt hash 逐组一致）。
+    按先行冻结的处置规则：**保留 §2/§3 性能结论并注明「有限 case 验证」**。
+    边界：9 case / greedy / 单模型，**不外推**为「关闭 chunked prefill 普遍安全」——
+    上游告警（`vllm/engine/arg_utils.py:2476-2480`）依然成立。证据 `outputs/m17/e3_correctness.csv`。
+  - `[x]` **I5-b 输出长度定量实验** —— 固定 2048 前缀扫 `max_tokens ∈ {1,8,32,128}`，180 measure 样本。
+    相对降幅 **61.2% → 22.9% → 9.3% → 3.4%** 单调下降 → **定量支持 I5-b**；
+    `max_tokens=128` 档完成延迟 CI 含 0（该档未观察到超出噪声的 E2E 收益）。
+    **口径按实测修正**：恒定的是**首 token** 绝对收益（14.6–15.2ms，四档 CI 全排除 0）；
+    完成延迟绝对差反而随输出变长增大（14.6→35.7ms），来自约 2% TPOT 差累积，**不声称机制**。
+    证据 `outputs/m17/apc_output_length{,_effect}.csv`、`figures/m17_apc_output_length.png`。
+- **未做（如实）**：E2 block 生命周期 `ref_cnt`/驱逐内省（**连脚本都未实现**，不为完成度强行实现）；
+  并发实验仅 1 decode + 1 长 prefill，未扫并发度；
   `max_num_partial_prefills` 本版本不可调（`arg_utils.py:2350` 直接 NotImplementedError）；不外推 compiled/大模型/多卡/在线服务。
-- **⬜ 两项可选扩展：脚本已实现，尚未执行，不阻塞主线**（冻结设计见 `notes/m17/prefix_cache_and_chunked_prefill.md` §7，
-  状态可用 `python scripts/check_invariants.py --module m17` 查询，显示为 PENDING —— 既不计通过也不计失败）：
-  - `[ ]` **E3 no-chunk 生成正确性** —— E3 用 `enable_chunked_prefill=False` 作不分块对照，
-    但上游对该配置有明确告警（`vllm/engine/arg_utils.py:2476-2480`："This model does not officially support
-    disabling chunked prefill … may cause the engine to crash or produce incorrect outputs"）。
-    既有证据只覆盖**调度守恒与延迟**，**从未比较两侧生成的 token**——调度守恒 ≠ 生成正确。
-    新增 shard `--shard e3-correctness --conc-mode {chunked,nochunk}`：场景 A（单长请求 2048/64）+
-    场景 B（复现 E3-concurrency 的 D 与 P），逐一比对完整 `output_token_ids`。
-    **失败则把 no-chunk 侧性能数据降级为探索性观察，不再作因果对照。**
-  - `[ ]` **I5-b** —— 新增 shard `--shard e1-output-len-{on,off}`，固定 2048 前缀扫 `max_tokens ∈ {1,8,32,128}`，
-    每组 5 warmup + 15 measure；扩展到 256 需**先获所有者确认**，不得跑完再挑有利档位。
-    产物写独立文件（`outputs/m17/apc_output_length*.csv`），**不并入既有已核验 CSV**。
 
 ### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。

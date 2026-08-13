@@ -265,7 +265,98 @@ python scripts/m17_prefix_cache.py --shard summarize   # 不建引擎、不需 G
 ```
 （`--shard e3` 缺 `--e3-chunked/--e3-mbt` 会直接报错退出，防止同进程建多引擎。）
 
-## 9. 产出文件
+## 9. 可选扩展（未执行 —— 本文件尚无对应数据）
+
+> **M17 主线到此结束**：核心实验（E1 / E3-single / E3-concurrency）已完成并核验。
+> 以下三项为**可选扩展**，**脚本已实现但尚未执行**，**不阻塞后续模块**（M19 已在其之后独立完成）。
+> 因此本文件**不含**任何相关数字。
+> 冻结设计、不变量与复现命令见 `prefix_cache_and_chunked_prefill.md` §7；
+> 执行状态可用 `python scripts/check_invariants.py --module m17` 随时查询（显示为 PENDING，
+> 不计为通过、也不计为失败）。
+> 这三项在 `config/repro_manifest.yaml` 中标为 `status: optional`，
+> **`reproduce.py --run` 不会自动执行它们**，需 `--only <id>` 显式点名。
+
+### 9.1 E3 no-chunk 生成正确性　✅ **已执行**（2026-08-13）
+
+**结果：9/9 个 case 的输出 token 逐一相同**（`outputs/m17/e3_correctness.csv`；
+证据 `outputs/m17/raw/e3_correctness_{chunked,nochunk}.jsonl`，各 12 样本 = 1 warmup + 3 repeat × 3 case）。
+
+| 场景 | case | prompt_len | repeats | prompt hash 一致 | 输出 token 逐一相同 |
+|---|---|---|---|---|---|
+| A 单个长请求 | `single_long` | 2048 | 3 | ✅ | ✅ |
+| B 并发 decode 侧 | `conc_decode_D` | 64 | 3 | ✅ | ✅ |
+| B 并发长 prefill 侧 | `conc_long_prefill_P` | 2048 | 3 | ✅ | ✅ |
+
+两侧 `max_num_batched_tokens=4096` 相同，chunked 侧靠 `long_prefill_token_threshold=512`
+强制把 2048 的 prefill 切成 4 个 chunk（不变量已核对分块形态），nochunk 侧为单 step。
+
+**按先行冻结的处置规则（设计笔记 §7.1）：全部一致 → 保留 §2/§3 的性能结论，并注明「有限 case 验证」。**
+边界要说清：这是 **9 个 case、greedy 采样、单一模型**下的一致性，
+**不构成**「关闭 chunked prefill 在任何模型/采样下都安全」的普适保证——上游那条告警依然成立。
+
+<details><summary>执行前的原始状态（保留备查）</summary>
+
+**这曾是 §2 / §3 结论的一个已知空缺**：E3 用 `enable_chunked_prefill=False` 作为「不分块」对照，
+
+**这是 §2 / §3 结论的一个已知空缺**：E3 用 `enable_chunked_prefill=False` 作为「不分块」对照，
+而上游对该配置有明确告警（`vllm/engine/arg_utils.py:2476-2480`：
+"This model does not officially support disabling chunked prefill. Disabling this manually
+may cause the engine to crash or produce incorrect outputs."）。
+
+本文件已验证的是**调度守恒（I4）与延迟**；**两侧生成的 token 从未被比较过**。
+
+→ **因此 M17 §2 / §3 的结论按如下边界表述并保留**：
+> 当前模型不正式支持关闭 chunked prefill，因此现有结果**主要支持调度形态与延迟观察**，
+> **不外推为普适的生成正确性保证**。
+
+处置规则已先行冻结（见设计笔记 §7.1），供将来真要跑时照办：全部一致则保留结论并注明
+「有限 case 验证」；任一不一致则把 no-chunk 侧性能数据**降级为探索性观察**。
+
+</details>
+
+### 9.2 I5-b 输出长度定量实验　✅ **已执行**（2026-08-13）
+
+冻结设计要求「固定前缀、加长 `max_tokens` 时 APC 的 E2E **相对**收益应变小」。
+`prefix_len=2048 / suffix_len=16 / max_tokens ∈ {1,8,32,128}`，每组 5 warmup + 15 measure，
+共 **180 个 measure 样本**；hot 与 off 用**完全相同的 prompt ids**（prompt hash 逐组核对一致）。
+证据：`outputs/m17/apc_output_length.csv`、`apc_output_length_effect.csv`、
+`outputs/m17/raw/e1_output_len_{on,off}.jsonl`、图 `figures/m17_apc_output_length.png`。
+
+| max_tokens | off 完成延迟中位 | hot 完成延迟中位 | 绝对差 | Bootstrap 95% CI | CI 排除 0 | **相对降幅** |
+|---|---|---|---|---|---|---|
+| 1 | 23.86ms | 9.25ms | 14.61ms | [14.30, 15.18] | ✅ | **61.2%** |
+| 8 | 81.22ms | 62.64ms | 18.58ms | [14.78, 19.96] | ✅ | **22.9%** |
+| 32 | 282.30ms | 256.07ms | 26.23ms | [5.16, 34.08] | ✅ | **9.3%** |
+| 128 | 1058.29ms | 1022.60ms | 35.70ms | [−5.50, 53.16] | ❌ | **3.4%** |
+
+**判定：定量支持 I5-b。** 相对降幅 **61.2% → 22.9% → 9.3% → 3.4%** 单调下降，跨度远超已冻结的
+1–3ms 跑间漂移阈值；到 `max_tokens=128` 时完成延迟的 CI 已含 0，即**该档位未观察到超出噪声的 E2E 收益**。
+
+**但「绝对收益恒定」这半句要按实测改口径**（数据推翻预设，改结论不改数据）：
+
+- **恒定的是首 token 的绝对收益**：`ft_median_diff` 在四档分别为 **14.62 / 15.16 / 14.83 / 15.19 ms**，
+  四档 CI **全部排除 0** —— 这才是「省掉的那一次 prefill」，与 I5-a 的结构性论证吻合。
+- **完成延迟的绝对差反而随输出变长而增大**（14.61 → 35.70ms）。来源是 decode 段：
+  off 的 TPOT 中位 **8.27 / 8.37 / 8.15 ms**，hot 侧 **7.84 / 8.01 / 7.99 ms**，约 **2%** 的差在更多 token 上累积
+  （`post_ft` 中位 1035.17 vs 1015.00ms @128）。
+  **不声称机制**：APC 结构上不改 decode 路径，这 2% 更可能是 on/off 两个独立引擎进程之间的跑间漂移；
+  样本量不足以支持「APC 让 decode 变快」这种因果说法，故只记为观察。
+
+**内部对照（sanity）**：APC on 但 `cold`（首次填缓存）的首 token 中位 23.46 / 23.24 / 23.37 / 23.08ms，
+与 off 侧（23.86 / 23.32 / 22.97 / 23.11ms）同量级 —— 开了 APC 但没命中就没有收益，符合预期。
+
+**守恒律**：hot 侧 `hit_tokens=2048`、`scheduled_prompt_tokens=16`、`actual_prompt_tokens=2064`，
+满足 `hit == actual − scheduled`；180 个样本的输出长度**精确等于**请求的 `max_tokens`。
+`check_invariants.py --module m17` 全部通过（含 I5-b 的 11 条与 E3-correctness 的 4 条）。
+
+### 9.3 E2 block 生命周期内省（可选，未做）
+
+`ref_cnt` / 驱逐的跨请求内省，需先验证 `block_pool` 内省 API 可读。**连脚本都未实现**，
+不为完成度强行实现。
+
+---
+
+## 10. 产出文件
 - CSV：`outputs/m17/{prefix_cache_sweep,prefix_cache_effect,chunked_prefill,chunked_prefill_concurrency}.csv`
 - 逐样本：`outputs/m17/raw/{e1_on,e1_off,e3_single_*,e3_conc_*}.jsonl`（含 `phase`/`success`/`metric_scope`）
 - 日志：`logs/m17/{environment.txt,e1_on.log,e1_off.log,e3_single_*.log,e3_conc_*.log,summarize.log,e3_off_512_expected_reject.log}`

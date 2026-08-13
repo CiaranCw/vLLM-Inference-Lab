@@ -124,7 +124,7 @@
 | **M11** 双卡 TP | → 并入 **M22**（已在 4×H20 完成 TP E/H） | 见 M22 | — | `notes/m22/results.md` |
 | **M12** 在线 Serving/SLO | 真实 serve + 开环 Poisson 的容量规划 | **最大稳定 QPS≈40**、饱和~46.6、过载=尾延迟劣化、容量随 shape 变 | 无 | `notes/m12/*`、`outputs/m12/*` |
 | **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
-| **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线已收口，3 项可选扩展未执行** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
+| **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线收口，2 项可选扩展已补齐（I5-b 相对降幅 61.2%→3.4%、no-chunk 正确性 9/9）** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
 | **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
@@ -277,12 +277,12 @@ python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity
 
 **机制（以原始逐 step 记录为准）**：nochunk 时长 prefill 那一步是 `d=1, p=2048, total=2049`——**D 仍被同批调度了 1 个 decode token**，只是该 token 的返回被这个长联合 step 整体推迟；chunked 侧每步 `d=1, p=512, total=513`，D 同样每步产出但等待更短。→ chunked prefill 改善的是「要等多长的一个 step」，不是「是否被调度」。
 
-**未完成项（如实标注）**：`[ ]` **I5-b** 输出长度定量实验——冻结设计要求扫 `max_tokens` 验证「APC 相对收益随输出变长而下降」，本轮所有请求均 `max_tokens=1`（只测 prefill），**未执行**（I5-a 理论边界确认已完成）；`[ ]` **E2** block 生命周期 `ref_cnt`/驱逐内省（可选）。
+**可选扩展已于 2026-08-13 补齐**：`[x]` **I5-b** 输出长度定量实验（180 measure）——固定 2048 前缀扫 `max_tokens ∈ {1,8,32,128}`，相对降幅 **61.2% → 22.9% → 9.3% → 3.4%** 单调下降，**定量支持「APC 只省 prefill」**；`max_tokens=128` 档完成延迟 CI 含 0。**口径按实测修正**：恒定的是**首 token** 绝对收益（14.6–15.2ms，四档 CI 全排除 0），完成延迟的绝对差反而随输出变长增大（14.6→35.7ms，来自约 2% TPOT 差累积，**不声称机制**）。`[x]` **E3 no-chunk 生成正确性**——**9/9 case 输出 token 逐一相同**，故保留性能结论并注明「有限 case 验证」，**不外推**为「关闭 chunked prefill 普遍安全」。**仍未做**：`[ ]` **E2** block 生命周期 `ref_cnt`/驱逐内省（脚本未实现）。
 **适用边界**：单卡 / eager / 0.5B / WSL2 / in-process，绝对值限本配置；**跑间有 1–3ms 漂移**，故只对「显著/不显著与量级」下结论。**首版（2026-08-04）结论因单样本且被首次 Triton JIT 编译污染已整体撤回并重跑**，撤回明细见 [`notes/m17/results.md`](notes/m17/results.md) §6。
 
 **留痕与数据**：[`results.md`](notes/m17/results.md)（结果 + 撤回表）· [`prefix_cache_and_chunked_prefill.md`](notes/m17/prefix_cache_and_chunked_prefill.md)（T/O 源码定位 + 冻结设计 + 不变量 I1–I5）· `outputs/m17/*.csv` + `outputs/m17/raw/*.jsonl`（含 `phase`/`success`/`metric_scope`）· `logs/m17/*`。旧数据保留未删（`raw_old_20260805/`、`raw_pre_field_fix/`）。**零 vLLM 产品源码改动。**
 
-**主线收口口径（2026-08-06）**：核心实验完成并核验；**P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期属于可选扩展，不阻塞后续模块**。⚠ **必须随结论一起呈现的限制**：当前模型**不正式支持关闭 chunked prefill**（`vllm/engine/arg_utils.py:2476-2480` 明确告警），因此现有结果**主要支持调度形态与延迟观察，不外推为普适的生成正确性保证**。
+**主线收口口径（2026-08-06；可选扩展 2026-08-13 补齐）**：核心实验完成并核验；**P0 no-chunk correctness 与 I5-b 已执行完毕，仅 E2 block 生命周期内省未做**。⚠ **必须随结论一起呈现的限制**：当前模型**不正式支持关闭 chunked prefill**（`vllm/engine/arg_utils.py:2476-2480` 明确告警），因此现有结果**主要支持调度形态与延迟观察，不外推为普适的生成正确性保证**。
 
 ---
 

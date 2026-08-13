@@ -1,0 +1,5 @@
+max_tokens,off_completion_median_ms,hot_completion_median_ms,completion_median_diff_ms,completion_ci95_lo_ms,completion_ci95_hi_ms,completion_ci_excludes_zero,completion_rel_reduction_pct,off_ft_median_ms,hot_ft_median_ms,ft_median_diff_ms,ft_ci95_lo_ms,ft_ci95_hi_ms,ft_ci_excludes_zero,off_post_ft_median_ms,hot_post_ft_median_ms,off_tpot_median_ms,hot_tpot_median_ms,n_per_group,metric_scope
+1,23.8637,9.2488,14.6149,14.3029,15.1781,yes,61.24,23.8586,9.2423,14.6163,14.3039,15.1775,yes,0.0057,0.0054,,,15,in-process
+8,81.2186,62.637,18.5816,14.7769,19.9611,yes,22.88,23.3205,8.1588,15.1617,14.6459,15.6619,yes,57.8897,54.8486,8.27,7.8355,15,in-process
+32,282.3001,256.0652,26.2349,5.1572,34.0798,yes,9.29,22.9713,8.1405,14.8308,14.1961,15.0902,yes,259.4432,248.2269,8.3691,8.0073,15,in-process
+128,1058.2938,1022.5979,35.6959,-5.5001,53.1592,no,3.37,23.1091,7.9221,15.187,14.2165,15.5665,yes,1035.1658,1015.0009,8.1509,7.9921,15,in-process

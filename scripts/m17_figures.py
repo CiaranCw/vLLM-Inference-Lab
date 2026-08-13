@@ -236,9 +236,99 @@ def fig6():
     plt.close(fig)
 
 
+# --------------------------------------------------------------------------- #
+# fig7 (I5-b): APC 的相对收益 vs 输出长度
+#   —— 只有 I5-b 数据落盘后才生成；无数据时**跳过，不画伪图**。
+# --------------------------------------------------------------------------- #
+def fig_apc_output_length():
+    rel = "outputs/m17/apc_output_length_effect.csv"
+    if not os.path.exists(os.path.join(ROOT, rel)):
+        print(f"skip m17_apc_output_length.png：{rel} 尚未产生（I5-b 未执行）")
+        return False
+    rows = sorted(_read(rel), key=lambda r: int(r["max_tokens"]))
+    x = [int(r["max_tokens"]) for r in rows]
+    rel_red = [float(r["completion_rel_reduction_pct"]) for r in rows]
+    diff = [float(r["completion_median_diff_ms"]) for r in rows]
+    lo = [float(r["completion_ci95_lo_ms"]) for r in rows]
+    hi = [float(r["completion_ci95_hi_ms"]) for r in rows]
+    sig = [r["completion_ci_excludes_zero"] == "yes" for r in rows]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7.6, 7.4))
+    idx = range(len(x))
+
+    # 上：相对收益（I5-b 的判据本身）
+    ax1.bar(
+        idx, rel_red,
+        color=["#2ca02c" if s else "grey" for s in sig], width=0.55,
+    )
+    ax1.axhline(0, color="black", lw=1)
+    for i, (v, s) in enumerate(zip(rel_red, sig)):
+        ax1.text(
+            i, v + (0.6 if v >= 0 else -1.4),
+            f"{v:.1f}%" if s else f"{v:.1f}%\n(CI covers 0)",
+            ha="center", fontsize=8,
+            fontweight="bold" if s else "normal",
+            color="#2ca02c" if s else "grey",
+        )
+    ax1.set_xticks(list(idx))
+    ax1.set_xticklabels([f"max_tokens={v}" for v in x])
+    ax1.set(
+        ylabel="completion latency\nrelative reduction (%)",
+        title="I5-b: APC only saves prefill — its relative gain should shrink\n"
+              "as the output (decode) grows",
+    )
+    ax1.grid(alpha=0.3, axis="y")
+
+    # 下：绝对差 + Bootstrap 95% CI。
+    # 注意（实测修正）：恒定的是**首 token** 的绝对收益（≈15ms＝省掉的那次 prefill）；
+    # **完成延迟**的绝对差反而随输出变长而增大（14.6→35.7ms），来自 hot/off 之间约 2% 的
+    # TPOT 差（8.15 vs 7.99 ms/token）在更多 token 上累积。原副标题「绝对收益恒定」与本
+    # 面板自身数据矛盾，已按「数据推翻结论就改结论」修正，并把首 token 曲线一并画出。
+    ft_diff = [float(r["ft_median_diff_ms"]) for r in rows]
+    ft_lo = [float(r["ft_ci95_lo_ms"]) for r in rows]
+    ft_hi = [float(r["ft_ci95_hi_ms"]) for r in rows]
+    ax2.errorbar(
+        idx, diff,
+        yerr=[
+            [d - lo_ for d, lo_ in zip(diff, lo)],
+            [hi_ - d for d, hi_ in zip(diff, hi)],
+        ],
+        fmt="o", capsize=4, lw=1.2, color=HOT_C, label="completion latency",
+    )
+    ax2.errorbar(
+        [i + 0.12 for i in idx], ft_diff,
+        yerr=[
+            [d - lo_ for d, lo_ in zip(ft_diff, ft_lo)],
+            [hi_ - d for d, hi_ in zip(ft_diff, ft_hi)],
+        ],
+        fmt="s", capsize=4, lw=1.2, color="#d62728", label="first-token latency",
+    )
+    ax2.axhline(0, color="black", lw=1)
+    ax2.set_xticks(list(idx))
+    ax2.set_xticklabels([f"max_tokens={v}" for v in x])
+    ax2.set(
+        ylabel="median(off) − median(hot)  (ms)",
+        xlabel="requested output length",
+        title="first-token saving is flat (~15ms = the skipped prefill);\n"
+              "completion-latency gap grows with output (Bootstrap 95% CI)",
+    )
+    ax2.legend(fontsize=8)
+    ax2.grid(alpha=0.3, axis="y")
+
+    fig.suptitle(
+        "M17 · I5-b Automatic Prefix Caching vs output length",
+        fontweight="bold",
+    )
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "m17_apc_output_length.png"), dpi=130)
+    plt.close(fig)
+    return True
+
+
 if __name__ == "__main__":
     fig5()
     fig6()
+    fig_apc_output_length()
     print("figures written to", OUT)
     for f in sorted(os.listdir(OUT)):
         print("  ", f)

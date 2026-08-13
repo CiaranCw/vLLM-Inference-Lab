@@ -120,13 +120,26 @@
 - [x] 不变量 **I1/I2/I3/I4 全部通过**（见 results.md §1.3 / §2.1）
 - [x] **I5-a 理论边界确认**：APC 只省 prefill 不省 decode —— 由结构成立（hot 侧 `scheduled` 恒为 16，
       命中前缀完全跳过 prefill；decode 路径不受 APC 影响）
-- [ ] **I5-b 输出长度定量实验：未执行** —— 冻结设计要求「固定前缀、加长 `max_tokens` 时 APC 的 E2E
-      相对收益应变小」。本轮所有请求均 `max_tokens=1`（只测 prefill），**未扫输出长度**，故该定量实验**未完成**（不得因理论成立而勾选整项）
+- [x] **I5-b 输出长度定量实验：已执行**（2026-08-13，180 measure 样本）—— `max_tokens ∈ {1,8,32,128}`，
+      相对降幅 **61.2% → 22.9% → 9.3% → 3.4%** 单调下降，**定量支持 I5-b**；
+      `max_tokens=128` 档完成延迟 CI 含 0（未观察到超出噪声的 E2E 收益）。
+      **口径修正**：恒定的是**首 token** 的绝对收益（14.6–15.2ms，四档 CI 全排除 0）；
+      完成延迟的绝对差反而随输出变长而增大（14.6→35.7ms），来自约 2% 的 TPOT 差累积，
+      **不声称机制**（更可能是跨进程跑间漂移）。见 results.md §9.2 与 `figures/m17_apc_output_length.png`。
 - [x] 统计口径改为 **Bootstrap 95% CI**（固定 seed=0，无重依赖），删除不规范的 σ 表述
 - [x] 指标改名 `in_process_first_token_latency_ms`，显式声明非在线 TTFT
+- [x] **E3 no-chunk 生成正确性验证：已执行**（2026-08-13）—— **9/9 个 case 输出 token 逐一相同**
+      （场景 A 单长请求 + 场景 B 并发的 D/P 两侧，各 3 repeat）。按先行冻结的处置规则：
+      **保留 §2/§3 的性能结论并注明「有限 case 验证」**。
+      边界：9 case / greedy / 单模型，**不外推**为「关闭 chunked prefill 普遍安全」——上游告警依然成立。
+      见 results.md §9.1 与 `outputs/m17/e3_correctness.csv`。
 - [ ] （可选，未做）E2 block 生命周期 ref_cnt/驱逐内省——需先验证 `block_pool` 内省 API 可读
+- [x] 正式不变量固化为可执行脚本 `scripts/check_invariants.py`（M17 的 I1–I4、字段语义、
+      样本数、CSV↔JSONL 一致性、文档数字反向溯源），并接入统一复现入口 `scripts/reproduce.py`
 
-## 6. 复现（待 GPU 空闲，注意先确认 GPU 不忙以免 OOM）
+---
+
+## 6. 复现（M17 既有实验；待 GPU 空闲，注意先确认 GPU 不忙以免 OOM）
 ```bash
 source .venv/bin/activate
 export VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0
@@ -140,3 +153,117 @@ python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode chunked
 python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode nochunk
 python scripts/m17_prefix_cache.py --shard summarize   # 不建引擎、不需 GPU
 ```
+
+---
+
+## 7. 后续追加实验的冻结设计（**跑前冻结；实现完成，待 GPU 执行**）
+
+> 本节两项均**尚未执行**，此处只冻结设计、不变量与复现命令。
+> 拿到真实数据前，`results.md` 不得出现任何相关数字。
+
+### 7.1 P0 · E3 no-chunk 生成正确性（补 M17 缺失的一环）
+
+**动机（源码事实）**：本模型是 generative（`runner_type == "generate"`），上游默认开启 chunked
+prefill；手动传 `enable_chunked_prefill=False` 会命中告警
+（`vllm/engine/arg_utils.py:2476-2480`）：
+
+```text
+This model does not officially support disabling chunked prefill.
+Disabling this manually may cause the engine to crash or produce incorrect outputs.
+```
+
+而 M17 的 E3 恰恰把这一侧当作「不分块」对照。已有证据只覆盖 **Σchunks 守恒**与**延迟**，
+**从未比较过两侧生成的 token** —— 调度守恒不等于生成正确。本实验补这一环。
+
+**两个场景**（两侧配置严格单变量：`max_num_batched_tokens=4096`、APC off、`temperature=0`、
+`seed=0`、`ignore_eos=True`；chunked 侧另加 `long_prefill_token_threshold=512`）：
+
+| 场景 | 构造 | 比较对象 |
+|---|---|---|
+| **A** 单长请求 | prompt 2048 / `max_tokens=64` | 该请求的完整 `output_token_ids` |
+| **B** 复现 E3-concurrency | D（prompt 64 / `max_tokens=96`）先跑 4 步进入稳定 decode，再插入 P（prompt 2048 / `max_tokens=64`） | **D 与 P 各自**的完整 `output_token_ids` |
+
+**确定性**：prompt 由 `TokenFactory` 按固定字符串构造，`uniq` 串**不含 mode**，因此两个独立进程
+构造出的 token ids 必然逐一相同；这一点由落盘的 `prompt_hash` **事后核验**，不依赖进程内随机状态。
+
+**判据（全部满足才算通过）**：`prompt_hash` 相同 · 输出长度 == `max_tokens` · 完整
+`output_token_ids` 精确相等 · `output_token_ids_hash` 相等 · 正常结束 ·
+chunked 侧长 prefill 为 `[512,512,512,512]` · nochunk 侧为 `[2048]` · 两侧 `Σ == 2048`。
+
+**同时落盘 `first_divergence_index` 与 `common_prefix_len`**：一旦不一致，要能区分「首 token 就分歧」
+「长度不对」还是「长尾分歧」——不同的失败形态指向不同的结论，不能只报一个"失败"。
+
+**结果处置规则（先定，避免看到数据再决定）**：
+- 全部一致 → E3 的调度/延迟结论**保留**，并在文档注明「该模型官方不支持关闭 chunked prefill，
+  本轮在**有限的确定性 case** 中额外验证了生成一致」——**不外推为"关闭 chunked prefill 总是安全"**。
+- 任一不一致 / 崩溃 / 输出长度异常 → **立即停止后续 GPU 实验**，把 no-chunk 侧的性能数据
+  **降级为探索性观察**，不再作为因果对照，并报告是否需要换用官方支持关闭 chunked prefill 的模型。
+
+### 7.2 P2 · I5-b 输出长度定量实验
+
+**要验证的边界**：APC **只省 prefill、不省 decode**，因此固定前缀时，随输出变长，
+**相对**收益应下降（绝对收益应大致恒定 ≈ 省下的那一次 prefill）。
+
+**冻结网格**（跑前写死在 `scripts/m17_prefix_cache.py` 顶部常量区）：
+
+- `prefix_len=2048`、`suffix_len=16`、`max_tokens ∈ {1, 8, 32, 128}`；
+- `temperature=0` / `seed=0` / `ignore_eos=True` / `enforce_eager=True`；
+- 每组 **5 warmup + 15 measure**，汇总只用 `phase=measure and success=True`；
+- 对照：APC on 的 `cold`（填缓存）→ `hot`（命中） vs APC off（**与 hot 完全相同的 prompt ids**）；
+- 每个 repeat 用独立前缀族，避免跨 repeat 意外命中。
+
+**扩展规则（先定死）**：只有当 `max_tokens=128` 仍看不到相对收益下降趋势时，才可**再次征求所有者确认**后追加 256。
+**不得跑完再挑有利档位。**
+
+**指标口径**（全部为 in-process，**不是**在线 TTFT/E2E）：
+
+```text
+post_first_token_latency_ms = request_completion_latency_ms - in_process_first_token_latency_ms
+tpot_ms = post_first_token_latency_ms / (actual_output_tokens - 1)   # 输出恰为 1 个 token 时为 null
+```
+
+**不变量**：`actual_output_tokens == max_tokens_requested` ·
+hot 侧 `hit==2048 / scheduled==16 / prefix_cache_hit=True / prefill_step_count=1` ·
+off 侧 `hit==0 / scheduled==2064 / prefix_cache_hit=False` ·
+cold/hot 前缀相同且后缀不同 · off 与 hot 的 `prompt_hash` 完全相同 ·
+`output_token_ids_hash` 非空 · 延迟非负 · 每组 measure n=15。
+（以上均已固化进 `scripts/check_invariants.py`。）
+
+**趋势判定规则（先定死）**：不要求 4 个点严格单调；必须完整报告全部 4 个点；重点比较
+`max_tokens=1` 与 `max_tokens=128`。只有当长输出档的相对降幅**明显小于**短输出档、
+且差异超过已知的 1–3ms 跑间漂移时，才写「定量支持 I5-b」；否则写
+「**已执行，未观察到超出噪声的稳定趋势**」。**不得为了让 I5-b 通过而改样本、删异常点或换档位。**
+
+### 7.3 复现命令（待 GPU 授权后执行；一个进程一个引擎）
+
+```bash
+cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
+export VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0
+nvidia-smi          # 先人工确认 GPU 空闲
+
+# P0（先跑，失败则不继续）
+python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode chunked
+python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode nochunk
+python scripts/m17_prefix_cache.py --shard e3-correctness-summarize   # 不建引擎
+
+# P2（仅在 P0 通过后）
+python scripts/m17_prefix_cache.py --shard e1-output-len-on
+python scripts/m17_prefix_cache.py --shard e1-output-len-off
+python scripts/m17_prefix_cache.py --shard e1-output-len-summarize    # 不建引擎
+
+python scripts/check_invariants.py --module m17
+python scripts/m17_figures.py       # I5-b 数据就位后才会产出 fig m17_apc_output_length
+```
+
+或经统一入口（默认只跑 `status != done` 的步骤，不会覆盖已核验数据）：
+
+```bash
+python scripts/reproduce.py --module m17 --dry-run
+python scripts/reproduce.py --module m17 --run --confirm-gpu
+python scripts/reproduce.py --module m17 --verify-only
+```
+
+**新增产物（均为独立文件，不并入、不覆盖既有 CSV）**：
+`outputs/m17/raw/{e3_correctness_chunked,e3_correctness_nochunk,e1_output_len_on,e1_output_len_off}.jsonl`、
+`outputs/m17/{e3_correctness,apc_output_length,apc_output_length_effect}.csv`、
+`logs/m17/{e3_correctness_*,e1_output_len_*}.log`、`figures/m17_apc_output_length.png`。

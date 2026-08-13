@@ -1,0 +1,10 @@
+scenario,case,repeat,prompt_len,prompt_hash_chunked,prompt_hash_nochunk,prompt_hash_match,max_tokens_requested,out_tokens_chunked,out_tokens_nochunk,out_hash_chunked,out_hash_nochunk,out_hash_match,token_ids_exact_match,first_divergence_index,common_prefix_len,finish_reason_chunked,finish_reason_nochunk,prefill_steps_chunked,chunk_sizes_chunked,sum_chunked,prefill_steps_nochunk,chunk_sizes_nochunk,sum_nochunk,verdict,fail_reason
+A,single_long,1,2048,8df53195f850,8df53195f850,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
+A,single_long,2,2048,d77d865be002,d77d865be002,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
+A,single_long,3,2048,f5e22e2f32e9,f5e22e2f32e9,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
+B,conc_decode_D,1,64,b01776354da0,b01776354da0,True,96,96,96,fa914c556ad3,fa914c556ad3,True,True,,96,length,length,1,[64],64,1,[64],64,PASS,
+B,conc_decode_D,2,64,ef132ed55c06,ef132ed55c06,True,96,96,96,fa914c556ad3,fa914c556ad3,True,True,,96,length,length,1,[64],64,1,[64],64,PASS,
+B,conc_decode_D,3,64,0770bb0a9e27,0770bb0a9e27,True,96,96,96,fa914c556ad3,fa914c556ad3,True,True,,96,length,length,1,[64],64,1,[64],64,PASS,
+B,conc_long_prefill_P,1,2048,ce9d7f9833ce,ce9d7f9833ce,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
+B,conc_long_prefill_P,2,2048,7ded41894206,7ded41894206,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
+B,conc_long_prefill_P,3,2048,faa84a951569,faa84a951569,True,64,64,64,afedd5c752fc,afedd5c752fc,True,True,,64,length,length,4,"[512, 512, 512, 512]",2048,1,[2048],2048,PASS,
