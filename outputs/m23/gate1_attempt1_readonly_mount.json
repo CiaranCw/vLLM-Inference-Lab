@@ -1,0 +1,31 @@
+{
+  "gate": 1,
+  "image": "nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24",
+  "ran_at": "2026-08-13 20:17:44+0800",
+  "elapsed_s": 12.6,
+  "docker_returncode": 0,
+  "gpu_before": {
+    "mem_used_mib": 2837,
+    "mem_total_mib": 16303,
+    "gpu_util_pct": 1
+  },
+  "result": {
+    "gate": 1,
+    "model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "PASS": false,
+    "error": "OSError: [Errno 30] Read-only file system: '/root/.cache/huggingface/hub/.locks/models--Qwen--Qwen2.5-0.5B-Instruct/a6344aac8c09253b3b630fb776ae94478aa0275b.lock'",
+    "traceback_tail": [
+      "  File \"/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_fixes.py\", line 99, in WeakFileLock",
+      "    lock.acquire(timeout=min(log_interval, timeout - elapsed_time) if timeout else log_interval)",
+      "  File \"/usr/local/lib/python3.12/dist-packages/filelock/_api.py\", line 502, in acquire",
+      "    self._acquire()",
+      "  File \"/usr/local/lib/python3.12/dist-packages/filelock/_unix.py\", line 55, in _acquire",
+      "    fd = os.open(self.lock_file, open_flags, open_mode)",
+      "         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "OSError: [Errno 30] Read-only file system: '/root/.cache/huggingface/hub/.locks/models--Qwen--Qwen2.5-0.5B-Instruct/a6344aac8c09253b3b630fb776ae94478aa0275b.lock'"
+    ]
+  },
+  "log_path": "logs/m23/gate1.log",
+  "PASS": false,
+  "evidence_note": "失败时本文件 + log_path 即为回报所有者的完整证据；按冻结稿 §8，不得自行换 tag 或进入其他补救路线"
+}

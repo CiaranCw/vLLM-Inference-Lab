@@ -1,0 +1,75 @@
+
+=============
+== PyTorch ==
+=============
+
+NVIDIA Release 26.05 (build 313520559)
+PyTorch Version 2.12.0a0+5aff392
+Container image Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2014-2024 Facebook Inc.
+Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
+Copyright (c) 2012-2014 Deepmind Technologies    (Koray Kavukcuoglu)
+Copyright (c) 2011-2012 NEC Laboratories America (Koray Kavukcuoglu)
+Copyright (c) 2011-2013 NYU                      (Clement Farabet)
+Copyright (c) 2006-2010 NEC Laboratories America (Ronan Collobert, Leon Bottou, Iain Melvin, Jason Weston)
+Copyright (c) 2006      Idiap Research Institute (Samy Bengio)
+Copyright (c) 2001-2004 Idiap Research Institute (Ronan Collobert, Samy Bengio, Johnny Mariethoz)
+Copyright (c) 2015      Google Inc.
+Copyright (c) 2015      Yangqing Jia
+Copyright (c) 2013-2016 The Caffe contributors
+All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+Skipping import of cpp extensions due to incompatible torch version 2.12.0a0+5aff3928d8.nv26.05 for torchao version 0.15.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+[TensorRT-LLM] TensorRT LLM version: 1.3.0rc24
+[08/13/2026-12:18:34] [TRT-LLM] [I] [llmapi] Using LLM with PyTorch backend
+[08/13/2026-12:18:34] [TRT-LLM] [W] [llmapi] Using default gpus_per_node: 1
+[08/13/2026-12:18:34] [TRT-LLM] [I] [llmapi] neither checkpoint_format nor checkpoint_loader were provided, checkpoint_format will be set to HF.
+`torch_dtype` is deprecated! Use `dtype` instead!
+[33;20mrank 0 using MpiPoolSession to spawn MPI processes
+[0mSkipping import of cpp extensions due to incompatible torch version 2.12.0a0+5aff3928d8.nv26.05 for torchao version 0.15.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+Multiple distributions found for package optimum. Picked distribution: optimum
+Multiple distributions found for package modelopt. Picked distribution: nvidia-modelopt
+[TensorRT-LLM] TensorRT LLM version: 1.3.0rc24
+[TRT-LLM] [I] [runtime][RANK 0] Refreshed the MPI local session
+/usr/local/lib/python3.12/dist-packages/tensorrt_llm/serve/openai_protocol.py:184: UserWarning: Field name "schema" in "ResponseFormat" shadows an attribute in parent "OpenAIBaseModel"
+  class ResponseFormat(OpenAIBaseModel):
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading safetensors weights in parallel:   0%|          | 0/1 [00:00<?, ?it/s]
+Loading safetensors weights in parallel: 100%|██████████| 1/1 [00:00<00:00, 301.31it/s]
+
+Loading weights concurrently:   0%|          | 0/488 [00:00<?, ?it/s]
+Loading weights concurrently:  62%|██████▏   | 301/488 [00:00<00:00, 3008.68it/s]
+Loading weights concurrently: 100%|██████████| 488/488 [00:00<00:00, 3343.83it/s]
+Model init total -- 1.71s
+[08/13/2026-12:18:47] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[08/13/2026-12:18:47] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[TRT-LLM] [I] [batchmgr][RANK 0] Max KV cache blocks per sequence: 1024 [window size=32768], tokens per block=32, primary blocks=2048, secondary blocks=0, max sequence length=32768
+[TRT-LLM] [I] [batchmgr][RANK 0] Number of tokens per block: 32.
+[TRT-LLM] [I] [batchmgr][RANK 0] [MemUsageChange] Allocated 0.75 GiB for max tokens in paged KV cache (65536).
+[08/13/2026-12:19:29] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 33844224 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33844224 bytes to 33846016 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33846016 bytes to 48587776 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 48587776 bytes to 66368512 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 34072576 bytes
+[TRT-LLM] [I] [batchmgr][RANK 0] Max KV cache blocks per sequence: 1024 [window size=32768], tokens per block=32, primary blocks=31126, secondary blocks=0, max sequence length=32768
+[TRT-LLM] [I] [batchmgr][RANK 0] Number of tokens per block: 32.
+[TRT-LLM] [I] [batchmgr][RANK 0] [MemUsageChange] Allocated 11.40 GiB for max tokens in paged KV cache (996032).
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 33844224 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33844224 bytes to 33846016 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33846016 bytes to 48587776 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 48587776 bytes to 66368512 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 34072576 bytes
+
+Processed requests:   0%|          | 0/1 [00:00<?, ?it/s]
+Processed requests: 100%|██████████| 1/1 [00:00<00:00,  3.60it/s]
+Processed requests: 100%|██████████| 1/1 [00:00<00:00,  3.60it/s]
+M23_RESULT {"gate": 1, "model": "Qwen/Qwen2.5-0.5B-Instruct", "load_s": 65.87, "load_ok": true, "text": " Paris. It is the largest city in Europe and the third largest in the world", "n_chars": 74, "PASS": true}

@@ -1,13 +1,15 @@
-# M23 · 模块入口　🔒 **设计冻结，准备就绪，未执行**
+# M23 · 模块入口　🚧 **Gate 0/1/2 全部 PASS，等待 A1 口径决策**
 
 | 文件 | 内容 | 状态 |
 |---|---|---|
 | [`cross_engine_plan.md`](cross_engine_plan.md) | **设计冻结 v3**：上游事实、TRT-P/TRT-L 区分、Gate 设计、Primary/Internal 指标分层、显存口径、授权状态 | 🔒 冻结 |
 | [`backend_migration.md`](backend_migration.md) | **T 产出**：TensorRT backend 移除的时间线、迁移对照表、TRT-L vs TRT-P 机制对照、解读 | ✅ **已完成（零成本，不依赖 Gate）** |
-| `results.md` | E 结论 | ⬜ **未创建**（Gate 通过并产出数据后才写） |
+| [`gate_results.md`](gate_results.md) | **Gate 0/1/2 实测结果** + 必须先解决的对齐缺口（A1–A7） | ✅ **已完成** |
+| `results.md` | E 结论 | ⬜ **未创建**（对照实验尚未跑） |
 
 脚本：[`../../scripts/m23_gate.py`](../../scripts/m23_gate.py)（Gate 0/1 执行器，**默认 dry-run**）
-数据：`outputs/m23/`（**未产生**） · 日志：`logs/m23/`（**未产生**）
+数据：`outputs/m23/gate{0,1,2}.json` · 日志：`logs/m23/gate*.log`
+镜像：`nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24`（digest `sha256:16a103b8…`，已拉取，本地 54.8GB）
 
 ---
 
@@ -62,4 +64,8 @@ python scripts/m21_env_fingerprint.py --out outputs/m23/env_fingerprint_before.j
 - [x] `scripts/m23_gate.py`：Gate 0/1 执行器，默认 dry-run，两个 Gate 的 dry-run 均已自检通过
 - [x] GPU 安全闸验证（当前 14.1 GB 占用 → 判定「拒绝启动」）
 - [x] ROADMAP 同步到 v3 / DESIGN FROZEN，并收窄 L3 表述为「可行但未批准」
-- [ ] Gate 0/1/2 —— **等指令**
+- [x] **Gate 0 PASS**：TRT-LLM 1.3.0rc24 导入正常，识别 sm_120
+- [x] **Gate 1 PASS**：HF checkpoint 直接加载 + **真实生成**连贯文本（无 sm_120 kernel 缺失报错）
+- [x] **Gate 2 PASS**：接受 prompt token ids（可与 vLLM 严格对齐）、Shape A 跑通、生效配置可回读
+- [ ] **A1 口径决策（CUDA Graph）** —— **等所有者拍板**，见 `gate_results.md`
+- [ ] 离线跨引擎对照（L1 的主体）
