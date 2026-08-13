@@ -22,6 +22,7 @@
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
+- **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。
 
 > **招聘者请先看这两个**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md) —— 四个项目（A/B/C/D）按同一模板写成 5 分钟能看懂的形式，并用「🟢已验证 / 🟡只读源码 / ⚪仅理论」三档**明确标注能力边界**（含**未完成项与其阻塞原因**）；[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件。
@@ -129,6 +130,7 @@
 | **M13** 首次上游 PR ★ | ✅ **PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交**（Ready for review，未合入） | **18 passed**、DCO pass、1 commit/1 file/+384、零产品改动；变异测试证明 oracle 独立性；避开 #39591 同名冲突 | 纯加测试 | `notes/m13/*`（研究/审查/验证/PR 草稿全留痕） |
 | **M17** APC & Chunked Prefill ★ | 量化 APC 的生效边界与 chunked prefill 的真实权衡 | APC：P=2048 **−58.5%**、P=1024 −32.4%（CI 排除 0），P=256/512 **CI 含 0**；chunked：D 最坏 ITL **−54%**、median/p95 CI 含 0、长 prefill TTFT **+47%**；I1–I4 全过；**主线收口，2 项可选扩展已补齐（I5-b 相对降幅 61.2%→3.4%、no-chunk 正确性 9/9）** | 无 | `notes/m17/*`、`outputs/m17/*`、`logs/m17/*` |
 | **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
+| **M23** 跨引擎 vLLM vs TRT-LLM ★ | 2×2 execution-mode 严格对照 | `T-E vs V-E` **+45.0%** / `T-O vs V-O` **+20.1%**（TRT 更慢，CI 排除 0）；冷启动 60.7s vs 15.6/26.6s；两侧 optimized 收益 2.85×/2.97×；**L1 COMPLETE** | 无 | `notes/m23/results.md`、`outputs/m23/*`、`figures/fig14_m23_cross_engine.png` |
 | **M18** 量化 W4A16 ★ | AWQ/GPTQ vs BF16，受控到只差量化算法 | 权重 −53.6%/−62.8%（可量化部分 −74.0%）、KV 容量 +5.9%/+30.1%；**速度 28 点 0 个变快**（23 点 CI 显著变慢）；ΔPPL +1.4~+5.0%；**COMPLETE** | 无 | `notes/m18/results.md`、`outputs/m18/*`、`figures/fig13_m18_w4a16.png` |
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
@@ -204,6 +206,7 @@ python scripts/m19_figures.py    # -> figures/fig7..8
 python scripts/m22_figures.py --tag h20_formal  # -> figures/fig9_m22_tp_scaling_h20_formal.png
 python scripts/m20_figures.py                    # -> figures/fig10_m20_same_runtime.png
 python scripts/m18_figures.py                    # -> figures/fig13_m18_w4a16.png
+python scripts/m23_figures.py                    # -> figures/fig14_m23_cross_engine.png
 python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity.png, fig12_m21_bottleneck_signature.png
 ```
 
@@ -391,3 +394,52 @@ batch↔prompt confounding。正确性：111/126 exact match；batch-shape contr
 **留痕**：[`results.md`](notes/m18/results.md) · [`quantization_w4a16.md`](notes/m18/quantization_w4a16.md) ·
 `outputs/m18/{memory,perf,quality}.csv` + `raw/*.jsonl` · `logs/m18/*`。
 `check_invariants.py --module m18`（**11 PASS / 0 FAIL**）。**零产品源码改动。**
+
+---
+
+## §12 M23 跨引擎对照：vLLM vs TensorRT-LLM（L1 COMPLETE）
+
+**先纠正一个已经过时的前提**：上游**已移除 TensorRT engine backend**，PyTorch 成为唯一执行后端
+（`v1.3.0rc20` 是最后一个支持它的版本，`trtllm-build` / checkpoint 转换一并消失）。
+所以「**vLLM = 动态 PyTorch** vs **TRT-LLM = 预编译 engine**」这个流行对立面**不再成立**。
+真正的问题变成：**同为 PyTorch runtime，它们为什么仍是两套不同的推理引擎？**
+（时间线与迁移影响见 [`backend_migration.md`](notes/m23/backend_migration.md)。）
+
+**先探后投**：拉镜像前先做零成本 Gate 设计，且把红线写死——
+`import 成功 ≠ PASS`、`load 成功 ≠ PASS`、`GPU 可见 ≠ PASS`，**必须真实 generate 出文本才算通过**
+（sm_120 的 kernel 问题往往只在真正执行 forward/attention/decode 时才暴露）。结果三个 Gate 全过。
+
+![M23 cross-engine](figures/fig14_m23_cross_engine.png)
+
+**2×2 execution-mode 设计**：Gate 2 发现 TRT-LLM **默认开启 CUDA Graph** 而本 lab 全线 `enforce_eager`，
+而 M7 已证该差异在本机可达单步 7.44→2.50ms —— **它会主导结论**。所以不跑一组，跑两条 lane：
+
+| lane | `T vs V` 单请求 e2e | batch64 | 结论 |
+|---|---|---|---|
+| **OFF**（graph/optimization 关） | **+45.0%** CI[433.8, 463.0]ms | **+29.9%** | TRT-LLM 更慢 |
+| **ON**（各自当前优化栈） | **+20.1%** CI[48.8, 54.0]ms | **+24.7%** | TRT-LLM 更慢 |
+
+冷启动 TRT-LLM **60.5–60.8s** vs vLLM **15.6s(OFF) / 26.6s(ON)**；
+输出 token 吞吐 vLLM 6028→17200、TRT-LLM 4642→13793 tok/s。
+**两侧从 optimized lane 获益幅度接近**（**2.85×** vs **2.97×**）——这正说明只跑一条 lane 会把
+「有没有开图优化」混进「谁的引擎更快」里。
+
+**表述纪律（写进脚本与文档）**：正式结论**只在 lane 内做**，**禁止跨 lane 相减**；
+**任一差值都不得称为「纯 engine intrinsic speedup」**（OFF lane 仍混着两套 runtime 的实现差异，
+ON lane 还叠加了两侧优化栈内容本就不同）；本对照是 **stack-vs-stack，不是 kernel 级 A/B**。
+
+**两个自洽性检查**（不是刻意构造的）：vLLM 的 ON/OFF 吞吐比 **2.85×** 与 **M6** 的 2.5–2.85× 吻合；
+V-E 单 token ≈ **7.8ms** 与 **M7** 证实的 ~7ms CPU 提交地板同量级 —— 容器内行为与历史主线一致。
+
+**显存只报整卡**：Gate 2 实测 TRT 侧主进程 `torch.cuda.memory_allocated()` 读到 **0**（executor 在独立 runtime），
+分项一律标 `unavailable`，**禁止 `activation = total − weights − KV` 这类残差推导**。
+而且两侧显存预算参数**语义不同**（vLLM 的 `gpu_memory_utilization` 是总显存占比，
+TRT 的 `free_gpu_memory_fraction` 是可用显存中给 KV 的占比），所以那 −520 MiB 只能读作
+「各自这样设置下的峰值差」。
+
+**必须随 V-O/T-O 结论保留的 limitation**：V-E 与 V-O 各自 across-process **6/6 确定性**，
+但跨 lane exact-match 仅 **1/6** → 两条 execution path **不数值等价**；
+人工检视分歧文本均连贯无退化，故只能说「**未观察到明显 functional degradation**」。
+
+**留痕**：[`results.md`](notes/m23/results.md) · [`cross_engine_plan.md`](notes/m23/cross_engine_plan.md)（设计冻结 v4） ·
+[`gate_results.md`](notes/m23/gate_results.md) · `outputs/m23/*` · `scripts/m23_*.py`。**零产品源码改动。**

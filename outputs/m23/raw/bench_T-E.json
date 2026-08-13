@@ -1,0 +1,1034 @@
+{
+  "group": "T-E",
+  "image": "nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24",
+  "returncode": 0,
+  "wall_elapsed_s": 104.8,
+  "record": {
+    "group": "T-E",
+    "engine": "tensorrt_llm",
+    "lane": "E",
+    "engine_version": "1.3.0rc24",
+    "cold_start_s": 60.786,
+    "effective": {
+      "dtype": "bfloat16",
+      "max_batch_size": 64,
+      "max_num_tokens": 4096,
+      "max_seq_len": 2048,
+      "backend": "pytorch",
+      "enable_chunked_prefill": false,
+      "kv_cache_config": "enable_block_reuse=False max_tokens=None max_attention_window=None sink_token_length=None free_gpu_memory_fraction=0.6 host_cache_size=None disk_cache_size=None disk_cache_path=None cross_kv_cache_fraction=None secondary_offload_min_priority=None event_buffer_max_size=0 attention_dp_events_gather_period_ms=5 enable_partial_reuse=True copy_on_partial_reuse=True use_uvm=False max_gpu_total_bytes=0 iteration_stats_interval=1 dtype='auto' mamba_ssm_cache_dtype='auto' mamba_ssm_stochastic_rounding=False mamba_ssm_philox_rounds=10 tokens_per_block=32 mamba_state_cache_interval=None mamba_state_config=MambaStateConfig(periodic_snapshot_interval=0, additional_snapshot_offsets_from_start=[], additional_snapshot_offsets_from_end=[]) use_kv_cache_manager_v2='auto' enable_swa_scratch_reuse=False kv_cache_event_hash_algo='auto' max_util_for_resume=0.95 enable_kv_pool_rebalance=False disk_prefetch_num_reqs=0 fp8_context_mla_kv_len_cap=None pool_ratio=None avg_seq_len=None block_reuse_config=BlockReuseConfig(policy='all_reusable', max_num_turns=1)",
+      "cuda_graph_config": null
+    },
+    "single_latency_ms": [
+      1397.218547999728,
+      1457.3455010013276,
+      1441.8441430007078,
+      1437.4274950005201,
+      1445.4743660007807,
+      1443.3492820007814,
+      1461.3352630003646,
+      1503.9944210002432,
+      1450.1161810003396,
+      1418.5271589994954
+    ],
+    "batch_wall_ms": [
+      1763.6080989996117,
+      1795.6503059995157,
+      1764.8758469986205,
+      1771.9436320003297,
+      1763.665911001226
+    ],
+    "out_len_all_equal": true,
+    "n_out_checked": 330
+  },
+  "log": "logs/m23/bench_T-E.log",
+  "gpu_total_memory_mib": {
+    "baseline_before_container": 1874,
+    "peak_during_run": 11352,
+    "median_during_run": 3527.5,
+    "n_samples": 196,
+    "note": "整卡口径（host nvidia-smi）。**分项 unavailable**：TRT 侧 executor 在独立 runtime 内，主进程 torch 计数为 0（Gate 2 实测）。**禁止残差推导**。"
+  },
+  "gpu_samples": [
+    {
+      "t": 1786625409.301858,
+      "mem_used_mib": 1874,
+      "util": 2
+    },
+    {
+      "t": 1786625409.8376184,
+      "mem_used_mib": 1909,
+      "util": 2
+    },
+    {
+      "t": 1786625410.3739283,
+      "mem_used_mib": 1925,
+      "util": 2
+    },
+    {
+      "t": 1786625410.9089525,
+      "mem_used_mib": 1934,
+      "util": 2
+    },
+    {
+      "t": 1786625411.4409015,
+      "mem_used_mib": 1892,
+      "util": 2
+    },
+    {
+      "t": 1786625411.969708,
+      "mem_used_mib": 1897,
+      "util": 2
+    },
+    {
+      "t": 1786625412.5031743,
+      "mem_used_mib": 1800,
+      "util": 2
+    },
+    {
+      "t": 1786625413.036821,
+      "mem_used_mib": 1793,
+      "util": 2
+    },
+    {
+      "t": 1786625413.5693393,
+      "mem_used_mib": 1889,
+      "util": 4
+    },
+    {
+      "t": 1786625414.1016273,
+      "mem_used_mib": 1888,
+      "util": 2
+    },
+    {
+      "t": 1786625414.6328292,
+      "mem_used_mib": 1854,
+      "util": 2
+    },
+    {
+      "t": 1786625415.166073,
+      "mem_used_mib": 1885,
+      "util": 2
+    },
+    {
+      "t": 1786625415.702809,
+      "mem_used_mib": 1891,
+      "util": 5
+    },
+    {
+      "t": 1786625416.2351148,
+      "mem_used_mib": 1924,
+      "util": 2
+    },
+    {
+      "t": 1786625416.7713313,
+      "mem_used_mib": 1907,
+      "util": 2
+    },
+    {
+      "t": 1786625417.3025954,
+      "mem_used_mib": 1899,
+      "util": 3
+    },
+    {
+      "t": 1786625417.8363297,
+      "mem_used_mib": 1897,
+      "util": 5
+    },
+    {
+      "t": 1786625418.3692636,
+      "mem_used_mib": 1864,
+      "util": 3
+    },
+    {
+      "t": 1786625418.9033365,
+      "mem_used_mib": 1864,
+      "util": 3
+    },
+    {
+      "t": 1786625419.4372473,
+      "mem_used_mib": 2110,
+      "util": 4
+    },
+    {
+      "t": 1786625419.9748456,
+      "mem_used_mib": 2104,
+      "util": 2
+    },
+    {
+      "t": 1786625420.5082722,
+      "mem_used_mib": 2089,
+      "util": 2
+    },
+    {
+      "t": 1786625421.04373,
+      "mem_used_mib": 2089,
+      "util": 2
+    },
+    {
+      "t": 1786625421.5750573,
+      "mem_used_mib": 2055,
+      "util": 2
+    },
+    {
+      "t": 1786625422.1096082,
+      "mem_used_mib": 2053,
+      "util": 2
+    },
+    {
+      "t": 1786625422.642228,
+      "mem_used_mib": 1996,
+      "util": 3
+    },
+    {
+      "t": 1786625423.1753604,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625423.7111168,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625424.2453713,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625424.7774498,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625425.3100982,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625425.8438442,
+      "mem_used_mib": 1996,
+      "util": 3
+    },
+    {
+      "t": 1786625426.3786721,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625426.9114914,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625427.4433072,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625427.9738293,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625428.5074465,
+      "mem_used_mib": 1996,
+      "util": 2
+    },
+    {
+      "t": 1786625429.0426335,
+      "mem_used_mib": 2004,
+      "util": 2
+    },
+    {
+      "t": 1786625429.5758777,
+      "mem_used_mib": 2251,
+      "util": 2
+    },
+    {
+      "t": 1786625430.1124828,
+      "mem_used_mib": 2330,
+      "util": 2
+    },
+    {
+      "t": 1786625430.6460693,
+      "mem_used_mib": 3459,
+      "util": 10
+    },
+    {
+      "t": 1786625431.1767495,
+      "mem_used_mib": 3459,
+      "util": 16
+    },
+    {
+      "t": 1786625431.7125568,
+      "mem_used_mib": 3512,
+      "util": 2
+    },
+    {
+      "t": 1786625432.2462652,
+      "mem_used_mib": 3515,
+      "util": 2
+    },
+    {
+      "t": 1786625432.7777627,
+      "mem_used_mib": 3506,
+      "util": 2
+    },
+    {
+      "t": 1786625433.3101826,
+      "mem_used_mib": 3506,
+      "util": 2
+    },
+    {
+      "t": 1786625433.8453827,
+      "mem_used_mib": 3531,
+      "util": 3
+    },
+    {
+      "t": 1786625434.3813858,
+      "mem_used_mib": 3535,
+      "util": 2
+    },
+    {
+      "t": 1786625434.9178197,
+      "mem_used_mib": 3540,
+      "util": 3
+    },
+    {
+      "t": 1786625435.4527369,
+      "mem_used_mib": 3470,
+      "util": 2
+    },
+    {
+      "t": 1786625435.9895165,
+      "mem_used_mib": 3467,
+      "util": 2
+    },
+    {
+      "t": 1786625436.5269275,
+      "mem_used_mib": 3443,
+      "util": 2
+    },
+    {
+      "t": 1786625437.0610461,
+      "mem_used_mib": 3444,
+      "util": 2
+    },
+    {
+      "t": 1786625437.59134,
+      "mem_used_mib": 3463,
+      "util": 2
+    },
+    {
+      "t": 1786625438.1255786,
+      "mem_used_mib": 3463,
+      "util": 2
+    },
+    {
+      "t": 1786625438.6605392,
+      "mem_used_mib": 3462,
+      "util": 2
+    },
+    {
+      "t": 1786625439.1936247,
+      "mem_used_mib": 3463,
+      "util": 3
+    },
+    {
+      "t": 1786625439.7284708,
+      "mem_used_mib": 3463,
+      "util": 2
+    },
+    {
+      "t": 1786625440.2620597,
+      "mem_used_mib": 3463,
+      "util": 2
+    },
+    {
+      "t": 1786625440.795045,
+      "mem_used_mib": 3447,
+      "util": 2
+    },
+    {
+      "t": 1786625441.327717,
+      "mem_used_mib": 3461,
+      "util": 4
+    },
+    {
+      "t": 1786625441.865074,
+      "mem_used_mib": 3695,
+      "util": 3
+    },
+    {
+      "t": 1786625442.3975577,
+      "mem_used_mib": 3692,
+      "util": 3
+    },
+    {
+      "t": 1786625442.9334588,
+      "mem_used_mib": 3643,
+      "util": 3
+    },
+    {
+      "t": 1786625443.4673367,
+      "mem_used_mib": 3636,
+      "util": 3
+    },
+    {
+      "t": 1786625444.003948,
+      "mem_used_mib": 3567,
+      "util": 3
+    },
+    {
+      "t": 1786625444.539981,
+      "mem_used_mib": 3572,
+      "util": 3
+    },
+    {
+      "t": 1786625445.0762875,
+      "mem_used_mib": 3572,
+      "util": 3
+    },
+    {
+      "t": 1786625445.6099718,
+      "mem_used_mib": 3583,
+      "util": 3
+    },
+    {
+      "t": 1786625446.1429255,
+      "mem_used_mib": 3574,
+      "util": 4
+    },
+    {
+      "t": 1786625446.6805146,
+      "mem_used_mib": 3517,
+      "util": 3
+    },
+    {
+      "t": 1786625447.2136443,
+      "mem_used_mib": 3516,
+      "util": 3
+    },
+    {
+      "t": 1786625447.7509086,
+      "mem_used_mib": 3516,
+      "util": 4
+    },
+    {
+      "t": 1786625448.284741,
+      "mem_used_mib": 3524,
+      "util": 4
+    },
+    {
+      "t": 1786625448.8198855,
+      "mem_used_mib": 3534,
+      "util": 3
+    },
+    {
+      "t": 1786625449.354272,
+      "mem_used_mib": 3534,
+      "util": 3
+    },
+    {
+      "t": 1786625449.8935177,
+      "mem_used_mib": 3532,
+      "util": 3
+    },
+    {
+      "t": 1786625450.4307125,
+      "mem_used_mib": 3524,
+      "util": 4
+    },
+    {
+      "t": 1786625450.966511,
+      "mem_used_mib": 3522,
+      "util": 3
+    },
+    {
+      "t": 1786625451.5002823,
+      "mem_used_mib": 3521,
+      "util": 3
+    },
+    {
+      "t": 1786625452.0332067,
+      "mem_used_mib": 3522,
+      "util": 3
+    },
+    {
+      "t": 1786625452.5654168,
+      "mem_used_mib": 3556,
+      "util": 4
+    },
+    {
+      "t": 1786625453.1028247,
+      "mem_used_mib": 3556,
+      "util": 4
+    },
+    {
+      "t": 1786625453.635692,
+      "mem_used_mib": 3612,
+      "util": 5
+    },
+    {
+      "t": 1786625454.1749487,
+      "mem_used_mib": 3625,
+      "util": 3
+    },
+    {
+      "t": 1786625454.7087708,
+      "mem_used_mib": 3622,
+      "util": 3
+    },
+    {
+      "t": 1786625455.2428825,
+      "mem_used_mib": 3623,
+      "util": 3
+    },
+    {
+      "t": 1786625455.7778463,
+      "mem_used_mib": 3619,
+      "util": 4
+    },
+    {
+      "t": 1786625456.3130488,
+      "mem_used_mib": 3619,
+      "util": 5
+    },
+    {
+      "t": 1786625456.8487525,
+      "mem_used_mib": 3617,
+      "util": 5
+    },
+    {
+      "t": 1786625457.3824816,
+      "mem_used_mib": 3615,
+      "util": 5
+    },
+    {
+      "t": 1786625457.916583,
+      "mem_used_mib": 3614,
+      "util": 4
+    },
+    {
+      "t": 1786625458.4540374,
+      "mem_used_mib": 3576,
+      "util": 3
+    },
+    {
+      "t": 1786625458.9901452,
+      "mem_used_mib": 3555,
+      "util": 3
+    },
+    {
+      "t": 1786625459.522953,
+      "mem_used_mib": 3553,
+      "util": 3
+    },
+    {
+      "t": 1786625460.055696,
+      "mem_used_mib": 3552,
+      "util": 3
+    },
+    {
+      "t": 1786625460.5961146,
+      "mem_used_mib": 3552,
+      "util": 3
+    },
+    {
+      "t": 1786625461.1270895,
+      "mem_used_mib": 3552,
+      "util": 3
+    },
+    {
+      "t": 1786625461.6580858,
+      "mem_used_mib": 3551,
+      "util": 3
+    },
+    {
+      "t": 1786625462.4338574,
+      "mem_used_mib": 3551,
+      "util": 1
+    },
+    {
+      "t": 1786625462.9739757,
+      "mem_used_mib": 3440,
+      "util": 3
+    },
+    {
+      "t": 1786625463.5125768,
+      "mem_used_mib": 3516,
+      "util": 4
+    },
+    {
+      "t": 1786625464.0475874,
+      "mem_used_mib": 3610,
+      "util": 3
+    },
+    {
+      "t": 1786625464.5837288,
+      "mem_used_mib": 3609,
+      "util": 3
+    },
+    {
+      "t": 1786625465.115904,
+      "mem_used_mib": 3413,
+      "util": 2
+    },
+    {
+      "t": 1786625465.6489382,
+      "mem_used_mib": 3373,
+      "util": 2
+    },
+    {
+      "t": 1786625466.1801994,
+      "mem_used_mib": 3371,
+      "util": 2
+    },
+    {
+      "t": 1786625466.71283,
+      "mem_used_mib": 3354,
+      "util": 2
+    },
+    {
+      "t": 1786625467.246978,
+      "mem_used_mib": 3365,
+      "util": 2
+    },
+    {
+      "t": 1786625467.778364,
+      "mem_used_mib": 3354,
+      "util": 2
+    },
+    {
+      "t": 1786625468.3255754,
+      "mem_used_mib": 3090,
+      "util": 3
+    },
+    {
+      "t": 1786625468.857165,
+      "mem_used_mib": 2918,
+      "util": 4
+    },
+    {
+      "t": 1786625469.3914347,
+      "mem_used_mib": 2838,
+      "util": 2
+    },
+    {
+      "t": 1786625469.9233491,
+      "mem_used_mib": 2838,
+      "util": 2
+    },
+    {
+      "t": 1786625470.4560268,
+      "mem_used_mib": 2838,
+      "util": 2
+    },
+    {
+      "t": 1786625470.9889216,
+      "mem_used_mib": 2838,
+      "util": 2
+    },
+    {
+      "t": 1786625471.5200515,
+      "mem_used_mib": 2838,
+      "util": 2
+    },
+    {
+      "t": 1786625472.0509965,
+      "mem_used_mib": 2838,
+      "util": 3
+    },
+    {
+      "t": 1786625472.5822766,
+      "mem_used_mib": 2838,
+      "util": 3
+    },
+    {
+      "t": 1786625473.114911,
+      "mem_used_mib": 2849,
+      "util": 2
+    },
+    {
+      "t": 1786625473.6456797,
+      "mem_used_mib": 2849,
+      "util": 3
+    },
+    {
+      "t": 1786625474.1869988,
+      "mem_used_mib": 2849,
+      "util": 2
+    },
+    {
+      "t": 1786625474.7212005,
+      "mem_used_mib": 2851,
+      "util": 2
+    },
+    {
+      "t": 1786625475.2539563,
+      "mem_used_mib": 3013,
+      "util": 2
+    },
+    {
+      "t": 1786625475.7888126,
+      "mem_used_mib": 3047,
+      "util": 2
+    },
+    {
+      "t": 1786625476.320948,
+      "mem_used_mib": 3038,
+      "util": 2
+    },
+    {
+      "t": 1786625476.8535197,
+      "mem_used_mib": 3233,
+      "util": 2
+    },
+    {
+      "t": 1786625477.3919084,
+      "mem_used_mib": 3219,
+      "util": 2
+    },
+    {
+      "t": 1786625477.9271379,
+      "mem_used_mib": 11103,
+      "util": 2
+    },
+    {
+      "t": 1786625478.4691503,
+      "mem_used_mib": 11327,
+      "util": 22
+    },
+    {
+      "t": 1786625479.0033445,
+      "mem_used_mib": 11135,
+      "util": 19
+    },
+    {
+      "t": 1786625479.5345547,
+      "mem_used_mib": 11309,
+      "util": 2
+    },
+    {
+      "t": 1786625480.0717113,
+      "mem_used_mib": 11311,
+      "util": 22
+    },
+    {
+      "t": 1786625480.6064665,
+      "mem_used_mib": 11311,
+      "util": 23
+    },
+    {
+      "t": 1786625481.140991,
+      "mem_used_mib": 11311,
+      "util": 22
+    },
+    {
+      "t": 1786625481.6765878,
+      "mem_used_mib": 11311,
+      "util": 22
+    },
+    {
+      "t": 1786625482.2124536,
+      "mem_used_mib": 11311,
+      "util": 22
+    },
+    {
+      "t": 1786625482.7467012,
+      "mem_used_mib": 11311,
+      "util": 22
+    },
+    {
+      "t": 1786625483.2814963,
+      "mem_used_mib": 11311,
+      "util": 23
+    },
+    {
+      "t": 1786625483.8163404,
+      "mem_used_mib": 11311,
+      "util": 23
+    },
+    {
+      "t": 1786625484.3575695,
+      "mem_used_mib": 11309,
+      "util": 23
+    },
+    {
+      "t": 1786625484.8906822,
+      "mem_used_mib": 11309,
+      "util": 23
+    },
+    {
+      "t": 1786625485.4238899,
+      "mem_used_mib": 11309,
+      "util": 23
+    },
+    {
+      "t": 1786625485.961026,
+      "mem_used_mib": 11309,
+      "util": 21
+    },
+    {
+      "t": 1786625486.4966285,
+      "mem_used_mib": 11309,
+      "util": 22
+    },
+    {
+      "t": 1786625487.0336783,
+      "mem_used_mib": 11314,
+      "util": 22
+    },
+    {
+      "t": 1786625487.5677502,
+      "mem_used_mib": 11314,
+      "util": 22
+    },
+    {
+      "t": 1786625488.1019955,
+      "mem_used_mib": 11314,
+      "util": 21
+    },
+    {
+      "t": 1786625488.6376398,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625489.1750166,
+      "mem_used_mib": 11310,
+      "util": 23
+    },
+    {
+      "t": 1786625489.7085416,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625490.243882,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625490.7778642,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625491.311722,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625491.8538377,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625492.387831,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625492.925939,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625493.4628174,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625493.9944847,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625494.5275974,
+      "mem_used_mib": 11310,
+      "util": 21
+    },
+    {
+      "t": 1786625495.0603373,
+      "mem_used_mib": 11310,
+      "util": 20
+    },
+    {
+      "t": 1786625495.5941591,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625496.1280034,
+      "mem_used_mib": 11310,
+      "util": 20
+    },
+    {
+      "t": 1786625496.6628284,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625497.20164,
+      "mem_used_mib": 11310,
+      "util": 23
+    },
+    {
+      "t": 1786625497.7349746,
+      "mem_used_mib": 11310,
+      "util": 22
+    },
+    {
+      "t": 1786625498.276549,
+      "mem_used_mib": 11310,
+      "util": 23
+    },
+    {
+      "t": 1786625498.8080885,
+      "mem_used_mib": 11348,
+      "util": 72
+    },
+    {
+      "t": 1786625499.3435225,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625499.88739,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625500.4258184,
+      "mem_used_mib": 11348,
+      "util": 48
+    },
+    {
+      "t": 1786625500.9615848,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625501.4968297,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625502.0288773,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625502.5655446,
+      "mem_used_mib": 11348,
+      "util": 25
+    },
+    {
+      "t": 1786625503.1044466,
+      "mem_used_mib": 11347,
+      "util": 26
+    },
+    {
+      "t": 1786625503.64167,
+      "mem_used_mib": 11347,
+      "util": 25
+    },
+    {
+      "t": 1786625504.1731515,
+      "mem_used_mib": 11352,
+      "util": 28
+    },
+    {
+      "t": 1786625504.705103,
+      "mem_used_mib": 11352,
+      "util": 25
+    },
+    {
+      "t": 1786625505.2416246,
+      "mem_used_mib": 11352,
+      "util": 25
+    },
+    {
+      "t": 1786625505.775128,
+      "mem_used_mib": 11348,
+      "util": 75
+    },
+    {
+      "t": 1786625506.306496,
+      "mem_used_mib": 11348,
+      "util": 24
+    },
+    {
+      "t": 1786625506.8397589,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625507.3762736,
+      "mem_used_mib": 11348,
+      "util": 24
+    },
+    {
+      "t": 1786625507.9128408,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625508.4483902,
+      "mem_used_mib": 11348,
+      "util": 25
+    },
+    {
+      "t": 1786625508.980872,
+      "mem_used_mib": 11348,
+      "util": 24
+    },
+    {
+      "t": 1786625509.515141,
+      "mem_used_mib": 11348,
+      "util": 26
+    },
+    {
+      "t": 1786625510.0519426,
+      "mem_used_mib": 11348,
+      "util": 23
+    },
+    {
+      "t": 1786625510.587644,
+      "mem_used_mib": 11348,
+      "util": 25
+    },
+    {
+      "t": 1786625511.1247485,
+      "mem_used_mib": 3086,
+      "util": 2
+    },
+    {
+      "t": 1786625511.6577735,
+      "mem_used_mib": 2048,
+      "util": 2
+    },
+    {
+      "t": 1786625512.192411,
+      "mem_used_mib": 2048,
+      "util": 2
+    },
+    {
+      "t": 1786625512.7264647,
+      "mem_used_mib": 2048,
+      "util": 2
+    },
+    {
+      "t": 1786625513.2622788,
+      "mem_used_mib": 2048,
+      "util": 2
+    },
+    {
+      "t": 1786625513.8265352,
+      "mem_used_mib": 1156,
+      "util": 2
+    }
+  ]
+}

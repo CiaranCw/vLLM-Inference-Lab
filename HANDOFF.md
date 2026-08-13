@@ -51,7 +51,7 @@
 | M20 | 服务化 + Triton | ✅ | **T+A+B+C COMPLETE**（same-runtime QPS 20/32/40；见 `notes/m20/results.md`） |
 | M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；2026-08-12 已做 evidence audit，见 `notes/m21/results.md` §10） |
 | **M22** | TP/PP/DP/EP | ✅/⬜ | **TP T+E+O+H COMPLETE**（4×H20，`notes/m22/results.md`）；**PP/DP/EP 未做** |
-| M23 | TensorRT-LLM 跨引擎 | ⬜ | 单卡可做但工程量大 |
+| M23 | TensorRT-LLM 跨引擎 | ✅ | **L1 COMPLETE**：2×2 execution-mode，两条 lane 下 vLLM 均更快；见 `notes/m23/results.md` |
 | M24 | CP / Ring Attention / P-D 分离 | ⬜ | ★**多卡门控** |
 | M25 | 压缩（蒸馏/剪枝/低秩） | ⬜ | 推理岗只需 T |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化 + 能力边界三档标注；**D 占位阻塞于 M23**；见 `notes/m26/portfolio.md` |

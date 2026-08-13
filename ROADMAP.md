@@ -391,7 +391,16 @@
 
 ## 阶段 H · 跨引擎对比（T+E+O）
 
-### M23 TensorRT-LLM 与跨引擎对照　⬜　T+E+O　（**设计冻结 v3** 见 [`notes/m23/cross_engine_plan.md`](notes/m23/cross_engine_plan.md)）
+### M23 TensorRT-LLM 与跨引擎对照　✅　**L1 COMPLETE**（2026-08-13）　（设计冻结 v4 + 结论见 [`notes/m23/`](notes/m23/)）
+- **Gate 0/1/2 全 PASS**：TRT-LLM `1.3.0rc24` 在本机 **sm_120 上可用**（真实生成，无 kernel 缺失报错）；接受 token ids 输入故可与 vLLM 严格对齐。
+- **2×2 execution-mode 对照**（所有者决策）：OFF lane 与 ON lane 分别报告，**禁止跨 lane 相减**。
+  - `T-E vs V-E`：单请求 **+45.0%**、batch **+29.9%**（TRT 更慢，CI 排除 0）
+  - `T-O vs V-O`：单请求 **+20.1%**、batch **+24.7%**（TRT 更慢，CI 排除 0）
+  - 冷启动 TRT **60.5–60.8s** vs vLLM **15.6/26.6s**；输出吞吐 vLLM 6028→17200、TRT 4642→13793 tok/s
+- **两侧 optimized 收益接近**：vLLM **2.85×**、TRT **2.97×** —— 只跑一条 lane 会把「有没有开图优化」混进「谁更快」。
+- **交叉验证**：vLLM 的 2.85× 与 M6 的 2.5–2.85× 吻合；V-E 单 token ~7.8ms 与 M7 的 ~7ms CPU 提交地板吻合。
+- **纪律**：stack-vs-stack 非 kernel 级 A/B；任一差值**不得**称 intrinsic engine speedup；显存**只报整卡**、分项 unavailable、禁止残差推导。
+- **⬜ 未做**：跨引擎输出一致性比对、L2 在线服务、L3 Triton 集成、L4 Transformers 基线、kernel 级 profiling（故无机制归因）、模型规模/shape/并发度扫描。
 
 > **⚠️ 上游事实修正（2026-08-13，所有者指出）**：本节下面两条原文写于 TensorRT backend 尚存的时期，**前提已失效**：
 > **TensorRT engine backend 已被上游移除，PyTorch backend 成为唯一执行后端**；

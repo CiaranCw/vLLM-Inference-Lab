@@ -17,7 +17,7 @@
 | **A** vLLM V1 Trace & Optimization Lab | M0–M13、M16、M17 | 🟢 **完整** | — |
 | **B** Distributed LLM Inference Lab | M22 | 🟢 TP ／ ⚪ PP·DP·EP | **多卡机时**（4×H20 窗口已结束） |
 | **C** Production Serving Stack | M12、M20、M21 | 🟢 **完整**（四要素齐全） | — |
-| **D** Cross-Engine Optimization | M10、M18、M19、M20 ／ **缺 TRT-LLM** | ⚪ **未完成** | **M23（TensorRT-LLM）** |
+| **D** Cross-Engine Optimization | M10、M18、M19、M20、**M23** | 🟢 **核心已闭合**（L1）／⚪ L2–L4 未做 | — |
 
 **一句话现状**：A 与 C 已经是可以直接拿去讲的完整项目；B 有真实多卡 TP 数据但并行策略只覆盖了 TP；
 D 的量化与投机解码两条腿已就位，**跨引擎对照这条腿缺 M23，整项标为未完成**。
@@ -126,7 +126,7 @@ prefill 计算压力（粗粒度 GPU util 66%）、KV 受限（kv_usage→1 **�
 
 ---
 
-# 项目 D · Cross-Engine Optimization　⚪ **未完成（阻塞于 M23）**
+# 项目 D · Cross-Engine Optimization　🟢 **核心已闭合**（M23 L1，2026-08-13）
 
 **问题**：同模型同硬件下，vLLM 与 TensorRT-LLM 的工程取舍差在哪？量化与投机解码在两个引擎上的收益是否一致？
 
@@ -137,11 +137,17 @@ prefill 计算压力（粗粒度 GPU util 66%）、KV 受限（kv_usage→1 **�
 | **量化** | M10（FP8 W8A8 + FP8 KV）、**M18（W4A16 AWQ/GPTQ）** | W4A16 整体权重 **−53.6%(0.5B) / −62.8%(1.5B)**，但 `embed`/`lm_head` **未被量化**，剔除后可量化部分 **−74.0%**（≈理论值）→ **模型越小稀释越狠**；速度上 **28 个对照点 0 个变快**。FP8 至少在长 prefill 换到 −27% 真加速，W4A16 连这段都没换到 |
 | **投机解码** | M19（N-gram） | 优化的是**串行 execution rounds**（128→33）而非保证少算；完成延迟 −**72~75.5%**；Acceptance 重要但**非充分**指标 |
 
-**⚪ 缺失的核心一条腿**：**TensorRT-LLM**（checkpoint 准备 → engine 构建 → 加载 → benchmark）、
-**Triton + TRT-LLM Backend**、以及**同模型同硬件的严格跨引擎对照**（固定精度/长度/并发/warmup/采样/benchmark 方法）。
+**🟢 第三条腿已补上（M23 L1）**：同模型同硬件的严格跨引擎对照已完成 ——
+两侧用**同一份 token ids**、同一组冻结配置、都在容器内，做 **2×2 execution-mode** 对照：
+`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT-LLM 更慢，Bootstrap CI 全排除 0）；
+两侧 optimized 收益接近（vLLM 2.85× / TRT 2.97×）。
 
-→ **本项目整体标为未完成，阻塞于 M23**。
-**不把「量化 + spec decode 两条腿」包装成「跨引擎优化项目」** —— 缺的是这个项目的定义性内容。
+**同时纠正了一个过时的技术前提**：上游已移除 TensorRT engine backend，PyTorch 成为唯一后端
+（v1.3.0rc20 为最后一个支持版本），所以「vLLM 动态 vs TRT-LLM 预编译」这个对立面**不再成立** ——
+真正的问题变成「同为 PyTorch runtime，为何仍是两套引擎」。见 `notes/m23/backend_migration.md`。
+
+**⚪ 仍未做**：跨引擎**输出一致性**比对、TRT-LLM 在线服务（L2）、Triton 集成（L3）、
+Transformers 基线（L4）、kernel 级 profiling（故对「为何更慢」**无机制归因**）。
 
 **已有的相邻能力（可在面试中说明）**：M20 已经把 **Triton + vLLM backend** 跑通并做过同镜像对照，
 所以 D 缺的不是 Triton 部署能力，而是 **TRT-LLM 引擎本身与跨引擎 benchmark 方法**。
@@ -182,7 +188,7 @@ profiler 的结论以 JSON 指标呈现。因此实际用于讲述的 5 张图�
 | 监控栈与故障定位 | 🟢 已验证 | M21 |
 | **多卡 Tensor Parallel** | 🟢 已验证（4×H20） | M22 |
 | **PP / DP / EP / CP / P-D 分离** | ⚪ **仅设计** | 阻塞于多卡机时 |
-| **TensorRT-LLM 与跨引擎对照** | ⚪ **未做** | 阻塞于 M23 |
+| **TensorRT-LLM 与跨引擎对照** | 🟢 **已验证**（M23 L1） | 2×2 execution-mode，CI 全排除 0；⚪ 在线服务/Triton 集成/输出一致性比对未做 |
 | 长上下文（Ring Attention 等） | ⚪ **仅理论** | M24 未做 |
 | 模型压缩（蒸馏/剪枝/低秩） | ⚪ **仅理论**（推理岗只需 T） | M25 未做 |
 | Kubernetes / 多副本 / 跨机 SLA | ⚪ **未做** | 不在本 lab 范围 |
