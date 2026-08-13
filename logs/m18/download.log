@@ -1,0 +1,10 @@
+Hint: A new version of huggingface_hub (1.27.0) is available! You are using version 1.23.0.
+To update, run: hf update
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+path=/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct-AWQ/snapshots/db09cd27ead7fee40cdee309693cf83601b9c899
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+path=/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct-GPTQ-Int4/snapshots/c34a4a91629f09f73a285f32dbd26106b033c654
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+path=/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-1.5B-Instruct-AWQ/snapshots/3ecffa0ceb27851800f45519bab9c457a04405e1
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+path=/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-1.5B-Instruct-GPTQ-Int4/snapshots/4f5a0e31008e2966e8f787964bcc4e1105e03dc3

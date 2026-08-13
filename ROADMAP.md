@@ -279,10 +279,21 @@
   并发实验仅 1 decode + 1 长 prefill，未扫并发度；
   `max_num_partial_prefills` 本版本不可调（`arg_utils.py:2350` 直接 NotImplementedError）；不外推 compiled/大模型/多卡/在线服务。
 
-### M18 量化执行路径深化（承接 M10）　⬜　T+E+O
+### M18 量化执行路径深化（承接 M10）　🚧　T+E+O　**Gate 0 已通过（2026-08-13），实验未设计/未执行**
 - 理论：W8A8/W4A16、对称/非对称、per-tensor/channel/group、scale 与 zero-point、权重量化 vs KV 量化、误差·显存·带宽·吞吐关系。
 - 实验：BF16 vs 权重量化 vs（硬件可行时）FP8 KV；比显存/KV 容量/启动/TTFT/TPOT/吞吐/质量。源码聚焦：`QuantizationConfig`、量化 Linear 替换、权重加载、scale 保存传递、实际 GEMM/dequant kernel、backend 如何消费 KV scale。
 - 注：M10 已做 BF16 / FP8 W8A8 / FP8 KV（含 scale 审计与"decode +36% 反常"诚实结论）；本模块补 **W4A16/AWQ/GPTQ** 与跨引擎对照预备。**不为补表格伪造不支持的 FP8/FP4 路径**。
+- **✅ Gate 0（2026-08-13，零成本源码+二进制探针，未下模型时完成）**：sm_120 上 AutoAWQ(min_cap 75)/AutoGPTQ(min_cap 60) 门槛均过；
+  三种 W4A16 配置（AWQ 带 zero-point / GPTQ 对称 / GPTQ desc_act）**全部选中 `MarlinLinearKernel`**；
+  二进制中 `marlin_gemm`（本版本已由 `gptq_marlin_gemm` 改名）与 `awq_marlin_repack` **在 sm_120 上真实 launch 成功**
+  —— 这一步是必需的，因为 `VLLM_USE_PRECOMPILED=1` 下「源码支持」≠「wheel 里有 sm_120 cubin」。
+  证据 `outputs/m18/gate0_w4a16_probe.json`、`scripts/m18_probe.py`。
+- **✅ Gate 0-b（2026-08-13，模型下载已获所有者授权）**：4 个官方 checkpoint（0.5B/1.5B × AWQ/GPTQ-Int4，共 4.0GB）
+  **加载 + 生成 smoke 全部 PASS**，日志确认走 `MarlinLinearKernel`。证据 `outputs/m18/gate0b_load_smoke_*.json`。
+- **⚠️ 已发现必须写死的隐藏变量**：AWQ/GPTQ checkpoint 的 `config.json` 声明 `torch_dtype: float16`，
+  而 M10 基线模型声明 `bfloat16`，两边都用 `dtype="auto"` 的话会把**量化效应与激活 dtype 混在一起**。
+  M18 设计阶段必须显式冻结激活 dtype（Gate 0 探针已验证 Marlin GEMM 接受 bf16 激活）。
+- **⬜ 未做**：实验设计冻结、正式对照实验、结论。
 
 ### M19 Speculative Decoding　✅　T+E+O（**N-gram 主线已闭环**；draft-model family 为 Optional / Future）
 

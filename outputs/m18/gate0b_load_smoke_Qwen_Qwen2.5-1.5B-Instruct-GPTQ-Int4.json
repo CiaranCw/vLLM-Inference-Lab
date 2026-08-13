@@ -1,0 +1,51 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct-GPTQ-Int4",
+  "started_at": "2026-08-13 15:06:24+0800",
+  "max_model_len": 2048,
+  "gpu_memory_utilization": 0.5,
+  "engine_build_s": 14.78,
+  "effective": {
+    "quantization": "auto_gptq",
+    "dtype": "torch.float16",
+    "hf_quant_config": {
+      "batch_size": 1,
+      "bits": 4,
+      "block_name_to_quantize": null,
+      "cache_block_outputs": true,
+      "damp_percent": 0.01,
+      "dataset": null,
+      "desc_act": false,
+      "exllama_config": {
+        "version": 1
+      },
+      "group_size": 128,
+      "max_input_length": null,
+      "model_seqlen": null,
+      "module_name_preceding_first_block": null,
+      "modules_in_block_to_quantize": null,
+      "pad_token_id": null,
+      "quant_method": "gptq",
+      "sym": true,
+      "tokenizer": null,
+      "true_sequential": true,
+      "use_cuda_fp16": false,
+      "use_exllama": true
+    }
+  },
+  "generate_s": 0.62,
+  "generations": [
+    {
+      "prompt": "The capital of France is",
+      "text": " Paris, and the capital of France is also the capital of which country? To determine the capital of France, we need to understand the concept of a capital city",
+      "n_tokens": 32,
+      "non_empty": true
+    },
+    {
+      "prompt": "用一句话解释什么是 KV cache：",
+      "text": "KV cache 是一种数据缓存技术，用于存储和管理键值对（Key-Value）数据。它通常用于缓存数据库中的数据，",
+      "n_tokens": 32,
+      "non_empty": true
+    }
+  ],
+  "PASS": true
+}

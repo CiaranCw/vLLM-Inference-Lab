@@ -1,0 +1,51 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct-GPTQ-Int4",
+  "started_at": "2026-08-13 15:04:40+0800",
+  "max_model_len": 2048,
+  "gpu_memory_utilization": 0.5,
+  "engine_build_s": 13.28,
+  "effective": {
+    "quantization": "auto_gptq",
+    "dtype": "torch.float16",
+    "hf_quant_config": {
+      "batch_size": 1,
+      "bits": 4,
+      "block_name_to_quantize": null,
+      "cache_block_outputs": true,
+      "damp_percent": 0.01,
+      "dataset": null,
+      "desc_act": false,
+      "exllama_config": {
+        "version": 1
+      },
+      "group_size": 128,
+      "max_input_length": null,
+      "model_seqlen": null,
+      "module_name_preceding_first_block": null,
+      "modules_in_block_to_quantize": null,
+      "pad_token_id": null,
+      "quant_method": "gptq",
+      "sym": true,
+      "tokenizer": null,
+      "true_sequential": true,
+      "use_cuda_fp16": false,
+      "use_exllama": true
+    }
+  },
+  "generate_s": 0.67,
+  "generations": [
+    {
+      "prompt": "The capital of France is",
+      "text": " Paris. It is the largest city in Europe and the second largest in the world. It is the capital of France, the country that is located in the north",
+      "n_tokens": 32,
+      "non_empty": true
+    },
+    {
+      "prompt": "用一句话解释什么是 KV cache：",
+      "text": "它是一种用于存储键值对的缓存系统。 KV（键值）缓存是一种用于存储键值对的缓存系统，它使用",
+      "n_tokens": 32,
+      "non_empty": true
+    }
+  ],
+  "PASS": true
+}

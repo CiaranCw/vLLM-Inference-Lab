@@ -1,0 +1,35 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct-AWQ",
+  "started_at": "2026-08-13 15:02:46+0800",
+  "max_model_len": 2048,
+  "gpu_memory_utilization": 0.5,
+  "engine_build_s": 14.89,
+  "effective": {
+    "quantization": "auto_awq",
+    "dtype": "torch.float16",
+    "hf_quant_config": {
+      "bits": 4,
+      "group_size": 128,
+      "modules_to_not_convert": null,
+      "quant_method": "awq",
+      "version": "gemm",
+      "zero_point": true
+    }
+  },
+  "generate_s": 80.27,
+  "generations": [
+    {
+      "prompt": "The capital of France is",
+      "text": " Paris. The capital of the United States is Washington, D. C. The capital of the United Kingdom is London. The capital of the United States is Washington",
+      "n_tokens": 32,
+      "non_empty": true
+    },
+    {
+      "prompt": "用一句话解释什么是 KV cache：",
+      "text": "____。\nA. 一个缓存，用于存储数据\nB. 一个缓存，用于存储数据的映射关系\nC. 一个",
+      "n_tokens": 32,
+      "non_empty": true
+    }
+  ],
+  "PASS": true
+}

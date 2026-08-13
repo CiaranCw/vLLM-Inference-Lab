@@ -1,0 +1,114 @@
+{
+  "probed_at": "2026-08-13 14:46:19+0800",
+  "purpose": "M18 W4A16 可行性 Gate 0",
+  "device": {
+    "device_name": "NVIDIA GeForce RTX 5080",
+    "capability_tuple": [
+      12,
+      0
+    ],
+    "capability_int": 120,
+    "torch_version": "2.11.0+cu130",
+    "torch_cuda": "13.0",
+    "torch_arch_list": [
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90",
+      "sm_100",
+      "sm_120"
+    ],
+    "sm120_in_torch_arch_list": true
+  },
+  "quant_config_gates": {
+    "AutoAWQ": {
+      "min_capability": 75,
+      "device_passes_gate": true
+    },
+    "AutoGPTQ": {
+      "min_capability": 60,
+      "device_passes_gate": true
+    }
+  },
+  "kernel_choice": {
+    "awq_w4a16_g128": {
+      "chosen_kernel": "MarlinLinearKernel",
+      "kernel_min_capability": 75,
+      "ok": true
+    },
+    "gptq_w4a16_g128_sym": {
+      "chosen_kernel": "MarlinLinearKernel",
+      "kernel_min_capability": 75,
+      "ok": true
+    },
+    "gptq_w4a16_g128_desc_act": {
+      "chosen_kernel": "MarlinLinearKernel",
+      "kernel_min_capability": 75,
+      "ok": true
+    }
+  },
+  "marlin_ops": {
+    "ops_present": {
+      "marlin_gemm": true,
+      "gptq_marlin_gemm": false,
+      "gptq_marlin_repack": true,
+      "awq_marlin_repack": true,
+      "machete_mm": true,
+      "gptq_gemm": true,
+      "awq_gemm": true
+    },
+    "smoke": {
+      "awq_marlin_repack": {
+        "ok": true,
+        "out_shape": [
+          16,
+          256
+        ],
+        "elapsed_ms": 273.36
+      },
+      "marlin_gemm": {
+        "ok": true,
+        "out_shape": [
+          16,
+          128
+        ],
+        "finite": true,
+        "elapsed_ms": 60.517,
+        "note": "只验证 kernel 能在 sm_120 上 launch 并产出有限值；未做数值正确性比对"
+      }
+    }
+  },
+  "verdict": {
+    "all_cases_have_kernel": true,
+    "chosen_kernels": {
+      "awq_w4a16_g128": "MarlinLinearKernel",
+      "gptq_w4a16_g128_sym": "MarlinLinearKernel",
+      "gptq_w4a16_g128_desc_act": "MarlinLinearKernel"
+    },
+    "binary_kernel_launch_ok": true,
+    "smoke_detail": {
+      "awq_marlin_repack": true,
+      "marlin_gemm": true
+    },
+    "conclusion": "GO：本机能选出 W4A16 kernel 且二进制可在 sm_120 上真实 launch"
+  },
+  "download_candidates": {
+    "note": "探针通过后为申请授权而查询（HF API，未下载任何权重）",
+    "local_baselines_already_present": {
+      "Qwen/Qwen2.5-0.5B-Instruct": "954 MB（M10 用的就是它）",
+      "Qwen/Qwen2.5-1.5B-Instruct": "2.9 GB"
+    },
+    "candidates_gb": {
+      "Qwen/Qwen2.5-0.5B-Instruct-AWQ": 0.74,
+      "Qwen/Qwen2.5-0.5B-Instruct-GPTQ-Int4": 0.47,
+      "Qwen/Qwen2.5-1.5B-Instruct-AWQ": 1.63,
+      "Qwen/Qwen2.5-1.5B-Instruct-GPTQ-Int4": 1.16
+    },
+    "disk_free_gb": 528
+  },
+  "limitations": [
+    "本探针只证明 kernel 能在 sm_120 上 launch 且输出有限值；**未验证数值正确性**——那要在 M18 正式实验里用 BF16 基线做输出比对（本就是计划内实验）。",
+    "未验证真实 AWQ/GPTQ checkpoint 的加载路径（config 解析、权重 repack、scale 传递），那必须有真实模型才能测。",
+    "machete_mm 虽在二进制中，但本机选中的是 MarlinLinearKernel（Machete 面向 Hopper）。"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct-AWQ",
+  "started_at": "2026-08-13 15:04:58+0800",
+  "max_model_len": 2048,
+  "gpu_memory_utilization": 0.5,
+  "engine_build_s": 13.89,
+  "effective": {
+    "quantization": "auto_awq",
+    "dtype": "torch.float16",
+    "hf_quant_config": {
+      "bits": 4,
+      "group_size": 128,
+      "modules_to_not_convert": null,
+      "quant_method": "awq",
+      "version": "gemm",
+      "zero_point": true
+    }
+  },
+  "generate_s": 67.27,
+  "generations": [
+    {
+      "prompt": "The capital of France is",
+      "text": " Paris. Paris is a city in France. Paris is a city in the Île-de-France region. Paris is a city in the north of France.",
+      "n_tokens": 32,
+      "non_empty": true
+    },
+    {
+      "prompt": "用一句话解释什么是 KV cache：",
+      "text": "KV cache 是一种缓存技术，它将键值对（Key-Value）存储在内存中，以提高数据访问速度。它通过将",
+      "n_tokens": 32,
+      "non_empty": true
+    }
+  ],
+  "PASS": true
+}
