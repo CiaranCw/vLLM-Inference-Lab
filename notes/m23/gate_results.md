@@ -148,3 +148,41 @@ capital of France 两侧都答 Paris 只在 "third/second largest" 分叉；张�
 → **判定**：属**贪心解码下的数值分歧**（与 M5/M19 先例一致），**不是正确性破坏**，
 **optimized lane 可以继续**。但 **exact-match 2/6 必须随所有 V-O 结论一起呈现**，
 且 V-O 与 V-E 的输出不可互相替代做正确性论证。
+
+
+---
+
+## V-ctr correctness preflight（2026-08-13）　✅ PASS
+
+**为什么必须单独做**：host 上的 V-O smoke **不能替代** —— V-host 与 V-ctr 的 vLLM/software stack 不同
+（host pinned `ee0da84` vs 容器内 **`0.24.0+092c4842.dev`**）。
+输入复用 `outputs/m23/preflight_inputs.json` 里**同一份 6 条 token ids**（host 侧 tokenize 一次落盘，V/T 两侧共用）。
+
+| 项 | 结果 |
+|---|---|
+| 硬失败 | **无**（4 次独立容器进程；非空、长度精确 64、**logprob 无 NaN/Inf**、无 runtime error） |
+| **V-E 生效配置** | `cudagraph_mode=NONE`，`compilation_mode=0` |
+| **V-O 生效配置** | `cudagraph_mode=FULL_AND_PIECEWISE`，`compilation_mode=3` |
+| **V-E within-lane repeatability** | within-process **6/6**、across-process **6/6** |
+| **V-O within-lane repeatability** | within-process **6/6**、across-process **6/6** |
+| 跨 lane exact-match（诊断，**不阻塞**） | **1/6 = 16.7%**（host 侧为 2/6） |
+
+**人工检视 5 处分歧**：全部连贯、切题、无退化 → **无 functional degradation**。
+
+### repeatability 带来的一个更强判断
+
+两条 lane **各自 across-process 都是 6/6 完全确定性**，
+所以跨 lane 的 1/6 **不是随机抖动**，而是两条 execution path 之间**系统性、可复现的数值差异**。
+
+→ **措辞纪律（随所有 V-O 结论保留）**：只能说「**未观察到明显 functional degradation**」；
+**不得**升级成「两条 execution path 数值等价」——
+本次证据恰恰表明它们**不等价**（各自确定性、但互不相同）。
+
+### 两次 harness 缺陷（都不是引擎/硬件问题，如实记录）
+
+1. **`IncompleteSnapshotError`**：容器内较新的 `huggingface_hub` 在 offline 模式下做完整快照校验，
+   而本地缓存缺 3 个**纯文档**文件（`.gitattributes`/`LICENSE`/`README.md`），权重与 tokenizer 齐全。
+   → 改为**直接指向容器内本地 snapshot 路径**，绕过 hub 解析：既不联网（守住「不自动下载模型」），
+   又保证 V/T 两侧加载的是**同一份字节**。
+2. **`JSONDecodeError: Extra data`**：vLLM 的 tqdm 进度条用 `\r` 刷新，捕获后与结果行粘连。
+   → `use_tqdm=False` + `TQDM_DISABLE=1` + 解析改用 `raw_decode`。
