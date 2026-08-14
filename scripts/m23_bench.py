@@ -2,7 +2,9 @@
 """M23 · L1 正式跨引擎对照：**2×2 execution-mode**（V-E / V-O / T-E / T-O）。
 
 设计冻结 v4 §5.0。硬约束：
-  - 正式结论**分别报告** `T-E vs V-E` 与 `T-O vs V-O`；**不得跨 lane 相减**；
+  - 正式跨引擎比较只允许 `T-E vs V-E` 与 `T-O vs V-O`；
+    允许 `V-O vs V-E` / `T-O vs T-E` 作为同引擎 execution-mode ablation；
+    **禁止交叉 lane**（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup；
     **任一差值都不得称为「纯 engine intrinsic speedup」**。
   - **Primary metrics 才承担正式结论**：端到端请求延迟 / 请求吞吐 / 输出 token 吞吐 /
     **总 GPU 显存** / 冷启动时间。engine 内部指标只用于解释。

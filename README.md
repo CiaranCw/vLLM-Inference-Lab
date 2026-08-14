@@ -424,7 +424,9 @@ batch↔prompt confounding。正确性：111/126 exact match；batch-shape contr
 **两侧从 optimized lane 获益幅度接近**（**2.85×** vs **2.97×**）——这正说明只跑一条 lane 会把
 「有没有开图优化」混进「谁的引擎更快」里。
 
-**表述纪律（写进脚本与文档）**：正式结论**只在 lane 内做**，**禁止跨 lane 相减**；
+**表述纪律（写进脚本与文档）**：正式跨引擎比较只允许 **T-E vs V-E、T-O vs V-O**；
+允许 **V-O vs V-E、T-O vs T-E** 作为同引擎 execution-mode ablation；
+**禁止交叉 lane**（T-E vs V-O / T-O vs V-E）做 engine speedup；
 **任一差值都不得称为「纯 engine intrinsic speedup」**（OFF lane 仍混着两套 runtime 的实现差异，
 ON lane 还叠加了两侧优化栈内容本就不同）；本对照是 **stack-vs-stack，不是 kernel 级 A/B**。
 
@@ -438,8 +440,13 @@ TRT 的 `free_gpu_memory_fraction` 是可用显存中给 KV 的占比），所�
 「各自这样设置下的峰值差」。
 
 **必须随 V-O/T-O 结论保留的 limitation**：V-E 与 V-O 各自 across-process **6/6 确定性**，
-但跨 lane exact-match 仅 **1/6** → 两条 execution path **不数值等价**；
+但同引擎 V-O vs V-E exact-match 仅 **1/6** → 两条 execution path **不数值等价**；
 人工检视分歧文本均连贯无退化，故只能说「**未观察到明显 functional degradation**」。
 
-**留痕**：[`results.md`](notes/m23/results.md) · [`cross_engine_plan.md`](notes/m23/cross_engine_plan.md)（设计冻结 v4） ·
+**跨引擎 generation consistency**（6 条固定 token-id，不扩成质量 benchmark）：
+`T-E vs V-E` exact **2/6**、`T-O vs V-O` **1/6**；mismatch 只记 **numerical divergence**，
+**不得直接判为 correctness failure**。TRT fibonacci 因 EOS 停在 45 token，且是 vLLM 的真前缀。
+
+**留痕**：[`results.md`](notes/m23/results.md) · [`cross_engine_plan.md`](notes/m23/cross_engine_plan.md)（设计冻结 v5） ·
 [`gate_results.md`](notes/m23/gate_results.md) · `outputs/m23/*` · `scripts/m23_*.py`。**零产品源码改动。**
+L2/L3 **明确不做**；暂不追加 kernel profiling。

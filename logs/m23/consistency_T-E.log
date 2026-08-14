@@ -1,0 +1,58 @@
+
+=============
+== PyTorch ==
+=============
+
+NVIDIA Release 26.05 (build 313520559)
+PyTorch Version 2.12.0a0+5aff392
+Container image Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2014-2024 Facebook Inc.
+Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
+Copyright (c) 2012-2014 Deepmind Technologies    (Koray Kavukcuoglu)
+Copyright (c) 2011-2012 NEC Laboratories America (Koray Kavukcuoglu)
+Copyright (c) 2011-2013 NYU                      (Clement Farabet)
+Copyright (c) 2006-2010 NEC Laboratories America (Ronan Collobert, Leon Bottou, Iain Melvin, Jason Weston)
+Copyright (c) 2006      Idiap Research Institute (Samy Bengio)
+Copyright (c) 2001-2004 Idiap Research Institute (Ronan Collobert, Samy Bengio, Johnny Mariethoz)
+Copyright (c) 2015      Google Inc.
+Copyright (c) 2015      Yangqing Jia
+Copyright (c) 2013-2016 The Caffe contributors
+All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+GOVERNING TERMS: The software and materials are governed by the NVIDIA Software License Agreement
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement/)
+and the Product-Specific Terms for NVIDIA AI Products
+(found at https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products/).
+
+Skipping import of cpp extensions due to incompatible torch version 2.12.0a0+5aff3928d8.nv26.05 for torchao version 0.15.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+[TensorRT-LLM] TensorRT LLM version: 1.3.0rc24
+[08/14/2026-02:36:54] [TRT-LLM] [I] [llmapi] Using LLM with PyTorch backend
+[08/14/2026-02:36:54] [TRT-LLM] [W] [llmapi] Using default gpus_per_node: 1
+[08/14/2026-02:36:54] [TRT-LLM] [I] [llmapi] neither checkpoint_format nor checkpoint_loader were provided, checkpoint_format will be set to HF.
+`torch_dtype` is deprecated! Use `dtype` instead!
+[33;20mrank 0 using MpiPoolSession to spawn MPI processes
+[0mSkipping import of cpp extensions due to incompatible torch version 2.12.0a0+5aff3928d8.nv26.05 for torchao version 0.15.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+Multiple distributions found for package optimum. Picked distribution: optimum
+Multiple distributions found for package modelopt. Picked distribution: nvidia-modelopt
+[TensorRT-LLM] TensorRT LLM version: 1.3.0rc24
+[TRT-LLM] [I] [runtime][RANK 0] Refreshed the MPI local session
+/usr/local/lib/python3.12/dist-packages/tensorrt_llm/serve/openai_protocol.py:184: UserWarning: Field name "schema" in "ResponseFormat" shadows an attribute in parent "OpenAIBaseModel"
+  class ResponseFormat(OpenAIBaseModel):
+`torch_dtype` is deprecated! Use `dtype` instead!
+Model init total -- 0.78s
+[08/14/2026-02:37:07] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[08/14/2026-02:37:07] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[TRT-LLM] [I] [batchmgr][RANK 0] Max KV cache blocks per sequence: 64 [window size=2048], tokens per block=32, primary blocks=129, secondary blocks=0, max sequence length=2048
+[TRT-LLM] [I] [batchmgr][RANK 0] Number of tokens per block: 32.
+[TRT-LLM] [I] [batchmgr][RANK 0] [MemUsageChange] Allocated 0.05 GiB for max tokens in paged KV cache (4128).
+[08/14/2026-02:37:48] [TRT-LLM] [E] [_utils] Error querying confidential compute state: Not Supported
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 33564672 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33564672 bytes to 33597184 bytes
+[TRT-LLM] [I] [batchmgr][RANK 0] Max KV cache blocks per sequence: 64 [window size=2048], tokens per block=32, primary blocks=21461, secondary blocks=0, max sequence length=2048
+[TRT-LLM] [I] [batchmgr][RANK 0] Number of tokens per block: 32.
+[TRT-LLM] [I] [batchmgr][RANK 0] [MemUsageChange] Allocated 7.86 GiB for max tokens in paged KV cache (686752).
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 0 bytes to 33564672 bytes
+[TRT-LLM] [W] [thop][RANK 0] Attention workspace size is not enough, increase the size from 33564672 bytes to 33597184 bytes
+M23_CONS {"group": "T-E", "engine": "tensorrt_llm", "lane": "E", "engine_version": "1.3.0rc24", "build_s": 59.122, "effective": {"dtype": "bfloat16", "backend": "pytorch", "cuda_graph_config": null}, "generations": [{"text": " Paris. It is the largest city in Europe and the second largest city in the world. It is located in the south of France, on the banks of the Seine River. It is situated on the Île de la Cité, which is a small island in the center of the city. The city is surrounded", "token_ids": [12095, 13, 1084, 374, 279, 7772, 3283, 304, 4505, 323, 279, 2086, 7772, 3283, 304, 279, 1879, 13, 1084, 374, 7407, 304, 279, 9806, 315, 9625, 11, 389, 279, 13959, 315, 279, 1345, 482, 10948, 13, 1084, 374, 30083, 389, 279, 59108, 273, 409, 1187, 356, 12815, 11, 892, 374, 264, 2613, 12922, 304, 279, 4126, 315, 279, 3283, 13, 576, 3283, 374, 22865], "n_tokens": 64}, {"text": " A cache is a temporary storage area in a computer's memory where data is temporarily stored while it is being processed. A KV cache is a type of cache that stores key-value pairs, where the key is the data and the value is the data's value. The data is stored in a fast, random-access memory (", "token_ids": [362, 6500, 374, 264, 13340, 5819, 3082, 304, 264, 6366, 594, 4938, 1380, 821, 374, 27092, 9768, 1393, 432, 374, 1660, 15233, 13, 362, 84648, 6500, 374, 264, 943, 315, 6500, 429, 10533, 1376, 19083, 13530, 11, 1380, 279, 1376, 374, 279, 821, 323, 279, 897, 374, 279, 821, 594, 897, 13, 576, 821, 374, 9768, 304, 264, 4937, 11, 4194, 42156, 4938, 320], "n_tokens": 64}, {"text": "张量并行是一种并行计算方法，它将张量分解成多个子张量，然后分别进行并行计算。这种计算方法可以提高计算效率，特别是在处理大规模数据集时。例如，张量并行可以用于图像处理、机器学习和深度学习等场景。在这些", "token_ids": [86341, 32757, 62926, 22243, 101158, 62926, 22243, 100768, 39907, 3837, 99652, 44063, 86341, 32757, 107799, 12857, 101213, 44729, 86341, 32757, 3837, 101889, 101127, 71817, 62926, 22243, 100768, 1773, 100137, 100768, 39907, 73670, 100627, 100768, 101991, 3837, 111625, 54542, 105483, 20074, 42067, 13343, 1773, 77557, 3837, 86341, 32757, 62926, 22243, 73670, 100751, 107553, 54542, 5373, 102182, 100134, 33108, 102217, 100134, 49567, 102122, 1773, 18493, 100001], "n_tokens": 64}, {"text": " 21. The next number in the sequence is 21. The next number in the sequence is 34. The next number in the sequence is 55. The next number in the sequence is 89. The next number in the sequence is 144. The next number in", "token_ids": [220, 17, 16, 13, 576, 1790, 1372, 304, 279, 8500, 374, 220, 17, 16, 13, 576, 1790, 1372, 304, 279, 8500, 374, 220, 18, 19, 13, 576, 1790, 1372, 304, 279, 8500, 374, 220, 20, 20, 13, 576, 1790, 1372, 304, 279, 8500, 374, 220, 23, 24, 13, 576, 1790, 1372, 304, 279, 8500, 374, 220, 16, 19, 19, 13, 576, 1790, 1372, 304], "n_tokens": 64}, {"text": " fibonacci(n-1) + fibonacci(n-2)\n\ndef main():\n    n = int(input(\"Enter the number of terms: \"))\n    print(fibonacci(n))\n\nif __name__ == \"__main__\":\n    main()", "token_ids": [75698, 1445, 12, 16, 8, 488, 75698, 1445, 12, 17, 692, 750, 1887, 3932, 262, 308, 284, 526, 5384, 445, 6269, 279, 1372, 315, 3793, 25, 40964, 262, 1173, 955, 579, 39345, 1445, 4390, 333, 1304, 606, 563, 621, 13265, 3817, 21082, 262, 1887, 368], "n_tokens": 45}, {"text": "中国的哪个省份？\nA. 陕西省\nB. 山西省\nC. 河北省\nD. 云南省\n答案:\nC\n\n在进行高处作业时，为了确保安全，应采取哪些措施？\nA. 穿戴好安全帽\nB. 系好安全", "token_ids": [105538, 104673, 107997, 94432, 32, 13, 220, 108586, 198, 33, 13, 79621, 109, 101729, 198, 34, 13, 6567, 110, 111, 48309, 65770, 198, 35, 13, 220, 109258, 198, 102349, 510, 34, 271, 18493, 71817, 44636, 44290, 104147, 13343, 3837, 100012, 103944, 99464, 3837, 50511, 103975, 102224, 101082, 94432, 32, 13, 10236, 102, 123, 100469, 52801, 99464, 102663, 198, 33, 13, 10236, 36097, 52801, 99464], "n_tokens": 64}]}

@@ -126,7 +126,7 @@ prefill 计算压力（粗粒度 GPU util 66%）、KV 受限（kv_usage→1 **�
 
 ---
 
-# 项目 D · Cross-Engine Optimization　🟢 **核心已闭合**（M23 L1，2026-08-13）
+# 项目 D · Cross-Engine Optimization　🟢 **核心已闭合**（M23 L1 FROZEN，2026-08-14）
 
 **问题**：同模型同硬件下，vLLM 与 TensorRT-LLM 的工程取舍差在哪？量化与投机解码在两个引擎上的收益是否一致？
 
@@ -146,8 +146,10 @@ prefill 计算压力（粗粒度 GPU util 66%）、KV 受限（kv_usage→1 **�
 （v1.3.0rc20 为最后一个支持版本），所以「vLLM 动态 vs TRT-LLM 预编译」这个对立面**不再成立** ——
 真正的问题变成「同为 PyTorch runtime，为何仍是两套引擎」。见 `notes/m23/backend_migration.md`。
 
-**⚪ 仍未做**：跨引擎**输出一致性**比对、TRT-LLM 在线服务（L2）、Triton 集成（L3）、
+**⚪ 仍未做（本轮明确不做）**：TRT-LLM 在线服务（L2）、Triton 集成（L3）、
 Transformers 基线（L4）、kernel 级 profiling（故对「为何更慢」**无机制归因**）。
+跨引擎输出一致性已用 6 条固定输入做过 divergence 记录（exact 2/6 与 1/6），
+**只记 numerical divergence，不是质量 benchmark**。
 
 **已有的相邻能力（可在面试中说明）**：M20 已经把 **Triton + vLLM backend** 跑通并做过同镜像对照，
 所以 D 缺的不是 Triton 部署能力，而是 **TRT-LLM 引擎本身与跨引擎 benchmark 方法**。
@@ -188,7 +190,7 @@ profiler 的结论以 JSON 指标呈现。因此实际用于讲述的 5 张图�
 | 监控栈与故障定位 | 🟢 已验证 | M21 |
 | **多卡 Tensor Parallel** | 🟢 已验证（4×H20） | M22 |
 | **PP / DP / EP / CP / P-D 分离** | ⚪ **仅设计** | 阻塞于多卡机时 |
-| **TensorRT-LLM 与跨引擎对照** | 🟢 **已验证**（M23 L1） | 2×2 execution-mode，CI 全排除 0；⚪ 在线服务/Triton 集成/输出一致性比对未做 |
+| **TensorRT-LLM 与跨引擎对照** | 🟢 **已验证**（M23 L1 FROZEN） | 2×2 execution-mode，CI 全排除 0；generation consistency 2/6·1/6 记 divergence；⚪ L2/L3/kernel profiling 未做 |
 | 长上下文（Ring Attention 等） | ⚪ **仅理论** | M24 未做 |
 | 模型压缩（蒸馏/剪枝/低秩） | ⚪ **仅理论**（推理岗只需 T） | M25 未做 |
 | Kubernetes / 多副本 / 跨机 SLA | ⚪ **未做** | 不在本 lab 范围 |

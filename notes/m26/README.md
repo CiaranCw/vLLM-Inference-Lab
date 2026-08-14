@@ -12,6 +12,6 @@
 | A · vLLM Trace & Optimization Lab | 🟢 完整 | — |
 | C · Production Serving Stack | 🟢 完整（四要素齐全） | — |
 | B · Distributed Inference Lab | 🟢 TP ／ ⚪ PP·DP·EP | **多卡机时**（非模块依赖） |
-| D · Cross-Engine Optimization | ⚪ **未完成** | **M23 TensorRT-LLM** |
+| D · Cross-Engine Optimization | 🟢 **核心已闭合（L1）** | L2–L4 / kernel profiling 明确不做 |
 
 第一阶段的表达见 [`../m16/interview_and_presentation.md`](../m16/interview_and_presentation.md)。

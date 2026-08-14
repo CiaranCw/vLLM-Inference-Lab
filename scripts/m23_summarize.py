@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """M23 · 离线汇总（不占 GPU、不 import 引擎）。
 
-硬约束（冻结稿 v4 §5.0.2）：
-  - 正式对照**只在 lane 内做**：`T-E vs V-E` 与 `T-O vs V-O`；**禁止跨 lane 相减**。
+硬约束（冻结稿 v4/v5 §5.0.2）：
+  - 正式跨引擎比较只允许同 lane：`T-E vs V-E` 与 `T-O vs V-O`。
+  - 允许 `V-O vs V-E`、`T-O vs T-E` 作为**同引擎 execution-mode ablation**。
+  - **禁止交叉 lane**（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup。
   - 差值**不得**称为「纯 engine intrinsic speedup」。
   - 显存**只报 total**（host nvidia-smi 整卡口径），分项 `unavailable`，禁止残差推导。
 
@@ -124,14 +126,16 @@ def main():
         "effective_configs": {g: raws[g]["effective"] for g in raws},
         "lane_comparisons": comps,
         "wording_discipline": [
-            "正式结论**分别报告** T-E vs V-E 与 T-O vs V-O；**禁止跨 lane 相减**。",
+            "正式跨引擎比较只允许 T-E vs V-E 与 T-O vs V-O。",
+            "允许 V-O vs V-E、T-O vs T-E 作为同引擎 execution-mode ablation。",
+            "**禁止交叉 lane**（T-E vs V-O / T-O vs V-E）做 engine speedup。",
             "任一差值**不得**称为「纯 engine intrinsic speedup」——"
             "OFF lane 的差值仍混着两套 runtime 的实现差异；ON lane 还叠加了两侧优化栈内容本就不同。",
             "本对照是 **stack-vs-stack**，不是 kernel 级 A/B：两个容器的 CUDA/PyTorch/驱动栈与"
             "引擎版本均不同（vLLM 0.24.0+092c4842.dev / TRT-LLM 1.3.0rc24）。",
             "显存只报整卡 total；分项 unavailable（TRT executor 在独立 runtime，主进程 torch 计数为 0）。",
             "V-O 的一切结论必须带 limitation：V-E/V-O 各自 across-process 6/6 确定性，"
-            "但跨 lane exact-match 仅 1/6 —— 两条 execution path **不数值等价**，"
+            "但同引擎 V-O vs V-E exact-match 仅 1/6 —— 两条 execution path **不数值等价**，"
             "只能说未观察到明显 functional degradation。",
         ],
     }

@@ -391,16 +391,18 @@
 
 ## 阶段 H · 跨引擎对比（T+E+O）
 
-### M23 TensorRT-LLM 与跨引擎对照　✅　**L1 COMPLETE**（2026-08-13）　（设计冻结 v4 + 结论见 [`notes/m23/`](notes/m23/)）
+### M23 TensorRT-LLM 与跨引擎对照　✅　**L1 FROZEN**（2026-08-14）　（设计冻结 v5 + 结论见 [`notes/m23/`](notes/m23/)）
 - **Gate 0/1/2 全 PASS**：TRT-LLM `1.3.0rc24` 在本机 **sm_120 上可用**（真实生成，无 kernel 缺失报错）；接受 token ids 输入故可与 vLLM 严格对齐。
-- **2×2 execution-mode 对照**（所有者决策）：OFF lane 与 ON lane 分别报告，**禁止跨 lane 相减**。
+- **2×2 execution-mode 对照**（所有者决策）：OFF / ON 两条 lane 分别报告。
+  - 正式跨引擎比较只允许 `T-E vs V-E`、`T-O vs V-O`；允许同引擎 `V-O vs V-E` / `T-O vs T-E` 作为 execution-mode ablation；**禁止交叉 lane 做 engine speedup**。
   - `T-E vs V-E`：单请求 **+45.0%**、batch **+29.9%**（TRT 更慢，CI 排除 0）
   - `T-O vs V-O`：单请求 **+20.1%**、batch **+24.7%**（TRT 更慢，CI 排除 0）
   - 冷启动 TRT **60.5–60.8s** vs vLLM **15.6/26.6s**；输出吞吐 vLLM 6028→17200、TRT 4642→13793 tok/s
 - **两侧 optimized 收益接近**：vLLM **2.85×**、TRT **2.97×** —— 只跑一条 lane 会把「有没有开图优化」混进「谁更快」。
 - **交叉验证**：vLLM 的 2.85× 与 M6 的 2.5–2.85× 吻合；V-E 单 token ~7.8ms 与 M7 的 ~7ms CPU 提交地板吻合。
-- **纪律**：stack-vs-stack 非 kernel 级 A/B；任一差值**不得**称 intrinsic engine speedup；显存**只报整卡**、分项 unavailable、禁止残差推导。
-- **⬜ 未做**：跨引擎输出一致性比对、L2 在线服务、L3 Triton 集成、L4 Transformers 基线、kernel 级 profiling（故无机制归因）、模型规模/shape/并发度扫描。
+- **跨引擎 generation consistency**（6 条固定 token-id）：`T-E vs V-E` exact **2/6**、`T-O vs V-O` **1/6**；mismatch 只记 numerical divergence，**不得直接判为 correctness failure**。
+- **纪律**：stack-vs-stack 非 kernel 级 A/B；任一跨引擎差值**不得**称 intrinsic engine speedup；显存**只报整卡**、分项 unavailable、禁止残差推导。
+- ⬜ **明确不做**：L2 在线服务、L3 Triton 集成、L4 Transformers 基线、kernel 级 profiling（故无机制归因）、模型规模/shape/并发度扫描。
 
 > **⚠️ 上游事实修正（2026-08-13，所有者指出）**：本节下面两条原文写于 TensorRT backend 尚存的时期，**前提已失效**：
 > **TensorRT engine backend 已被上游移除，PyTorch backend 成为唯一执行后端**；
@@ -433,6 +435,7 @@
 ## 阶段 I · 长上下文与解耦（T+E+O+H，★资源门控）
 
 ### M24 Context Parallel / Ring Attention / Disaggregated P-D　⬜　T+E+O+H
+- **门控**：★多卡。**本轮保留到下一次有多卡机时再做**，不用单卡模拟后写成落地。
 - **CP**：序列/上下文维切分、每卡持哪部分 token、Attention 为何跨卡换 K/V、通信随上下文长度变化、prefill vs decode 并行策略差异（多卡才 E/H）。
 - **Ring Attention**：标准 Attention 数据依赖、序列切分、环形传 K/V block、online softmax、通信计算重叠、causal mask 分块处理；路径 论文→PyTorch reference→读开源实现→多卡→Nsight 看 P2P/NCCL 与计算重叠。**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention**。
 - **P/D 分离**（`docs/features/disagg_prefill.md`）：prefill compute-bound / decode bandwidth-bound、为何适合不同 GPU 配置、KV 如何跨实例传输、**传输延迟何时抵消分离收益**、routing/backpressure/容错；至少两实例，资源隔离最好多卡。产出含 Prefill/Decode worker + Connector/KV transfer + Router + TTFT/ITL/throughput@latency 对照。
@@ -440,8 +443,9 @@
 ## 阶段 J · 模型压缩（岗位定向；推理岗多为 T，压缩岗 T+E+O）
 
 ### M25 知识蒸馏 / 结构化剪枝 / 低秩分解　⬜　T（推理岗）/ T+E+O（压缩岗）
-- **推理系统岗**：**T** 即可——蒸馏(teacher/student、logit/feature/sequence、温度、如何降推理成本)、剪枝(非结构化稀疏为何不必然加速、结构化剪 head/channel/layer、硬件/kernel 能否利用)、低秩(SVD、秩与误差、大 GEMM→两小 GEMM)。
+- **推理系统岗**：**T** 即可（本轮目标）——见 [`notes/m25/`](notes/m25/)。蒸馏(teacher/student、logit/feature/sequence、温度、如何降推理成本)、剪枝(非结构化稀疏为何不必然加速、结构化剪 head/channel/layer、硬件/kernel 能否利用)、低秩(SVD、秩与误差、大 GEMM→两小 GEMM)。
 - **压缩/算法岗**：T+E(+O)——真做小模型实验并在真实引擎 benchmark，**验证 wall-clock 加速**（模型变小≠推理加速；理论 FLOPs 降≠GPU 延迟降）。**LoRA（低秩更新/Adapter）≠ 对原权重做低秩分解压缩，勿混**。
+- **本轮不做 E**：不下载新模型、不跑压缩实验，除非所有者另行授权。
 
 ## 百亿 / 千亿落地门槛（诚实边界，勿夸大）
 - **单卡可积累（可迁移基础）**：Scheduler/CB、PagedAttention/KV、小模型高并发、压测方法、profiler、量化、spec decode、Triton 单机、TRT-LLM 单机、故障定位与监控。
@@ -490,7 +494,7 @@
   **不把「量化 + spec decode 两条腿」包装成完整的跨引擎项目**。
 - **核心图如实说明**：原设想的「请求时序 / CB / KV block 生命周期」在本 lab 里的证据是 **trace 日志与不变量、不是图**，
   **没有为了凑图而画图**；实际选了 5 张结论价值最高的（M6 decode / M21 瓶颈签名 / M21 容量 / M18 量化 / M22 TP）。
-- **⬜ 待 M23 完成后需回填**：项目 D 的「已就位/缺失」表与能力边界总表中的 TRT-LLM 行。
+- **✅ 已随 M23 L1 回填**：项目 D 核心已闭合（2×2 + generation consistency）；L2/L3/kernel profiling 明确不做。
 
 ## 时间不足时的最低五项（优先级铁律的落地）
 1. vLLM Trace & Optimization Lab（=项目 A / 第一阶段）；2. 一次多卡 TP 实验（M22）；3. 一次 Triton+vLLM 部署（M20）；4. 一次量化或 spec decode 对照（M18/M19）；5. 一次开源贡献（M13）。**这五项比"每个名词都看过一点"更有可验证的求职竞争力。**

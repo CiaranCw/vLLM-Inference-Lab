@@ -1959,6 +1959,121 @@ def check_m18(rep):
                f"差距来自未被量化的 embed/lm_head（{embed:.0f} MiB，占基线 {100 * embed / base_tot:.0f}%）")
 
 
+def check_m23(rep):
+    """M23 L1 不变量：2×2 性能对照 + 跨引擎 generation consistency。"""
+    M = "m23"
+    scripts = [
+        "m23_gate.py", "m23_vctr_preflight.py", "m23_vo_correctness.py",
+        "m23_bench.py", "m23_summarize.py", "m23_figures.py",
+        "m23_cross_engine_consistency.py",
+    ]
+    missing, broken = [], []
+    with tempfile.TemporaryDirectory(prefix="m23_pyc_") as tmpd:
+        for name in scripts:
+            path = _p("scripts", name)
+            if not os.path.exists(path):
+                missing.append(name)
+                continue
+            try:
+                py_compile.compile(path, cfile=os.path.join(tmpd, name + "c"), doraise=True)
+            except py_compile.PyCompileError as e:
+                broken.append(f"{name}: {str(e).strip().splitlines()[-1][:120]}")
+    rep.check(M, "m23_scripts_compile", not missing and not broken,
+              f"缺失 {missing}；编译失败 {broken}",
+              f"{len(scripts)} 个 M23 脚本全部 py_compile 通过")
+
+    cons = load_json("outputs/m23/cross_engine_consistency.json")
+    if not cons:
+        rep.pending(M, "m23_consistency_artifact",
+                    "缺 outputs/m23/cross_engine_consistency.json")
+        return
+
+    for g in ("V-E", "V-O", "T-E", "T-O"):
+        raw = load_json(f"outputs/m23/raw/consistency_{g}.json")
+        gens = ((raw or {}).get("record") or {}).get("generations") or []
+        rep.check(M, f"m23_consistency_raw[{g}]",
+                  raw is not None and len(gens) == 6
+                  and all((x.get("text") or "").strip() for x in gens),
+                  f"{g} raw 缺失或不足 6 条非空生成",
+                  f"{g} 6/6 非空")
+
+    fs = cons.get("functional_sanity") or {}
+    rep.check(M, "m23_functional_sanity_pass", fs.get("PASS") is True,
+              f"functional_sanity.PASS={fs.get('PASS')} reasons={fs.get('hard_fail_reasons')}",
+              "无崩溃/空输出/超长")
+    disc = cons.get("discipline") or {}
+    rep.check(M, "m23_mismatch_not_correctness_failure",
+              "NOT correctness" in str(disc.get("mismatch_is", "")),
+              f"discipline.mismatch_is 未标明非 correctness failure：{disc.get('mismatch_is')}",
+              str(disc.get("mismatch_is")))
+
+    ce = cons.get("cross_engine") or {}
+    rep.check(M, "m23_cross_engine_pairs_only_same_lane",
+              set(ce) == {"T-E vs V-E", "T-O vs V-O"},
+              f"cross_engine keys 应为 T-E vs V-E / T-O vs V-O，实得 {list(ce)}",
+              "仅 T-E vs V-E、T-O vs V-O")
+    forbidden = disc.get("forbidden_for_engine_speedup") or []
+    rep.check(M, "m23_no_cross_lane_engine_speedup_in_artifact",
+              "T-E vs V-O" in forbidden and "T-O vs V-E" in forbidden
+              and "T-E vs V-O" not in ce and "T-O vs V-E" not in ce,
+              f"交叉 lane 纪律未落盘：forbidden={forbidden} keys={list(ce)}",
+              "交叉 lane 未进入正式对照")
+
+    off, on = ce.get("T-E vs V-E") or {}, ce.get("T-O vs V-O") or {}
+    rep.check(M, "m23_off_lane_exact_2_of_6",
+              (off.get("exact_match") or {}).get("matched") == 2
+              and (off.get("exact_match") or {}).get("total") == 6,
+              f"T-E vs V-E exact={off.get('exact_match')}",
+              "2/6")
+    rep.check(M, "m23_on_lane_exact_1_of_6",
+              (on.get("exact_match") or {}).get("matched") == 1
+              and (on.get("exact_match") or {}).get("total") == 6,
+              f"T-O vs V-O exact={on.get('exact_match')}",
+              "1/6")
+
+    p4 = next((r for r in (off.get("per_prompt") or []) if r.get("prompt_index") == 4), None)
+    rep.check(M, "m23_trt_eos_early_stop_is_prefix",
+              p4 is not None and p4.get("T-E_n_tokens") == 45
+              and p4.get("V-E_n_tokens") == 64
+              and p4.get("shorter_is_prefix_of_longer") is True
+              and p4.get("common_prefix_len") == 45,
+              f"prompt4 不是「TRT EOS 前缀」形态：{p4}",
+              "T-E prompt4 = 45 token，且是 V-E 的前缀")
+
+    same = cons.get("same_engine_ablation") or {}
+    vo_ve = (same.get("V-O vs V-E") or {}).get("exact_match") or {}
+    pf = load_json("outputs/m23/vctr_preflight.json") or {}
+    pf_cl = (pf.get("cross_lane_exact_match") or {})
+    rep.check(M, "m23_vo_ve_matches_vctr_preflight",
+              vo_ve.get("matched") == 1 and vo_ve.get("total") == 6
+              and pf_cl.get("matched") == 1 and pf_cl.get("total") == 6,
+              f"V-O vs V-E={vo_ve} preflight={pf_cl}",
+              "两侧都是 1/6，与 V-ctr preflight 一致")
+
+    summary = load_json("outputs/m23/cross_engine_summary.json")
+    csv_rows = load_csv("outputs/m23/cross_engine.csv")
+    groups = {r["group"] for r in (csv_rows or [])}
+    rep.check(M, "m23_bench_four_groups",
+              groups == {"V-E", "V-O", "T-E", "T-O"} and summary is not None,
+              f"bench 组不全：{groups}",
+              "四组性能汇总齐全")
+
+    doc = open(_p("notes/m23/results.md"), encoding="utf-8").read() if os.path.exists(_p("notes/m23/results.md")) else ""
+    needles = [
+        ("2/6", "T-E vs V-E exact 2/6"),
+        ("1/6", "T-O vs V-O / V-O vs V-E exact 1/6"),
+        ("禁止交叉 lane", "新比较纪律"),
+        ("同引擎 execution-mode ablation", "允许 V-O vs V-E / T-O vs T-E"),
+        ("numerical divergence", "mismatch 口径"),
+        ("不得直接判为 correctness failure", "mismatch 非正确性失败"),
+        ("eos_early_stop", "TRT EOS 记录"),
+    ]
+    missing_doc = [label for s, label in needles if s not in doc]
+    rep.check(M, "m23_results_doc_numbers", not missing_doc,
+              f"results.md 缺：{missing_doc}",
+              "一致性数字与比较纪律已写入 results.md")
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -1978,6 +2093,7 @@ CHECKS = {
     "m18": [check_m18],
     "m21": [check_m21],
     "m22": [check_m22],
+    "m23": [check_m23],
 }
 
 

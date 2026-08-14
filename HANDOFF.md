@@ -51,10 +51,10 @@
 | M20 | 服务化 + Triton | ✅ | **T+A+B+C COMPLETE**（same-runtime QPS 20/32/40；见 `notes/m20/results.md`） |
 | M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；2026-08-12 已做 evidence audit，见 `notes/m21/results.md` §10） |
 | **M22** | TP/PP/DP/EP | ✅/⬜ | **TP T+E+O+H COMPLETE**（4×H20，`notes/m22/results.md`）；**PP/DP/EP 未做** |
-| M23 | TensorRT-LLM 跨引擎 | ✅ | **L1 COMPLETE**：2×2 execution-mode，两条 lane 下 vLLM 均更快；见 `notes/m23/results.md` |
-| M24 | CP / Ring Attention / P-D 分离 | ⬜ | ★**多卡门控** |
-| M25 | 压缩（蒸馏/剪枝/低秩） | ⬜ | 推理岗只需 T |
-| M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化 + 能力边界三档标注；**D 占位阻塞于 M23**；见 `notes/m26/portfolio.md` |
+| M23 | TensorRT-LLM 跨引擎 | ✅ | **L1 FROZEN**：2×2 + 跨引擎 consistency（2/6、1/6，numerical divergence）；不继续 L2/L3；见 `notes/m23/results.md` |
+| M24 | CP / Ring Attention / P-D 分离 | ⬜ | ★**多卡门控** —— **保留到下一次有多卡机时再做** |
+| M25 | 压缩（蒸馏/剪枝/低秩） | 🟡 | **T 初稿已就位**（`notes/m25/compression.md`）；不做 E；见 `notes/m25/` |
+| M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
 
 > 每个模块的完整定义（要做什么 / 记什么指标 / 产出什么文件 / 硬件门控）都在 [`ROADMAP.md`](ROADMAP.md) 对应小节，**动手前务必读该小节**，不要凭本表的一句话概括就开工。
 
@@ -153,22 +153,14 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-08-10 更新**
-> - **M22 TP**、**M20（含正式 C）**、**M21（监控与容量）** 均已收口。
-> - **M21 监控与容量规划已收口**（2026-08-12）。
-> - **M18 已收口**（2026-08-13）：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)、KV 容量 +5.9%/+30.1%，
->   但**速度 28 个对照点 0 个变快**（23 个显著变慢），连计算受限的长 prefill 也更慢。
->   **给后续模块的两条经验**：① 报「量化省了多少显存」必须说清分母 —— embed/lm_head 不被量化，
->   模型越小稀释越狠（0.5B 27.6% vs 1.5B 15.1%）；② 量化 checkpoint 声明 `float16`、BF16 基线声明 `bfloat16`，
->   不显式冻结激活 dtype 就会把两个变量混在一起。
+> **2026-08-14 更新（当前下一步）**
+> - **M23 L1 已冻结**：2×2 性能 + 跨引擎 generation consistency（`T-E vs V-E` exact 2/6、`T-O vs V-O` 1/6，
+>   mismatch 只记 numerical divergence）。**不继续 L2/L3**，暂不追加 kernel profiling。
+> - **下一步 = M25 压缩（蒸馏/剪枝/低秩）**：推理岗只需 **T**。规划见 `notes/m25/`。
+> - **M24**（CP / Ring Attention / P-D）**保留到下一次有多卡机时再做**，不要用单卡模拟后写成落地。
 > - M13 PR 仍等 maintainer label。
-> - **M21 留给后续模块的两条注意事项**：① 性能实验前先跑 `scripts/m21_env_fingerprint.py` 落环境指纹
->   （M12 没留，导致 M21 无法归因高并发 TPOT 回归）；② 拐点附近的容量数字**跨会话不可复现**，
->   引用时必须带会话与 arrival horizon 口径，并区分「拐点定位 (24,32]」与「真实容量 C ∈ [24,32)」；
->   ③ 引用 E5 时注意 `X×(R+Z)` 是**闭环用户 population**，「系统内并发请求数」是 `X×R`（≈41.4），别混；
->   ④ PromQL 的 `*_seconds_*` 直方图返回**秒**，存进 `_ms` 字段前必须 ×1000（E6 首版栽过）。
 >
-> 以下保留为背景（交接早期选项）。
+> 以下保留为背景（交接早期选项；M18/M19/M20/M21/M22/M23 均已收口）。
 
 ### 选项 A · M18 量化路径深化（承接 M10）—— ROADMAP 首选
 - **要补的**：M10 已做 BF16 / FP8 W8A8 / FP8 KV；**M18 要补 W4A16（AWQ / GPTQ）**，并为 M23 的跨引擎对照做预备。

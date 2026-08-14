@@ -127,8 +127,10 @@ V-E / T-E ：Graph / optimization OFF   → 与 M6/M7/M17/M18 历史口径对接
 V-O / T-O ：optimized ON               → 比较双方各自当前优化栈的实际性能
 ```
 
-**表述纪律**：正式结论**分别报告** `T-E vs V-E` 与 `T-O vs V-O`；
-**任一差值都不得称为「纯 engine intrinsic speedup」**；不得跨 lane 相减；
+**表述纪律**：正式跨引擎比较只允许 `T-E vs V-E` 与 `T-O vs V-O`；
+允许 `V-O vs V-E` / `T-O vs T-E` 作为同引擎 execution-mode ablation；
+**禁止交叉 lane**（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup；
+**任一差值都不得称为「纯 engine intrinsic speedup」**；
 四组都要回读并保存实际 execution/graph 配置，显存分别测量。
 **不叫「eager vs compiled」** —— 两侧优化栈内容本就不同，那种叫法会暗示不存在的对应关系。
 

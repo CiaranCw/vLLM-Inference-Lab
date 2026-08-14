@@ -6,8 +6,8 @@
   (b) 输出 token 吞吐（batch64）
   (c) 冷启动时间与整卡显存峰值
 
-**刻意不画**「跨 lane」的柱子放在一起比较——冻结稿禁止跨 lane 相减，
-图上把两条 lane 用分隔与配色明确分开。
+图上把两条 lane 用分隔与配色明确分开：正式跨引擎比较只在同 lane 内读
+（T-E vs V-E、T-O vs V-O）；同引擎 OFF→ON 是 ablation，不是 engine speedup。
 
 用法：python scripts/m23_figures.py
 """
@@ -85,8 +85,8 @@ def main():
         for k, v in comps.items())
     fig.suptitle(
         "M23 - vLLM vs TensorRT-LLM (both PyTorch runtimes), 2x2 execution-mode.  " + lane_txt +
-        "\nstack-vs-stack, NOT kernel-level A/B; cross-lane subtraction forbidden; "
-        "no difference may be called intrinsic engine speedup.  "
+        "\nstack-vs-stack, NOT kernel-level A/B; same-lane cross-engine only "
+        "(T-E vs V-E, T-O vs V-O); no cross-lane engine speedup.  "
         "Scope: RTX 5080 sm_120 / WSL2 / Qwen2.5-0.5B / in256-out128 / containers",
         fontsize=7.5, y=1.06)
     fig.tight_layout()

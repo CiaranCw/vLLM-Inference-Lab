@@ -1,7 +1,7 @@
-# M23 · TensorRT-LLM 与跨引擎对照 —— **设计冻结 / DESIGN FROZEN**（v4，2026-08-13）
+# M23 · TensorRT-LLM 与跨引擎对照 —— **设计冻结 / DESIGN FROZEN**（v5，2026-08-14）
 
-> **状态：🔒 DESIGN FROZEN（v4）。Gate 0/1/2 已全部 PASS（见 [`gate_results.md`](gate_results.md)）；
-> 对照实验尚未执行。**
+> **状态：🔒 FROZEN（v5）。L1 COMPLETE**（Gate 0/1/2 + 2×2 性能 + 跨引擎 generation consistency）。
+> **不继续 L2/L3，暂不追加 kernel profiling。**
 > 冻结之后**不得**为了让结论好看而改网格、改样本量、改判据或挑档位；
 > 需要改动时必须先说明理由并重新走审查。
 >
@@ -21,6 +21,12 @@
 > Gate 2 实测发现 TRT-P **默认开启 CUDA Graph** 而本 lab 全线 `enforce_eager`，
 > 而 M7 已证该差异在本机可达单步 7.44→2.50ms、提交 257→15，**足以主导结论**，
 > 因此不能只跑一组。同时新增 **V-O correctness smoke 前置门**（§5.0.3）。
+>
+> **v5 修订（所有者收口指令）**：① 补跨引擎 generation consistency（§5.0.4），
+> mismatch 只记 numerical divergence，不判 correctness failure、不扩成质量 benchmark。
+> ② 把「不得跨 lane 相减」收窄为更准确的比较纪律（§5.0.2）：
+> 允许同引擎 `V-O vs V-E` / `T-O vs T-E` ablation；正式跨引擎只允许同 lane；
+> **禁止交叉 lane 做 engine speedup**。③ L2/L3 明确不做。
 >
 > 边界：单卡 RTX 5080(sm_120) / WSL2 / Qwen2.5-0.5B(+1.5B) / 单副本。
 
@@ -171,15 +177,29 @@ M7 已实测本机该差异极大（单步 **7.44→2.50ms**、kernel 提交 **2
 | **V-O** | vLLM（容器内） | **optimized ON**（各自当前优化栈） | 比较双方**实际**优化后的性能 |
 | **T-O** | TRT-P（容器内） | **optimized ON** | 同上 |
 
-#### 5.0.2 结论表述纪律（**硬约束**）
+#### 5.0.2 结论表述纪律（**硬约束**，v5 收窄）
 
-- 正式跨引擎结论**分别报告** **`T-E vs V-E`** 与 **`T-O vs V-O`**，两条 lane **各自成文**。
-- **任一差值都不得称为「纯 engine intrinsic speedup」** ——
+- **正式跨引擎比较只允许同 lane**：分别报告 **`T-E vs V-E`** 与 **`T-O vs V-O`**，两条 lane **各自成文**。
+- **允许同引擎 execution-mode ablation**：`V-O vs V-E`、`T-O vs T-E`。
+  这报的是「该引擎开优化栈的收益」，**不是** engine speedup。
+- **禁止交叉 lane 做 engine speedup**：不得用 `T-O − V-E` 或 `T-E − V-O` 声称谁的引擎更快。
+- **任一跨引擎差值都不得称为「纯 engine intrinsic speedup」** ——
   OFF lane 的差值里仍混着两套 runtime 的实现差异；ON lane 的差值里还叠加了
   **两侧优化栈内容本就不同**这一事实。能说的只有「在该 lane 的口径下，A 比 B 快/慢多少」。
-- **不得**跨 lane 相减（例如用 T-O 减 V-E）。
 - 四组**都必须回读并保存实际 execution / graph 配置**（不信入参，只信回读），
   且**显存分别测量**（口径见 §5.3：total GPU memory 为 Primary，分项按可得性标注）。
+
+#### 5.0.4 **跨引擎 generation consistency / divergence**（v5 收口补项）
+
+复用 V-ctr preflight 的 **6 条固定 token-id**，分别做 `V-E vs T-E`、`V-O vs T-O`。
+记录 exact token match、common-prefix length、first-divergence position、输出长度、functional sanity。
+
+- **硬失败** = 崩溃 / 空输出 / 超长。这才是 functional sanity 失败。
+- **跨引擎 mismatch 只作为 numerical divergence 记录，不得直接判为 correctness failure**。
+  同一 vLLM 的 V-E/V-O 已经只有 1/6 exact match，跨引擎不一致是预期的数值分歧。
+- **不扩成大规模质量 benchmark**。
+- TRT-LLM SamplingParams **没有 `ignore_eos`**：遇 EOS 可提前停，记 `eos_early_stop`，
+  只要短序列是长序列的真前缀，就不算生成损坏。
 
 #### 5.0.3 **前置门：V-O correctness smoke**（跑性能之前必须先过）
 
