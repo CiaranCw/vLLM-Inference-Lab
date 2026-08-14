@@ -9,6 +9,6 @@
 | [`frozen_runtime_snapshot/`](frozen_runtime_snapshot/) | 与 Freeze 对齐的 invariants / repro 快照 |
 
 **范围（诚实）**：本模块完成的是 **Tensor Parallel + collective communication**。  
-**PP / DP / EP / CP / P-D 未实现、未实测，仍为 ⬜。**
+**PP / DP / EP 未实现、未实测，仍为 ⬜。** CP / Ring / P-D 的 **T** 见 [`../m24/`](../m24/)（E 仍 ⬜）。
 
 **方案原文**：[`../../MULTI_GPU_EXPERIMENT_PLAN.md`](../../MULTI_GPU_EXPERIMENT_PLAN.md)

@@ -183,7 +183,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M18~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / ~~M26~~ / **M22(TP)** 已收口；余 M23（★项目 D 阻塞于此）/ M24 / M25。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M18~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / ~~M23(L1)~~ / ~~M25(T)~~ / ~~M26~~ / **M22(TP)** 已收口；余 **M24 E/H**（T 已完成，等下一次多卡机）。**
 
 ---
 
@@ -434,18 +434,19 @@
 
 ## 阶段 I · 长上下文与解耦（T+E+O+H，★资源门控）
 
-### M24 Context Parallel / Ring Attention / Disaggregated P-D　⬜　T+E+O+H
-- **门控**：★多卡。**本轮保留到下一次有多卡机时再做**，不用单卡模拟后写成落地。
-- **CP**：序列/上下文维切分、每卡持哪部分 token、Attention 为何跨卡换 K/V、通信随上下文长度变化、prefill vs decode 并行策略差异（多卡才 E/H）。
-- **Ring Attention**：标准 Attention 数据依赖、序列切分、环形传 K/V block、online softmax、通信计算重叠、causal mask 分块处理；路径 论文→PyTorch reference→读开源实现→多卡→Nsight 看 P2P/NCCL 与计算重叠。**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention**。
-- **P/D 分离**（`docs/features/disagg_prefill.md`）：prefill compute-bound / decode bandwidth-bound、为何适合不同 GPU 配置、KV 如何跨实例传输、**传输延迟何时抵消分离收益**、routing/backpressure/容错；至少两实例，资源隔离最好多卡。产出含 Prefill/Decode worker + Connector/KV transfer + Router + TTFT/ITL/throughput@latency 对照。
+### M24 Context Parallel / Ring Attention / Disaggregated P-D　✅ **T COMPLETE**（2026-08-14）　⬜ E+O+H
+- **T 已完成**：见 [`notes/m24/`](notes/m24/)。钉死本树（`ee0da84` / v0.24.0）：PCP 乘进 `world_size`、DCP 复用 TP GPU；DCP decode = Q-allgather + 本地 KV shard + LSE 合并，**不是** Ring Attention；PCP 官方 under active development 且本树无 `supports_pcp=True`；P-D experimental、官方写明 **不提吞吐**、当前注释限制 1P1D。
+- **面试纪律**：**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention。**
+- **E/H 门控**：★多卡 / 多实例。**等下一次多卡机**，不用单卡模拟后写成落地。
+- **CP（E 未做）**：序列/上下文维切分、每卡持哪部分 token、Attention 为何跨卡换 K/V、通信随上下文长度变化、prefill vs decode 并行策略差异。
+- **Ring Attention（E 未做）**：标准 Attention 数据依赖、序列切分、环形传 K/V block、online softmax、通信计算重叠、causal mask 分块处理；路径 论文→PyTorch reference→读开源实现→多卡→Nsight 看 P2P/NCCL 与计算重叠。
+- **P/D 分离（E 未做）**（`docs/features/disagg_prefill.md`）：prefill compute-bound / decode bandwidth-bound、为何适合不同 GPU 配置、KV 如何跨实例传输、**传输延迟何时抵消分离收益**、routing/backpressure/容错；至少两实例，资源隔离最好多卡。产出含 Prefill/Decode worker + Connector/KV transfer + Router + TTFT/ITL/throughput@latency 对照。
 
 ## 阶段 J · 模型压缩（岗位定向；推理岗多为 T，压缩岗 T+E+O）
 
-### M25 知识蒸馏 / 结构化剪枝 / 低秩分解　⬜　T（推理岗）/ T+E+O（压缩岗）
-- **推理系统岗**：**T** 即可（本轮目标）——见 [`notes/m25/`](notes/m25/)。蒸馏(teacher/student、logit/feature/sequence、温度、如何降推理成本)、剪枝(非结构化稀疏为何不必然加速、结构化剪 head/channel/layer、硬件/kernel 能否利用)、低秩(SVD、秩与误差、大 GEMM→两小 GEMM)。
-- **压缩/算法岗**：T+E(+O)——真做小模型实验并在真实引擎 benchmark，**验证 wall-clock 加速**（模型变小≠推理加速；理论 FLOPs 降≠GPU 延迟降）。**LoRA（低秩更新/Adapter）≠ 对原权重做低秩分解压缩，勿混**。
-- **本轮不做 E**：不下载新模型、不跑压缩实验，除非所有者另行授权。
+### M25 知识蒸馏 / 结构化剪枝 / 低秩分解　✅ **T COMPLETE**（2026-08-14）　⬜ E（压缩岗）
+- **推理系统岗**：**T 已完成**——见 [`notes/m25/`](notes/m25/)。蒸馏(teacher/student、logit/feature/sequence、温度；**蒸馏不天然缩词表/context**，推理收益来自 student architecture 变小)、剪枝(非结构化：dense GEMM shape 不变则零权重不会自动少干活，须匹配 sparse kernel/hardware)、低秩(SVD、逐层可压缩性 model-dependent、计算节省 vs 额外 GEMM launch/中间激活；**CUDA Graph ≠ kernel fusion**)。**LoRA ≠ 低秩压缩**。
+- **压缩/算法岗**：T+E(+O)——真做小模型实验并在真实引擎 benchmark，**验证 wall-clock 加速**（模型变小≠推理加速；理论 FLOPs 降≠GPU 延迟降）。**本轮明确不做 E**。
 
 ## 百亿 / 千亿落地门槛（诚实边界，勿夸大）
 - **单卡可积累（可迁移基础）**：Scheduler/CB、PagedAttention/KV、小模型高并发、压测方法、profiler、量化、spec decode、Triton 单机、TRT-LLM 单机、故障定位与监控。
@@ -480,8 +481,8 @@
 | 5 | 监控 + 容量规划报告 | M21 | 单机起 |
 | 6 | TP/PP/DP/EP 实验（多卡 E+H；单卡仅 T+O） | M22 | ★多卡 |
 | 7 | TensorRT-LLM 跨引擎对照 | M23 | NVIDIA GPU |
-| 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡 |
-| 9 | 压缩专题（按岗位深度） | M25 | 单卡起 |
+| 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡　✅ T / ⬜ E |
+| 9 | 压缩专题（按岗位深度） | M25 | 单卡起　✅ T（推理岗）/ ⬜ E |
 | 10 | 四大项目组合 + 面试三档表达 | M26 | 无新增 |
 
 ### M26 第二阶段收口：项目组合 + 掌握标准 + 面试化表达（扩展 M16）　✅　**收口完成（含明示占位）**（2026-08-13）
@@ -534,12 +535,8 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步（2026-08-12 更新）**：第一阶段已收口。第二阶段 **M17 / M19 / M20 / M21 / M22(TP)** 主线已收口。
-  **M20**：**T+A+B+C COMPLETE**（`notes/m20/results.md`）。
-  **M22** TP：**T+E+O+H COMPLETE**（4×H20 / 2026-08-09，`notes/m22/results.md`）；PP/DP/EP 仍 ⬜。
-  **M21**：**T+E+O COMPLETE**（`notes/m21/results.md`，监控栈 + 容量 + 瓶颈签名 + 故障演练）。
-  **M18**：**T+E+O COMPLETE**（`notes/m18/results.md`，W4A16 省显存但本机全面不提速）。
-  **M26**：**收口完成**（`notes/m26/portfolio.md`）——A/C 完整，B 部分占位（多卡机时），**D 占位阻塞于 M23**。
-  → 下一优先：**M23 TRT-LLM**（它是项目 D 唯一的阻塞项，做完 M26 的占位就能回填）；或 M24/M25（均需门控或仅理论）。
-  M13 若收到 maintainer review，优先回应迭代。
+- **当前下一步（2026-08-14 更新）**：第一阶段已收口。第二阶段 **M17 / M18 / M19 / M20 / M21 / M22(TP) / M23(L1) / M25(T) / M26** 主线已收口。
+  **M23 L1 FROZEN**（不扩 L2/L3/kernel profiling）。**M25 T COMPLETE**（不做 E）。**M24 T COMPLETE**；**E/H 等下一次多卡机**，不让硬件阻塞理论。
+  **M26**：A/C 完整；B 部分占位（PP/DP/EP + M24 E）；D 核心已随 M23 L1 闭合。
+  → 下一优先：多卡机时做 **M24 E** 与 M22 的 PP/DP/EP；或 M13 maintainer review。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

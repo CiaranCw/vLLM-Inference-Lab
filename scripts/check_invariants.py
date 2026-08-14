@@ -2058,6 +2058,24 @@ def check_m23(rep):
               f"bench 组不全：{groups}",
               "四组性能汇总齐全")
 
+    # Shape A 定长：四组 measure 输出全部 128 token（raw 字段 out_len_all_equal）
+    len_bad = []
+    for g in ("V-E", "V-O", "T-E", "T-O"):
+        raw = load_json(f"outputs/m23/raw/bench_{g}.json")
+        rec = (raw or {}).get("record") or {}
+        if rec.get("out_len_all_equal") is not True:
+            len_bad.append(f"{g}: out_len_all_equal={rec.get('out_len_all_equal')}")
+        if rec.get("n_out_checked") != 330:
+            len_bad.append(f"{g}: n_out_checked={rec.get('n_out_checked')} != 330")
+    csv_len_bad = [
+        r["group"] for r in (csv_rows or [])
+        if str(r.get("out_len_all_equal")) != "True"
+    ]
+    rep.check(M, "m23_shapeA_out_len_128",
+              not len_bad and not csv_len_bad,
+              f"raw={len_bad} csv={csv_len_bad}",
+              "四组 raw+csv 均为 out_len_all_equal=True（330 条 × 128 token）")
+
     doc = open(_p("notes/m23/results.md"), encoding="utf-8").read() if os.path.exists(_p("notes/m23/results.md")) else ""
     needles = [
         ("2/6", "T-E vs V-E exact 2/6"),

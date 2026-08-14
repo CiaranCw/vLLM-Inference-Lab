@@ -48,7 +48,8 @@
 
 **定长输出的实现方式不同但结果一致**：vLLM 用 `ignore_eos=True`，
 TRT-LLM 的 `SamplingParams` **没有 `ignore_eos`**，改用 `min_tokens=max_tokens=128`。
-四组的输出长度校验（`out_len_all_equal`）**全部通过**。
+四组 raw + csv 均为 `out_len_all_equal=True`、`n_out_checked=330`（10 条单请求 + 5×64 batch）。
+不变量 `m23_shapeA_out_len_128` 钉死此事；**未重跑 GPU**。
 
 ---
 

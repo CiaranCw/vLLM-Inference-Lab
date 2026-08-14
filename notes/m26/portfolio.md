@@ -189,10 +189,10 @@ profiler 的结论以 JSON 指标呈现。因此实际用于讲述的 5 张图�
 | Triton Inference Server 部署与对照 | 🟢 已验证 | M20 |
 | 监控栈与故障定位 | 🟢 已验证 | M21 |
 | **多卡 Tensor Parallel** | 🟢 已验证（4×H20） | M22 |
-| **PP / DP / EP / CP / P-D 分离** | ⚪ **仅设计** | 阻塞于多卡机时 |
+| **PP / DP / EP** | ⚪ **仅设计** | 阻塞于多卡机时 |
 | **TensorRT-LLM 与跨引擎对照** | 🟢 **已验证**（M23 L1 FROZEN） | 2×2 execution-mode，CI 全排除 0；generation consistency 2/6·1/6 记 divergence；⚪ L2/L3/kernel profiling 未做 |
-| 长上下文（Ring Attention 等） | ⚪ **仅理论** | M24 未做 |
-| 模型压缩（蒸馏/剪枝/低秩） | ⚪ **仅理论**（推理岗只需 T） | M25 未做 |
+| 长上下文 / CP / Ring / P-D | 🟡 **T（只读源码）** / ⚪ Ring 未在本树实现 / ⬜ E | M24 T COMPLETE；DCP ≠ Ring Attention；E 等下一次多卡机 |
+| 模型压缩（蒸馏/剪枝/低秩） | 🟡 **T COMPLETE**（推理岗） / ⬜ E | M25；不做压缩实验 |
 | Kubernetes / 多副本 / 跨机 SLA | ⚪ **未做** | 不在本 lab 范围 |
 
 **统一边界声明**：除 M22 在 4×H20 外，所有绝对值仅限

@@ -162,6 +162,7 @@ M18 实测 W4A16（AWQ 与 GPTQ，两者 bits=4、group_size=128 完全相同，
 ### Q19. 你没做的事情有哪些？
 
 主动说，不等对方问（详见 [`portfolio.md`](portfolio.md) 的能力边界总表）：
-**TensorRT-LLM 与跨引擎对照**（项目 D 因此未完成）、**PP/DP/EP/CP/P-D 分离**（阻塞于多卡机时）、
-**长上下文 Ring Attention**（仅理论）、**模型压缩**（推理岗只需理论）、
+**TRT-LLM L2/L3/kernel profiling 未做**（L1 已冻结）、**PP/DP/EP 未实测**（阻塞于多卡机时）、
+**CP / P-D 的 E 未做**（M24 只完成 T：本树 DCP ≠ Ring Attention；PCP 无 `supports_pcp=True`）、
+**压缩实验未做**（M25 推理岗 T 已完成）、
 **Kubernetes / 多副本 / 跨机 SLA**、**kernel 级 profiling 解释 W4A16 为何慢**。
