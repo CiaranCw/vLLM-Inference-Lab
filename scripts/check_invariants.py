@@ -2092,6 +2092,161 @@ def check_m23(rep):
               "一致性数字与比较纪律已写入 results.md")
 
 
+M24_TAG = "h20_formal"
+
+
+def check_m24(rep):
+    """M24 DCP 不变量。无 H20 数据时 PENDING，不得标 E/H。"""
+    M = "m24"
+    scripts = [
+        "m24_dcp.py",
+        "m24_run_all.py",
+        "m24_pcp_negative.py",
+        "m24_figures.py",
+        "m24_preflight.sh",
+    ]
+    missing, broken = [], []
+    with tempfile.TemporaryDirectory(prefix="m24_pyc_") as tmpd:
+        for name in scripts:
+            path = _p("scripts", name)
+            if not os.path.exists(path):
+                missing.append(name)
+                continue
+            if name.endswith(".sh"):
+                continue
+            try:
+                py_compile.compile(
+                    path, cfile=os.path.join(tmpd, name + "c"), doraise=True
+                )
+            except py_compile.PyCompileError as e:
+                broken.append(f"{name}: {str(e).strip().splitlines()[-1][:120]}")
+    rep.check(
+        M,
+        "m24_scripts_present",
+        not missing and not broken,
+        f"缺失 {missing}；编译失败 {broken}",
+        "M24 脚本齐全且 py_compile 通过",
+    )
+    plan = open(_p("notes/m24/M24_H20_PLAN.md"), encoding="utf-8").read() if os.path.exists(_p("notes/m24/M24_H20_PLAN.md")) else ""
+    rep.check(
+        M,
+        "m24_plan_frozen",
+        "decode_context_parallel_size" in plan and "1.5B" in plan,
+        "缺 notes/m24/M24_H20_PLAN.md 或未钉死 1.5B/DCP",
+        "H20 计划已冻结",
+    )
+
+    d = _p("outputs/m24/raw")
+    rows = []
+    if os.path.isdir(d):
+        for n in sorted(os.listdir(d)):
+            if n.startswith(f"{M24_TAG}_dcp") and n.endswith("_run.jsonl"):
+                rows.extend(load_jsonl(f"outputs/m24/raw/{n}") or [])
+    if not rows:
+        rep.pending(
+            M,
+            "artifacts",
+            f"outputs/m24/raw/{M24_TAG}_dcp*_run.jsonl 不存在 —— "
+            "M24 多卡实验尚未执行。当前仅 T，不得标 E/H",
+        )
+        return
+
+    meas = measure_rows(rows)
+    dcps = sorted({r.get("dcp") for r in rows if r.get("dcp") is not None})
+    cfgs = {}
+    for r in rows:
+        if r.get("effective_cfg"):
+            cfgs[r.get("dcp")] = r["effective_cfg"]
+    keys = [
+        "async_scheduling",
+        "tensor_parallel_size",
+        "prefill_context_parallel_size",
+        "max_num_batched_tokens",
+        "max_num_seqs",
+        "enable_prefix_caching",
+        "enforce_eager",
+        "max_model_len",
+        "dtype",
+    ]
+    diff = []
+    if len(cfgs) > 1:
+        ref_d = min(cfgs)
+        ref = cfgs[ref_d]
+        for dcp, c in cfgs.items():
+            for k in keys:
+                if c.get(k) != ref.get(k):
+                    diff.append((k, ref_d, ref.get(k), dcp, c.get(k)))
+    rep.check(
+        M,
+        "m24_single_variable_dcp",
+        not diff,
+        f"DCP 档之间存在非 DCP 配置差异：{diff[:4]}",
+        f"{len(cfgs)} 档除 DCP 外生效配置相同",
+    )
+    for dcp, c in cfgs.items():
+        rep.check(
+            M,
+            f"m24_dcp_effective[{dcp}]",
+            c.get("decode_context_parallel_size") == c.get("dcp_requested") == dcp,
+            f"DCP={dcp} 回读不符：{c.get('dcp_requested')} vs {c.get('decode_context_parallel_size')}",
+        )
+        rep.check(
+            M,
+            f"m24_tp_frozen[{dcp}]",
+            c.get("tensor_parallel_size") == 4,
+            f"DCP={dcp} 的 TP={c.get('tensor_parallel_size')}，必须为 4",
+        )
+        rep.check(
+            M,
+            f"m24_pcp_off[{dcp}]",
+            c.get("prefill_context_parallel_size") == 1,
+            f"正式档不得开 PCP：{c.get('prefill_context_parallel_size')}",
+        )
+        qpk = None
+        hq, hkv = c.get("total_num_attention_heads"), c.get("total_num_kv_heads")
+        if hq and hkv:
+            qpk = hq // hkv
+        if dcp and dcp > 1 and qpk:
+            rep.check(
+                M,
+                f"m24_gqa_divisible[{dcp}]",
+                qpk % dcp == 0,
+                f"H_q/H_kv={qpk} 不能被 dcp={dcp} 整除",
+            )
+
+    d2 = [r for r in meas if r.get("experiment") == "D2_decode"]
+    viol = [
+        r
+        for r in d2
+        if any(n != r["max_tokens_requested"] for n in (r.get("actual_output_tokens") or []))
+    ]
+    rep.check(
+        M,
+        "m24_d2_output_len_exact",
+        not viol,
+        f"{len(viol)} 个 D2 输出长度不符",
+        f"{len(d2)} 个 D2 measure 输出长度精确",
+    )
+    viol = [r for r in d2 if r.get("steady_batch_stable") is not True]
+    rep.check(
+        M,
+        "m24_d2_steady_batch_stable",
+        not viol,
+        f"{len(viol)} 个 D2 稳态 batch 不恒定",
+        f"{len(d2)} 个 D2 稳态 batch 恒定",
+    )
+    csv_rows = load_csv(f"outputs/m24/{M24_TAG}_decode.csv") or []
+    if csv_rows:
+        n_csv = sum(int(r["n"]) for r in csv_rows if r.get("n"))
+        rep.check(
+            M,
+            "m24_csv_n_matches_jsonl",
+            n_csv == len(d2),
+            f"CSV n 合计 {n_csv} != jsonl measure {len(d2)}",
+            "decode CSV 与 jsonl measure n 一致",
+        )
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -2112,6 +2267,7 @@ CHECKS = {
     "m21": [check_m21],
     "m22": [check_m22],
     "m23": [check_m23],
+    "m24": [check_m24],
 }
 
 
