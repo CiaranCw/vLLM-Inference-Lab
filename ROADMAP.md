@@ -30,7 +30,7 @@
 ---
 
 ## 持续维护任务（贯穿所有模块，不是单独模块）
-- **`contribution_candidates.md`（已建，持续维护）**：持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。**C1（slot_mapping 单元测试）已于 M13 落地为 PR [#51017](https://github.com/vllm-project/vllm/pull/51017)**；**剩余备选 C2–C4** 仍有效（C2 `calculate_kv_scales` 弃用信息陈旧、C3 安装文档缺 consumer Blackwell、C4 fp8 KV 默认 scale 文档），第二阶段若再提 PR 从此挑选（动手前须按文件内 kill 标准对最新 main 重核）。
+- **`contribution_candidates.md`（本地维护，不入库）**：持续记录可回馈上游的候选——测试缺口、文档与行为不一致、明确 bug、Benchmark/可观测性改进、性能修复点。**C1（slot_mapping 单元测试）已于 M13 落地为 PR [#51017](https://github.com/vllm-project/vllm/pull/51017)**；**剩余备选 C2–C4** 仍有效（C2 `calculate_kv_scales` 弃用信息陈旧、C3 安装文档缺 consumer Blackwell、C4 fp8 KV 默认 scale 文档），第二阶段若再提 PR 从此挑选（动手前须按文件内 kill 标准对最新 main 重核）。
 - **`notes/evidence_index.md`（已建，持续维护）**：证据索引，汇总"每个模块结论 → 对应 trace/log/jsonl/图 文件"，便于随时核查。
 - **每完成一个模块**：同步更新 `ROADMAP.md`、`README.md`、`evidence_index.md`，并做一次 git commit（保持仓库与进度一致）。
 - **项目整理不积压**：README、图表、复现说明随做随更新，M16 只做最终删减、重组、简历与面试表达。
@@ -41,7 +41,7 @@
 
 ### M0 环境与可复现基础设施　🔄
 - ✅ 固定 vLLM commit（`ee0da84` / v0.24.0）、模型（`Qwen/Qwen2.5-0.5B-Instruct`）与关键配置（enforce_eager、`VLLM_USE_FLASHINFER_SAMPLER=0`、`VLLM_ENABLE_V1_MULTIPROCESSING=0`、seed=0、temperature=0）。
-- ✅ 环境记录：`vllm_dev_environment.md`、`logs/day1/vllm_collect_env.txt`、`logs/day1/nvidia_smi_*.txt`（GPU/Driver/CUDA/PyTorch/vLLM）。editable 安装已验证 `vllm.__file__ → vllm-src`。
+- ✅ 环境记录：`logs/day1/vllm_collect_env.txt`、`logs/day1/nvidia_smi_*.txt`（GPU/Driver/CUDA/PyTorch/vLLM）；本地备忘 `vllm_dev_environment.md` 不入库。editable 安装已验证 `vllm.__file__ → vllm-src`。
 - ✅ 统一 trace 基础设施：`vllm-src/vllm/_lab_trace.py`（统一事件 schema `component/event/fields`、`VLLM_LAB_TRACE*` 开关、JSONL 输出、组件过滤、layer/once/step 限制）。
 - ✅ trace 默认关闭不改变执行语义：多次 E1 回归验证"归一化后逐行一致"（钩子零副作用）；每次改源码前备份到 `backups/`；`logs/*/source_status_{before,after}*.txt` 记录 git 状态。
 - ✅ **统一复现入口已落地**：`config/repro_manifest.yaml`（模块 → 命令 / 产物 / 日志 / 环境变量 / 预期样本数 / 不变量集合）
@@ -57,7 +57,7 @@
 - 🔄 待补（据实标记，尚未落地）：
   - `check_invariants.py` 目前**只登记了 M17**，M1–M16 的规则待逐步迁移（架构已支持按模块注册）。
   - 文档溯源目前覆盖 E1 主表 + E3-single 表（反向）与关键结论数字（正向）；**§1.2 斜率、§5 对照表等正文推导值尚未覆盖**（已在脚本输出中如实声明，不当作全覆盖）。
-  - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（已建，见"持续维护任务"）。
+  - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（本地维护、不入库，见"持续维护任务"）。
   - 目录/命名当前为 `dayN` 制（M1–M3 沿用）；后续模块建议改为**主题命名**，此不一致待统一。
 
 ### M1 单请求推理主链路 + Prefill/Decode 运行时 Trace　✅

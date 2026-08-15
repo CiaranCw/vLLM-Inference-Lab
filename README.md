@@ -114,7 +114,7 @@
 
 | 模块 | 一句话成果 | 关键数据 | 源码改动 | 证据 |
 |---|---|---|---|---|
-| **M0** 环境/基础设施 | 固定版本 + 统一 trace 工具 + 零副作用回归 | commit ee0da84 / Qwen2.5-0.5B / sm_120；trace-off 归一化逐行一致 | 只读钩子（默认关） | `vllm_dev_environment.md`、`vllm-src/vllm/_lab_trace.py` |
+| **M0** 环境/基础设施 | 固定版本 + 统一 trace 工具 + 零副作用回归 | commit ee0da84 / Qwen2.5-0.5B / sm_120；trace-off 归一化逐行一致 | 只读钩子（默认关） | `logs/day1/{vllm_collect_env,nvidia_smi_*.txt}`、`patches/new_files/vllm/_lab_trace.py` |
 | **M1** 主链路 Trace | 单请求从入口到输出的完整数据流 | backend=FLASH_ATTN；prefill/decode shape 对照 | 无 | `notes/day1/*` |
 | **M2** Continuous Batching | 错峰混批、token 预算、chunked prefill | 同批 prefill+decode；max_num_seqs 排队；E5 预算共享/槽位争用 | 无 | `notes/day2/*` |
 | **M3** KV / Block 管理 | 逻辑→物理块、prefix 命中、抢占重算 | hash/ref_cnt/共享/对齐；K5 尾部优先淘汰、前缀优先保留 | 无 | `notes/day3/*` |
@@ -231,7 +231,7 @@ python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity
     ├── figures/        # 核心图（由 CSV 离线生成）
     ├── logs/           # 实验日志、git 状态快照
     ├── ROADMAP.md      # 两阶段里程碑（M0–M26）
-    └── vllm_dev_environment.md
+    ├── AGENTS.md / HANDOFF.md
 ```
 
 - **源码修改只发生在 `../vllm-src`**；本目录 `.venv` 以 editable 安装 vllm-src，Python 改动重启进程即生效；`csrc`/CUDA kernel 用 `VLLM_USE_PRECOMPILED=1` 复用预编译，源码级改动不自动生效。

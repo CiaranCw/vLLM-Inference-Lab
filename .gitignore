@@ -15,9 +15,27 @@ temp/
 # 本地回退备份（vLLM 上游文件副本，随 patches/ 可重建，不入库）
 backups/
 
-# 本地阅读向导（用户个人用，不入库）
+# 本地个人文档（学习路线 / 过程记录 / 环境备忘 / 贡献候选草稿，不入库）
 vllm_stage_reading_guide.md
+contribution_candidates.md
+study_path.md
+study_path_with_tech_stack_roadmap.md
+study_process_record.md
+vllm_dev_environment.md
 *:Zone.Identifier
+
+# IDE 本地配置
+.vscode/
+
+# 笔记打包 zip（传输用，源文件已在 notes/mN/）
+notes/*.zip
+
+# 传输自检 / smoke 明细（非正式实验数据；汇总 CSV 已入库）
+outputs/m19/smoke/
+outputs/m22/transfer_test_*
+outputs/m22/package_h20_formal.json
+outputs/m22/raw/*smoke*
+outputs/m22/raw/local_preflight_*
 
 # M7 chrome trace 体积大且可由脚本复现，不入库
 outputs/m7/traces/

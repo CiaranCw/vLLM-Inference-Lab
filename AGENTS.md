@@ -71,7 +71,7 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0 # 引擎在进程内跑，trace 有序
 - 实验数据 `outputs/mN/`，日志 `logs/mN/`，脚本 `scripts/mN_*.py`，图 `figures/`。
 - 图必须由**已落盘数据离线生成**（`scripts/m16_figures.py`、`scripts/m17_figures.py` 是范例：不需 GPU、不重跑实验、不 import vllm）。
 - 完成模块后要同步更新：`ROADMAP.md`（模块状态 + 未做项）、`notes/evidence_index.md`、`README.md`（若产出核心结论/图）。
-- 根目录 `vllm_stage_reading_guide.md` 与 `study_path*.md` 是**所有者的个人文档**，前者已 gitignore，不要改动。
+- 根目录 `vllm_stage_reading_guide.md`、`study_path*.md`、`study_process_record.md`、`vllm_dev_environment.md`、`contribution_candidates.md` 是**所有者的个人文档**，已 gitignore；不要改动、不要重新入库。
 
 ## 8. 与所有者的沟通
 

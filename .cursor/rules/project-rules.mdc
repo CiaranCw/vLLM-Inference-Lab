@@ -51,6 +51,7 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0
 - 笔记 `notes/mN/`；跨模块索引 `notes/evidence_index.md`（留在 notes 根）；数据 `outputs/mN/`；日志 `logs/mN/`；脚本 `scripts/mN_*.py`；图 `figures/`。
 - 图必须由已落盘数据**离线**生成（不需 GPU、不 import vllm）——范例 `scripts/m17_figures.py`。
 - 完成模块后同步更新 `ROADMAP.md` + `notes/evidence_index.md` +（如有核心结论/图）`README.md`。
+- 根目录 `vllm_stage_reading_guide.md`、`study_path*.md`、`study_process_record.md`、`vllm_dev_environment.md`、`contribution_candidates.md` 是个人文档，已 gitignore，不要改动、不要重新入库。
 
 ## 沟通
 - **面向所有者的报告用中文**；命令/路径/日志/报错保持原文。给结论 + 依据 + 下一步，不要冗长思考过程。
