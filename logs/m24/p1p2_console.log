@@ -1,0 +1,6 @@
+[run_all] === tag=h20_formal dcp=2 shard=profile === -> /root/m24_h20_transfer/vllm-inference-lab/logs/m24/h20_formal_dcp2_profile.log
+[run_all] dcp=2 profile rc=1 elapsed=31.9s
+[run_all] ABORT: dcp=2 profile rc=1，见 logs/m24/h20_formal_dcp2_profile.log
+PROFILE_RC=1
+[run_all] pcp-negative rc=0 log=/root/m24_h20_transfer/vllm-inference-lab/logs/m24/h20_formal_pcp_negative.log
+PCP_RC=0

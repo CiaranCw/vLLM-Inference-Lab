@@ -183,7 +183,7 @@
 | 8 | 分布式(TP)对比报告 | M11（资源门控）→ 并入 M22 | ✅ **TP T+E+O+H COMPLETE**（4×H20 / 7B / TP=1/2/4；见 `notes/m22/results.md`；PP/DP/EP 仍 ⬜） |
 | 9 | 量化对比报告 | M10 | ✅（BF16/FP8 W8A8/FP8 KV：显存·性能·质量·源码机制，含 scale 审计与诚实性能反常）|
 
-**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M18~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / ~~M23(L1)~~ / ~~M25(T)~~ / ~~M26~~ / **M22(TP)** 已收口；余 **M24 E/H**（T 已完成，等下一次多卡机）。**
+**总体（第一阶段）：M1–M13 + M16 完成；核心验收 **9/9**（原 M11 双卡 TP 已由第二阶段 **M22** 在 4×H20 闭合）。推进：~~M4~~→…→~~M16~~。**第二阶段**：~~M17~~ / ~~M18~~ / ~~M19~~ / ~~M20~~ / ~~M21~~ / ~~M23(L1)~~ / ~~M25(T)~~ / ~~M26~~ / **M22(TP)** / **M24(DCP)** 已收口；余 M22 的 PP/DP/EP 与 M24 的 Ring/P-D。**
 
 ---
 
@@ -384,7 +384,7 @@
   D1 权重≈1/TP、KV tokens 随 TP 升；D2 稳态 decode 单步 TP 显著更慢（全 batch Bootstrap CI 排除 0）；
   D3 长 prefill TP 加速（P=4096 TP4≈3.39×）；大 batch 吞吐 speedup **主要来自并发 prefill** 而非 decode 单步；
   P1 见 custom AR/NCCL；invariants **22 PASS**；图 `figures/fig9_m22_tp_scaling_h20_formal.png`。
-- **⬜ PP/DP/EP/CP/P-D**：**未编写实现、未实测**，不得勾选。方案原文 [`MULTI_GPU_EXPERIMENT_PLAN.md`](MULTI_GPU_EXPERIMENT_PLAN.md)。
+- **⬜ PP/DP/EP**：**未编写实现、未实测**，不得勾选。DCP 已由 **M24** 在 4×H20 闭合（1.5B，与本模块 7B TP **不得相减**）。P-D 仍 ⬜。方案原文 [`MULTI_GPU_EXPERIMENT_PLAN.md`](MULTI_GPU_EXPERIMENT_PLAN.md)。
 - **TP 要点**：Column/Row Parallel、每层 2× all-reduce、**小 batch 更慢的机制与数据**、scaling efficiency、collective 后端。
 - **PP/DP/EP（未做）**：stage/bubble；副本扩吞吐；MoE dispatch / All-to-All。
 - 产出：`outputs/m22/h20_formal_*.csv`、`outputs/m22/raw/*`、`outputs/m22/traces/`、`notes/m22/{tensor_parallel,results,execution_record}.md`。
@@ -434,13 +434,12 @@
 
 ## 阶段 I · 长上下文与解耦（T+E+O+H，★资源门控）
 
-### M24 Context Parallel / Ring Attention / Disaggregated P-D　✅ **T COMPLETE**（2026-08-14）　⬜ E+O+H
+### M24 Context Parallel / Ring Attention / Disaggregated P-D　✅ **T COMPLETE**（2026-08-14）　✅ **DCP E+O+H**（2026-08-16）　⬜ Ring / P-D E
 - **T 已完成**：见 [`notes/m24/`](notes/m24/)。钉死本树（`ee0da84` / v0.24.0）：PCP 乘进 `world_size`、DCP 复用 TP GPU；DCP decode = Q-allgather + 本地 KV shard + LSE 合并，**不是** Ring Attention；PCP 官方 under active development 且本树无 `supports_pcp=True`；P-D experimental、官方写明 **不提吞吐**、当前注释限制 1P1D。
 - **面试纪律**：**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention。**
-- **E/H 门控**：★多卡 / 多实例。**等下一次多卡机**，不用单卡模拟后写成落地。
-- **CP（E 未做）**：序列/上下文维切分、每卡持哪部分 token、Attention 为何跨卡换 K/V、通信随上下文长度变化、prefill vs decode 并行策略差异。
-- **Ring Attention（E 未做）**：标准 Attention 数据依赖、序列切分、环形传 K/V block、online softmax、通信计算重叠、causal mask 分块处理；路径 论文→PyTorch reference→读开源实现→多卡→Nsight 看 P2P/NCCL 与计算重叠。
-- **P/D 分离（E 未做）**（`docs/features/disagg_prefill.md`）：prefill compute-bound / decode bandwidth-bound、为何适合不同 GPU 配置、KV 如何跨实例传输、**传输延迟何时抵消分离收益**、routing/backpressure/容错；至少两实例，资源隔离最好多卡。产出含 Prefill/Decode worker + Connector/KV transfer + Router + TTFT/ITL/throughput@latency 对照。
+- **DCP E/H（4×H20 / 1.5B / TP=4 / tag=`h20_formal`）**：唯一变量 `decode_context_parallel_size ∈ {1,2}`。D1 KV tokens **5.90M → 11.80M（恰好 2.0×）**、权重不变；D2 六档稳态 decode 单步 **全部 DCP=2 更慢**（+10.6～+13.8 ms，Bootstrap CI 全排除 0）；P1 chrome trace 见 `vllm::all_gather` / reduce-scatter / LSE merge，`AllGather_RING_LL` 是 NCCL 算法名。不变量 **13 PASS**。图 `figures/fig15_m24_dcp.png`。详见 [`notes/m24/results.md`](notes/m24/results.md)。
+- **P2 PCP 负例已跑**：4 卡 TP=4×PCP=2 在 `world_size=8` 被拒，未走到 `supports_pcp`。不当性能成功。
+- **仍为 ⬜**：Ring Attention 实现/Nsight；P-D 双实例（P3 未跑）。不用单卡模拟后写成落地。
 
 ## 阶段 J · 模型压缩（岗位定向；推理岗多为 T，压缩岗 T+E+O）
 
@@ -481,7 +480,7 @@
 | 5 | 监控 + 容量规划报告 | M21 | 单机起 |
 | 6 | TP/PP/DP/EP 实验（多卡 E+H；单卡仅 T+O） | M22 | ★多卡 |
 | 7 | TensorRT-LLM 跨引擎对照 | M23 | NVIDIA GPU |
-| 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡　✅ T / ⬜ E |
+| 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡　✅ T / ✅ DCP E / ⬜ Ring·P-D E |
 | 9 | 压缩专题（按岗位深度） | M25 | 单卡起　✅ T（推理岗）/ ⬜ E |
 | 10 | 四大项目组合 + 面试三档表达 | M26 | 无新增 |
 
@@ -535,8 +534,8 @@
   - **M8 设停止条件**：基础 kernel 达概念即止，主验收集中在 slot-mapping kernel。
   - **移出本阶段**：原 M14（第二引擎横向对比）、M15（高级专题）标为 ⏸ 后续扩展，不在第一阶段展开；范围声明收窄为"仅第一阶段"。
 - **能力自评修正**：由笼统"整体能证"改为分项（Scheduler/KV=能证；Attention Backend/执行模式=能串待能证；端到端=能证进行中；能改/能优=未完成）。
-- **当前下一步（2026-08-14 更新）**：第一阶段已收口。第二阶段 **M17 / M18 / M19 / M20 / M21 / M22(TP) / M23(L1) / M25(T) / M26** 主线已收口。
-  **M23 L1 FROZEN**（不扩 L2/L3/kernel profiling）。**M25 T COMPLETE**（不做 E）。**M24 T COMPLETE**；**E/H 等下一次多卡机**，不让硬件阻塞理论。
-  **M26**：A/C 完整；B 部分占位（PP/DP/EP + M24 E）；D 核心已随 M23 L1 闭合。
-  → 下一优先：多卡机时做 **M24 E** 与 M22 的 PP/DP/EP；或 M13 maintainer review。
+- **当前下一步（2026-08-16 更新）**：第一阶段已收口。第二阶段 **M17 / M18 / M19 / M20 / M21 / M22(TP) / M23(L1) / M24(DCP) / M25(T) / M26** 主线已收口。
+  **M23 L1 FROZEN**（不扩 L2/L3/kernel profiling）。**M25 T COMPLETE**（不做 E）。**M24 DCP E+O+H COMPLETE**（4×H20 / 1.5B）；**Ring Attention / P-D 仍 ⬜**。
+  **M26**：A/C 完整；B 部分占位（PP/DP/EP + Ring/P-D）；D 核心已随 M23 L1 闭合。
+  → 下一优先：M22 的 PP/DP/EP（仍需多卡窗口）；或 M13 maintainer review。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

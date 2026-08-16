@@ -79,6 +79,7 @@ python3 scripts/m24_run_all.py --tag h20_formal --package
 ## 4. 明确不要做
 
 - 不要跑 PCP>1 当正式性能（P2 只允许负例）
+- 0.24.0 的 torch profiler **必须** `engine.start_profile()` / `stop_profile()`；只传 ProfilerConfig 不落盘（H20 已踩）
 - 不要找 Ring Attention kernel
 - 不要 `pip install` 新模型 / 不要访问 huggingface.co 下权重
 - 不要改 `vllm` 产品代码

@@ -1,0 +1,8 @@
+[run_all] === tag=h20_formal dcp=1 shard=run === -> /root/m24_h20_transfer/vllm-inference-lab/logs/m24/h20_formal_dcp1_run.log
+[run_all] dcp=1 run rc=0 elapsed=102.5s
+[run_all] === tag=h20_formal dcp=2 shard=run === -> /root/m24_h20_transfer/vllm-inference-lab/logs/m24/h20_formal_dcp2_run.log
+[run_all] dcp=2 run rc=0 elapsed=152.9s
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_formal_memory_kv.csv
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_formal_decode.csv
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_formal_decode_effect.csv
+[run_all] all done.

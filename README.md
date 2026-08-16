@@ -20,6 +20,7 @@
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
 - **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
+- **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。P-D 未跑（M24）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
@@ -56,6 +57,7 @@
 | 调度特性权衡（APC / chunked prefill） | 能证 + 能量化 ✅ | M17 |
 | 投机解码（N-gram：Coverage/Acceptance/execution rounds/吞吐） | 能证 + 能量化 ✅ | M19 |
 | 张量并行 TP（多卡：step vs 吞吐口径） | 能证 + 能量化 ✅ | M22 |
+| Decode Context Parallel（多卡：KV 容量 vs step 延迟） | 能证 + 能量化 ✅ | M24 |
 
 ---
 
@@ -97,6 +99,10 @@
 ![M22 TP scaling](figures/fig9_m22_tp_scaling_h20_formal.png)
 > 左：稳态 decode 单步 TP 全程更慢（~+19–24%，CI 排除 0）。中：吞吐 `speedup_vs_tp1` 在大 batch 可 >1——**主要来自并发 prefill**。右：长 prompt first-token 随 TP 加速（P=4096 TP4≈3.39×）。边界：H20 / 7B / eager / in-process；**PP/DP/EP 未做**。
 
+**M24 · Decode Context Parallel：KV 容量翻倍，decode 单步更慢（不是 Ring Attention）**
+![M24 DCP](figures/fig15_m24_dcp.png)
+> 左：DCP=2 把 KV token 容量精确变成 2.0×（复制因子 2→1，GPU 数不变）。中：六档稳态 decode 单步 DCP=2 全程更慢。右：median difference 的 Bootstrap 95% CI 全部排除 0（+10.6～+13.8 ms）。边界：4×H20 / 1.5B / eager / in-process；**Ring Attention / P-D 未做**。
+
 **M21 · 容量阶梯与瓶颈签名**
 ![M21 capacity](figures/fig11_m21_capacity.png)
 > 左：同一系统，5s 采样窗口判 QPS44「达标」，60s 窗口判 QPS32 已破线——**容量结论对采样窗口极敏感**。中：服务端 `histogram_quantile` 与客户端 `np.percentile` 不是同一个数。右：过载先堆队列（waiting 705），GPU 窗口均值仅 25→32%。
@@ -132,7 +138,7 @@
 | **M19** Spec Decoding（N-gram）★ | 额外并行 verification 换更少串行 execution rounds；Coverage+Acceptance+Round Cost | acceptance **1.000**(高初始重叠)/0.75–0.85(低初始重叠)；engine rounds **128→33 / 56–62**；完成延迟 −**72–75.5%** / −**54.8–57.4%**；amortized TPOT 7.6→**1.8ms**；吞吐 **+257–308%** / **+121–135%**；KV capacity **−1.9%**；111/126 exact match + batch-shape control；**T+E+O CLOSED**；Optional: draft/EAGLE/k sweep | 无（`stat_loggers=` 扩展点） | `notes/m19/*`、`outputs/m19/*`、`logs/m19/*` |
 | **M23** 跨引擎 vLLM vs TRT-LLM ★ | 2×2 execution-mode 严格对照 | `T-E vs V-E` **+45.0%** / `T-O vs V-O` **+20.1%**（TRT 更慢，CI 排除 0）；冷启动 60.7s vs 15.6/26.6s；两侧 optimized 收益 2.85×/2.97×；**L1 COMPLETE** | 无 | `notes/m23/results.md`、`outputs/m23/*`、`figures/fig14_m23_cross_engine.png` |
 | **M25** 压缩（蒸馏/剪枝/低秩） | 推理岗 T：三类方法改权重/结构，不必然加速 | 蒸馏不天然缩词表/context；非结构化零权重≠少 FLOPs；低秩是 launch/中间激活 trade-off（Graph ≠ fusion）；**T COMPLETE**，不做 E | 无 | `notes/m25/compression.md` |
-| **M24** CP / Ring / P-D | 长上下文与解耦的理论+源码路径 | **看到 CP 配置 ≠ Ring Attention**；本树 DCP = Q-allgather+LSE 合并；P-D 官方不提吞吐；**T COMPLETE**，E 等多卡机 | 无 | `notes/m24/context_parallel_ring_disagg.md` |
+| **M24** CP / Ring / P-D ★ | DCP：KV 容量 2.0×，decode step 更慢；不是 Ring Attention | 六档 DCP=2 更慢 +10.6～+13.8 ms（CI 全排除 0）；KV tokens 5.90M→11.80M；PCP=2 在 4 卡 `world_size=8` 被拒；**T+DCP E COMPLETE**；Ring / P-D ⬜ | 无 | `notes/m24/results.md`、`outputs/m24/*`、`figures/fig15_m24_dcp.png` |
 | **M18** 量化 W4A16 ★ | AWQ/GPTQ vs BF16，受控到只差量化算法 | 权重 −53.6%/−62.8%（可量化部分 −74.0%）、KV 容量 +5.9%/+30.1%；**速度 28 点 0 个变快**（23 点 CI 显著变慢）；ΔPPL +1.4~+5.0%；**COMPLETE** | 无 | `notes/m18/results.md`、`outputs/m18/*`、`figures/fig13_m18_w4a16.png` |
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
@@ -156,6 +162,7 @@
 11. **"面板好看"和"数字是真的"是两件事**：M21 先用守恒律验证服务端指标（21 个窗口 counter 增量与客户端 bench 逐条精确相等），才发现服务端 `histogram_quantile` 的**近似** P99 比客户端 **exact percentile** 系统性偏高（中位 +9.7%，最大 +68%）。差异同时来自统计表示（histogram 只存 bucket 计数）、观测边界（server vs client 计时起止点）与窗口聚合，**本实验无法归因到单一项**——能下的结论是**两者不可互换**：面板 P99 适合趋势和告警，SLO 验收用客户端 exact percentile。同理，DCGM 与 NVML 两条独立采集路径的交叉校验，抓出了 `dcgm-exporter` 默认 30s 采集间隔导致的过期读数（DCGM 报 2% 而 NVML 同期 33%）。
 12. **`up==0` 不代表资源已释放**：M21 实测 `SIGKILL` vLLM API server **不会**杀死持有显存的 `EngineCore` 子进程——告警 4s 内响，但显存 90 秒不回收，下一次拉起直接撞 `No available memory for the cache blocks`；清掉子进程后 5s 回收、28s 恢复。判断服务是否干净退出必须同时看 `DCGM_FI_DEV_FB_USED` 是否回到基线。
 13. **容量数字有保质期**：M21 用与 M12 完全相同的配置与 bench 参数，测出最大稳定 QPS 24（M12 是 40）。单变量 A/B 排除了监控开销（≲1%），NVML 排除了降频，单流 ITL 说明机器没整体变慢——差异出在高并发下 TPOT +30%，按 Little's law 把所需并发从 48 推到 62、顶上 `max_num_seqs=64` 的硬闸形成正反馈。**根因未定**（M12 当年没留环境指纹），故如实标注「容量跨会话不稳定 24–32」，既不宣称复现 40，也不宣称 40 是错的。
+14. **开 DCP ≠ Ring Attention，也不等于 decode 变快**：M24 在 4×H20 / 1.5B 上只改 `decode_context_parallel_size`，KV 可服务 token **恰好 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）。chrome trace 里的 `AllGather_RING_LL` 是 NCCL 算法名。长上下文在本网格也没有翻盘——**容量口径和 step 延迟口径必须拆开**。
 
 > 完整证据链见 [`notes/evidence_index.md`](notes/evidence_index.md)；每个结论都可回溯到 trace/log/jsonl/csv。
 
@@ -199,7 +206,7 @@ python scripts/m19_spec_decode.py --shard summarize-equiv
 python scripts/reproduce.py --list
 python scripts/reproduce.py --module m19 --dry-run
 python scripts/reproduce.py --module m19 --verify-only
-python scripts/check_invariants.py                             # M0 / M17 / M19
+python scripts/check_invariants.py                             # M0 / M17 / M19 / … / m24
 
 # 核心图（无需 GPU，仅由已落盘数据生成）
 python scripts/m16_figures.py    # -> figures/fig1..4
@@ -209,6 +216,7 @@ python scripts/m22_figures.py --tag h20_formal  # -> figures/fig9_m22_tp_scaling
 python scripts/m20_figures.py                    # -> figures/fig10_m20_same_runtime.png
 python scripts/m18_figures.py                    # -> figures/fig13_m18_w4a16.png
 python scripts/m23_figures.py                    # -> figures/fig14_m23_cross_engine.png
+python scripts/m24_figures.py --tag h20_formal   # -> figures/fig15_m24_dcp.png
 python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity.png, fig12_m21_bottleneck_signature.png
 ```
 

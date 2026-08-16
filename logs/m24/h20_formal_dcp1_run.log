@@ -1,0 +1,161 @@
+# cmd: /root/m24-venv/bin/python3 /root/m24_h20_transfer/vllm-inference-lab/scripts/m24_dcp.py --dcp 1 --shard run --tag h20_formal --model /root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct
+# env: {'VLLM_ENABLE_V1_MULTIPROCESSING': '0', 'VLLM_USE_FLASHINFER_SAMPLER': '0', 'HF_HUB_OFFLINE': '1', 'TRANSFORMERS_OFFLINE': '1'}
+WARNING 08-16 14:32:04 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 08-16 14:32:04 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 08-16 14:32:04 [model.py:1725] Using max model len 16384
+INFO 08-16 14:32:04 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 08-16 14:32:04 [vllm.py:1006] Asynchronous scheduling is disabled.
+WARNING 08-16 14:32:04 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 08-16 14:32:04 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 08-16 14:32:04 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 08-16 14:32:04 [vllm.py:1288] Cudagraph is disabled under eager mode
+INFO 08-16 14:32:06 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant, allreduce_rms
+INFO 08-16 14:32:08 [core.py:114] Initializing a V1 LLM engine (v0.24.0) with config: model='/root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct', speculative_config=None, tokenizer='/root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=16384, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=/root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [682, 8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': True, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+WARNING 08-16 14:32:08 [system_utils.py:157] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+WARNING 08-16 14:32:08 [multiproc_executor.py:1063] Reducing Torch parallelism from 192 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+/root/m24-venv/lib/python3.11/site-packages/vllm/v1/executor/multiproc_executor.py:139: UserWarning: Failed to get the IP address, using 0.0.0.0 by default. The value can be set by the environment variable VLLM_HOST_IP or HOST_IP.
+  mq_connect_ip = get_ip()
+INFO 08-16 14:32:08 [multiproc_executor.py:140] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=0.0.0.0 (local), world_size=4, local_world_size=4
+(Worker pid=14846) INFO 08-16 14:32:14 [parallel_state.py:1588] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:57133 backend=nccl
+(Worker pid=14849) INFO 08-16 14:32:14 [parallel_state.py:1588] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:57133 backend=nccl
+(Worker pid=14847) INFO 08-16 14:32:15 [parallel_state.py:1588] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:57133 backend=nccl
+(Worker pid=14848) INFO 08-16 14:32:15 [parallel_state.py:1588] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:57133 backend=nccl
+(Worker pid=14846) INFO 08-16 14:32:15 [pynccl.py:113] vLLM is using nccl==2.28.9
+(Worker pid=14846) INFO 08-16 14:32:17 [cuda_communicator.py:245] Using ['CUSTOM', 'SYMM_MEM', 'PYNCCL'] all-reduce backends (in dispatch order) for group 'tp:0' out of potential backends: ['NCCL_SYMM_MEM', 'QUICK_REDUCE', 'FLASHINFER', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker pid=14846) INFO 08-16 14:32:17 [parallel_state.py:1923] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker pid=14846) INFO 08-16 14:32:17 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(Worker_TP0 pid=14846) INFO 08-16 14:32:17 [gpu_model_runner.py:5160] Starting to load model /root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct...
+(Worker_TP0 pid=14846) INFO 08-16 14:32:18 [cuda.py:480] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=14846) INFO 08-16 14:32:18 [flash_attn.py:670] Using FlashAttention version 3
+(Worker_TP0 pid=14846) INFO 08-16 14:32:18 [weight_utils.py:849] Filesystem type for checkpoints: OVERLAY. Checkpoint size: 2.88 GiB. Available RAM: 2183.69 GiB.
+(Worker_TP0 pid=14846) INFO 08-16 14:32:18 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (OVERLAY) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(Worker_TP0 pid=14846) Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+(Worker_TP0 pid=14846) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  5.48it/s]
+(Worker_TP0 pid=14846) Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  5.47it/s]
+(Worker_TP0 pid=14846) 
+(Worker_TP0 pid=14846) INFO 08-16 14:32:18 [default_loader.py:430] Loading weights took 0.23 seconds
+(Worker_TP0 pid=14846) INFO 08-16 14:32:19 [gpu_model_runner.py:5255] Model loading took 0.77 GiB memory and 0.359158 seconds
+(Worker_TP0 pid=14846) INFO 08-16 14:32:28 [gpu_worker.py:508] Available KV cache memory: 78.8 GiB
+INFO 08-16 14:32:28 [kv_cache_utils.py:2146] GPU KV cache size: 5,901,936 tokens
+INFO 08-16 14:32:28 [kv_cache_utils.py:2147] Maximum concurrency for 16,384 tokens per request: 360.23x
+(Worker_TP0 pid=14846) INFO 08-16 14:32:28 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(Worker_TP0 pid=14846) INFO 08-16 14:32:28 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(Worker_TP2 pid=14848) 2026-08-16 14:32:28,114 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP3 pid=14849) 2026-08-16 14:32:28,115 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP0 pid=14846) 2026-08-16 14:32:28,115 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP1 pid=14847) 2026-08-16 14:32:28,116 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(Worker_TP2 pid=14848) 2026-08-16 14:32:28,130 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP0 pid=14846) 2026-08-16 14:32:28,133 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP1 pid=14847) 2026-08-16 14:32:28,133 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP3 pid=14849) 2026-08-16 14:32:28,133 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(Worker_TP2 pid=14848) INFO 08-16 14:32:28 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(Worker_TP3 pid=14849) INFO 08-16 14:32:28 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(Worker_TP0 pid=14846) INFO 08-16 14:32:28 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(Worker_TP1 pid=14847) INFO 08-16 14:32:28 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+INFO 08-16 14:32:28 [core.py:344] init engine (profile, create kv cache, warmup model) took 9.09 s
+WARNING 08-16 14:32:30 [input_processor.py:282] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+(Worker_TP0 pid=14846) WARNING 08-16 14:32:31 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+[m24] dcp=1 p=1024 b=1 i=0 ok=True step_med=12.1157
+[m24] dcp=1 p=1024 b=1 i=1 ok=True step_med=12.1297
+[m24] dcp=1 p=1024 b=1 i=2 ok=True step_med=12.0587
+[m24] dcp=1 p=1024 b=1 i=3 ok=True step_med=12.0473
+[m24] dcp=1 p=1024 b=1 i=4 ok=True step_med=12.0426
+[m24] dcp=1 p=1024 b=1 i=5 ok=True step_med=12.0946
+[m24] dcp=1 p=1024 b=1 i=6 ok=True step_med=12.1283
+[m24] dcp=1 p=1024 b=1 i=7 ok=True step_med=12.1448
+[m24] dcp=1 p=1024 b=1 i=8 ok=True step_med=12.2023
+[m24] dcp=1 p=1024 b=1 i=9 ok=True step_med=12.2142
+[m24] dcp=1 p=1024 b=1 i=10 ok=True step_med=12.2141
+[m24] dcp=1 p=1024 b=1 i=11 ok=True step_med=12.1812
+[m24] dcp=1 p=1024 b=1 i=12 ok=True step_med=12.097
+[m24] dcp=1 p=1024 b=1 i=13 ok=True step_med=12.1002
+[m24] dcp=1 p=1024 b=1 i=14 ok=True step_med=12.098
+[m24] dcp=1 p=1024 b=8 i=0 ok=True step_med=12.2536
+[m24] dcp=1 p=1024 b=8 i=1 ok=True step_med=12.2228
+[m24] dcp=1 p=1024 b=8 i=2 ok=True step_med=12.2768
+[m24] dcp=1 p=1024 b=8 i=3 ok=True step_med=12.2168
+[m24] dcp=1 p=1024 b=8 i=4 ok=True step_med=12.267
+[m24] dcp=1 p=1024 b=8 i=5 ok=True step_med=12.265
+[m24] dcp=1 p=1024 b=8 i=6 ok=True step_med=12.2488
+[m24] dcp=1 p=1024 b=8 i=7 ok=True step_med=12.3393
+[m24] dcp=1 p=1024 b=8 i=8 ok=True step_med=12.2327
+[m24] dcp=1 p=1024 b=8 i=9 ok=True step_med=12.2326
+[m24] dcp=1 p=1024 b=8 i=10 ok=True step_med=12.2023
+[m24] dcp=1 p=1024 b=8 i=11 ok=True step_med=12.2511
+[m24] dcp=1 p=1024 b=8 i=12 ok=True step_med=12.2443
+[m24] dcp=1 p=1024 b=8 i=13 ok=True step_med=12.2498
+[m24] dcp=1 p=1024 b=8 i=14 ok=True step_med=12.2368
+[m24] dcp=1 p=4096 b=1 i=0 ok=True step_med=12.0662
+[m24] dcp=1 p=4096 b=1 i=1 ok=True step_med=11.9963
+[m24] dcp=1 p=4096 b=1 i=2 ok=True step_med=12.092
+[m24] dcp=1 p=4096 b=1 i=3 ok=True step_med=12.0613
+[m24] dcp=1 p=4096 b=1 i=4 ok=True step_med=12.0611
+[m24] dcp=1 p=4096 b=1 i=5 ok=True step_med=12.0281
+[m24] dcp=1 p=4096 b=1 i=6 ok=True step_med=12.0351
+[m24] dcp=1 p=4096 b=1 i=7 ok=True step_med=12.064
+[m24] dcp=1 p=4096 b=1 i=8 ok=True step_med=12.0981
+[m24] dcp=1 p=4096 b=1 i=9 ok=True step_med=12.03
+[m24] dcp=1 p=4096 b=1 i=10 ok=True step_med=12.0414
+[m24] dcp=1 p=4096 b=1 i=11 ok=True step_med=12.0208
+[m24] dcp=1 p=4096 b=1 i=12 ok=True step_med=12.013
+[m24] dcp=1 p=4096 b=1 i=13 ok=True step_med=12.0171
+[m24] dcp=1 p=4096 b=1 i=14 ok=True step_med=12.0531
+[m24] dcp=1 p=4096 b=8 i=0 ok=True step_med=12.2302
+[m24] dcp=1 p=4096 b=8 i=1 ok=True step_med=12.265
+[m24] dcp=1 p=4096 b=8 i=2 ok=True step_med=12.2444
+[m24] dcp=1 p=4096 b=8 i=3 ok=True step_med=12.3895
+[m24] dcp=1 p=4096 b=8 i=4 ok=True step_med=12.3449
+[m24] dcp=1 p=4096 b=8 i=5 ok=True step_med=12.2879
+[m24] dcp=1 p=4096 b=8 i=6 ok=True step_med=12.2865
+[m24] dcp=1 p=4096 b=8 i=7 ok=True step_med=12.3077
+[m24] dcp=1 p=4096 b=8 i=8 ok=True step_med=12.3129
+[m24] dcp=1 p=4096 b=8 i=9 ok=True step_med=12.3042
+[m24] dcp=1 p=4096 b=8 i=10 ok=True step_med=12.296
+[m24] dcp=1 p=4096 b=8 i=11 ok=True step_med=12.4756
+[m24] dcp=1 p=4096 b=8 i=12 ok=True step_med=12.4989
+[m24] dcp=1 p=4096 b=8 i=13 ok=True step_med=12.4645
+[m24] dcp=1 p=4096 b=8 i=14 ok=True step_med=12.4879
+[m24] dcp=1 p=8192 b=1 i=0 ok=True step_med=12.294
+[m24] dcp=1 p=8192 b=1 i=1 ok=True step_med=12.3025
+[m24] dcp=1 p=8192 b=1 i=2 ok=True step_med=12.2787
+[m24] dcp=1 p=8192 b=1 i=3 ok=True step_med=12.2808
+[m24] dcp=1 p=8192 b=1 i=4 ok=True step_med=12.1813
+[m24] dcp=1 p=8192 b=1 i=5 ok=True step_med=12.1955
+[m24] dcp=1 p=8192 b=1 i=6 ok=True step_med=12.2122
+[m24] dcp=1 p=8192 b=1 i=7 ok=True step_med=12.0967
+[m24] dcp=1 p=8192 b=1 i=8 ok=True step_med=12.1115
+[m24] dcp=1 p=8192 b=1 i=9 ok=True step_med=12.0722
+[m24] dcp=1 p=8192 b=1 i=10 ok=True step_med=12.07
+[m24] dcp=1 p=8192 b=1 i=11 ok=True step_med=12.091
+[m24] dcp=1 p=8192 b=1 i=12 ok=True step_med=12.1128
+[m24] dcp=1 p=8192 b=1 i=13 ok=True step_med=12.0814
+[m24] dcp=1 p=8192 b=1 i=14 ok=True step_med=12.0985
+[m24] dcp=1 p=8192 b=8 i=0 ok=True step_med=12.314
+[m24] dcp=1 p=8192 b=8 i=1 ok=True step_med=12.2851
+[m24] dcp=1 p=8192 b=8 i=2 ok=True step_med=12.3265
+[m24] dcp=1 p=8192 b=8 i=3 ok=True step_med=12.3488
+[m24] dcp=1 p=8192 b=8 i=4 ok=True step_med=12.3442
+[m24] dcp=1 p=8192 b=8 i=5 ok=True step_med=12.3025
+[m24] dcp=1 p=8192 b=8 i=6 ok=True step_med=12.3119
+[m24] dcp=1 p=8192 b=8 i=7 ok=True step_med=12.3277
+[m24] dcp=1 p=8192 b=8 i=8 ok=True step_med=12.3163
+[m24] dcp=1 p=8192 b=8 i=9 ok=True step_med=12.3266
+[m24] dcp=1 p=8192 b=8 i=10 ok=True step_med=12.3284
+[m24] dcp=1 p=8192 b=8 i=11 ok=True step_med=12.3334
+[m24] dcp=1 p=8192 b=8 i=12 ok=True step_med=12.32
+[m24] dcp=1 p=8192 b=8 i=13 ok=True step_med=12.3219
+[m24] dcp=1 p=8192 b=8 i=14 ok=True step_med=12.3342
+(Worker_TP0 pid=14846) INFO 08-16 14:33:38 [multiproc_executor.py:790] Parent process exited, terminating worker queues
+INFO 08-16 14:33:38 [multiproc_executor.py:426] [shutdown] Executor: waiting for worker exit count=4
+[rank3]:[W816 14:33:40.321349029 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=67, addr=[localhost]:33836, remote=[localhost]:57133): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7f3708f0b05d in /root/m24-venv/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a914bd (0x7f37277464bd in /root/m24-venv/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x273 (0x7f3727744413 in /root/m24-venv/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x4a5 (0x7f3709f308c5 in /root/m24-venv/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xd6df4 (0x7f378d9a5df4 in /root/.codebuddy-server-cn/bin/stable-a64e0542131159dfcaadd99c096dc9165c6ad3fb/lib/libstdc++.so.6)
+frame #5: <unknown function> + 0x81ca (0x7f37be8651ca in /usr/lib64/libpthread.so.0)
+frame #6: clone + 0x43 (0x7f37bdb3fe73 in /usr/lib64/libc.so.6)
+
+[rank3]:[W816 14:33:40.324291067 ProcessGroupNCCL.cpp:1826] [PG ID 0 PG GUID 0 Rank 3] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+INFO 08-16 14:33:42 [multiproc_executor.py:433] [shutdown] Executor: all workers exited gracefully

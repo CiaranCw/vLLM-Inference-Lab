@@ -86,7 +86,8 @@ compiled FULL 图把提交压到 **15**、wall **7.44→2.50ms**。而**长 pref
 🟡 **只读源码，未获硬件验证**：`MultiprocExecutor` / `InprocClient`、per-rank `collective_rpc`、
 custom all-reduce 的优先路径选择（带 `file:line`，见 `notes/m22/tensor_parallel.md`）。
 
-⚪ **仅设计，未实现未实测**：**PP / DP / EP / CP / P-D 分离**、多卡 serving、扩展效率曲线。
+⚪ **仅设计，未实现未实测**：**PP / DP / EP / Ring Attention / P-D 分离**、多卡 serving、扩展效率曲线。
+（**Decode Context Parallel** 已在 M24 用同一类 4×H20、**1.5B** 实测：KV tokens 恰好 2.0×，六档 decode step 更慢；见 `notes/m24/results.md`。不得与本项目 7B TP 数字相减。）
 方案原文在 [`../../MULTI_GPU_EXPERIMENT_PLAN.md`](../../MULTI_GPU_EXPERIMENT_PLAN.md)。
 **阻塞于多卡机时**（H20 窗口已结束），**不是**阻塞于其他模块。
 
@@ -191,7 +192,7 @@ profiler 的结论以 JSON 指标呈现。因此实际用于讲述的 5 张图�
 | **多卡 Tensor Parallel** | 🟢 已验证（4×H20） | M22 |
 | **PP / DP / EP** | ⚪ **仅设计** | 阻塞于多卡机时 |
 | **TensorRT-LLM 与跨引擎对照** | 🟢 **已验证**（M23 L1 FROZEN） | 2×2 execution-mode，CI 全排除 0；generation consistency 2/6·1/6 记 divergence；⚪ L2/L3/kernel profiling 未做 |
-| 长上下文 / CP / Ring / P-D | 🟡 **T（只读源码）** / ⚪ Ring 未在本树实现 / ⬜ E | M24 T COMPLETE；DCP ≠ Ring Attention；E 等下一次多卡机 |
+| 长上下文 / CP / Ring / P-D | 🟢 **DCP 已验证**（4×H20） / ⚪ Ring 未在本树实现 / ⬜ P-D E | M24 DCP：KV 2.0×、step 更慢（CI 排除 0）；≠ Ring Attention |
 | 模型压缩（蒸馏/剪枝/低秩） | 🟡 **T COMPLETE**（推理岗） / ⬜ E | M25；不做压缩实验 |
 | Kubernetes / 多副本 / 跨机 SLA | ⚪ **未做** | 不在本 lab 范围 |
 

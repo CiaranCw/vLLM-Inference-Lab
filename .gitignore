@@ -49,6 +49,12 @@ _h20_pull/
 **/m22_h20_formal_*.tar.gz
 **/m22_h20_formal_*.tar.gz.sha256
 outputs/m22/traces/
+
+# M24 chrome traces 体积大；kernel 名以 profiler_out_*.txt 入库
+outputs/m24/traces/**/*.pt.trace.json.gz
+outputs/m24/transfer_test_*
+**/m24_h20_formal_*.tar.gz
+**/m24_h20_formal_*.tar.gz.sha256
 *.safetensors
 *.whl
 wheelhouse/

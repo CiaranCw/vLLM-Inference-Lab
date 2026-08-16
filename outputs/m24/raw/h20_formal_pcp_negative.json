@@ -1,0 +1,11 @@
+{
+  "tag": "h20_formal",
+  "expected": "engine_init_fails_supports_pcp",
+  "model": "/root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct",
+  "ok_as_negative": false,
+  "built_engine": false,
+  "error_type": "ValidationError",
+  "error": "1 validation error for ParallelConfig\n  Value error, World size (8) is larger than the number of available GPUs (4) in this node. If this is intentional and you are using:\n- ray, set '--distributed-executor-backend ray'.\n- multiprocessing, set '--nnodes' appropriately. [type=value_error, input_value=ArgsKwargs((), {'pipeline...'numa_bind_cpus': None}), input_type=ArgsKwargs]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+  "traceback": "Traceback (most recent call last):\n  File \"/root/m24_h20_transfer/vllm-inference-lab/scripts/m24_pcp_negative.py\", line 52, in main\n    LLMEngine.from_engine_args(\n  File \"/root/m24-venv/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py\", line 171, in from_engine_args\n    vllm_config = engine_args.create_engine_config(usage_context)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/m24-venv/lib/python3.11/site-packages/vllm/engine/arg_utils.py\", line 2044, in create_engine_config\n    parallel_config = ParallelConfig(\n                      ^^^^^^^^^^^^^^^\n  File \"/root/m24-venv/lib/python3.11/site-packages/pydantic/_internal/_dataclasses.py\", line 121, in __init__\n    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)\npydantic_core._pydantic_core.ValidationError: 1 validation error for ParallelConfig\n  Value error, World size (8) is larger than the number of available GPUs (4) in this node. If this is intentional and you are using:\n- ray, set '--distributed-executor-backend ray'.\n- multiprocessing, set '--nnodes' appropriately. [type=value_error, input_value=ArgsKwargs((), {'pipeline...'numa_bind_cpus': None}), input_type=ArgsKwargs]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\n",
+  "elapsed_s": 4.763
+}

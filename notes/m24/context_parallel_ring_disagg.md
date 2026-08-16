@@ -1,10 +1,10 @@
-# M24 · Context Parallel / Ring Attention / Prefill-Decode Disaggregation —— T
+# M24 · Context Parallel / Ring Attention / Prefill-Decode Disaggregation —— T + DCP E
 
-> **状态**：**T COMPLETE**（2026-08-14）。**E/H 未执行**（★多卡门控；等下一次多卡机，不让硬件阻塞理论学习）。
+> **状态**：**T COMPLETE**（2026-08-14）。**DCP E+O+H COMPLETE**（2026-08-16 · 4×H20 / 1.5B）。**Ring Attention / P-D E 未执行**。
 > **版本基准**：`../vllm-src` @ `ee0da84` = tag **v0.24.0**。下文 `file:line` 均对本树实读；
 > 本工作树含所有者中文学习注释，行号相对干净上游会偏。
-> **边界**：下列机制是源码与论文级理解，**不是**本机实测。绝对值仍只适用于
-> 单卡 RTX 5080 / sm_120 / Qwen2.5-0.5B / eager / in-process，**不外推**。
+> **DCP 实测数字**只适用于 4×H20 / v0.24.0 wheel / 1.5B / eager / in-process，见 [`results.md`](results.md)；
+> 不得与 5080 或 M22 7B TP 相减。
 >
 > 面试一句：**在 vLLM 里看到 CP 配置 ≠ 掌握 Ring Attention。**
 
@@ -240,10 +240,12 @@ Break-even：**若 `T_KV_transfer + decode setup` 大于 colocated 省下的 pre
 
 还要付：两套权重（或至少两套引擎状态）、路由、backpressure、失败重试。`kv_rank` 注释限制当前是 **1P1D**。
 
-### 3.4 本轮明确不做（E）
+### 3.4 本轮明确不做 / 已做边界（E）
 
-- [ ] 双实例 P-D（任何 connector）
-- [ ] 多卡 DCP / PCP
+- [x] 多卡 **DCP**（4×H20 / 1.5B / TP=4 / dcp∈{1,2}）——见 [`results.md`](results.md)
+- [x] PCP **负例**（4 卡 TP=4×PCP=2 → `world_size=8`，引擎未建成；未走到 `supports_pcp`）
+- [ ] PCP 作为性能实验（本树无 `supports_pcp=True`）
+- [ ] 双实例 P-D（任何 connector）——P3 未跑
 - [ ] Ring Attention 实现或 Nsight
 - [ ] 单卡「假 P-D」（两个进程抢一张卡）——即使得出数字，也 **不得** 写成落地
 
@@ -261,12 +263,13 @@ Break-even：**若 `T_KV_transfer + decode setup` 大于 colocated 省下的 pre
 
 ---
 
-## 5. 未执行
+## 5. 未执行 / 已执行
 
-- [ ] E：多卡 DCP（KV 复制因子、decode step、通信 trace）
-- [ ] E：PCP（等 impl `supports_pcp=True` 或换支持 PCP 的 backend/版本）
+- [x] E：多卡 DCP（KV 复制因子 2.0×、decode step 六档 DCP=2 更慢且 CI 排除 0、通信 trace）——[`results.md`](results.md)
+- [x] E：PCP 负例（本 4 卡机 `world_size` 先拒；不是性能数字）
+- [ ] E：PCP 正性能（等 impl `supports_pcp=True` 或换支持 PCP 的 backend/版本）
 - [ ] E：Ring Attention（论文实现或第三方，Nsight 看重叠）
 - [ ] E：P-D 双实例（TTFT / 尾部 ITL / 传输延迟；不把吞吐当成功线）
 - [ ] H：跨节点 KV、多 P 多 D、故障与 backpressure
 
-硬件到了再开 E；本文件不因「理论成立」勾选。
+Ring / P-D / 跨节点不因 DCP 已跑而勾选。

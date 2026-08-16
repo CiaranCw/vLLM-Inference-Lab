@@ -1,6 +1,7 @@
 # M24 Execution Freeze（上机前快照）
 
 **Freeze ID:** `FROZEN_FOR_H20_M24_2026-08-15`  
+**执行**：2026-08-16 已在 4×H20 跑完 P0+P1+P2；结论见 [`results.md`](results.md)。本文件是上机前快照，不改矩阵。  
 **Copy-ready path:** `/home/ciaran/m24_h20_transfer/`
 
 | 项 | 值 |

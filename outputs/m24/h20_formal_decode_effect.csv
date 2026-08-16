@@ -1,0 +1,7 @@
+tag,prompt_len,batch_size,median_dcp2_minus_dcp1_ms,ci95_lo,ci95_hi,excludes_zero,n_dcp1,n_dcp2,note
+h20_formal,1024,1,10.6406,10.5449,11.1437,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。
+h20_formal,1024,8,13.7279,13.6531,13.8903,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。
+h20_formal,4096,1,11.7851,11.5185,11.9021,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。
+h20_formal,4096,8,13.6259,13.304,13.8719,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。
+h20_formal,8192,1,11.7341,11.6082,11.8132,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。
+h20_formal,8192,8,13.7879,13.5707,14.1188,True,15,15,正值 = DCP=2 更慢。CI 含 0 → 未观察到超出噪声的差异。这不是 Ring Attention。

@@ -1,7 +1,7 @@
 # M24 · 4×H20 实验矩阵（**已冻结 · 上机前**）
 
 > **Freeze ID**：`FROZEN_FOR_H20_M24_2026-08-15`
-> **状态**：READY_FOR_H20_EXECUTION。未跑过任何多卡数字；本文件不含结果。
+> **状态**：EXECUTED 2026-08-16（`tag=h20_formal`）。本文件保持冻结矩阵，**不含结果数字**；结论见 [`results.md`](results.md)。
 > **硬件**：与 M22 同一类窗口——4× NVIDIA H20 / 单节点。上次实测见 `notes/m22/execution_record.md`。
 > **版本**：H20 上次用的是 **vLLM 0.24.0 wheel**（非本机 editable `ee0da84`）。
 > 结论不得与 RTX 5080 / 0.5B / `local_preflight` 混写。

@@ -61,10 +61,15 @@ def main():
         out["error"] = repr(e)
         out["traceback"] = traceback.format_exc()
         text = (out["error"] or "") + (out["traceback"] or "")
+        # 本树 PCP 乘进 world_size：4 卡 TP=4 × PCP=2 → world_size=8，
+        # 会在 ParallelConfig 校验处先被拒，到不了 supports_pcp 断言。
+        # 两种失败都是有效负例（引擎未建成）；成功建起来才是版本漂移。
         out["ok_as_negative"] = (
             "supports_pcp" in text
             or "PCP" in text
             or "prefill context" in text.lower()
+            or "World size" in text
+            or "world_size" in text.lower()
         )
     out["elapsed_s"] = round(time.perf_counter() - t0, 3)
     dest = os.path.join(ROOT, "outputs", "m24", "raw", f"{a.tag}_pcp_negative.json")

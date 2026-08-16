@@ -1,0 +1,6 @@
+[run_all] === tag=h20_smoke dcp=2 shard=run === -> /root/m24_h20_transfer/vllm-inference-lab/logs/m24/h20_smoke_dcp2_run.log
+[run_all] dcp=2 run rc=0 elapsed=55.1s
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_smoke_memory_kv.csv
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_smoke_decode.csv
+[m24] wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/h20_smoke_decode_effect.csv
+[run_all] all done.

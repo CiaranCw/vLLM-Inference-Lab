@@ -42,7 +42,7 @@
 | M13 | 首次上游 PR ★ | 🟡 | **PR #51017 已提交，等待 maintainer**（详见 §3） |
 | M16 | 项目整理 + 面试表达 | ✅ | README/图/三档表达 |
 
-### 第二阶段（M17–M26）：M17 / M18 / M19 / M20 / M21 / M22(TP) / M23(L1) / M24(T) / M25(T) / M26 已收口
+### 第二阶段（M17–M26）：M17 / M18 / M19 / M20 / M21 / M22(TP) / M23(L1) / M24(DCP) / M25(T) / M26 已收口
 | 模块 | 主题 | 状态 | 备注 |
 |---|---|:--:|---|
 | **M17** | Prefix Caching & Chunked Prefill | ✅ | **主线已收口**；三项可选扩展未执行、不阻塞后续（见 §4） |
@@ -52,7 +52,7 @@
 | M21 | 监控 + 容量规划（Prom/Grafana） | ✅ | **T+E+O COMPLETE**（栈+容量+瓶颈签名+故障演练；2026-08-12 已做 evidence audit，见 `notes/m21/results.md` §10） |
 | **M22** | TP/PP/DP/EP | ✅/⬜ | **TP T+E+O+H COMPLETE**（4×H20，`notes/m22/results.md`）；**PP/DP/EP 未做** |
 | M23 | TensorRT-LLM 跨引擎 | ✅ | **L1 FROZEN**：2×2 + 跨引擎 consistency（2/6、1/6，numerical divergence）；不继续 L2/L3；见 `notes/m23/results.md` |
-| M24 | CP / Ring Attention / P-D 分离 | ✅/⬜ | **T COMPLETE**（`notes/m24/`）；**E/H 等下一次多卡机**，不用单卡模拟写成落地 |
+| M24 | CP / Ring Attention / P-D 分离 | ✅/⬜ | **T + DCP E+O+H COMPLETE**（4×H20，`notes/m24/results.md`）；**Ring / P-D 未做** |
 | M25 | 压缩（蒸馏/剪枝/低秩） | ✅ | **T COMPLETE**（`notes/m25/compression.md`）；本轮明确不做 E |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
 
@@ -153,11 +153,12 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-08-14 更新（当前下一步）**
-> - **M23 L1 已冻结**：不扩 L2/L3/kernel profiling。正式 bench 四组 raw/csv 均为 `out_len_all_equal=True`、`n_out_checked=330`（Shape A 定长 128）；不变量 `m23_shapeA_out_len_128` 已钉死。
-> - **M25 T COMPLETE**：蒸馏不天然缩词表/context；非结构化 pruning 须匹配 sparse kernel；低秩是计算节省 vs launch/中间激活的 trade-off（CUDA Graph ≠ fusion）；逐层可压缩性 model-dependent。**不做 E**。
-> - **M24 T COMPLETE**：CP / Ring / P-D 理论+源码路径+性能模型见 `notes/m24/`。**E/H 等下一次多卡机**，不要用单卡模拟后写成落地。纪律：看到 CP 配置 ≠ 掌握 Ring Attention。
+> **2026-08-16 更新（当前下一步）**
+> - **M24 DCP E+O+H COMPLETE**：4×H20 / 1.5B / TP=4；KV tokens 恰好 2.0×，六档 decode step DCP=2 更慢（CI 排除 0）；PCP 负例在 `world_size=8` 被拒。**Ring Attention / P-D 仍 ⬜**。见 `notes/m24/results.md`。
+> - **M23 L1 已冻结**：不扩 L2/L3/kernel profiling。
+> - **M25 T COMPLETE**：不做 E。
 > - M13 PR 仍等 maintainer label。
+> - 下一优先：M22 的 PP/DP/EP（仍需多卡窗口）；或 M13 review。
 >
 > 以下保留为背景（交接早期选项；M18/M19/M20/M21/M22/M23 均已收口）。
 

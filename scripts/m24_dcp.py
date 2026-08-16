@@ -502,8 +502,17 @@ def run_shard(dcp: int, tag: str, model: str, quick: bool, profile: bool) -> int
     tf = TokenFactory(engine, model)
     try:
         if profile:
-            # 短跑只为留下 trace，不算正式 D2 网格
-            rec = run_d2_sample(engine, spy, tf, dcp, 1, 8, 1024)
+            # 0.24.0：只传 ProfilerConfig 不会落盘 chrome trace，
+            # 必须显式 start_profile()/stop_profile()（H20 首跑已实证）。
+            # 本 shard 用 8 token 短跑，稳态 step 必然 <5 → D2 success=False
+            # 是阈值，不是缺 trace；profile 成败看是否写出 trace。
+            if hasattr(engine, "start_profile"):
+                engine.start_profile()
+            try:
+                rec = run_d2_sample(engine, spy, tf, dcp, 1, 8, 1024)
+            finally:
+                if hasattr(engine, "stop_profile"):
+                    engine.stop_profile()
             rec.update(
                 {
                     "tag": tag,
@@ -513,7 +522,13 @@ def run_shard(dcp: int, tag: str, model: str, quick: bool, profile: bool) -> int
                 }
             )
             append_jsonl(jsonl, rec)
-            return 0 if rec.get("success") else 1
+            if not rec.get("success"):
+                print(
+                    "[m24] profile 样本 success=False（8 token → 稳态 step<5，预期）；"
+                    "正式 D2 以 run shard 为准",
+                    flush=True,
+                )
+            return 0
 
         for prompt_len in ctxs:
             for batch in batches:

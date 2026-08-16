@@ -1,0 +1,2 @@
+tag,dcp,n_ranks,sum_weight_bytes,sum_available_kv_bytes,sched_kv_cache_size_tokens,num_kv_heads_per_rank,dcp_effective
+h20_smoke,2,4,3324039168,338432690588,11803584,1,2

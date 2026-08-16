@@ -1,0 +1,15 @@
+# cmd: /root/m24-venv/bin/python3 /root/m24_h20_transfer/vllm-inference-lab/scripts/m24_pcp_negative.py --tag h20_formal --model /root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct
+WARNING 08-16 14:39:08 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 08-16 14:39:08 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+INFO 08-16 14:39:08 [model.py:1725] Using max model len 2048
+{
+  "tag": "h20_formal",
+  "expected": "engine_init_fails_supports_pcp",
+  "model": "/root/m24_h20_transfer/models/Qwen2.5-1.5B-Instruct",
+  "ok_as_negative": false,
+  "built_engine": false,
+  "error_type": "ValidationError",
+  "error": "1 validation error for ParallelConfig\n  Value error, World size (8) is larger than the number of available GPUs (4) in this node. If this is intentional and you are using:\n- ray, set '--distributed-executor-backend ray'.\n- multiprocessing, set '--nnodes' appropriately. [type=value_error, input_value=ArgsKwargs((), {'pipeline...'numa_bind_cpus': None}), input_type=ArgsKwargs]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+  "elapsed_s": 4.763
+}
+wrote /root/m24_h20_transfer/vllm-inference-lab/outputs/m24/raw/h20_formal_pcp_negative.json
