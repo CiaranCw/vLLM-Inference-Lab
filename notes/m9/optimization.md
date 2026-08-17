@@ -89,8 +89,8 @@ compiled decode，M9 开 vs 关（独立进程，flag 在 init 读取），≥40
 cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
 python scripts/m9_microbench.py                       # 机制天花板 -> outputs/m9/microbench.csv
 # 正确性（关=零副作用 / 开=正确性；均应等于基线）
-VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/day1_baseline.py --max-tokens 16 --out outputs/m9/corr_off.json
-VLLM_LAB_M9_COALESCE=1 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/day1_baseline.py --max-tokens 16 --out outputs/m9/corr_on.json
+VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/m1_baseline.py --max-tokens 16 --out outputs/m9/corr_off.json
+VLLM_LAB_M9_COALESCE=1 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/m1_baseline.py --max-tokens 16 --out outputs/m9/corr_on.json
 # E2E 单变量对照 + 机制计数
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/m9_e2e.py --m9 off --out outputs/m9/e2e_off.json
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 python scripts/m9_e2e.py --m9 on  --out outputs/m9/e2e_on.json

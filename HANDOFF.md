@@ -153,7 +153,8 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-08-16 更新（当前下一步）**
+> **2026-08-17 更新（当前下一步）**
+> - **命名统一已落地**：M1–M3 由 `dayN` 改为 `mN`（`notes/` / `outputs/` / `logs/` / `scripts/`）。原始 `.log` / `.jsonl` 内容未改；`backups/dayN/` 是历史备份目录名，未改。
 > - **M24 DCP E+O+H COMPLETE**：4×H20 / 1.5B / TP=4；KV tokens 恰好 2.0×，六档 decode step DCP=2 更慢（CI 排除 0）；PCP 负例在 `world_size=8` 被拒。**Ring Attention / P-D 仍 ⬜**。见 `notes/m24/results.md`。
 > - **M23 L1 已冻结**：不扩 L2/L3/kernel profiling。
 > - **M25 T COMPLETE**：不做 E。

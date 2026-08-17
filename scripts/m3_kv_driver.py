@@ -1,6 +1,6 @@
-"""Day 3 · 手动驱动 V1 LLMEngine 观察 KV Cache / Block 管理。
+"""M3 · 手动驱动 V1 LLMEngine 观察 KV Cache / Block 管理。
 
-复用 Day2 的手动驱动思路，新增 KV 相关旋钮：
+复用 M2 的手动驱动思路，新增 KV 相关旋钮：
   --num-gpu-blocks-override   把 GPU KV 块数强行设小，逼出 preemption
   --enable-prefix-caching     开/关 prefix caching（--no-enable-prefix-caching 关）
 
@@ -13,9 +13,9 @@ free / get_new_blocks / free_blocks / evict）与 scheduler 的 preempt 事件�
 
 用法示例：
   VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_COMPONENTS=kv,scheduler VLLM_LAB_TRACE_MAX_STEPS=300 \
-  VLLM_LAB_TRACE_JSONL=outputs/day3/K1.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
+  VLLM_LAB_TRACE_JSONL=outputs/m3/K1.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
   VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-  python scripts/day3_kv_driver.py --scenario K1
+  python scripts/m3_kv_driver.py --scenario K1
 """
 
 from __future__ import annotations
@@ -85,7 +85,7 @@ def build_scenario(name: str):
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="vLLM Day3 KV/block driver")
+    p = argparse.ArgumentParser(description="vLLM M3 KV/block driver")
     p.add_argument("--scenario", required=True, choices=["K1", "K2", "K3", "K4", "K5"])
     p.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct")
     p.add_argument("--max-model-len", type=int, default=2048)
@@ -186,7 +186,7 @@ def main() -> None:
     )
 
     print("=" * 80)
-    print(f"[day3] scenario={args.scenario} max_num_seqs={max_num_seqs} "
+    print(f"[m3] scenario={args.scenario} max_num_seqs={max_num_seqs} "
           f"num_gpu_blocks_override={ngbo} enable_prefix_caching={epc}")
     for a in arrivals:
         print(f"        step {a[0]:>2}  {a[1]:<4}  prompt_chars={len(a[2]):<4}  "
@@ -217,7 +217,7 @@ def main() -> None:
             )
             injected.append(rid)
         if injected:
-            print(f"[day3] >>> step {step_idx}: add_request {injected}")
+            print(f"[m3] >>> step {step_idx}: add_request {injected}")
 
         pending_future = any(s > step_idx for s in by_step)
         if not engine.has_unfinished_requests() and not injected and not pending_future:
@@ -228,7 +228,7 @@ def main() -> None:
                          if getattr(o, "finished", False)]
         finished_ids.extend(step_finished)
         if step_finished:
-            print(f"[day3] step {step_idx}: finished={step_finished} "
+            print(f"[m3] step {step_idx}: finished={step_finished} "
                   f"unfinished={engine.get_num_unfinished_requests()}")
         driver_log.append({"step": step_idx, "injected": injected,
                            "finished": step_finished})
@@ -238,8 +238,8 @@ def main() -> None:
         step_idx += 1
 
     print("=" * 80)
-    print(f"[day3] done. finished={sorted(set(finished_ids))} steps={len(driver_log)}")
-    print("[day3] driver_summary=" + json.dumps(driver_log, ensure_ascii=False),
+    print(f"[m3] done. finished={sorted(set(finished_ids))} steps={len(driver_log)}")
+    print("[m3] driver_summary=" + json.dumps(driver_log, ensure_ascii=False),
           file=sys.stderr)
     print("=" * 80)
 

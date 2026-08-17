@@ -1,20 +1,20 @@
-"""Day 2 · 手动驱动 V1 LLMEngine 观察 Continuous Batching。
+"""M2 · 手动驱动 V1 LLMEngine 观察 Continuous Batching。
 
 用 `LLMEngine.from_engine_args` 在进程内构建引擎，按「到达表」在指定 step
 调用 `add_request` 注入请求，逐 `step()` 驱动，直到全部完成。调度细节由
-Day1 的 `_lab_trace.py` 钩子（scheduler/schedule）输出到 stderr + JSONL。
+M1 的 `_lab_trace.py` 钩子（scheduler/schedule）输出到 stderr + JSONL。
 
 场景：
-  E1  单请求（基线，验证手动驱动与 Day1 一致）
+  E1  单请求（基线，验证手动驱动与 M1 一致）
   E2  错峰 2 请求、长度不同（观察 A decode 与 B prefill 同批交错）
   E3  4 请求 + max_num_seqs=2（观察 C/D waiting→running 排队）
   E4  chunked prefill（小 max_num_batched_tokens + 长 prompt，观察 prefill 分步）
 
 用法（采样器在本机 sm_120 必须用原生，见 nvcc_flashinfer_check）：
   VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_COMPONENTS=scheduler VLLM_LAB_TRACE_MAX_STEPS=200 \
-  VLLM_LAB_TRACE_JSONL=outputs/day2/E2.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
+  VLLM_LAB_TRACE_JSONL=outputs/m2/E2.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
   VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-  python scripts/day2_engine_driver.py --scenario E2
+  python scripts/m2_engine_driver.py --scenario E2
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ def build_scenario(name: str):
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="vLLM Day2 continuous-batching driver")
+    p = argparse.ArgumentParser(description="vLLM M2 continuous-batching driver")
     p.add_argument("--scenario", required=True,
                    choices=["E1", "E2", "E3", "E4", "E5", "E5b"])
     p.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct")
@@ -124,11 +124,11 @@ def main() -> None:
     )
 
     print("=" * 80)
-    print(f"[day2] scenario={args.scenario} "
+    print(f"[m2] scenario={args.scenario} "
           f"max_num_seqs={max_num_seqs} "
           f"max_num_batched_tokens={max_num_batched_tokens} "
           f"async_scheduling={args.async_scheduling}")
-    print(f"[day2] arrivals (arrive_at_step, req_id, prompt_len_chars, max_tokens):")
+    print(f"[m2] arrivals (arrive_at_step, req_id, prompt_len_chars, max_tokens):")
     for a in arrivals:
         print(f"        step {a[0]:>2}  {a[1]:<8}  chars={len(a[2]):<4}  max_tokens={a[3]}")
     print("=" * 80)
@@ -166,7 +166,7 @@ def main() -> None:
             key_to_id[rid] = internal  # add_request 返回带后缀的内部 id
             injected.append(rid)
         if injected:
-            print(f"[day2] >>> step {step_idx}: add_request {injected}")
+            print(f"[m2] >>> step {step_idx}: add_request {injected}")
 
         # 实验性：本 step 需要阻塞哪些请求（在 schedule 前设置，step 后清除）
         blocked_now = set()
@@ -175,7 +175,7 @@ def main() -> None:
                 blocked_now.add(key_to_id[bkey])
         if blocked_now:
             _lab_trace.set_blocked(blocked_now)
-            print(f"[day2] >>> step {step_idx}: BLOCK {sorted(blocked_now)} "
+            print(f"[m2] >>> step {step_idx}: BLOCK {sorted(blocked_now)} "
                   f"(需 VLLM_LAB_BLOCK=1 生效)")
         else:
             _lab_trace.clear_blocked()
@@ -200,7 +200,7 @@ def main() -> None:
         }
         driver_log.append(rec)
         if injected or step_finished:
-            print(f"[day2] step {step_idx}: injected={injected} "
+            print(f"[m2] step {step_idx}: injected={injected} "
                   f"finished={step_finished} unfinished={n_unfinished}")
 
         if not engine.has_unfinished_requests() and not pending_future:
@@ -208,10 +208,10 @@ def main() -> None:
         step_idx += 1
 
     print("=" * 80)
-    print(f"[day2] done. total_reqs={total_reqs} finished={sorted(set(finished_ids))} "
+    print(f"[m2] done. total_reqs={total_reqs} finished={sorted(set(finished_ids))} "
           f"driver_steps={len(driver_log)}")
     # 把 driver 侧交叉校验写到 stderr 尾部（便于与 trace JSONL 对照）
-    print("[day2] driver_summary=" + json.dumps(driver_log, ensure_ascii=False),
+    print("[m2] driver_summary=" + json.dumps(driver_log, ensure_ascii=False),
           file=sys.stderr)
     print("=" * 80)
 

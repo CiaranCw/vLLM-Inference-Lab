@@ -41,7 +41,7 @@
 
 ### M0 环境与可复现基础设施　🔄
 - ✅ 固定 vLLM commit（`ee0da84` / v0.24.0）、模型（`Qwen/Qwen2.5-0.5B-Instruct`）与关键配置（enforce_eager、`VLLM_USE_FLASHINFER_SAMPLER=0`、`VLLM_ENABLE_V1_MULTIPROCESSING=0`、seed=0、temperature=0）。
-- ✅ 环境记录：`logs/day1/vllm_collect_env.txt`、`logs/day1/nvidia_smi_*.txt`（GPU/Driver/CUDA/PyTorch/vLLM）；本地备忘 `vllm_dev_environment.md` 不入库。editable 安装已验证 `vllm.__file__ → vllm-src`。
+- ✅ 环境记录：`logs/m1/vllm_collect_env.txt`、`logs/m1/nvidia_smi_*.txt`（GPU/Driver/CUDA/PyTorch/vLLM）；本地备忘 `vllm_dev_environment.md` 不入库。editable 安装已验证 `vllm.__file__ → vllm-src`。
 - ✅ 统一 trace 基础设施：`vllm-src/vllm/_lab_trace.py`（统一事件 schema `component/event/fields`、`VLLM_LAB_TRACE*` 开关、JSONL 输出、组件过滤、layer/once/step 限制）。
 - ✅ trace 默认关闭不改变执行语义：多次 E1 回归验证"归一化后逐行一致"（钩子零副作用）；每次改源码前备份到 `backups/`；`logs/*/source_status_{before,after}*.txt` 记录 git 状态。
 - ✅ **统一复现入口已落地**：`config/repro_manifest.yaml`（模块 → 命令 / 产物 / 日志 / 环境变量 / 预期样本数 / 不变量集合）
@@ -58,19 +58,19 @@
   - `check_invariants.py` 目前**只登记了 M17**，M1–M16 的规则待逐步迁移（架构已支持按模块注册）。
   - 文档溯源目前覆盖 E1 主表 + E3-single 表（反向）与关键结论数字（正向）；**§1.2 斜率、§5 对照表等正文推导值尚未覆盖**（已在脚本输出中如实声明，不当作全覆盖）。
   - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（本地维护、不入库，见"持续维护任务"）。
-  - 目录/命名当前为 `dayN` 制（M1–M3 沿用）；后续模块建议改为**主题命名**，此不一致待统一。
+  - ✅ 目录/命名已统一：M1–M3 由 `dayN` 改为 `mN`（`notes/m1–m3`、`outputs/m1–m3`、`logs/m1–m3`、`scripts/m{1,2,3}_*.py`，2026-08-17）。磁盘上 `backups/dayN/` 是历史备份目录名，未改。
 
 ### M1 单请求推理主链路 + Prefill/Decode 运行时 Trace　✅
 - 覆盖：LLM.generate→Engine→Scheduler→Worker→ModelRunner→Qwen2 forward→Attention→Backend→Sampling→输出；Prefill/Decode 调度数据与 Tensor shape 对照；实际 backend 确认。
-- 产出：`scripts/day1_baseline.py`、`notes/day1/{baseline_analysis,runtime_trace}.md`、`outputs/day1/*`、`logs/day1/*`。
+- 产出：`scripts/m1_baseline.py`、`notes/m1/{baseline_analysis,runtime_trace}.md`、`outputs/m1/*`、`logs/m1/*`。
 
 ### M2 Scheduler 与 Continuous Batching　✅
 - 覆盖：多请求错峰混批、token 预算、running/waiting 排队准入、chunked prefill；E5 追加 blocked-decode vs prefill 的预算共享 / 槽位争用。
-- 产出：`scripts/day2_engine_driver.py`、`scripts/day2_build_timeline.py`、`notes/day2/{continuous_batching,e5_blocked_decode_vs_prefill}.md`、`outputs/day2/*`。
+- 产出：`scripts/m2_engine_driver.py`、`scripts/m2_build_timeline.py`、`notes/m2/{continuous_batching,e5_blocked_decode_vs_prefill}.md`、`outputs/m2/*`。
 
 ### M3 KV Cache 与 Block 管理　✅
 - 覆盖：block 分配 / block_table 逻辑→物理 / 跨块边界；prefix 命中(hash/ref_cnt/共享/对齐)；释放→cached-free→复用；KV 不足→抢占→重算(prefix on/off)；K5 追加抢占后尾部优先淘汰、前缀优先保留。
-- 产出：`scripts/day3_kv_driver.py`、`notes/day3/{kv_cache_block_management,k5_eviction_order}.md`、`outputs/day3/*`。
+- 产出：`scripts/m3_kv_driver.py`、`notes/m3/{kv_cache_block_management,k5_eviction_order}.md`、`outputs/m3/*`。
 
 ### M4 Attention Backend　✅
 - **必做（当前真实 backend 主线）**：当前机器最终选中的 backend；Q/K/V reshape；KV Cache tensor shape；slot_mapping 如何进入 KV cache update；block_table 如何进入 attention kernel；Prefill/Decode 如何通过 metadata 表达；Python 层与底层 kernel 的边界。

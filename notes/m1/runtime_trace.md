@@ -1,6 +1,6 @@
-# Day 1 · vLLM V1 单请求推理主链路与 Prefill/Decode 运行时 Trace
+# M1 · vLLM V1 单请求推理主链路与 Prefill/Decode 运行时 Trace
 
-> 全部结论以 `logs/day1/single_request_trace.log`（`VLLM_LAB_TRACE=1`）与 `logs/day1/baseline_debug.log` 的**真实运行日志**为依据，对照 `vllm-src` @ `ee0da84`(v0.24.0) 源码。行号为当前带注释/插桩工作树的近似值。
+> 全部结论以 `logs/m1/single_request_trace.log`（`VLLM_LAB_TRACE=1`）与 `logs/m1/baseline_debug.log` 的**真实运行日志**为依据，对照 `vllm-src` @ `ee0da84`(v0.24.0) 源码。行号为当前带注释/插桩工作树的近似值。
 
 ## 1. 实验目标
 
@@ -33,7 +33,7 @@
 ## 3. 真实调用链（含 Trace 证据）
 
 ```
-用户脚本 scripts/day1_baseline.py: llm.generate([prompt], SamplingParams)
+用户脚本 scripts/m1_baseline.py: llm.generate([prompt], SamplingParams)
   → LLM.generate                         entrypoints/llm.py:470
   → OfflineInferenceMixin._run_engine    entrypoints/offline_utils.py:600   （while has_unfinished_requests: llm_engine.step()）
   → LLMEngine.step                       v1/engine/llm_engine.py:368
@@ -136,19 +136,19 @@ scheduler/update_from_output n_sampled_tokens=1 running=1 computed_after={'0-…
   4. `block_size` 实测为 **16**（非猜测），`num_gpu_blocks=34801`——由 `kv_cache=T(34801,2,16,2,64)` 直接读出。
   5. 采样默认走 FlashInfer（`VLLM_USE_FLASHINFER_SAMPLER` 默认 True），在无 nvcc 的 WSL 会 JIT 失败；本轮改用原生采样器。
 
-## 8. 尚未解决的问题（留待 Day 2+）
+## 8. 尚未解决的问题（留待 M2+）
 
-1. async scheduling（batch queue size 2）在**多请求**下如何交错 prefill/decode（Day 2 continuous batching）。
-2. `block_table` 的逻辑块→物理块映射、ref_cnt、prefix cache 命中（Day 3 KV/block 生命周期）。
+1. async scheduling（batch queue size 2）在**多请求**下如何交错 prefill/decode（M2 continuous batching）。
+2. `block_table` 的逻辑块→物理块映射、ref_cnt、prefix cache 命中（M3 KV/block 生命周期）。
 3. chunked prefill：当 prompt > max_num_batched_tokens 时 prefill 如何被切成多步（本轮 prompt 仅 11 token，未触发）。
-4. 推理期 Triton JIT（`_compute_slot_mapping_kernel` 等）的完整清单与 warmup 覆盖（Day 6 性能）。
+4. 推理期 Triton JIT（`_compute_slot_mapping_kernel` 等）的完整清单与 warmup 覆盖（M6 性能）。
 5. FlashAttention 在 sm_120 选择 FA2 而非 FA3/FA4 的具体判定（`fa_utils.py::get_flash_attn_version`）。
 
 ## 9. Mermaid：真实主链路调用图
 
 ```mermaid
 flowchart TD
-    A["scripts/day1_baseline.py<br/>llm.generate()"] --> B["LLM.generate<br/>entrypoints/llm.py:470"]
+    A["scripts/m1_baseline.py<br/>llm.generate()"] --> B["LLM.generate<br/>entrypoints/llm.py:470"]
     B --> C["OfflineInferenceMixin._run_engine<br/>offline_utils.py:600"]
     C --> D["LLMEngine.step<br/>v1/engine/llm_engine.py:368"]
     D --> E["EngineCore.step<br/>v1/engine/core.py:630"]

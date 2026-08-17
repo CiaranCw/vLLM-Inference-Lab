@@ -10,8 +10,8 @@
 ## 内容
 - `vllm-src.patch`：对 21 个已跟踪文件的改动（相对基准 commit 的 `git diff`），包含：
   - 中文学习注释；
-  - Day1 被动 Trace 钩子（`# VLLM_INFERENCE_LAB_TRACE`，默认关闭，只读不改逻辑）；
-  - Day2 E5 实验性调度钩子（`# VLLM_INFERENCE_LAB_EXPERIMENT`，`VLLM_LAB_BLOCK` 门控，默认关闭）。
+  - M1 被动 Trace 钩子（`# VLLM_INFERENCE_LAB_TRACE`，默认关闭，只读不改逻辑）；
+  - M2 E5 实验性调度钩子（`# VLLM_INFERENCE_LAB_EXPERIMENT`，`VLLM_LAB_BLOCK` 门控，默认关闭）。
 - `new_files/vllm/_lab_trace.py`：新增的统一 Trace 工具（原始树未跟踪，故不在 diff 内，单独提供）。
 
 ## 复现步骤

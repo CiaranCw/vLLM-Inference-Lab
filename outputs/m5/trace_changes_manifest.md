@@ -18,5 +18,5 @@
   本机附加 `VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0`。
 
 ## 零副作用验证
-- 不设 `VLLM_LAB_TRACE` 跑 `day1_baseline.py --max-tokens 16`，输出 token 与 Day1 基线 IDENTICAL（`outputs/m5/regress_eager.json`）。
+- 不设 `VLLM_LAB_TRACE` 跑 `scripts/m1_baseline.py --max-tokens 16`，输出 token 与 M1 基线 IDENTICAL（`outputs/m5/regress_eager.json`）。
 - `logs/m5/source_status_{before,after}.txt`：vLLM-src 文件集合不变（21 M + `_lab_trace.py` 未跟踪）。

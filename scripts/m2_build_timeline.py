@@ -1,4 +1,4 @@
-"""Day 2 · 读取 scheduler_steps JSONL，生成每场景的 Markdown 时间线表。
+"""M2 · 读取 scheduler_steps JSONL，生成每场景的 Markdown 时间线表。
 
 输入：由 `_lab_trace.py` 的 VLLM_LAB_TRACE_JSONL 写出的 scheduler 事件
 （component=scheduler，event=schedule / update_from_output）。
@@ -6,8 +6,8 @@
 输出（stdout）：一张 step × request 的相位甘特表 + 每请求生命周期摘要。
 
 用法：
-  python scripts/day2_build_timeline.py outputs/day2/E2.jsonl --title "E2 错峰2请求" \
-      > outputs/day2/E2_timeline.md
+  python scripts/m2_build_timeline.py outputs/m2/E2.jsonl --title "E2 错峰2请求" \
+      > outputs/m2/E2_timeline.md
 """
 
 from __future__ import annotations

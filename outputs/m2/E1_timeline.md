@@ -1,6 +1,6 @@
 ### 时间线 · E1 单请求基线
 
-数据：`outputs/day2/E1.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
+数据：`outputs/m2/E1.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
 
 | step | R0 | total_sched | running | waiting | 事件 |
 |---|---|---|---|---|---|

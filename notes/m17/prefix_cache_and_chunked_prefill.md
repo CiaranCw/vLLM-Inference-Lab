@@ -21,7 +21,7 @@
 
 | 已有 | 结论 | M17 深化点 |
 |---|---|---|
-| **M3**（`notes/day3/*`） | block_table 逻辑→物理、prefix 命中(hash/ref_cnt/共享/对齐)、释放→cached-free→复用、抢占重算、K5 尾部优先淘汰/前缀优先保留 | 把这些**跨请求**串成一条 block 生命周期时间线，并对上源码 file:line |
+| **M3**（`notes/m3/*`） | block_table 逻辑→物理、prefix 命中(hash/ref_cnt/共享/对齐)、释放→cached-free→复用、抢占重算、K5 尾部优先淘汰/前缀优先保留 | 把这些**跨请求**串成一条 block 生命周期时间线，并对上源码 file:line |
 | **M6**（`outputs/m6/baseline.csv` 的 `prefix` 行） | prefix on/off/cold/hot：hot 命中省 94% 计算 token（scheduled 16 vs 256、hit 240）**但首 token 延迟改善落噪声内**（off 6.99ms / hot 7.88ms，ON 短 prompt 反略慢）→「省计算≠省延迟」 | **M6 用的是短前缀（body≤256）**，正好落在 APC 收益不明显区；M17 **用长共享前缀（512/1024/2048）**——APC 文档明说的真实受益场景——看延迟收益能否浮出噪声 |
 
 > **一句话**：M6 诚实地证明了「短前缀下 APC 收益在噪声内」；M17 要验证「**长前缀下 APC 是否真的省出可测的 TTFT**，以及它的边界（只省 prefill 不省 decode）」。

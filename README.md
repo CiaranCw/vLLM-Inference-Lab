@@ -120,10 +120,10 @@
 
 | 模块 | 一句话成果 | 关键数据 | 源码改动 | 证据 |
 |---|---|---|---|---|
-| **M0** 环境/基础设施 | 固定版本 + 统一 trace 工具 + 零副作用回归 | commit ee0da84 / Qwen2.5-0.5B / sm_120；trace-off 归一化逐行一致 | 只读钩子（默认关） | `logs/day1/{vllm_collect_env,nvidia_smi_*.txt}`、`patches/new_files/vllm/_lab_trace.py` |
-| **M1** 主链路 Trace | 单请求从入口到输出的完整数据流 | backend=FLASH_ATTN；prefill/decode shape 对照 | 无 | `notes/day1/*` |
-| **M2** Continuous Batching | 错峰混批、token 预算、chunked prefill | 同批 prefill+decode；max_num_seqs 排队；E5 预算共享/槽位争用 | 无 | `notes/day2/*` |
-| **M3** KV / Block 管理 | 逻辑→物理块、prefix 命中、抢占重算 | hash/ref_cnt/共享/对齐；K5 尾部优先淘汰、前缀优先保留 | 无 | `notes/day3/*` |
+| **M0** 环境/基础设施 | 固定版本 + 统一 trace 工具 + 零副作用回归 | commit ee0da84 / Qwen2.5-0.5B / sm_120；trace-off 归一化逐行一致 | 只读钩子（默认关） | `logs/m1/{vllm_collect_env,nvidia_smi_*.txt}`、`patches/new_files/vllm/_lab_trace.py` |
+| **M1** 主链路 Trace | 单请求从入口到输出的完整数据流 | backend=FLASH_ATTN；prefill/decode shape 对照 | 无 | `notes/m1/*` |
+| **M2** Continuous Batching | 错峰混批、token 预算、chunked prefill | 同批 prefill+decode；max_num_seqs 排队；E5 预算共享/槽位争用 | 无 | `notes/m2/*` |
+| **M3** KV / Block 管理 | 逻辑→物理块、prefix 命中、抢占重算 | hash/ref_cnt/共享/对齐；K5 尾部优先淘汰、前缀优先保留 | 无 | `notes/m3/*` |
 | **M4** Attention Backend | **闭环**：SchedulerOutput→KV 写(slot_mapping)→读(block_table) | GQA 14/2/64；kv_cache shape (34801,2,16,2,64) | 2 只读钩子 | `notes/m4/*`、`outputs/m4/m4_closed_loop.jsonl` |
 | **M5** 执行模式 | enforce_eager 实为一票否决；默认 O2 compiled 在 sm_120 未降级 | 捕获 51 PIECEWISE+35 FULL；compiled 与 eager 第 5 token 起分叉(数值差异非 bug) | 2 只读钩子 | `notes/m5/*`、`outputs/m5/*` |
 | **M6** 引擎 Benchmark ★ | decode 近平/吞吐近线性、prefill 计算受限、KV 容量 | compiled 全 batch 快 2.5–2.85×；KV≈12KiB/token；最大并发 357× 是容量等价值(运行受 max_num_seqs=64 限) | 无 | `notes/m6/*`、`outputs/m6/baseline.csv` |

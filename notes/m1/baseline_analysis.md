@@ -1,6 +1,6 @@
-# Day 1 · 基线真实执行组件分析
+# M1 · 基线真实执行组件分析
 
-> 数据来源：`logs/day1/baseline_debug.log`（`VLLM_ENABLE_V1_MULTIPROCESSING=0 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_LOGGING_LEVEL=DEBUG`）、`outputs/day1/baseline_result.json`、`logs/day1/vllm_collect_env.txt`，并对照 `vllm-src` @ `ee0da84` (v0.24.0) 源码。所有结论均给出日志/源码依据，非纯静态推测。
+> 数据来源：`logs/m1/baseline_debug.log`（`VLLM_ENABLE_V1_MULTIPROCESSING=0 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_LOGGING_LEVEL=DEBUG`）、`outputs/m1/baseline_result.json`、`logs/m1/vllm_collect_env.txt`，并对照 `vllm-src` @ `ee0da84` (v0.24.0) 源码。所有结论均给出日志/源码依据，非纯静态推测。
 
 claude --resume 16706085-d792-413c-af83-8776ca83b24b
 
@@ -58,9 +58,9 @@ claude --resume 16706085-d792-413c-af83-8776ca83b24b
 - **均关闭**（enforce_eager=True）：`config/vllm.py:1062` “Enforce eager set, disabling torch.compile and CUDAGraphs”；`CompilationMode.NONE`、`cudagraph_mode=CUDAGraphMode.NONE`；每步日志 `cudagraph_mode: NONE`。
 - 但**推理期仍有 Triton JIT**：`triton_utils/jit_monitor.py:106` 警告 `_compute_slot_mapping_kernel` 在推理中 JIT 编译（延迟尖峰）。时间线：prefill 11:28:02 → 首个 decode 11:28:29（~27s，slot mapping kernel JIT）→ 第二个 decode 起集中在 11:29:16（其余 decode 内核 JIT 后，剩余 step 同一秒内完成）。这解释了 generate≈74s 的冷启动开销主要来自 JIT 而非算力。
 
-## 当前仍不确定的问题（留待 Day1 后续 / Day2）
+## 当前仍不确定的问题（留待 M1 后续 / M2）
 1. block_size 的确切值与 num_gpu_blocks（Trace 中直接读 `attn_metadata` / block_table 确认）。
 2. Prefill 与 Decode 在 `_prepare_inputs` 的 `query_start_loc`/`seq_lens`/`positions` 及 backend 入口 q/k/v/kv_cache/block_table 的确切 shape（Step 5 Trace 验证）。
 3. GQA 具体切分：Qwen2.5-0.5B 的 num_attention_heads 与 num_key_value_heads 在运行时的 q/k/v head 维度（Trace layer 0 记录）。
 4. async scheduling（batch queue size 2）对单请求 step 序列的影响（是否与同步调度一致）。
-5. 推理期 Triton JIT 的完整清单与可否通过 warmup 覆盖（性能话题，留待 Day6）。
+5. 推理期 Triton JIT 的完整清单与可否通过 warmup 覆盖（性能话题，留待 M6）。

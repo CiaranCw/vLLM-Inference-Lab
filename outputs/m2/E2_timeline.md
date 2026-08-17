@@ -1,6 +1,6 @@
 ### 时间线 · E2 错峰2请求(长度不同)
 
-数据：`outputs/day2/E2.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
+数据：`outputs/m2/E2.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
 
 | step | A_long | B_short | total_sched | running | waiting | 事件 |
 |---|---|---|---|---|---|---|

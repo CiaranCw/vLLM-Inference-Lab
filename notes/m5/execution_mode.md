@@ -189,7 +189,7 @@ compiled: [84648, 19479, 54851, 101053,  18493, 102217, 100134, 104949]
   - `exec/capture`（`_capture_cudagraphs` 内，line ~6913）：每张被捕获图的 `runtime_mode、num_tokens、uniform_decode`。
   - （另注：此前模块已有 `model_runner/model_forward` 钩子记录每步 `cudagraph_mode`，本次未改动它。）
 - **备份**：`backups/m5/gpu_model_runner.py.pre_m5`。
-- **回归（零副作用）**：不设 `VLLM_LAB_TRACE` 跑 eager 基线（`scripts/day1_baseline.py --max-tokens 16`），输出 token 与 Day1 基线 **逐一致（IDENTICAL）**：
+- **回归（零副作用）**：不设 `VLLM_LAB_TRACE` 跑 eager 基线（`scripts/m1_baseline.py --max-tokens 16`），输出 token 与 M1 基线 **逐一致（IDENTICAL）**：
   ```
   [84648,19479,54851,101053,100751,18493,111390,15946,99982,24360,60949,25511,32664,9370,99982,24360]
   ```
@@ -228,7 +228,7 @@ VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 \
   python scripts/m5_exec_mode.py --no-enforce-eager --max-tokens 8 \
   --out outputs/m5/compiled_config.json 2>&1 | tee logs/m5/compiled.log
 
-# 回归（钩子零副作用，trace 关）：输出应与 Day1 基线逐 token 一致
+# 回归（钩子零副作用，trace 关）：输出应与 M1 基线逐 token 一致
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-  python scripts/day1_baseline.py --max-tokens 16 --out outputs/m5/regress_eager.json
+  python scripts/m1_baseline.py --max-tokens 16 --out outputs/m5/regress_eager.json
 ```

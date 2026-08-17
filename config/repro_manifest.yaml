@@ -63,8 +63,7 @@ modules:
         - vllm_dev_environment.md
     invariants: [env_vars, vllm_points_to_src]
     known_gaps:
-      # 如实登记：本轮补了统一入口与正式不变量脚本，命名统一仍未做
-      - "M1–M3 仍为 dayN 命名，未统一为主题命名"
+      # 如实登记：本轮补了统一入口与正式不变量脚本；M1–M3 目录已于 2026-08-17 从 dayN 改为 mN（不再是 gap）
       - "check_invariants 目前登记了 M17 / M19 / M22，M1–M16 的规则待逐步迁移"
       - "文档数字反向溯源目前只覆盖 M17 的两张主表，M19 的表格尚未纳入自动核对"
 

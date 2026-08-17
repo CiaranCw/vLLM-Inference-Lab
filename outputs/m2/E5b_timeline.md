@@ -1,6 +1,6 @@
 ### 时间线 · E5b one slot (max_num_seqs=1, budget=64)
 
-数据：`outputs/day2/E5b.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
+数据：`outputs/m2/E5b.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
 
 | step | D | P | total_sched | running | waiting | 事件 |
 |---|---|---|---|---|---|---|

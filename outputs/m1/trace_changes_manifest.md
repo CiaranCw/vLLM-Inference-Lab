@@ -1,4 +1,4 @@
-# Day 1 · Trace 改动清单（trace_changes_manifest.md）
+# M1 · Trace 改动清单（trace_changes_manifest.md）
 
 本轮为观察运行时主链路而加入的 Trace 代码。**默认完全关闭**（`VLLM_LAB_TRACE` 未设或为 0 时零输出、零行为改变）。所有改动位于 `vllm-src`，与用户已有的中文注释改动相互独立。
 

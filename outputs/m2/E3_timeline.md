@@ -1,6 +1,6 @@
 ### 时间线 · E3 四请求 max_num_seqs=2 排队
 
-数据：`outputs/day2/E3.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
+数据：`outputs/m2/E3.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
 
 | step | A | B | C | D | total_sched | running | waiting | 事件 |
 |---|---|---|---|---|---|---|---|---|

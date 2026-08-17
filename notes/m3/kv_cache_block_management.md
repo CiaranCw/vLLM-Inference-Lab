@@ -1,9 +1,9 @@
-# Day 3 · KV Cache 与 Block 管理
+# M3 · KV Cache 与 Block 管理
 
-> 全部结论以真实 trace 为依据：`outputs/day3/K{1,2,3,4}.jsonl`、`K2_off.jsonl`、`K4_on.jsonl` 与 `logs/day3/*.log`（component `kv`/`scheduler` 被动钩子，`# VLLM_INFERENCE_LAB_TRACE`，默认关、已验证零副作用），对照 `vllm-src` @ `ee0da84` (v0.24.0)。下文 trace 均已把 request_id 的随机后缀去掉。
+> 全部结论以真实 trace 为依据：`outputs/m3/K{1,2,3,4}.jsonl`、`K2_off.jsonl`、`K4_on.jsonl` 与 `logs/m3/*.log`（component `kv`/`scheduler` 被动钩子，`# VLLM_INFERENCE_LAB_TRACE`，默认关、已验证零副作用），对照 `vllm-src` @ `ee0da84` (v0.24.0)。下文 trace 均已把 request_id 的随机后缀去掉。
 
 ## 0. 方法与背景
-- 手动驱动 V1 `LLMEngine`（`scripts/day3_kv_driver.py`），Qwen2.5-0.5B、enforce_eager、`async_scheduling=False`、`VLLM_USE_FLASHINFER_SAMPLER=0`、seed/temp=0。
+- 手动驱动 V1 `LLMEngine`（`scripts/m3_kv_driver.py`），Qwen2.5-0.5B、enforce_eager、`async_scheduling=False`、`VLLM_USE_FLASHINFER_SAMPLER=0`、seed/temp=0。
 - 钩子（只读）：`kv_cache_manager.get_computed_blocks / allocate_slots / free`、`block_pool.get_new_blocks / free_blocks / _maybe_evict_cached_block`、`scheduler._preempt_request`。
 - 基本事实（K1–K3，gpu_util=0.5）：**block_size=16**，物理块 id 从 **1** 起（**块 0 是 null block 占位**）。`req_to_blocks[req]` 的列表下标=逻辑块号，元素=物理块 id。
 
@@ -27,8 +27,8 @@ prefix caching **OFF**（`K2_off`）：
 step3 B: get_computed_blocks num_new_computed_tokens=0                       # 不命中，B 全量 prefill 48
 ```
 **结论**：
-- 命中的是 **A 的物理块 `[1,2]`**——A、B **共享同一份 KV 物理块**（B 通过 `touch` 使其 ref_cnt→2，两请求共用）。这就是 Day2「B 的 prefill 被缩短」的机制。
-- **为什么命中 32 而不是 48**：块 hash 只对**整块**计算（`kv_cache_utils`），且 `get_computed_blocks` 用 `max_cache_hit_length = num_tokens-1 = 47`（末 token 必须重算以取 logits）→ `47 // 16 = 2` 个整块 = 32 token。这正解释了 Day2 的 `computed_before=16`（当时共享 1 块）。**非块对齐的尾部 token 不会被缓存/命中**。
+- 命中的是 **A 的物理块 `[1,2]`**——A、B **共享同一份 KV 物理块**（B 通过 `touch` 使其 ref_cnt→2，两请求共用）。这就是 M2「B 的 prefill 被缩短」的机制。
+- **为什么命中 32 而不是 48**：块 hash 只对**整块**计算（`kv_cache_utils`），且 `get_computed_blocks` 用 `max_cache_hit_length = num_tokens-1 = 47`（末 token 必须重算以取 logits）→ `47 // 16 = 2` 个整块 = 32 token。这正解释了 M2 的 `computed_before=16`（当时共享 1 块）。**非块对齐的尾部 token 不会被缓存/命中**。
 - 关闭 prefix caching → 命中恒 0、请求各用各的块、无共享。
 
 ## 3. K3 —— 释放 → cached-free → 复用（A 跑完，B 用相同 prompt 后到）
@@ -71,29 +71,29 @@ step27 D get_computed_blocks num_new_computed_tokens=176 hit_block_ids=[31..40,4
 1. **活跃请求引用的块不会进入普通 free 状态**：step26 抢占只 `free` 了 victim(D) 的块；A/B/C（ref_cnt>0，仍在 decode）的块保持占用，直到它们 step60 结束才释放。`free_blocks` 只对 ref_cnt→0 的块生效。
 2. **被恢复请求不盲目 append 失效的旧 block_table**：`num_computed_tokens_after_reset=0` → 恢复时重新走 `get_computed_blocks` 重建映射（OFF 从 0、ON 从缓存命中），而非续用抢占前的旧块列表。
 
-## 5. 逐条回答 Day3 目标
+## 5. 逐条回答 M3 目标
 - **块怎么分配 / block_table**：按 block_size=16，逻辑块 i → 物理块 id（`req_to_blocks`）；prefill 批量分配、decode 跨 16 边界才加块（K1）。
-- **prefix 命中机制**：整块算 hash 存入 `cached_block_hash_to_block`；后到请求 `get_computed_blocks` 查最长整块前缀命中、`touch` 共享物理块（ref_cnt++）；命中量受"整块对齐 + 末 token 需重算"限制（K2，解释 Day2 的 16）。
+- **prefix 命中机制**：整块算 hash 存入 `cached_block_hash_to_block`；后到请求 `get_computed_blocks` 查最长整块前缀命中、`touch` 共享物理块（ref_cnt++）；命中量受"整块对齐 + 末 token 需重算"限制（K2，解释 M2 的 16）。
 - **释放 / cached-free / 复用 / 驱逐**：`free` 使 ref_cnt→0，带 hash 块留队尾可复用（K3 命中复用）、无 hash 块进队头；取新块时若命中的是 cached 块会 `_maybe_evict_cached_block` 移除旧 hash（驱逐，K4 高压时可见）。
 - **KV 不足 / 抢占 / 重算**：allocate 失败→pop victim→free+PREEMPTED+computed 归零→回 waiting；恢复时 OFF 全量重算、ON 靠自身缓存几乎免算（K4/K4_on）。
 
-## 6. 与 Day1/2 的衔接
-- Day1 见到 `kv_cache=T(34801,2,16,2,64)` 的 block_size=16、block_table=T(1,128)——Day3 把"块"从静态 shape 变成了可观察的**分配/共享/释放/抢占**动态。
-- Day2 的 `computed_before=16`（前缀命中）在 K2 得到机制级解释（整块 hash + 命中对齐 + `num_tokens-1`）。
+## 6. 与 M1/2 的衔接
+- M1 见到 `kv_cache=T(34801,2,16,2,64)` 的 block_size=16、block_table=T(1,128)——M3 把"块"从静态 shape 变成了可观察的**分配/共享/释放/抢占**动态。
+- M2 的 `computed_before=16`（前缀命中）在 K2 得到机制级解释（整块 hash + 命中对齐 + `num_tokens-1`）。
 
-## 7. 未解决 / 下一步（Day4 起）
-- Attention backend 如何消费 block_table + slot_mapping（Day4）。
+## 7. 未解决 / 下一步（M4 起）
+- Attention backend 如何消费 block_table + slot_mapping（M4）。
 - 优先级调度策略下 victim 选择（本轮为默认 FIFO `pop()`）。
-- 前缀缓存跨请求命中率对吞吐/TTFT 的量化影响（留待性能日 Day6）。
+- 前缀缓存跨请求命中率对吞吐/TTFT 的量化影响（留待性能模块 M6）。
 
 ## 附：复现
 ```bash
 cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
 COMMON="VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_COMPONENTS=kv,scheduler VLLM_LAB_TRACE_MAX_STEPS=300 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0"
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K1.jsonl python scripts/day3_kv_driver.py --scenario K1 |& tee logs/day3/K1.log
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K2.jsonl python scripts/day3_kv_driver.py --scenario K2 |& tee logs/day3/K2.log
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K2_off.jsonl python scripts/day3_kv_driver.py --scenario K2 --no-enable-prefix-caching |& tee logs/day3/K2_off.log
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K3.jsonl python scripts/day3_kv_driver.py --scenario K3 |& tee logs/day3/K3.log
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K4.jsonl python scripts/day3_kv_driver.py --scenario K4 |& tee logs/day3/K4.log
-env $COMMON VLLM_LAB_TRACE_JSONL=outputs/day3/K4_on.jsonl python scripts/day3_kv_driver.py --scenario K4 --enable-prefix-caching |& tee logs/day3/K4_on.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K1.jsonl python scripts/m3_kv_driver.py --scenario K1 |& tee logs/m3/K1.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K2.jsonl python scripts/m3_kv_driver.py --scenario K2 |& tee logs/m3/K2.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K2_off.jsonl python scripts/m3_kv_driver.py --scenario K2 --no-enable-prefix-caching |& tee logs/m3/K2_off.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K3.jsonl python scripts/m3_kv_driver.py --scenario K3 |& tee logs/m3/K3.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K4.jsonl python scripts/m3_kv_driver.py --scenario K4 |& tee logs/m3/K4.log
+env $COMMON VLLM_LAB_TRACE_JSONL=outputs/m3/K4_on.jsonl python scripts/m3_kv_driver.py --scenario K4 --enable-prefix-caching |& tee logs/m3/K4_on.log
 ```

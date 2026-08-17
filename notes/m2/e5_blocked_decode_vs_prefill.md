@@ -1,7 +1,7 @@
-# Day 2 · E5 —— blocked decode + chunked prefill：调度优先级实证
+# M2 · E5 —— blocked decode + chunked prefill：调度优先级实证
 
 > 直接回答用户问题：**当一个 decode 请求（D）被临时阻塞、让 chunked prefill 请求（P）先跑，解除阻塞后，调度器是继续让 P 的 prefill 进行、还是转去调度恢复的 D 而把 P 暂时搁置？** 用两个场景分别对应两种资源约束，结论均由真实 trace 给出。
-> 数据：`outputs/day2/E5.jsonl`、`E5b.jsonl`、`E5_timeline.md`、`E5b_timeline.md`；日志 `logs/day2/E5_blocked_decode.log`、`E5b_one_slot.log`。
+> 数据：`outputs/m2/E5.jsonl`、`E5b.jsonl`、`E5_timeline.md`、`E5b_timeline.md`；日志 `logs/m2/E5_blocked_decode.log`、`E5b_one_slot.log`。
 
 ## 方法（实验性干预，非被动 trace）
 
@@ -63,9 +63,9 @@ E5 让预算成为瓶颈（2 个槽位够用），E5b 让槽位成为瓶颈。
 cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
 for S in E5 E5b; do
   VLLM_LAB_BLOCK=1 VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_COMPONENTS=scheduler \
-  VLLM_LAB_TRACE_JSONL=outputs/day2/$S.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
+  VLLM_LAB_TRACE_JSONL=outputs/m2/$S.jsonl VLLM_USE_FLASHINFER_SAMPLER=0 \
   VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-  python scripts/day2_engine_driver.py --scenario $S > logs/day2/${S}.log 2>&1
-  python scripts/day2_build_timeline.py outputs/day2/$S.jsonl --title "$S" > outputs/day2/${S}_timeline.md
+  python scripts/m2_engine_driver.py --scenario $S > logs/m2/${S}.log 2>&1
+  python scripts/m2_build_timeline.py outputs/m2/$S.jsonl --title "$S" > outputs/m2/${S}_timeline.md
 done
 ```

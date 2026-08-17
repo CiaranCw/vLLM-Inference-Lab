@@ -1,6 +1,6 @@
 ### 时间线 · E4 chunked prefill (max_num_batched_tokens=64)
 
-数据：`outputs/day2/E4.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
+数据：`outputs/m2/E4.jsonl`；单元格 `P{n}`=prefill 调度 n token，`D{n}`=decode 调度 n token，`·`=该请求本步未被调度。
 
 | step | LONG | total_sched | running | waiting | 事件 |
 |---|---|---|---|---|---|

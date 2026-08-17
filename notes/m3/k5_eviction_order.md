@@ -1,9 +1,9 @@
-# Day 3 · K5 —— 抢占后 block chain 尾部优先淘汰、前缀优先保留
+# M3 · K5 —— 抢占后 block chain 尾部优先淘汰、前缀优先保留
 
-> 结论以真实 trace 为准：`outputs/day3/K5.jsonl`（提前解除→部分命中）、`outputs/day3/K5_full.jsonl`（不解除→全驱逐，展示完整单调顺序）、`logs/day3/K5*.log`。对照 `vllm-src` @ `ee0da84` (v0.24.0)。id 随机后缀已去除。
+> 结论以真实 trace 为准：`outputs/m3/K5.jsonl`（提前解除→部分命中）、`outputs/m3/K5_full.jsonl`（不解除→全驱逐，展示完整单调顺序）、`logs/m3/K5*.log`。对照 `vllm-src` @ `ee0da84` (v0.24.0)。id 随机后缀已去除。
 
 ## 1. 实验配置与请求时序
-- 引擎：Qwen2.5-0.5B、enforce_eager、`scheduling_policy="priority"`、`enable_prefix_caching=True`、`num_gpu_blocks_override=40`、`max_model_len=512`、`max_num_seqs=4`、`async_scheduling=False`、`VLLM_USE_FLASHINFER_SAMPLER=0`、seed/temp=0。驱动：`scripts/day3_kv_driver.py --scenario K5`（`run_k5` 控制流）。
+- 引擎：Qwen2.5-0.5B、enforce_eager、`scheduling_policy="priority"`、`enable_prefix_caching=True`、`num_gpu_blocks_override=40`、`max_model_len=512`、`max_num_seqs=4`、`async_scheduling=False`、`VLLM_USE_FLASHINFER_SAMPLER=0`、seed/temp=0。驱动：`scripts/m3_kv_driver.py --scenario K5`（`run_k5` 控制流）。
 - 两个新增可控机制（实验性、`VLLM_LAB_BLOCK` 门控、默认关、已回归验证零副作用）：
   1. **priority 调度让 D 成为抢占 victim**：D `priority=10`（数字大=最低优先级），压力请求 `priority=0`；victim=`max(running,key=(priority,arrival))` → D。
   2. **waiting 循环实验性 skip**（`# VLLM_INFERENCE_LAB_EXPERIMENT`）：D 被抢占后放入 blocked 集合，`scheduler` 在 waiting 准入循环跳过它 → D 保持 cached-free，不被重新准入。
@@ -76,8 +76,8 @@ D 命中**存活的前 7 个连续头部块**，`num_new_computed_tokens=112=7×
 ```bash
 cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
 VLLM_LAB_BLOCK=1 VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_COMPONENTS=kv,scheduler \
-VLLM_LAB_TRACE_MAX_STEPS=400 VLLM_LAB_TRACE_JSONL=outputs/day3/K5.jsonl \
+VLLM_LAB_TRACE_MAX_STEPS=400 VLLM_LAB_TRACE_JSONL=outputs/m3/K5.jsonl \
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-python scripts/day3_kv_driver.py --scenario K5 --max-steps 400 2>&1 | tee logs/day3/K5.log
+python scripts/m3_kv_driver.py --scenario K5 --max-steps 400 2>&1 | tee logs/m3/K5.log
 # run_k5 中 `block_step + 14` 控制解除时机：调大 → 淘汰更多（趋近全驱逐 K5_full），调小 → 保留更多头部块
 ```

@@ -10,7 +10,7 @@
 Python 只负责准备张量和 metadata；真正的读写发生在这两个算子里，这就是 **Python 层与 kernel 的边界**。
 
 ## 1. 选中的 backend（怎么来的）
-- 日志（Day1 已记）：`platforms/cuda.py` "Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN','FLASHINFER','TRITON_ATTN','FLEX_ATTENTION']" + "Using FlashAttention version 2"。
+- 日志（M1 已记）：`platforms/cuda.py` "Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN','FLASHINFER','TRITON_ATTN','FLEX_ATTENTION']" + "Using FlashAttention version 2"。
 - 即：sm_120 非 MLA 的候选按优先级 `FLASH_ATTN → FLASHINFER → TRITON_ATTN → FLEX_ATTENTION`，取第一个有效的 → FLASH_ATTN；未主动设 `VLLM_ATTENTION_BACKEND`。
 - （按 M4 范围，backend 的穷举对比、FlashInfer/sm_120 深挖等**不做**，只跟当前真实主线。）
 
@@ -88,5 +88,5 @@ cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate
 VLLM_LAB_TRACE=1 VLLM_LAB_TRACE_MAX_STEPS=10 VLLM_LAB_TRACE_LAYER=0 \
 VLLM_LAB_TRACE_JSONL=outputs/m4/m4_closed_loop.jsonl \
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 \
-python scripts/day1_baseline.py --max-tokens 2 --out outputs/m4/m4_baseline.json 2>&1 | tee logs/m4/m4_closed_loop.log
+python scripts/m1_baseline.py --max-tokens 2 --out outputs/m4/m4_baseline.json 2>&1 | tee logs/m4/m4_closed_loop.log
 ```
