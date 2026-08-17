@@ -82,7 +82,7 @@
 - **不得 force-push / rebase / 改动这个 PR**，除非所有者明确要求。
 - 若 maintainer 留下 review → **先把 review 内容报告给所有者**，由所有者决定如何回应。
 
-**恢复上下文**：`notes/m13/STATUS.md`（极详细的断点快照）· `notes/m13/pr_slot_mapping_test.md`（研究与上游语义漂移）· `notes/m13/review/` · `notes/m13/validation/`。
+**恢复上下文**：`notes/m13/pr_slot_mapping_test.md`（研究与上游语义漂移）· `notes/m13/review/`（逐行审查 / 手算 golden / 复现命令）· `notes/m13/validation/`（pytest / pre-commit / 变异回归）。
 **上游工作区**：`/home/ciaran/projects/vllm-m13-upstream`（独立 clone + 独立 venv，跟最新 main，**与带学习注释的 `vllm-src` 严格隔离**）。本地分支 `m13/block-table-slot-mapping-tests` HEAD = `4dd4fa7`。
 
 ---

@@ -153,7 +153,7 @@
   - **主动规避冲突**：open PR #39591 会创建同名文件（但只测 row-tail 清零、不碰 slot mapping），故改名 `test_block_table_slot_mapping.py` 并在 PR 说明、表示愿合并。
   - **前车教训**：stale PR #30683 同方向，**死于 pre-commit 未过后无人跟进**（非评审否决）→ 本次把 pre-commit 全绿当硬门槛。
   - **上游贡献树与学习树隔离**：`vllm-src` 带中文注释且 pin 在 v0.24.0（脏树/shallow），不可提 PR；另建 `vllm-m13-upstream`（干净 clone + `uv` 独立 venv + 跟最新 main）。
-- 产出：`notes/m13/{STATUS.md,pr_slot_mapping_test.md}`、`notes/m13/review/*`（逐行审查 / 手算 golden / 清单 / 复现命令 / diff patch）、`notes/m13/validation/*`（pytest / pre-commit / 变异回归 / 环境）、`notes/m13/pr_draft/{test_block_table_slot_mapping.py,PR_BODY_FINAL.md}`。
+- 产出：`notes/m13/pr_slot_mapping_test.md`、`notes/m13/review/{LINE_BY_LINE_REVIEW,MANUAL_GOLDEN_CASES,REPRO_COMMANDS}.md`、`REVIEW_DIFF.patch`、`notes/m13/validation/{pytest_block_table,precommit_changed_files,mutation_final}.txt`、`notes/m13/pr_draft/{test_block_table_slot_mapping.py,PR_BODY_FINAL.md}`。
 - **待回填**：maintainer review 往返与迭代、是否最终合入。
 
 ---

@@ -2,7 +2,7 @@
 
 > **状态**：**DCP 主线 T+E+O+H COMPLETE**（数据采集 2026-08-16 · 4×H20；本机收口 2026-08-16）。
 > 理论 / 源码路径见 [`context_parallel_ring_disagg.md`](context_parallel_ring_disagg.md)。
-> 冻结矩阵见 [`M24_H20_PLAN.md`](M24_H20_PLAN.md)。远端观察（不含结论数字）见 [`../../logs/m24/REMOTE_NOTES.md`](../../logs/m24/REMOTE_NOTES.md)。
+> 冻结矩阵见 [`M24_H20_PLAN.md`](M24_H20_PLAN.md)。环境边界见下方「环境」表。
 >
 > **指标口径（勿与 M12 混淆）**：延迟均为 **in-process engine** 路径；
 > 字段名用 `steady_step_ms_*` / `in_process_first_token_latency_ms_*`，**不是**在线 TTFT/ITL。

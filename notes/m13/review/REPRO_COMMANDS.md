@@ -83,7 +83,7 @@ git config user.email      # 当前: CiaranCw@users.noreply.github.com
 
 ## 10. ⛔ 仅在人工审查全部完成后执行（模板，Agent 未执行）
 
-> 前置条件：`FINAL_PRE_PR_CHECKLIST.md` **全部勾选完毕**。以下命令由**你本人**执行。
+> 前置条件：提交人完成逐行审查与 golden 复核。以下命令由**你本人**执行。
 
 ### 10.1 DCO 身份检查（必须你本人确认这些值属于你）
 ```bash
@@ -122,7 +122,7 @@ gh pr create \
   --body-file <final-english-pr-body>
 ```
 
-**`<final-english-pr-body>` 必须只包含英文上游正文**（取自 `pr_draft/PR_DESCRIPTION.md` 的「PR Body」段），**不得包含**：
+**`<final-english-pr-body>` 必须只包含英文上游正文**（取自 `pr_draft/PR_BODY_FINAL.md`），**不得包含**：
 - 中文内部状态说明；
 - 本地路径（`/home/ciaran/...`）；
 - Lab Notes 引用；

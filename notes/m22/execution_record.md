@@ -1,7 +1,7 @@
 # M22 · 执行记录与复现（E/H 已完成后的留痕）
 
 > 本文件**不是**上机操作剧本。远端窗口已结束；只记录「在什么环境跑了什么、产物在哪、如何离线复核」。
-> 设计冻结见 [`M22_EXECUTION_FREEZE_MANIFEST.md`](M22_EXECUTION_FREEZE_MANIFEST.md)；结论见 [`results.md`](results.md)。
+> 结论见 [`results.md`](results.md)；源码定位见 [`tensor_parallel.md`](tensor_parallel.md)。
 
 ## 1. 实际执行环境（`logs/m22/environment.txt`）
 

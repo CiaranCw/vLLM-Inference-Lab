@@ -272,7 +272,7 @@ python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity
 4. **主动规避冲突**：发现 open PR #39591 会创建同名文件（但它测 row-tail 清零、完全不碰 slot mapping），故改用 `test_block_table_slot_mapping.py` 并在 PR 里说明、表示愿合并。
 5. **前车教训**：stale PR #30683 曾提出同方向测试，**死于 pre-commit 未过后无人跟进**（非评审否决）——所以本次把 pre-commit 全绿当作硬门槛。
 
-**完整过程留痕**：`notes/m13/`（[STATUS.md](notes/m13/STATUS.md) 断点快照 · [pr_slot_mapping_test.md](notes/m13/pr_slot_mapping_test.md) 研究与语义漂移 · `review/` 逐行审查+手算 golden+清单 · `validation/` 测试/pre-commit/变异回归日志 · `pr_draft/` 最终测试与 PR 正文）。
+**完整过程留痕**：`notes/m13/`（[pr_slot_mapping_test.md](notes/m13/pr_slot_mapping_test.md) 研究与语义漂移 · `review/` 逐行审查+手算 golden · `validation/` 测试/pre-commit/变异回归日志 · `pr_draft/` 最终测试与 PR 正文）。
 **待回填**：`[ ]` maintainer review 往返与迭代　`[ ]` 是否最终合入。
 
 ---

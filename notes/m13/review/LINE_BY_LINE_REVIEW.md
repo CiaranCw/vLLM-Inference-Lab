@@ -7,7 +7,7 @@
 > **本文件用途**：供**你（提交人）**逐行审查。AGENTS.md 明确「纯 code-agent PR 不允许，提交人须端到端理解并为改动负责」。**我不能代你完成审查。**
 >
 > 建议边读边对照产品源码：`vllm/v1/worker/block_table.py`（`compute_slot_mapping` 在 `:182`，kernel 在 `:379`）。
-> 手算细节见 `MANUAL_GOLDEN_CASES.md`；确认清单见 `FINAL_PRE_PR_CHECKLIST.md`。
+> 手算细节见 `MANUAL_GOLDEN_CASES.md`。
 
 ---
 

@@ -30,6 +30,21 @@ vllm_dev_environment.md
 # 笔记打包 zip（传输用，源文件已在 notes/mN/）
 notes/*.zip
 
+# 远端 Agent / 上机操作件 / Agent 交接清单（本地保留，不对外展示）
+notes/**/REMOTE_AGENT_PROMPT.md
+notes/**/H20_RUNBOOK.md
+notes/**/*EXECUTION_FREEZE*
+notes/m22/frozen_runtime_snapshot/
+notes/m13/STATUS.md
+notes/m13/review/HUMAN_FINAL_COMMANDS.md
+notes/m13/review/FINAL_PRE_PR_CHECKLIST.md
+notes/m13/review/REVIEW_CHECKLIST.md
+notes/m13/pr_draft/PR_DESCRIPTION.md
+notes/m13/validation/environment.txt
+notes/m13/validation/collect_only.txt
+notes/m13/validation/precommit_all_files.txt
+logs/m24/REMOTE_NOTES.md
+
 # 传输自检 / smoke 明细（非正式实验数据；汇总 CSV 已入库）
 outputs/m19/smoke/
 outputs/m22/transfer_test_*

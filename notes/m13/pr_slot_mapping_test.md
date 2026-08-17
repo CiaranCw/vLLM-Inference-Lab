@@ -4,7 +4,7 @@
 > - **【第一部分】当前 main（`a1657a0`，2026-08-04 09:xx UTC 实测）** —— 权威、以此为准。
 > - **【第二部分】历史快照（v0.24.0 / `ee0da84`，2026-07-28）** —— 仅存档研究过程，**其中多条结论已被推翻**（逐条见 §A.4）。
 >
-> **当前状态**：已在干净工作树基于最新 main 完成实现与验证（**18 passed**、pre-commit 绿、零产品改动、Oracle 独立性经变异测试证明），**尚未 commit / 尚未 push / 尚未建 PR**。断点见 `STATUS.md`，逐行审查材料见 `review/`。
+> **当前状态**：PR [#51017](https://github.com/vllm-project/vllm/pull/51017) 已提交（Ready for review，未合入）。实现与验证：**18 passed**、pre-commit 绿、零产品改动、Oracle 独立性经变异测试证明。逐行审查材料见 `review/`。
 
 ---
 
@@ -125,7 +125,7 @@ padding：最后一个 program 把 `[num_tokens, max_num_batched_tokens)` 按 10
 本实现按当前 API 重写，并新增 hybrid / `SlotMappingMode` / 跨 tile padding 覆盖。
 
 ## A.8 下一步（PR 流程）
-见 `STATUS.md` §7（命令已备好）。阻塞项：DCO 身份确认、AI 署名 trailer 口径、人工逐行审阅（AGENTS.md 硬要求）。
+PR 已提交 [#51017](https://github.com/vllm-project/vllm/pull/51017)。复现命令见 `review/REPRO_COMMANDS.md`。阻塞项：等 maintainer 审查（新贡献者 CI 门禁，见 HANDOFF §3）。
 
 ---
 ---
@@ -340,7 +340,7 @@ for r in range(num_reqs):
 
 ### 当前状态（本轮止步于此）
 - ✅ 草稿测试已写：`notes/m13/pr_draft/test_block_table_slot_mapping.py`（当前 API + oracle + 非CP边界 + padding + DCP4/PCP2 interleave{1,16} + world=1 退化）。
-- ✅ PR 描述草稿：`notes/m13/pr_draft/PR_DESCRIPTION.md`。
+- ✅ PR 正文定稿：`notes/m13/pr_draft/PR_BODY_FINAL.md`。
 - ✅ **GPU 验证已通过**（GPU 空闲后运行）：real RTX 5080/sm_120 上对真实上游 kernel，**26 passed in 6.03s**（2 手算 golden 锚点 + 7 非CP边界 + 16 DCP4/PCP2 interleave{1,16}×8rank + 1 退化）。standalone 运行（绕开需额外依赖的 `tests/conftest`；测试不依赖任何 conftest fixture）。
 - ✅ **审查补强**：加了 2 例**手算 golden 值**（独立于 numpy oracle），消除「oracle 镜像 kernel＝循环论证」的审稿隐患。
 - ✅ **规范检查**：在 **vLLM `pyproject.toml` 配置下** `ruff check` 与 `ruff format --check` 均通过（注意：从仓库外用 ruff 默认配置会误报 I001，须在 vllm-src 内跑）。
