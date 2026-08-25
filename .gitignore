@@ -27,6 +27,9 @@ vllm_dev_environment.md
 # IDE 本地配置
 .vscode/
 
+# 二手汇总稿（据 README/ROADMAP/notes 转述，数字未回溯 outputs/，不作为证据入库）
+final_docs/
+
 # 笔记打包 zip（传输用，源文件已在 notes/mN/）
 notes/*.zip
 
