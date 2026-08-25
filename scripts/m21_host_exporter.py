@@ -4,7 +4,7 @@
 职责（见 notes/m21/monitoring_and_capacity.md §3）：
   1. 进程级 CPU% / RSS / 线程数 —— 回答「瓶颈是不是 CPU」（Q3 的 CPU 分支）。
      M7 已证 eager decode 是 CPU 提交受限，本指标是它在面板上的可观测投影。
-  2. NVML 显存 / util 读数 —— 作为 dcgm-exporter 的**正交第二证据源**（交叉校验不变量 I8）。
+  2. NVML 显存 / util 读数 —— 作为 dcgm-exporter 的正交第二证据源（交叉校验不变量 I8）。
 
 不做的事：不采集 SM 占用率（本环境 DCGM_FI_PROF_* 全 N/A，见 Gate 0 结论）。
 
@@ -12,7 +12,7 @@
     python scripts/m21_host_exporter.py --port 9836 --pid-file outputs/m21/raw/server.pid
     python scripts/m21_host_exporter.py --port 9836 --discover "vllm serve"
 
-进程发现是**只读**的（读 /proc cmdline），不涉及任何 kill/信号操作。
+进程发现是只读的（读 /proc cmdline），不涉及任何 kill/信号操作。
 """
 
 import argparse
@@ -40,7 +40,7 @@ class HostCollector:
         # psutil 的 cpu_percent(interval=None) 返回「距上次调用」的均值，
         # 首次调用恒为 0.0 —— 这里预热一次，避免第一个样本被误读成 CPU 空闲。
         psutil.cpu_percent(interval=None)
-        # 子进程 Process 对象必须**跨 scrape 复用**：每次 children() 重新构造对象的话，
+        # 子进程 Process 对象必须跨 scrape 复用：每次 children() 重新构造对象的话，
         # 每个对象的 cpu_percent() 都是首次调用、恒返回 0，会把 EngineCore 子进程的
         # CPU 全部漏掉（vLLM V1 的引擎跑在子进程里，正是我们最想看的那个）。
         self._children = {}

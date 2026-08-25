@@ -2,15 +2,15 @@
 """M21 · E6 演练结果合并（纯离线 derived 生成，不重跑任何故障注入）。
 
 为什么单独成脚本：`outputs/m21/e6_drills.json` 是 derived artifact，早期是手工拼的，
-无法复现。本脚本从 **append-only 的 raw jsonl** 重建它，并施加两处**确定性修正**：
+无法复现。本脚本从 append-only 的 raw jsonl 重建它，并施加两处确定性修正：
 
-1. **单位修正（2026-08-12 audit）**：`m21_fault_drills.py` 首版把
+1. 单位修正（2026-08-12 audit）：`m21_fault_drills.py` 首版把
    `histogram_quantile(... vllm:time_to_first_token_seconds_bucket ...)` 的返回值
-   （单位=**秒**）直接写进了 `server_hist_ttft_p99_ms_during_probe`。
-   raw 里的 19.5675 实际是 **19.5675 s ≈ 19567.5 ms**，不是 19.57ms。
+   （单位=秒）直接写进了 `server_hist_ttft_p99_ms_during_probe`。
+   raw 里的 19.5675 实际是 19.5675 s ≈ 19567.5 ms，不是 19.57ms。
    这里按 ×1000 换算补出 `_ms`，并保留 `_s` 原值与 provenance 说明。
-   **raw 文件一个字节都不改。**
-2. **术语修正**：`oom` 场景实际注入的是**启动期显存预算校验失败**
+   raw 文件一个字节都不改。
+2. 术语修正：`oom` 场景实际注入的是启动期显存预算校验失败
    （EngineCore 拒绝初始化），不是运行中的 CUDA allocator OOM。
    场景 key 保留 `oom` 以兼容既有 artifact，另加 `display_name=startup_memory_rejection`。
 

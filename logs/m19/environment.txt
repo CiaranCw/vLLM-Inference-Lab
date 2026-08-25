@@ -1,0 +1,30 @@
+# M19 实验环境记录（自动生成，只读采集）
+date: 2026-08-06T16:00:08+08:00
+
+## 仓库基线
+lab HEAD: 8b20a122b6ce34e5a885cacfb0894b76dd51d3fe
+vllm-src HEAD: ee0da84ab9e04ac7610e28580af62c365e898389
+vllm-src dirty files: 22  (基线值 22)
+vllm-src diff:  21 files changed, 1583 insertions(+), 102 deletions(-)
+
+## Python / 库
+python 3.12.13
+torch 2.11.0+cu130
+cuda 13.0
+vllm 0.24.1.dev0+gee0da84ab.d20260714
+vllm path /home/ciaran/projects/vllm-src/vllm/__init__.py
+triton 3.6.0
+
+## GPU
+NVIDIA GeForce RTX 5080, 610.62, 16303 MiB
+capability (12, 0)
+
+## 环境变量（与 baseline / ngram / equiv 各 shard 运行时一致）
+VLLM_USE_FLASHINFER_SAMPLER=0
+VLLM_ENABLE_V1_MULTIPROCESSING=0
+VLLM_LAB_M9_COALESCE=<unset，即默认关闭>
+VLLM_LAB_TRACE=<unset，即默认关闭>
+
+## 生效的引擎配置（由 effective_cfg 从引擎读回，见 raw/*.jsonl）
+[m19] effective config: {"speculative_enabled": false, "spec_method": null, "num_speculative_tokens": null, "prompt_lookup_min": null, "prompt_lookup_max": null, "async_scheduling": false, "enable_chunked_prefill": true, "max_num_batched_tokens": 2048, "max_num_seqs": 64, "enable_prefix_caching": false, "enforce_eager": true}
+[m19] effective config: {"speculative_enabled": true, "spec_method": "ngram", "num_speculative_tokens": 3, "prompt_lookup_min": 3, "prompt_lookup_max": 5, "async_scheduling": false, "enable_chunked_prefill": true, "max_num_batched_tokens": 2048, "max_num_seqs": 64, "enable_prefix_caching": false, "enforce_eager": true}

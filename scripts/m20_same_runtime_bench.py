@@ -1,10 +1,10 @@
 """M20-C · Same-runtime 正式对照：container 内 vllm serve (C0) vs triton+vLLM backend (C1)。
 
 约束（见 notes/m20/production_serving_and_triton.md）：
-  - 同一镜像 / GPU / 模型 / EngineArgs；16GB 上 C0/C1 **串行**，禁止双引擎。
+  - 同一镜像 / GPU / 模型 / EngineArgs；16GB 上 C0/C1 串行，禁止双引擎。
   - Shape A：in256 / out128；Poisson 到达；主点 QPS 32/40（可选 20）。
   - 禁止用 host-M12 数字减 container 称 Triton overhead。
-  - 指标为**真在线 streaming** 客户端口径（TTFT/ITL/E2E），两边用同一负载器。
+  - 指标为真在线 streaming 客户端口径（TTFT/ITL/E2E），两边用同一负载器。
 
 用法：
   export PATH="$HOME/bin:$PATH"   # WSL docker 组 wrapper

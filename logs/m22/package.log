@@ -1,0 +1,8 @@
+[run_all] packaged 63 files -> /root/m22_h20_formal_20260809T210453.tar.gz
+[run_all] sha256 = 386bfc3d64647a3ebe007a541ba97ff3c70c10580b9c97f59c76b54ac86ba8ad
+
+[run_all] ⚠ 回传必须由**本地主动 pull**（H20 未必能反向连到本地）：
+  rsync -avP <USER>@<H20_HOST>:/root/m22_h20_formal_20260809T210453.tar.gz{,.sha256} <LOCAL_DEST>/
+  # 无 rsync 时 fallback: scp <USER>@<H20_HOST>:'/root/m22_h20_formal_20260809T210453.tar.gz /root/m22_h20_formal_20260809T210453.tar.gz.sha256' <LOCAL_DEST>/
+  cd <LOCAL_DEST> && sha256sum -c m22_h20_formal_20260809T210453.tar.gz.sha256
+  # checksum 一致才算回传成功。没带回的数据 = 没有实验。

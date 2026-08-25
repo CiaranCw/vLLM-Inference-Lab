@@ -2,13 +2,13 @@
 """M21 · E2（指标真值校验）+ E3（容量阶梯）—— 共用一次 server 生命周期。
 
 E2：每个 measure 窗口都核对服务端 counter 增量 vs 客户端 bench 汇总（不变量 I1–I3、I6），
-    并量化「服务端直方图**近似**分位数」与「客户端 exact percentile」的偏差（结论，非判据）。
-    注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth。
+    并量化「服务端直方图近似分位数」与「客户端 exact percentile」的偏差（结论，非判据）。
+    注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，不是 server metric 的 ground truth。
 E3：QPS 阶梯 → 服务端指标视角复核 M12 的容量拐点（客户端口径也一并记录，便于对照）。
 
 纪律：
   - 服务端配置 = M12 冻结命令，唯一自变量是 offered QPS（与 seed）。
-  - warmup 与 measure **分开跑、分开统计**；counter 快照只圈 measure 窗口。
+  - warmup 与 measure 分开跑、分开统计；counter 快照只圈 measure 窗口。
   - 不新造 SLO，直接用 M12 冻结的 P99 TTFT ≤ 300ms。
 
 用法：

@@ -1,0 +1,21 @@
+[run_all] === tag=h20_smoke tp=1 shard=run === -> /root/logs/m22/h20_smoke_tp1_run.log
+[run_all] tp=1 run rc=1 elapsed=5.4s
+[run_all] ABORT: tp=1 run 失败（rc=1），见 logs/m22/h20_smoke_tp1_run.log
+[run_all] 已完成的 shard 已落盘；修复后重跑本命令会自动从中断处继续。
+[run_all] === tag=h20_smoke tp=1 shard=run === -> /root/logs/m22/h20_smoke_tp1_run.log
+[run_all] tp=1 run rc=1 elapsed=21.4s
+[run_all] ABORT: tp=1 run 失败（rc=1），见 logs/m22/h20_smoke_tp1_run.log
+[run_all] 已完成的 shard 已落盘；修复后重跑本命令会自动从中断处继续。
+[run_all] === tag=h20_smoke tp=1 shard=run === -> /root/logs/m22/h20_smoke_tp1_run.log
+[run_all] tp=1 run rc=0 elapsed=22.6s
+[run_all] === tag=h20_smoke tp=2 shard=run === -> /root/logs/m22/h20_smoke_tp2_run.log
+[run_all] tp=2 run rc=0 elapsed=35.6s
+[run_all] === tag=h20_smoke tp=4 shard=run === -> /root/logs/m22/h20_smoke_tp4_run.log
+[run_all] tp=4 run rc=0 elapsed=38.4s
+[m22] wrote /root/outputs/m22/h20_smoke_memory_kv.csv
+[m22] wrote /root/outputs/m22/h20_smoke_decode.csv
+[m22] wrote /root/outputs/m22/h20_smoke_decode_effect.csv
+[m22] wrote /root/outputs/m22/h20_smoke_prefill.csv
+[m22] wrote /root/outputs/m22/h20_smoke_output_consistency.csv
+[m22] summarize done. tag=h20_smoke measure samples: 39
+[run_all] all done.

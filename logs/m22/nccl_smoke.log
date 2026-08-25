@@ -1,0 +1,26 @@
+[nccl_smoke] world_size=4 payloads(MiB)=[0.03, 0.25, 2.0, 8.0, 32.0]
+
+rank  device   name                     payload(MiB)        ms    ok
+0     cuda:0   NVIDIA H20                       0.03    0.0355  True
+0     cuda:0   NVIDIA H20                       0.25    0.0348  True
+0     cuda:0   NVIDIA H20                        2.0    0.0515  True
+0     cuda:0   NVIDIA H20                        8.0    0.0862  True
+0     cuda:0   NVIDIA H20                       32.0    0.1863  True
+1     cuda:1   NVIDIA H20                       0.03    0.0356  True
+1     cuda:1   NVIDIA H20                       0.25    0.0356  True
+1     cuda:1   NVIDIA H20                        2.0    0.0522  True
+1     cuda:1   NVIDIA H20                        8.0    0.0866  True
+1     cuda:1   NVIDIA H20                       32.0    0.1862  True
+2     cuda:2   NVIDIA H20                       0.03    0.0361  True
+2     cuda:2   NVIDIA H20                       0.25    0.0343  True
+2     cuda:2   NVIDIA H20                        2.0    0.0526  True
+2     cuda:2   NVIDIA H20                        8.0    0.0864  True
+2     cuda:2   NVIDIA H20                       32.0    0.1867  True
+3     cuda:3   NVIDIA H20                       0.03    0.0362  True
+3     cuda:3   NVIDIA H20                       0.25     0.035  True
+3     cuda:3   NVIDIA H20                        2.0    0.0528  True
+3     cuda:3   NVIDIA H20                        8.0    0.0869  True
+3     cuda:3   NVIDIA H20                       32.0    0.1868  True
+
+[nccl_smoke] elapsed=7.1s -> outputs/m22/nccl_smoke.json
+[nccl_smoke][PASS] 所有 rank 的 all-reduce 数值校验通过

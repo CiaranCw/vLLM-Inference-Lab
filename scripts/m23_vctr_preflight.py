@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""M23 · **V-ctr correctness preflight**（正式 benchmark 前的轻量门）。
+"""M23 · V-ctr correctness preflight（正式 benchmark 前的轻量门）。
 
-所有者要求（2026-08-13）：host 上的 V-O smoke **不能替代**本检查 ——
+所有者要求（2026-08-13）：host 上的 V-O smoke 不能替代本检查 ——
 V-host 与 V-ctr 的 vLLM / software stack 不同（host pinned `ee0da84` vs 容器内 `0.24.0+092c4842`），
 在容器里没验证过就直接跑正式性能，等于把未验证的前提当结论基础。
 
 做什么：
-  - 复用 `outputs/m23/preflight_inputs.json` 里**同一份 6 条 token ids**（与 host smoke 同源）；
-  - 容器内分别验 **V-E**（Graph/optimization OFF）与 **V-O**（optimized ON）；
+  - 复用 `outputs/m23/preflight_inputs.json` 里同一份 6 条 token ids（与 host smoke 同源）；
+  - 容器内分别验 V-E（Graph/optimization OFF）与 V-O（optimized ON）；
   - 检查：生成非空 / 长度精确 / logprob 无 NaN·Inf / 无 runtime error；
-  - **回读并保存实际 compilation / CUDA Graph 配置**（不信入参，只信回读）；
-  - 每条 lane 跑**两次独立容器进程**（across-process）+ 每次进程内**两遍生成**（within-process），
-    记录 **within-lane repeatability**。
+  - 回读并保存实际 compilation / CUDA Graph 配置（不信入参，只信回读）；
+  - 每条 lane 跑两次独立容器进程（across-process）+ 每次进程内两遍生成（within-process），
+    记录 within-lane repeatability。
 
 判据：
-  - **硬失败 → 停止 ON lane 正式性能实验并回报**（不临时切回 host 凑矩阵）。
-  - 跨 lane 的 exact-match **不作为阻塞条件**，但作为 limitation 保留。
+  - 硬失败 → 停止 ON lane 正式性能实验并回报（不临时切回 host 凑矩阵）。
+  - 跨 lane 的 exact-match 不作为阻塞条件，但作为 limitation 保留。
 
 用法：python scripts/m23_vctr_preflight.py
 """
@@ -33,11 +33,11 @@ DOCKER = os.path.expanduser("~/bin/docker")
 VLLM_IMAGE = "nvcr.io/nvidia/tritonserver:26.07-vllm-python-py3"   # M20-C 已验证
 HF_CACHE = os.path.expanduser("~/.cache/huggingface")
 INPUTS = os.path.join(OUT, "preflight_inputs.json")
-# 直接指向**容器内的本地 snapshot 路径**，绕过 hub 解析：
+# 直接指向容器内的本地 snapshot 路径，绕过 hub 解析：
 #   容器里较新的 huggingface_hub 在 offline 模式下会做「完整快照校验」，而本地缓存缺 3 个
 #   纯文档文件（.gitattributes / LICENSE / README.md）→ 报 IncompleteSnapshotError。
-#   那是 harness 与 hub 版本的交互问题，**不是**模型或引擎问题（权重与 tokenizer 齐全）。
-#   用本地路径既不联网（守住「不自动下载模型」），又保证 V/T 两侧加载的是**同一份字节**。
+#   那是 harness 与 hub 版本的交互问题，不是模型或引擎问题（权重与 tokenizer 齐全）。
+#   用本地路径既不联网（守住「不自动下载模型」），又保证 V/T 两侧加载的是同一份字节。
 MODEL_PATH_IN_CTR = "/root/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775"
 MAX_TOKENS = 64
 REPEATS_IN_PROC = 2       # 进程内重复
@@ -197,7 +197,7 @@ def main():
         rep[lane] = entry
     report["within_lane_repeatability"] = rep
 
-    # ---------- 跨 lane exact-match（诊断项，**不阻塞**）----------
+    # ---------- 跨 lane exact-match（诊断项，不阻塞）----------
     e_runs = [r for r in runs if r["lane"] == "E" and r["record"] and "error" not in r["record"]]
     o_runs = [r for r in runs if r["lane"] == "O" and r["record"] and "error" not in r["record"]]
     if e_runs and o_runs:

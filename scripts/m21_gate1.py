@@ -18,7 +18,7 @@ import time
 
 import m21_common as C
 
-# 单位约定（2026-08-12 audit）：vLLM 的 *_seconds_* 直方图返回**秒**，PromQL 不做换算，
+# 单位约定（2026-08-12 audit）：vLLM 的 *_seconds_* 直方图返回秒，PromQL 不做换算，
 # 因此这里的 key 一律带显式单位后缀，避免再出现「秒值被存进 _ms 字段」那类错误
 # （E6 request_timeout 首版就栽在这上面）。
 CHECK_EXPRS = {
@@ -77,7 +77,7 @@ def main():
     try:
         C.warmup(5)
         # 冷启动观察：warmup 首请求含 Triton GPU-kernel JIT / 图构建，TTFT 会远高于稳态
-        # （AGENTS.md §5）。此处 Triton = GPU kernel 编译器，**不是** NVIDIA Triton Inference Server。
+        # （AGENTS.md §5）。此处 Triton = GPU kernel 编译器，不是 NVIDIA Triton Inference Server。
         # 先在 rate 窗口内取一次读数，作为「冷启动确实会打破 SLO 告警」的证据。
         time.sleep(15)
         report["cold_start_ttft_p99_in_window_s"] = C.prom_scalar(CHECK_EXPRS["vllm_ttft_p99_seconds"])

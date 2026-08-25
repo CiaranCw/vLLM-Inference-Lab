@@ -6,8 +6,8 @@
   outputs/m18/perf.csv       prefill/decode 逐点 median + 相对 Q0 的 Bootstrap 95% CI
   outputs/m18/quality.csv    token 加权 PPL 与 ΔPPL%
 
-统计口径与 M17/M20 一致：median difference 的 **Bootstrap 95% CI（固定 seed=0）**。
-CI 含 0 只能写「未观察到超出噪声的差异」，**不得**写成「没有差异」。
+统计口径与 M17/M20 一致：median difference 的 Bootstrap 95% CI（固定 seed=0）。
+CI 含 0 只能写「未观察到超出噪声的差异」，不得写成「没有差异」。
 
 用法：python scripts/m18_summarize.py
 """

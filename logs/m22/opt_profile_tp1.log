@@ -1,0 +1,5 @@
+[run_all] === tag=h20_opt_profile tp=1 shard=profile === -> /root/logs/m22/h20_opt_profile_tp1_profile.log
+[run_all] tp=1 profile rc=0 elapsed=27.6s
+[m22] wrote /root/outputs/m22/h20_opt_profile_output_consistency.csv
+[m22] summarize done. tag=h20_opt_profile measure samples: 9
+[run_all] all done.

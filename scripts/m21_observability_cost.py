@@ -4,7 +4,7 @@
 动机（诚实记录发现过程）：
   E3 的 60s 窗口阶梯里，achieved 吞吐在 ~35 req/s 就饱和，而 M12 同配置测到 ~46.6 req/s。
   两次实验之间最大的已知差异，就是 M21 多跑了一整套监控栈（Prometheus 1s 抓取 + Grafana
-  + dcgm-exporter 1s 采集 + host exporter）。**不能靠猜**，所以做这个对照。
+  + dcgm-exporter 1s 采集 + host exporter）。不能靠猜，所以做这个对照。
 
 单变量：只切换监控栈开关，server 全程同一个进程、同一份配置、同一批 seed。
   ON  = prometheus + grafana + dcgm-exporter 三个容器运行（host exporter 由 Prometheus 抓取时才干活）

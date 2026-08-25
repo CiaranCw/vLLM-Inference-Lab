@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """M21 · 环境指纹落盘。
 
-动机（诚实记录）：M21 复核 M12 容量时发现同配置下单步解码变慢，但 **M12 当年没有落盘任何
-环境指纹**（驱动/torch/triton 版本、CPU、内核），导致今天**无法归因**这次回归。
+动机（诚实记录）：M21 复核 M12 容量时发现同配置下单步解码变慢，但 M12 当年没有落盘任何
+环境指纹（驱动/torch/triton 版本、CPU、内核），导致今天无法归因这次回归。
 → 从本模块起，每次性能实验都落一份指纹，未来才能做跨会话对比。
 
 用法：python scripts/m21_env_fingerprint.py [--out outputs/m21/env_fingerprint.json]
@@ -23,7 +23,7 @@ UNAVAILABLE = "unavailable"
 
 
 def sh(cmd, timeout=30):
-    """跑一条 shell 命令；失败一律记 unavailable + 原始报错，**绝不猜**。"""
+    """跑一条 shell 命令；失败一律记 unavailable + 原始报错，绝不猜。"""
     try:
         out = subprocess.check_output(cmd, shell=True, text=True,
                                       stderr=subprocess.STDOUT, timeout=timeout).strip()
@@ -33,7 +33,7 @@ def sh(cmd, timeout=30):
 
 
 def python_stack_versions():
-    """在**子进程**里取运行时版本，避免在指纹进程内 import 重型库。
+    """在子进程里取运行时版本，避免在指纹进程内 import 重型库。
 
     只 import、不建引擎、不碰 GPU。
     """

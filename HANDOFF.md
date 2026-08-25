@@ -2,7 +2,7 @@
 
 > **交接时间**：2026-08-06　**交接自**：Claude Code　**交接至**：Cursor
 > **仓库**：`/home/ciaran/projects/vllm-inference-lab` → `github.com/CiaranCw/vLLM-Inference-Lab`
-> **当前 HEAD**：`05e8e72`（已 push，工作树 clean）
+> **当前 HEAD**：以 `git log -1` 为准（本文件不写死 commit，避免过时）
 >
 > **读这份文档的顺序**：
 > 1. **先读 [`AGENTS.md`](AGENTS.md)** —— 不可违反的硬性规则（诚实性红线、Git 署名、GPU 安全、必需环境变量）。**这些规则此前只存在于上一个助手的私有记忆里，本次交接已全部外化到该文件，务必遵守。**
@@ -26,7 +26,7 @@
 ## 2. 进度总表
 
 ### 第一阶段（M0–M16）：已收口 ✅
-核心验收 **8/9**（仅差 M11 双卡 TP，属硬件门控）。
+核心验收 **9/9**（原 M11 双卡 TP 属硬件门控，已由第二阶段 M22 在 4×H20 闭合）。
 
 | 模块 | 主题 | 状态 | 一句话成果 |
 |---|---|:--:|---|
@@ -255,7 +255,10 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 
 ---
 
-## 8. 交接时的状态核实（2026-08-06，均已实测）
+## 8. 交接时的状态核实（2026-08-06 的历史快照，数字不再更新）
+
+> 下表是交接当天的实测状态，**刻意保留原值不随后续进展刷新**。当前状态请自行核对
+> （`git log -1` / `git status` / `ls figures/`）。
 
 | 项 | 状态 |
 |---|---|
@@ -266,7 +269,7 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 | M17 文档数字 | 已对 CSV/JSONL 逐项核对（19/19 通过），含正文叙述句 |
 | PR #51017 | OPEN / MERGEABLE / 无 label / `pre-run-check` 因**新贡献者门禁**失败（非代码问题）/ 无人类 review |
 | GPU | 4132 MiB / 16303 MiB，3% 利用（交接时基本空闲，但**每次跑前仍需自查**） |
-| figures | 6 张，均可由 `m16_figures.py` + `m17_figures.py` 离线重生成 |
+| figures | 交接时 6 张，均可由 `m16_figures.py` + `m17_figures.py` 离线重生成（现已 16 张，见 README 核心图） |
 
 ---
 

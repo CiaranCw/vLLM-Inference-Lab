@@ -1,7 +1,7 @@
 """M5 执行模式验证 driver。
 
 目标：在本机（RTX 5080 / sm_120 / torch 2.11+cu130 / vLLM ee0da84）上，
-用**同一个单请求**分别以 enforce_eager=True / False 运行，落盘引擎**实际解析后**的
+用同一个单请求分别以 enforce_eager=True / False 运行，落盘引擎实际解析后的
 compilation_config（执行模式的真相来源），并跑通一次生成用于对照输出。
 
 它只做两件事：

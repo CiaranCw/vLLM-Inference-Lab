@@ -95,9 +95,9 @@
 - 记录：每 step 的 `total_num_scheduled_tokens`（看分块序列，chunk 数、每块大小、Σ=L）、TTFT 代理；再**并发一个 decode 请求**，看 chunked on/off 下该 decode 的 ITL 是否被长 prefill 阻塞。
 - **看点**：chunked off → 长 prefill 整块占 step、decode 被挤；chunked on → prefill 分块、decode 可插队。
 
-### 指标与产出（待 GPU）
-- `outputs/m17/prefix_cache_sweep.csv`（E1）、`outputs/m17/block_lifecycle.csv`（E2）、`outputs/m17/chunked_prefill.csv`（E3）、`outputs/m17/raw/*.jsonl`。
-- `reports/06_prefix_cache.md`（或 `notes/m17/results.md`）：结论 + 与 M6 短前缀对照。
+### 指标与产出（本节为跑前冻结时的计划清单，实际落盘情况见括注）
+- `outputs/m17/prefix_cache_sweep.csv`（E1，已落盘）、`outputs/m17/block_lifecycle.csv`（E2，**未执行故该文件不存在**）、`outputs/m17/chunked_prefill.csv`（E3，已落盘）、`outputs/m17/raw/*.jsonl`（已落盘）。
+- 结论 + 与 M6 短前缀对照最终写在 [`notes/m17/results.md`](results.md)（冻结时曾计划命名为 `reports/06_prefix_cache.md`，未采用）。
 
 ---
 
@@ -156,10 +156,11 @@ python scripts/m17_prefix_cache.py --shard summarize   # 不建引擎、不需 G
 
 ---
 
-## 7. 后续追加实验的冻结设计（**跑前冻结；实现完成，待 GPU 执行**）
+## 7. 后续追加实验的冻结设计（**跑前冻结的原文，保留不改**）
 
-> 本节两项均**尚未执行**，此处只冻结设计、不变量与复现命令。
-> 拿到真实数据前，`results.md` 不得出现任何相关数字。
+> **执行状态（2026-08-13 更新）**：本节两项 **均已执行完毕**，结果见
+> [`results.md`](results.md) §9.1（E3 no-chunk 正确性）与 §9.2（I5-b 输出长度）。
+> 本节保留**跑前冻结时的原始设计文字**，用于对照「设计是否被事后改动过」，故行文仍是未来时。
 
 ### 7.1 P0 · E3 no-chunk 生成正确性（补 M17 缺失的一环）
 
@@ -234,7 +235,7 @@ cold/hot 前缀相同且后缀不同 · off 与 hot 的 `prompt_hash` 完全相�
 且差异超过已知的 1–3ms 跑间漂移时，才写「定量支持 I5-b」；否则写
 「**已执行，未观察到超出噪声的稳定趋势**」。**不得为了让 I5-b 通过而改样本、删异常点或换档位。**
 
-### 7.3 复现命令（待 GPU 授权后执行；一个进程一个引擎）
+### 7.3 复现命令（已于 2026-08-13 按此执行；重跑时一个进程一个引擎）
 
 ```bash
 cd /home/ciaran/projects/vllm-inference-lab && source .venv/bin/activate

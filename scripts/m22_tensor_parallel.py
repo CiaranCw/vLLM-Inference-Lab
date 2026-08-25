@@ -1,7 +1,7 @@
 """M22 · Tensor Parallel 对比实验（TP=1/2/4）。
 
 ============================================================================
-**每个 TP 档一个独立进程**（沿用 M6/M17/M19 的纪律）。一个进程内只建一个引擎，
+每个 TP 档一个独立进程（沿用 M6/M17/M19 的纪律）。一个进程内只建一个引擎，
 并在这一个引擎上依次跑 D1 / D2 / D3 —— 不为 D1 单独重复建引擎。
 
     export VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0
@@ -16,30 +16,30 @@
 
 以下每条设计都由 v0.24.0 的真实源码决定，不是习惯照抄：
 
-1. **`VLLM_ENABLE_V1_MULTIPROCESSING=0` 是硬前置**
-   `v1/engine/llm_engine.py:224-226` 会在该环境变量为真时**强制覆盖**传入的
+1. `VLLM_ENABLE_V1_MULTIPROCESSING=0` 是硬前置
+   `v1/engine/llm_engine.py:224-226` 会在该环境变量为真时强制覆盖传入的
    `enable_multiprocessing=False`。一旦被覆盖，EngineCore 会跑到独立进程里，
    `engine.engine_core.engine_core.scheduler` 就不存在了，逐 step 内省全部失效。
-   本脚本启动时**硬断言**该变量。
+   本脚本启动时硬断言该变量。
 
-2. **TP>1 时 scheduler 仍在本进程**（`core_client.py:304-315` InprocClient +
+2. TP>1 时 scheduler 仍在本进程（`core_client.py:304-315` InprocClient +
    `v1/engine/core.py:269-306`），所以 M6 的 `ScheduleSpy` 猴补丁依然可用 ——
    这是精确隔离 steady-state decode 的基础。
 
-3. **driver 进程的显存读数无意义**：模型与 KV 全在 worker 进程
+3. driver 进程的显存读数无意义：模型与 KV 全在 worker 进程
    （`multiproc_executor.py:625-634` 才 init_device）。故 per-rank 显存一律走
-   `collective_rpc`（`v1/engine/llm_engine.py:492-499`），**不用 driver 的
-   `torch.cuda.memory_allocated()` 冒充模型显存**。
+   `collective_rpc`（`v1/engine/llm_engine.py:492-499`），不用 driver 的
+   `torch.cuda.memory_allocated()` 冒充模型显存。
 
-4. **不在 driver 调 `torch.cuda.synchronize()`**：TP>1 时 driver 本来没有 CUDA context，
+4. 不在 driver 调 `torch.cuda.synchronize()`：TP>1 时 driver 本来没有 CUDA context，
    调它反而会凭空建一个；而 `engine.step()` 本身是同步的（要把采样结果作为 Python 对象返回）。
    两档 TP 用同一套计时口径，避免 TP=1/TP>1 计时方式不对称。
 
-5. **`async_scheduling` 三档一律显式 False**：它默认 `None`，而
+5. `async_scheduling` 三档一律显式 False：它默认 `None`，而
    `config/vllm.py:938` 的自动决策依赖 `executor_class.supports_async_scheduling()`，
    executor 类在 TP=1(uni) 与 TP>1(mp) 下不同 → 不写死就会变成隐藏变量。
 
-6. **`max_model_len` 必须 > 最长 prompt**：`v1/engine/input_processor.py:423-432`
+6. `max_model_len` 必须 > 最长 prompt：`v1/engine/input_processor.py:423-432`
    规定 `prompt_len == max_model_len` 时直接 ValueError（因为还要至少产出 1 个 token）。
    所以扫 4096 长 prompt 时 `max_model_len` 取 8192。
 """
@@ -100,13 +100,13 @@ def _h(ids) -> str:
 
 # ============================ per-rank 观测（R2/R6） ============================
 def _rank_report(worker):
-    """在**每个 worker 进程内**执行，返回该 rank 的显存 / KV / 设备身份。
+    """在每个 worker 进程内执行，返回该 rank 的显存 / KV / 设备身份。
 
     经 `LLMEngine.collective_rpc(callable)` 下发（`v1/engine/llm_engine.py:492-499`），
     由 cloudpickle 序列化（`multiproc_executor.py:340-402`），worker 作为第一个参数传入
-    （`v1/executor/abstract.py:152-184`）。**必须是模块级函数**，不能捕获不可序列化的状态。
+    （`v1/executor/abstract.py:152-184`）。必须是模块级函数，不能捕获不可序列化的状态。
 
-    七类量刻意分开返回，语义**互不等同**（M6 曾把「KV 容量等价值」与实际并发混谈）：
+    七类量刻意分开返回，语义互不等同（M6 曾把「KV 容量等价值」与实际并发混谈）：
       weight_bytes            模型权重
       torch_allocated/reserved torch allocator 视角
       non_torch_bytes         非 torch 占用（NCCL buffer / cuda context 等）
@@ -164,7 +164,7 @@ def _rank_report(worker):
 
 # ============================ 引擎 ============================
 def assert_env():
-    """硬前置：不满足就**立刻失败**，不要跑完才发现内省全是空的。"""
+    """硬前置：不满足就立刻失败，不要跑完才发现内省全是空的。"""
     v = os.environ.get("VLLM_ENABLE_V1_MULTIPROCESSING")
     if v not in ("0", "false", "False"):
         raise SystemExit(
@@ -216,7 +216,7 @@ def build_engine(tp: int, model: str, profile_dir: str | None = None):
 
 
 def effective_cfg(engine, tp_requested: int) -> dict:
-    """从**引擎**读回真正生效的配置——三层证据里的第二层。"""
+    """从引擎读回真正生效的配置——三层证据里的第二层。"""
     vc = engine.vllm_config
     pc, sc, cc, mc = (
         vc.parallel_config,
@@ -242,8 +242,8 @@ def effective_cfg(engine, tp_requested: int) -> dict:
         "max_model_len": int(mc.max_model_len),
         "dtype": str(mc.dtype),
         "model": str(mc.model),
-        # ↓ 调度器视角的统一容量（min over ranks 之后），**不是**各 rank 之和，
-        #   也**不是**运行时并发（kv_cache_utils.py:2135-2163 / :1800-1810）
+        # ↓ 调度器视角的统一容量（min over ranks 之后），不是各 rank 之和，
+        #   也不是运行时并发（kv_cache_utils.py:2135-2163 / :1800-1810）
         "sched_num_gpu_blocks": int(getattr(cc, "num_gpu_blocks", 0) or 0),
         "sched_kv_cache_size_tokens": getattr(cc, "kv_cache_size_tokens", None),
         "sched_kv_capacity_equiv_concurrency": getattr(
@@ -363,10 +363,10 @@ def run_d1(engine, tp: int, eff: dict) -> dict:
 
 # ============================ D2 · steady-state decode ============================
 def run_d2_sample(engine, spy, tf, tp, batch, out_len, prompt_len):
-    """一个样本 = batch 个**完全同构**的请求跑到全部结束。
+    """一个样本 = batch 个完全同构的请求跑到全部结束。
 
     同构（相同 prompt 长度 + 相同 max_tokens + ignore_eos）是刻意的：
-    这样 batch 内所有请求**同步推进、同一步结束**，从构造上消除
+    这样 batch 内所有请求同步推进、同一步结束，从构造上消除
     「请求陆续完成导致 batch 缩水」的 tail effect —— 否则测到的
     「TP decode scaling」里会混进 batch 尾部收缩的效应。
     构造是否真的成立，由下面的 `steady_batch_stable` 事后核对，不靠假设。
@@ -618,7 +618,7 @@ def run_side(tp, model, tag, quick=False, profile_dir=None):
 def run_profile(tp, model, tag, profile_dir):
     """P1 · collective communication evidence（独立 shard，避免给主实验加 profiler 开销）。
 
-    ⚠ v0.24.0 **没有** VLLM_TORCH_PROFILER_DIR，必须用 ProfilerConfig（见 build_engine）。
+    ⚠ v0.24.0 没有 VLLM_TORCH_PROFILER_DIR，必须用 ProfilerConfig（见 build_engine）。
     每个 rank 各写一份 trace，文件名含 `tp{N}_rank{N}`
     （distributed/utils.py:664-696 + torch tensorboard_trace_handler）。
     """
@@ -869,7 +869,7 @@ def summarize(tag):
                     ]
                 )
                 tps = _stats(thr(v))
-                # TPOT 由完成/首 token 派生，**不用它代表单步 decode**（那是 steady_step）
+                # TPOT 由完成/首 token 派生，不用它代表单步 decode（那是 steady_step）
                 tpot = _stats(
                     [
                         (

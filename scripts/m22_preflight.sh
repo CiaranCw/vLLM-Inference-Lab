@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # M22 · 远端 H20 上机自检（只读、快、不下载模型）
 #
-# 目标：SSH 上机后**一条命令**在几分钟内回答「这台机器能不能跑我们的实验」。
+# 目标：SSH 上机后一条命令在几分钟内回答「这台机器能不能跑我们的实验」。
 # 刻意不做任何耗时的大文件下载；只做连通性探测（HEAD 请求级别）。
 #
 #   bash scripts/m22_preflight.sh 2>&1 | tee logs/m22/preflight.log
@@ -145,6 +145,6 @@ if [ "$FAIL" -eq 0 ]; then
   echo "      1) python3 scripts/m22_nccl_smoke.py --world-size 4"
   echo "      2) 确认模型可用后再跑 TP smoke"
 else
-  echo "  >>> 有关键项失败（见上面的 [FAIL]）。**先停下报告，不要盲目往下跑**。"
+  echo "  >>> 有关键项失败（见上面的 [FAIL]）。先停下报告，不要盲目往下跑。"
 fi
 exit "$FAIL"

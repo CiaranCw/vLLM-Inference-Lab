@@ -1,4 +1,4 @@
-"""M22 · 独立的 torch.distributed / NCCL 冒烟测试（**不 import vllm**）。
+"""M22 · 独立的 torch.distributed / NCCL 冒烟测试（不 import vllm）。
 
 用途：在启动 vLLM TP 之前，用最小代价把故障域切开——
 
@@ -10,7 +10,7 @@
     python scripts/m22_nccl_smoke.py --world-size 4
     python scripts/m22_nccl_smoke.py --world-size 2      # 降级排查
 
-退出码 0 = 通过。所有 rank 的 all-reduce 结果都会**逐一校验数值**，
+退出码 0 = 通过。所有 rank 的 all-reduce 结果都会逐一校验数值，
 不是「跑完没报错就算过」。
 """
 

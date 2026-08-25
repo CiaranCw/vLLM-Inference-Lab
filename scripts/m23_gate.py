@@ -3,14 +3,14 @@
 
 设计冻结见 `notes/m23/cross_engine_plan.md`（DESIGN FROZEN v3）。本脚本严格实现其中的约束：
 
-  - **container-only**：绝不在 host 安装 TRT-LLM（`pip install tensorrt_llm` 有替换 torch 的记录，
+  - container-only：绝不在 host 安装 TRT-LLM（`pip install tensorrt_llm` 有替换 torch 的记录，
     会摧毁 lab venv 与 M6–M22 的可复现性）。
-  - **唯一镜像**：`nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24`（TRT-P 路线）。
-    **不自动换 tag** —— 失败必须保存证据后回报所有者。
-  - **Gate 1 红线**：import 成功 ≠ PASS，model load 成功 ≠ PASS，GPU 可见 ≠ PASS；
-    **必须真实 generate 出文本才算 PASS**（sm_120 的 kernel/runtime 问题可能只在真正
+  - 唯一镜像：`nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc24`（TRT-P 路线）。
+    不自动换 tag —— 失败必须保存证据后回报所有者。
+  - Gate 1 红线：import 成功 ≠ PASS，model load 成功 ≠ PASS，GPU 可见 ≠ PASS；
+    必须真实 generate 出文本才算 PASS（sm_120 的 kernel/runtime 问题可能只在真正
     执行 forward/attention/decode 时才暴露）。
-  - **默认 dry-run**：不传 `--run` 就只打印将要执行的命令，**不拉镜像、不启动容器、不碰 GPU**。
+  - 默认 dry-run：不传 `--run` 就只打印将要执行的命令，不拉镜像、不启动容器、不碰 GPU。
 
 用法：
     python scripts/m23_gate.py --gate 0            # dry-run，只打印命令
@@ -160,14 +160,14 @@ PAYLOADS = {0: GATE0_PAYLOAD, 1: GATE1_PAYLOAD, 2: GATE2_PAYLOAD}
 def docker_cmd(payload: str) -> list[str]:
     """构造容器命令。注意：不用 -it（无 TTY）。
 
-    HF 缓存挂载为 **rw**：首版挂 `:ro`，结果 Gate 1 直接报
+    HF 缓存挂载为 rw：首版挂 `:ro`，结果 Gate 1 直接报
     `OSError: [Errno 30] Read-only file system: .../.locks/...` ——
-    `huggingface_hub` 加载本地模型时仍要在缓存目录里建**锁文件**。
-    这是 harness 缺陷，**不是** sm_120 支持问题（证据留在
+    `huggingface_hub` 加载本地模型时仍要在缓存目录里建锁文件。
+    这是 harness 缺陷，不是 sm_120 支持问题（证据留在
     `outputs/m23/gate1_attempt1_readonly_mount.json`）。
 
     为守住「不自动下载模型」这条规则，改 rw 的同时设 `HF_HUB_OFFLINE=1`：
-    只允许读本地缓存与写锁文件，**禁止任何网络下载**。
+    只允许读本地缓存与写锁文件，禁止任何网络下载。
     """
     return [
         DOCKER, "run", "--rm",

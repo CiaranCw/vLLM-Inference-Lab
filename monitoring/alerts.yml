@@ -1,6 +1,6 @@
 # M21 告警规则
 #
-# 纪律：每条规则都必须在 E6 演练中**真实 firing 过一次**，并把 Prometheus API 的
+# 纪律：每条规则都必须在 E6 演练中真实 firing 过一次，并把 Prometheus API 的
 # 查询结果落盘到 outputs/m21/e6_drills.json。没触发过的规则在 results.md 里标 [ ] 未验证。
 #
 # 阈值来源：TTFT 阈值直接沿用 M12 冻结 SLO（P99 TTFT ≤ 300ms），不另造新标准。

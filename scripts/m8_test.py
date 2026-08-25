@@ -1,14 +1,14 @@
 """M8 · correctness 套件。
 
 - 基础练习：vector_add / act_and_mul / softmax（含非 2 次幂列宽）与 PyTorch 对照 allclose。
-- 主验收 slot_mapping 生成：全测试矩阵 + **三路功能交叉验证**
+- 主验收 slot_mapping 生成：全测试矩阵 + 三路功能交叉验证
     自写 Triton（slot_mapping_gen） vs PyTorch 语义 Oracle（slot_mapping_gen_ref） vs vLLM 官方 `_compute_slot_mapping_kernel`。
   生成侧输出为 int64 精确值 → 断言 torch.equal（不是 allclose）。
 
 结果写 outputs/m8/correctness.json（每用例 pass + 关键数值）；任一 fail 立即可见。
 
 说明：
-- 有效 slot 唯一性是**消费侧**（散写）才关心的写竞争问题；生成侧只做 index 计算，允许重复（如前缀共享）。
+- 有效 slot 唯一性是消费侧（散写）才关心的写竞争问题；生成侧只做 index 计算，允许重复（如前缀共享）。
   为保持 ref 比较干净，各请求分配互不重叠的物理块。
 - 非连续/乱序物理块用例名为 non_contiguous_physical_blocks / shuffled_slot_assignment，
   仅验证 Block Pool 任意物理分配下的 index 计算，不声称完整模拟 prefix cache 生命周期。

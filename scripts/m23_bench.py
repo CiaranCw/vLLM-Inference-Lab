@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""M23 · L1 正式跨引擎对照：**2×2 execution-mode**（V-E / V-O / T-E / T-O）。
+"""M23 · L1 正式跨引擎对照：2×2 execution-mode（V-E / V-O / T-E / T-O）。
 
 设计冻结 v4 §5.0。硬约束：
   - 正式跨引擎比较只允许 `T-E vs V-E` 与 `T-O vs V-O`；
     允许 `V-O vs V-E` / `T-O vs T-E` 作为同引擎 execution-mode ablation；
-    **禁止交叉 lane**（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup；
-    **任一差值都不得称为「纯 engine intrinsic speedup」**。
-  - **Primary metrics 才承担正式结论**：端到端请求延迟 / 请求吞吐 / 输出 token 吞吐 /
-    **总 GPU 显存** / 冷启动时间。engine 内部指标只用于解释。
-  - **显存只报 total（host 侧 nvidia-smi 采样）**：Gate 2 已实测 TRT 侧主进程
+    禁止交叉 lane（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup；
+    任一差值都不得称为「纯 engine intrinsic speedup」。
+  - Primary metrics 才承担正式结论：端到端请求延迟 / 请求吞吐 / 输出 token 吞吐 /
+    总 GPU 显存 / 冷启动时间。engine 内部指标只用于解释。
+  - 显存只报 total（host 侧 nvidia-smi 采样）：Gate 2 已实测 TRT 侧主进程
     `torch.cuda.memory_allocated()` 读到 0（executor 在独立 runtime 内），
-    分项不可得 → 标 `unavailable`，**禁止残差推导**。
-  - 四组都**回读并保存实际 execution / graph 配置**（不信入参，只信回读）。
-  - 两侧用**同一份 token ids**（`outputs/m23/bench_inputs.json`），逐字节一致。
+    分项不可得 → 标 `unavailable`，禁止残差推导。
+  - 四组都回读并保存实际 execution / graph 配置（不信入参，只信回读）。
+  - 两侧用同一份 token ids（`outputs/m23/bench_inputs.json`），逐字节一致。
 
 用法：
     python scripts/m23_bench.py --build-inputs      # 只生成输入（host，无 GPU）
@@ -180,7 +180,7 @@ class GpuSampler(threading.Thread):
 
     def __init__(self, interval=0.5):
         super().__init__(daemon=True)
-        # 注意：**不能**叫 self._stop —— 会遮蔽 threading.Thread._stop()，
+        # 注意：不能叫 self._stop —— 会遮蔽 threading.Thread._stop()，
         # join() 时报 "Event object is not callable"。M12 当年踩过同一个坑
         # （notes/m12/serving.md §8 第①条），这里重蹈覆辙了一次。
         self.interval, self.samples, self._stopev = interval, [], threading.Event()

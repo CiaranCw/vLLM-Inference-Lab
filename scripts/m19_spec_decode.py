@@ -1,7 +1,7 @@
 """M19 · Speculative Decoding 第一阶段：普通 Decode Baseline vs N-gram。
 
 ============================================================================
-运行需 GPU（会建真实 vLLM 引擎）。**必须用 --shard 分片跑：一个进程只建一个引擎**
+运行需 GPU（会建真实 vLLM 引擎）。必须用 --shard 分片跑：一个进程只建一个引擎
 （vLLM 的 KV 显存 `del engine + empty_cache()` 归还不掉，同进程建第二个引擎会失败；
 M6 已实证，M17 沿用）。
 
@@ -14,11 +14,11 @@ M6 已实证，M17 沿用）。
 理论 / 源码定位 / 冻结设计：notes/m19/speculative_decoding.md
 ============================================================================
 
-**两侧严格单变量**：除 `speculative_config` 外所有引擎参数逐字相同。特别注意两个
+两侧严格单变量：除 `speculative_config` 外所有引擎参数逐字相同。特别注意两个
 容易变成隐藏变量的开关，本脚本已在两侧都显式写死：
 
   1. `async_scheduling=False`——上游在 `speculative_config.method == "ngram"` 且
-     `async_scheduling is None` 时会**自动把它关掉并 warning**
+     `async_scheduling is None` 时会自动把它关掉并 warning
      （`vllm/config/vllm.py:976-986`）。若 baseline 侧留 None（可能被开启），
      开 ngram 就会顺带改变 scheduler 行为，对照即不成立。
   2. `disable_log_stats=False`——投机解码计数有三道 `log_stats` 门禁
@@ -28,16 +28,16 @@ M6 已实证，M17 沿用）。
 另外关闭 APC（`enable_prefix_caching=False`）：本实验重复跑相同 prompt，
 开着会让后续 repeat 命中缓存，把 prefill 成本和 ngram 的上下文都搅乱。
 
-**计数来源（只读，不改产品源码）**：注册一个自定义 `StatLoggerBase` 到
+计数来源（只读，不改产品源码）：注册一个自定义 `StatLoggerBase` 到
 `LLMEngine.from_engine_args(stat_loggers=[...])`（`vllm/v1/engine/llm_engine.py:215`），
 逐 step 收 `SchedulerStats.spec_decoding_stats`（`vllm/v1/metrics/stats.py:190`，
 类型见 `vllm/v1/spec_decode/metrics.py:17-49`）。
 不用 `get_metrics()`，因为那是进程级累计的 Prometheus counter，读取不清零、
-难以按样本切窗口；自定义 logger 拿到的是**per-step 原始对象**，可按样本精确归属。
+难以按样本切窗口；自定义 logger 拿到的是per-step 原始对象，可按样本精确归属。
 
 ⚠ `num_accepted_tokens` 的语义（`vllm/v1/core/sched/scheduler.py:1845-1869`）：
     num_accepted = max(len(generated_token_ids) - 1, 0)
-即「本 step 该请求产出的 token 数 − 1」，**不含那个总会产出的 bonus/修正 token**。
+即「本 step 该请求产出的 token 数 − 1」，不含那个总会产出的 bonus/修正 token。
 所以 acceptance_length = 1 + accepted/drafts（与上游示例
 `examples/features/speculative_decoding/spec_decode_offline.py:212` 一致）。
 """
@@ -78,7 +78,7 @@ REPEATS = 15
 
 # N-gram 配置：照抄上游自带测试的可用组合
 # （tests/v1/e2e/spec_decode/test_spec_decode.py:165-170）。
-# ⚠ prompt_lookup_min/max 必须**两个都显式写死**：只给一个或都不给，
+# ⚠ prompt_lookup_min/max 必须两个都显式写死：只给一个或都不给，
 #   上游会静默改写成 5/5（vllm/config/speculative.py:633-659），自变量就变了。
 NGRAM_CONFIG = {
     "method": "ngram",
@@ -94,7 +94,7 @@ SMOKE_OUTPUT_LEN = 32
 
 # ---- 输出一致性 probe（独立于主实验；存完整 token ids 以便定位分歧点）----
 # 主实验只落 hash，发现 hash 不等时无法回答"差在哪一位"。本 probe 专门补这一步，
-# 写独立文件，**不触碰主实验已落盘的性能数据**。
+# 写独立文件，不触碰主实验已落盘的性能数据。
 EQUIV_WARMUP = 1
 EQUIV_REPEATS = 3
 
@@ -146,7 +146,7 @@ class SpecStatCollector(StatLoggerBase):
     （`vllm/v1/metrics/loggers.py:376-378`），拿不到实例引用，
     因此用类变量登记单例供实验代码读取。
 
-    **不修改任何 vLLM 产品源码**，只用上游公开的 `stat_loggers=` 扩展点。
+    不修改任何 vLLM 产品源码，只用上游公开的 `stat_loggers=` 扩展点。
     """
 
     instance: SpecStatCollector | None = None
@@ -310,9 +310,9 @@ def _repetition_ratio(ids: list[int], n: int = 4) -> float | None:
 
 
 def _ngram_in_context_ratio(out_ids, prompt_ids, n: int = 4) -> float | None:
-    """输出的 n-gram 有多大比例**已经出现在 prompt 里**。
+    """输出的 n-gram 有多大比例已经出现在 prompt 里。
 
-    这是与引擎的 acceptance 计数**正交的第二证据源**：acceptance 来自 vLLM 内部
+    这是与引擎的 acceptance 计数正交的第二证据源：acceptance 来自 vLLM 内部
     的 scheduler 统计，本指标完全由落盘的 token 序列离线算出。若某 workload 的
     acceptance 高而本指标低（或反之），说明我对"为什么命中"的解释站不住，
     必须回去查，而不是直接下结论。
@@ -330,8 +330,8 @@ def run_one_sample(engine, tf, collector, workload, batch, out_len, keep_ids=Fal
 
     engine_steps 直接计数 `engine.step()` 调用次数。在当前
     `enforce_eager=True + async_scheduling=False` 配置下，它是 execution /
-    model / scheduling round 的**强 proxy**，适合观察串行 round 数变化；
-    **不能一般化为严格的一次纯 Decode Target Forward**（chunked prefill /
+    model / scheduling round 的强 proxy，适合观察串行 round 数变化；
+    不能一般化为严格的一次纯 Decode Target Forward（chunked prefill /
     boundary / scheduling 都可能计入）。这是「投机解码是否减少了串行
     execution depth」的直接证据（而不是从延迟反推）。
     """
@@ -363,7 +363,7 @@ def run_one_sample(engine, tf, collector, workload, batch, out_len, keep_ids=Fal
                     continue
                 co = o.outputs[0]
                 # output_kind 默认 CUMULATIVE（sampling_params.py:301），
-                # token_ids 是引擎内部会继续 append 的**同一个 list 对象**
+                # token_ids 是引擎内部会继续 append 的同一个 list 对象
                 # （output_processor.py:389-390）→ 必须拷贝。
                 ids = list(co.token_ids)
                 prev = outputs.get(rid)
@@ -513,7 +513,7 @@ def _dump(samples, tag):
 
 
 def _load(*tags):
-    """按**精确文件名**加载分片。
+    """按精确文件名加载分片。
 
     刻意不做前缀通配：一致性 probe 的分片也叫 m19_*，前缀匹配会把它混进主汇总，
     让 CSV 里的 n 与设计不符却不报错。
@@ -870,7 +870,7 @@ def summarize_equivalence():
     """逐请求比对 baseline / ngram 的完整输出 token 序列，定位首个分歧下标。
 
     主实验只落 hash，只能回答"等不等"；本文件回答"差在哪一位、差多少"——
-    这决定了该把它读作**实现错误**（首位就分歧 / 长度不对）还是**数值差异**
+    这决定了该把它读作实现错误（首位就分歧 / 长度不对）还是数值差异
     （长尾分歧，与 M5 观察到的 compiled-vs-eager 第 5 token 起分叉同类）。
     """
     os.makedirs(OUT, exist_ok=True)
@@ -948,13 +948,13 @@ def summarize_equivalence():
 
 
 def _batch_shape_control(sides):
-    """正交对照：**同一侧内部**，仅改变 batch 组成是否就会改变输出？
+    """正交对照：同一侧内部，仅改变 batch 组成是否就会改变输出？
 
     这是判定 baseline↔ngram 分歧性质的关键控制组。req_index=0 的 prompt 只取决于
     workload，与 batch 无关，因此可以跨 batch 直接比对同一个请求的输出：
-      · 若 baseline 自己换个 batch 就会分歧 → 证明 batch-shape **可以**导致
+      · 若 baseline 自己换个 batch 就会分歧 → 证明 batch-shape 可以导致
         greedy divergence，并与 baseline↔ngram 现象一致；现有证据未发现明确
-        Spec Decode correctness bug，但**不是**「已严格证明每一个 divergence
+        Spec Decode correctness bug，但不是「已严格证明每一个 divergence
         都与 Spec Decode 无关」；
       · 若只有 ngram 侧分歧 → 才需要优先怀疑投机解码路径。
     同时报告同配置下跨 repeat 的可复现性，用来排除"随机性"这一竞争解释。

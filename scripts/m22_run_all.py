@@ -4,12 +4,12 @@
     python scripts/m22_run_all.py --tag h20_formal --tp 2,4 --profile   # P1 通信证据
     python scripts/m22_run_all.py --tag h20_formal --package            # 只打包
 
-**为什么要有断点续跑**：H20 是 SSH 临时机器，连接可能中断。
-已完成的 shard（`outputs/m22/raw/<tag>_tp<N>_<shard>.jsonl` 存在且非空）**默认跳过**，
+为什么要有断点续跑：H20 是 SSH 临时机器，连接可能中断。
+已完成的 shard（`outputs/m22/raw/<tag>_tp<N>_<shard>.jsonl` 存在且非空）默认跳过，
 所以重跑本命令等于「从中断处继续」，不会覆盖已采到的数据，也不浪费机时。
 要强制重跑必须显式 `--force`。
 
-**为什么每档一个子进程**：vLLM 的 KV 显存 `del engine` 归还不掉（M6 实证），
+为什么每档一个子进程：vLLM 的 KV 显存 `del engine` 归还不掉（M6 实证），
 且 TP>1 会拉起 worker 进程组，进程内切换 TP 档不可靠。
 """
 
@@ -76,11 +76,11 @@ def run_one(tag, tp, shard, model, quick, extra_env, force) -> int:
 
 
 def transfer_test(tag: str) -> str:
-    """在**远端**生成一个几 KB 的测试文件 + sha256，供本地尽早做一次 pull 演练。
+    """在远端生成一个几 KB 的测试文件 + sha256，供本地尽早做一次 pull 演练。
 
-    为什么必须早做：本地能 SSH 到 H20，**不代表** H20 能反向连到本地，
+    为什么必须早做：本地能 SSH 到 H20，不代表 H20 能反向连到本地，
     所以回传只能由本地主动 pull。而 rsync 是否存在、路径/权限/key 是否对，
-    这些错误必须在 T+0:30 就暴露，**绝不能等到 T+3:25 打包时才第一次发现**。
+    这些错误必须在 T+0:30 就暴露，绝不能等到 T+3:25 打包时才第一次发现。
     """
     d = os.path.join(ROOT, "outputs", "m22")
     os.makedirs(d, exist_ok=True)

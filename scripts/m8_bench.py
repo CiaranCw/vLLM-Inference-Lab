@@ -1,16 +1,16 @@
 """M8 · microbenchmark（规模曲线）。
 
-对照三种 slot_mapping **生成**实现（同一输入/口径）：
+对照三种 slot_mapping 生成实现（同一输入/口径）：
   - 自写 Triton（m8_kernels.slot_mapping_gen）
   - vLLM 官方 `_compute_slot_mapping_kernel`
   - PyTorch 向量化 reference（gather 计算，作清晰性/正确性基线，非性能目标）
 
-计时：`triton.testing.do_bench`（内部 CUDA event + warmup），计时区间**仅含 kernel/op 调用**；
+计时：`triton.testing.do_bench`（内部 CUDA event + warmup），计时区间仅含 kernel/op 调用；
 输入张量、输出缓冲在计时区外分配（两个 kernel 复用预分配 out；torch 版天然分配中间张量，如实标注）。
 
 指标：`latency_us`（median/p20/p80）与 `effective_payload_bandwidth_GBps`
       = (positions 读 8B + slot 写 8B) × num_tokens / time
-      —— **逻辑有效载荷带宽，仅用于实现间相对比较**，不代表硬件 DRAM 带宽
+      —— 逻辑有效载荷带宽，仅用于实现间相对比较，不代表硬件 DRAM 带宽
       （未计 block_table 读、事务放大、L2、地址计算等）。目标：写对、无数量级退化、趋势合理、差距可解释。
 """
 

@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """M23 · 跨引擎 generation consistency / divergence check（L1 收口补项）。
 
-复用 `outputs/m23/preflight_inputs.json` 的 **6 条固定 token-id**，
-分别做 **V-E vs T-E**、**V-O vs T-O**。
+复用 `outputs/m23/preflight_inputs.json` 的 6 条固定 token-id，
+分别做 V-E vs T-E、V-O vs T-O。
 
 记录：exact token match、common-prefix length、first-divergence position、
 输出长度、functional sanity。
 
-**判据纪律（跑前冻结）**：
-  - **硬失败** = 进程崩溃 / 空输出 / 超长（n_tokens > max_tokens）。
+判据纪律（跑前冻结）：
+  - 硬失败 = 进程崩溃 / 空输出 / 超长（n_tokens > max_tokens）。
     这才是 functional sanity 失败。
-  - **TRT 侧 n_tokens < max_tokens 不自动判失败**：TRT-LLM SamplingParams
-    **没有 ignore_eos**（bench 用 `min_tokens=max_tokens` 对齐，但遇 EOS 仍可能提前停）。
+  - TRT 侧 n_tokens < max_tokens 不自动判失败：TRT-LLM SamplingParams
+    没有 ignore_eos（bench 用 `min_tokens=max_tokens` 对齐，但遇 EOS 仍可能提前停）。
     记为 `eos_early_stop`。vLLM 用 `ignore_eos=True` 会在 EOS 后继续垫到定长。
-  - **跨引擎 exact-match 失败只记为 numerical divergence**，
-    **不得**直接判为 correctness failure。
+  - 跨引擎 exact-match 失败只记为 numerical divergence，
+    不得直接判为 correctness failure。
     理由：同一 vLLM 的 V-E/V-O 已经只有 1/6 exact match
     （`outputs/m23/vctr_preflight.json`），跨引擎 mismatch 是预期的数值分歧。
-  - **不扩成大规模质量 benchmark**：固定 6 条、greedy、max_tokens=64。
+  - 不扩成大规模质量 benchmark：固定 6 条、greedy、max_tokens=64。
 
-同引擎 execution-mode ablation（V-O vs V-E、T-O vs T-E）作为**诊断附表**落盘
+同引擎 execution-mode ablation（V-O vs V-E、T-O vs T-E）作为诊断附表落盘
 （零额外 GPU 成本，因为四组都要跑），不承担跨引擎 correctness 结论。
 
 用法：

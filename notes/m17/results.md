@@ -265,14 +265,14 @@ python scripts/m17_prefix_cache.py --shard summarize   # 不建引擎、不需 G
 ```
 （`--shard e3` 缺 `--e3-chunked/--e3-mbt` 会直接报错退出，防止同进程建多引擎。）
 
-## 9. 可选扩展（未执行 —— 本文件尚无对应数据）
+## 9. 可选扩展（三项中两项已执行，E2 明确未做）
 
 > **M17 主线到此结束**：核心实验（E1 / E3-single / E3-concurrency）已完成并核验。
-> 以下三项为**可选扩展**，**脚本已实现但尚未执行**，**不阻塞后续模块**（M19 已在其之后独立完成）。
-> 因此本文件**不含**任何相关数字。
+> 以下三项为**可选扩展**，**不阻塞后续模块**（M19 已在其之后独立完成）。
+> **9.1 与 9.2 已于 2026-08-13 执行并落盘**（数字见下）；**9.3（E2）明确未做**。
 > 冻结设计、不变量与复现命令见 `prefix_cache_and_chunked_prefill.md` §7；
-> 执行状态可用 `python scripts/check_invariants.py --module m17` 随时查询（显示为 PENDING，
-> 不计为通过、也不计为失败）。
+> 执行状态可用 `python scripts/check_invariants.py --module m17` 随时查询
+> （当前 **53 PASS / 0 FAIL / 0 PENDING**）。
 > 这三项在 `config/repro_manifest.yaml` 中标为 `status: optional`，
 > **`reproduce.py --run` 不会自动执行它们**，需 `--only <id>` 显式点名。
 

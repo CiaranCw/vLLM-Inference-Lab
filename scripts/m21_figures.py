@@ -78,7 +78,7 @@ def fig_capacity():
                  "(200-req run: horizon = 200/QPS = 25.0s@8 ... 4.2s@48)")
     ax.legend(fontsize=7)
 
-    # (b) 服务端直方图**近似**分位数 vs 客户端 exact percentile（两种口径，不是对错关系）
+    # (b) 服务端直方图近似分位数 vs 客户端 exact percentile（两种口径，不是对错关系）
     ax = axes[1]
     cli = median_by_qps(long_runs, "client_p99_ttft_ms")
     srv = median_by_qps(long_runs, "server_hist_ttft_p99_ms")

@@ -1,17 +1,17 @@
-"""正式不变量 / 回归检查（M0 收口产物之一）——**不需 GPU、不 import vllm**。
+"""正式不变量 / 回归检查（M0 收口产物之一）——不需 GPU、不 import vllm。
 
 把此前散落在各模块 notes 里的「跑完逐条核对」固化成可执行断言，覆盖三类核查：
 
-  1. **逐样本不变量**：直接读 `outputs/mN/raw/*.jsonl`（权威证据），核对守恒律与字段语义；
-  2. **CSV ↔ JSONL 一致性**：汇总 CSV 的 n 必须等于 JSONL 中 `phase=measure and success=True`
+  1. 逐样本不变量：直接读 `outputs/mN/raw/*.jsonl`（权威证据），核对守恒律与字段语义；
+  2. CSV ↔ JSONL 一致性：汇总 CSV 的 n 必须等于 JSONL 中 `phase=measure and success=True`
      的样本数——防止「改了脚本只重跑汇总、没重跑实验」；
-  3. **文档数字可溯源**：把 `notes/m17/results.md` 主结果表里的每个数字**反向**核对回 CSV。
+  3. 文档数字可溯源：把 `notes/m17/results.md` 主结果表里的每个数字反向核对回 CSV。
      M17 审计的教训是「自动核对只覆盖表格、没覆盖正文叙述句」，故这里同时做正向核对
      （由 CSV 生成的数字串必须出现在文档中，含正文关键句）。
 
 三种结论，语义严格区分（诚实性红线）：
   PASS    —— 已执行且通过
-  FAIL    —— 已执行但违反 → **非零退出**
+  FAIL    —— 已执行但违反 → 非零退出
   PENDING —— 实验尚未执行（产物不存在且 manifest 标注为 implemented）→ 不算通过，也不算失败
 
 用法：
@@ -145,7 +145,7 @@ def boot_ci_median_diff(a, b, iters=10000, seed=0):
 
 
 # --------------------------------------------------------------------------- #
-# Markdown 表格解析（用于文档数字的**反向**核对）
+# Markdown 表格解析（用于文档数字的反向核对）
 # --------------------------------------------------------------------------- #
 def _norm_num(s):
     """把文档里的数字单元格标准化成 float。
@@ -167,7 +167,7 @@ def _decimals(s):
 
 
 def _render_candidates(v, decimals):
-    """一个数在给定小数位下**可接受的书写形式**。
+    """一个数在给定小数位下可接受的书写形式。
 
     浮点二进制表示会让 .5 边界两可（例如 58.45 的 f-string 给 '58.4'，而人手写
     通常是 '58.5'）——两者都是对同一 CSV 值的正确舍入，故都接受，避免把书写差异
@@ -179,7 +179,7 @@ def _render_candidates(v, decimals):
 
 
 def _num_matches(doc_cell, csv_value):
-    """判据：文档数字必须等于 CSV 数字**在文档自身精度下**的正确舍入。
+    """判据：文档数字必须等于 CSV 数字在文档自身精度下的正确舍入。
 
     不同列的书写精度不同（例如 E1 表的延迟写 2 位小数、相对降幅写 1 位小数），
     统一用固定容差会把「正确的四舍五入」误判成「数字对不上」。
@@ -1353,12 +1353,12 @@ def check_m19_csv_vs_jsonl(rep):
 
 
 def check_m19_equivalence(rep):
-    """输出一致性：**如实记录**，不静默忽略差异。
+    """输出一致性：如实记录，不静默忽略差异。
 
     这里刻意不把「baseline 与 ngram 输出必须逐 token 相同」写成硬性 FAIL：
-    `batch_shape_control.csv` 已证明**baseline 自己**换个 batch 组成就会在同一位置分歧，
+    `batch_shape_control.csv` 已证明baseline 自己换个 batch 组成就会在同一位置分歧，
     说明分歧来自批形状引起的浮点差异而非投机解码。因此硬判据只保留两条真正的功能红线
-    ——**输出长度必须一致**、**分歧不得出现在第 0 位**；一致率本身只做记录与展示。
+    ——输出长度必须一致、分歧不得出现在第 0 位；一致率本身只做记录与展示。
     """
     M = "m19/输出一致性"
     detail = load_csv("outputs/m19/output_equivalence_detail.csv")
@@ -1429,10 +1429,10 @@ M22_TAG = "h20_formal"  # 正式数据的标签；local_preflight 是 5080 预�
 def check_m22(rep):
     """M22 不变量。
 
-    **刻意区分两类**（这是本模块设计上的一个明确判断）：
+    刻意区分两类（这是本模块设计上的一个明确判断）：
       · correctness invariant —— 违反即实验无效，FAIL；
-      · expected observation  —— 理论预期，实测不符时**记录并要求解释**，不自动判失败。
-    例如「每卡权重 ≈ 1/k」就**不是** invariant：embedding/lm_head 是否切分随实现而变
+      · expected observation  —— 理论预期，实测不符时记录并要求解释，不自动判失败。
+    例如「每卡权重 ≈ 1/k」就不是 invariant：embedding/lm_head 是否切分随实现而变
     （M10 已见过「非 −50%」的先例），KV head 不足 TP 时还会被复制
     （`vllm/config/model.py:1259-1270`）。把理论预期伪装成 invariant 会逼出假结论。
     """
@@ -1558,7 +1558,7 @@ def check_m22(rep):
     )
 
     # ---- 硬 invariant：D3 边界 ----
-    # 覆盖**全部**样本（含 warmup）：prompt_len >= max_model_len 属配置合法性问题，与 phase 无关
+    # 覆盖全部样本（含 warmup）：prompt_len >= max_model_len 属配置合法性问题，与 phase 无关
     # （input_processor.py:423-432 在 add_request 时就 ValueError），只查 measure 会漏掉 warmup。
     viol = [
         r
@@ -1690,10 +1690,10 @@ def check_m22(rep):
 def check_m21(rep):
     """M21 不变量：服务端指标是否可信 + 各实验的完整性。
 
-    核心是 E2：服务端 counter 增量必须与客户端 bench 汇总守恒。**这条不过，
-    后面所有基于面板的结论都不该信**，所以它是硬 FAIL 而不是「观察项」。
+    核心是 E2：服务端 counter 增量必须与客户端 bench 汇总守恒。这条不过，
+    后面所有基于面板的结论都不该信，所以它是硬 FAIL 而不是「观察项」。
 
-    刻意**不**把「容量 = 某个数」写成不变量：容量随会话漂移（见 results.md §4），
+    刻意不把「容量 = 某个数」写成不变量：容量随会话漂移（见 results.md §4），
     把它当不变量只会逼出假结论。
     """
     M = "m21"
@@ -1701,7 +1701,7 @@ def check_m21(rep):
     # ---- artifact 可执行性守卫（2026-08-12 audit 新增）----
     # 教训：`m21_gate1.py` 曾因把逗号写进行尾注释而 SyntaxError，但当时 13 条 invariant
     # 全部 PASS —— 因为没有任何一条要求「模块脚本至少得是可解析的 Python」。
-    # 这里**真实编译**（py_compile.compile + doraise），不是检查文件是否存在。
+    # 这里真实编译（py_compile.compile + doraise），不是检查文件是否存在。
     m21_scripts = [
         "m21_common.py", "m21_host_exporter.py", "m21_gate1.py", "m21_capacity_sweep.py",
         "m21_validate.py", "m21_bottleneck.py", "m21_capacity_users.py",
@@ -1788,7 +1788,7 @@ def check_m21(rep):
     else:
         rep.pending(M, "m21_e4", "缺 outputs/m21/e4_bottleneck.json")
 
-    # ---- 2026-08-12 audit 新增：两条**更严格**的判据（不是放宽既有判据）----
+    # ---- 2026-08-12 audit 新增：两条更严格的判据（不是放宽既有判据）----
     e5 = load_json("outputs/m21/e5_user_capacity.json")
     if e5:
         # E5 语义回归守卫：闭环 population 与「系统内并发请求数」必须分开报告，

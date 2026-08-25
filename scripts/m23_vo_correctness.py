@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""M23 · **V-O correctness smoke**（optimized lane 的前置门）。
+"""M23 · V-O correctness smoke（optimized lane 的前置门）。
 
-设计冻结 v4 §5.0.3：本 lab **从未验证过** `enforce_eager=False` 在当前 RTX 5080 + pinned vLLM
-上的**生成正确性**（M5 只验证了实际执行路径，M6 的 compiled 数字是性能而非正确性）。
+设计冻结 v4 §5.0.3：本 lab 从未验证过 `enforce_eager=False` 在当前 RTX 5080 + pinned vLLM
+上的生成正确性（M5 只验证了实际执行路径，M6 的 compiled 数字是性能而非正确性）。
 在没验证之前就用 V-O 的性能数字做跨引擎对照，等于把未验证的前提当结论基础。
 
-**判据（跑前冻结）**：
-  - **硬失败 → 停止 optimized lane**：进程崩溃 / 输出为空 / 输出长度不符 / 明显乱码。
-  - **诊断项（不自动判失败）**：V-O 与 V-E 在 greedy + 同 seed 下的 **exact-match 率**。
+判据（跑前冻结）：
+  - 硬失败 → 停止 optimized lane：进程崩溃 / 输出为空 / 输出长度不符 / 明显乱码。
+  - 诊断项（不自动判失败）：V-O 与 V-E 在 greedy + 同 seed 下的 exact-match 率。
     不完全一致 ≠ 有 bug（M5/M19 先例：数值与 batch-shape 敏感性可让贪心 argmax 翻转），
     但必须如实报告。
 
-**一个进程只建一个引擎**（AGENTS.md §4），故 V-E 与 V-O 分两次子进程跑。
+一个进程只建一个引擎（AGENTS.md §4），故 V-E 与 V-O 分两次子进程跑。
 
 用法：
     python scripts/m23_vo_correctness.py            # 跑 V-E 与 V-O 并比对
@@ -50,7 +50,7 @@ COMMON = dict(
 
 
 def run_lane(lane: str) -> dict:
-    """在**当前进程**内建一个引擎跑完一条 lane（由 main 以子进程方式调用）。"""
+    """在当前进程内建一个引擎跑完一条 lane（由 main 以子进程方式调用）。"""
     from vllm import LLM, SamplingParams
 
     enforce_eager = (lane == "E")
@@ -58,7 +58,7 @@ def run_lane(lane: str) -> dict:
     llm = LLM(enforce_eager=enforce_eager, **COMMON)
     build_s = round(time.perf_counter() - t0, 2)
 
-    # 回读**生效**的执行模式配置（不信入参，只信回读）——冻结稿 §5.0.2 要求四组都要存
+    # 回读生效的执行模式配置（不信入参，只信回读）——冻结稿 §5.0.2 要求四组都要存
     vc = llm.llm_engine.vllm_config
     cc = vc.compilation_config
     effective = {

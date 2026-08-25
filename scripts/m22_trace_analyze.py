@@ -1,24 +1,24 @@
-"""M22 · P1 通信证据：离线解析 profiler trace（**不需 GPU、不 import vllm**）。
+"""M22 · P1 通信证据：离线解析 profiler trace（不需 GPU、不 import vllm）。
 
     python scripts/m22_trace_analyze.py --trace-dir outputs/m22/traces --tag h20_formal
 
-在**数据回传之后**离线跑，不占用 H20 机时。
+在数据回传之后离线跑，不占用 H20 机时。
 
 --------------------------------------------------------------------------
-分析单位是 **per workload / per rank / per kernel**，不是「引擎选了哪个后端」。
+分析单位是 per workload / per rank / per kernel，不是「引擎选了哪个后端」。
 理由（见 notes/m22/tensor_parallel.md R5）：`should_custom_ar()`
-（custom_all_reduce.py:230-243）是**逐次调用**判定的——每次都要看这一次的 payload
+（custom_all_reduce.py:230-243）是逐次调用判定的——每次都要看这一次的 payload
 大小 / 16 字节对齐 / 弱连续性，不满足就落到下一个后端。所以同一个引擎里，
 小 payload 的 decode all-reduce 与大 payload 的 prefill all-reduce
-**完全可能走不同 kernel**。本脚本按 trace 里的**真实 kernel 名**分类，
+完全可能走不同 kernel。本脚本按 trace 里的真实 kernel 名分类，
 不拿后端选择日志一锤定音。
 
 沿用 M7 的 profiler 纪律：
-  · GPU 时间取 `cat=="kernel"` 事件的**区间并集**，不对 duration 简单求和
+  · GPU 时间取 `cat=="kernel"` 事件的区间并集，不对 duration 简单求和
     （嵌套/重叠会双计）；
-  · 通信与计算**可能重叠**，故只报「通信 kernel 占 GPU busy 的比例」，
-    **不把它换算成「通信造成的净 wall-time 损失」**；
-  · 未识别的 kernel 归入 `unclassified` 并列出 top 名字，**不静默丢弃**。
+  · 通信与计算可能重叠，故只报「通信 kernel 占 GPU busy 的比例」，
+    不把它换算成「通信造成的净 wall-time 损失」；
+  · 未识别的 kernel 归入 `unclassified` 并列出 top 名字，不静默丢弃。
 --------------------------------------------------------------------------
 """
 
@@ -89,7 +89,7 @@ def analyze_one(path: str) -> dict | None:
     events = data.get("traceEvents", data if isinstance(data, list) else [])
     by_class_intervals = defaultdict(list)
     by_class_count = defaultdict(int)
-    by_class_dur_sum = defaultdict(float)  # 仅供对照，**不用于占比**
+    by_class_dur_sum = defaultdict(float)  # 仅供对照，不用于占比
     kernel_names = defaultdict(int)
     all_kernel_intervals = []
 

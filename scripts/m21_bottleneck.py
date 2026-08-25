@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """M21 · E4 瓶颈签名矩阵 —— 回答「瓶颈是 GPU 计算 / 显存 / KV / CPU / 队列」。
 
-四个场景各自制造一类瓶颈，看**哪个指标先饱和**，产出「症状 → 指标签名 → 根因」对照表。
+四个场景各自制造一类瓶颈，看哪个指标先饱和，产出「症状 → 指标签名 → 根因」对照表。
 每个场景一个独立 server 生命周期（配置不同，必须重启；也避免 KV 显存残留互相污染）。
 
 | 场景 | 构造 | 预期签名（执行前假设，允许被推翻） |
@@ -11,7 +11,7 @@
 | B3 KV 受限     | 压低 --gpu-memory-utilization + 满并发长输出 | kv_usage→1 且 preemption>0（正交双证据） |
 | B4 队列受限    | Shape A 超容量 QPS | waiting 持续堆积、TTFT 尾爆，但吞吐仍跟随 |
 
-诚实约束：B3 需要实测调参才能造出压力；**若某场景造不出干净对照，如实记录为「未能构造」**，
+诚实约束：B3 需要实测调参才能造出压力；若某场景造不出干净对照，如实记录为「未能构造」，
 不得把别的模块的旧结论搬过来充数。
 
 用法：python scripts/m21_bottleneck.py
@@ -29,7 +29,7 @@ WARMUP_PROMPTS = 20
 SCENARIOS = [
     {"name": "B1_cpu_submit", "shape": "A", "rate": 1, "extra_args": [],
      "hypothesis": "GPU util 低但延迟有地板 → CPU 提交受限(M7)"},
-    # 场景 key 保留 B2_gpu_compute 以兼容既有 artifact；**表述**一律降到「compute pressure 更强」：
+    # 场景 key 保留 B2_gpu_compute 以兼容既有 artifact；表述一律降到「compute pressure 更强」：
     # 本环境 DCGM_FI_PROF_*(SM/GR/DRAM active) 全为 N/A，仅凭粗粒度 GPU_UTIL 不能断言算力饱和。
     # 长 prefill 是 compute-bound 的底层机制证据来自 M7 profiler(gpu_frac 0.88)，不是本模块能证的。
     {"name": "B2_gpu_compute", "shape": "B", "rate": 24, "extra_args": [],
@@ -43,7 +43,7 @@ SCENARIOS = [
      "kv_ladder": ["0.20", "0.15", "0.12", "0.10"],
      "hypothesis": "kv_usage 逼近 1 且 num_preemptions 上升"},
     # B3 的预算侧路线到 util=0.10 仍只有 59% KV 使用率（未出现抢占），
-    # 故改从**需求侧**构造：长输出让每条序列的 KV 随解码不断增长
+    # 故改从需求侧构造：长输出让每条序列的 KV 随解码不断增长
     {"name": "B3b_kv_long_output", "shape": "C", "rate": 4,
      "extra_args": ["--gpu-memory-utilization", "0.20"],
      "kv_ladder": ["0.20", "0.15", "0.12", "0.10"],

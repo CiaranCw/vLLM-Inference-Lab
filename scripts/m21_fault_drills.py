@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """M21 · E6 故障定位演练 —— 回答「OOM / 请求超时 / worker 退出怎样定位」。
 
-**安全约束（所有者 2026-08-11 明确授权时规定，逐条落实在代码里）**：
+安全约束（所有者 2026-08-11 明确授权时规定，逐条落实在代码里）：
   1. 只操作本脚本自己 Popen 出来、且 PID 已落盘的 server 进程；
   2. 禁止 pkill/killall 等模糊匹配；kill 前用 /proc/<pid>/cmdline 校验身份（见 Server.kill_self_pid）；
   3. 禁止 nvidia-smi --reset、禁止重启系统/WSL/Docker daemon、禁止碰任何其他进程；
-  4. OOM 注入必须**可恢复**，事后逐条验证：进程已退出 / 显存已回收 / server 可重启；
-     （实测落到的是**启动期显存预算拒绝** `startup_memory_rejection`，不是 runtime CUDA allocator OOM，见下）；
+  4. OOM 注入必须可恢复，事后逐条验证：进程已退出 / 显存已回收 / server 可重启；
+     （实测落到的是启动期显存预算拒绝 `startup_memory_rejection`，不是 runtime CUDA allocator OOM，见下）；
   5. 出现 GPU/driver 异常（NVML 报错、显存不回收）→ 立即中止后续演练并上报。
 
-每个演练都要拿到两类证据：① 原始报错或原始指标；② 告警是否**真的 firing**。
+每个演练都要拿到两类证据：① 原始报错或原始指标；② 告警是否真的 firing。
 
 用法：python scripts/m21_fault_drills.py            # 全部
       python scripts/m21_fault_drills.py --only oom
@@ -26,8 +26,8 @@ import urllib.request
 import m21_common as C
 
 NVML_FREE_TOL_MIB = 800   # 显存回收判据容差（桌面进程本身会波动）
-# 把显存预算调到远超实际可用 → vLLM 在**启动期**校验失败、EngineCore 拒绝初始化。
-# 注意：这是 startup memory-budget rejection，**不是** runtime CUDA allocator OOM
+# 把显存预算调到远超实际可用 → vLLM 在启动期校验失败、EngineCore 拒绝初始化。
+# 注意：这是 startup memory-budget rejection，不是 runtime CUDA allocator OOM
 # (torch.cuda.OutOfMemoryError)；后者本模块未注入，属 scope boundary / optional extension。
 OOM_UTIL = "0.97"
 
@@ -56,7 +56,7 @@ def nvml_fb_used_mib():
 def wait_reclaim(baseline_mib, timeout_s=240, interval=5):
     """轮询等显存回到基线附近，返回 (是否回收, 耗时秒, 最终读数)。
 
-    实测：WSL2 下 SIGKILL 之后显存**不是立刻**归还的（首版只等 10s 判定为「未回收」，
+    实测：WSL2 下 SIGKILL 之后显存不是立刻归还的（首版只等 10s 判定为「未回收」，
     是判据太急，不是系统有泄漏）。这里改成轮询并记录真实回收耗时。
     """
     t0 = time.time()
@@ -101,7 +101,7 @@ def drill_worker_exit():
     rec["alerts_firing"] = alerts
     rec["up_vllm_after_kill"] = C.prom_scalar('up{job="vllm"}')
     rec["target_up_after_kill"] = C.prom_scalar("m21_target_up")
-    # 第一次观察：只杀父进程后，显存**不会**自动回收（这正是本演练最有价值的发现）
+    # 第一次观察：只杀父进程后，显存不会自动回收（这正是本演练最有价值的发现）
     ok1, secs1, last1 = wait_reclaim(baseline_idle, timeout_s=90)
     rec["parent_only_kill"] = {
         "gpu_memory_reclaimed": ok1,
@@ -112,7 +112,7 @@ def drill_worker_exit():
             for c in rec["child_pids_before_kill"] if c.get("pid")],
     }
 
-    # 恢复动作：清理**先前已记录**的 EngineCore 子进程 PID，再验证显存回收
+    # 恢复动作：清理先前已记录的 EngineCore 子进程 PID，再验证显存回收
     rec["orphan_cleanup"] = C.Server.kill_recorded_pids(rec["child_pids_before_kill"])
     ok2, secs2, last2 = wait_reclaim(baseline_idle, timeout_s=180)
     rec["nvml_fb_used_mib_after_cleanup"] = last2
@@ -182,7 +182,7 @@ def drill_timeout(overload_qps=64, probe_timeout_s=0.5, probes=60):
             "sum(vllm:num_requests_waiting)", t0, t1)["max"]
         rec["server_running_max_during_probe"] = C.prom_range_agg(
             "sum(vllm:num_requests_running)", t0, t1)["max"]
-        # 单位陷阱：vllm:time_to_first_token_seconds 的单位是**秒**，prom_scalar_at 不做换算。
+        # 单位陷阱：vllm:time_to_first_token_seconds 的单位是秒，prom_scalar_at 不做换算。
         # 首版直接把秒值存进 *_ms 字段，导致 19.57s 被读成 19.57ms（差 1000 倍）。
         _ttft_p99_s = C.prom_scalar_at(
             "histogram_quantile(0.99, sum by (le) "
@@ -207,7 +207,7 @@ def drill_timeout(overload_qps=64, probe_timeout_s=0.5, probes=60):
 def drill_oom():
     """启动期显存预算拒绝（startup_memory_rejection），可恢复。
 
-    **不是** runtime CUDA allocator OOM —— vLLM 在启动期就判定预算不可满足并拒绝初始化。
+    不是 runtime CUDA allocator OOM —— vLLM 在启动期就判定预算不可满足并拒绝初始化。
     场景 key 保留 `oom` 以兼容既有 artifact，显示名见 `display_name`。
     """
     rec = {"drill": "oom", "display_name": "startup_memory_rejection",

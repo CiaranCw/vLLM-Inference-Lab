@@ -2,7 +2,7 @@
 """M21 · E2 指标真值校验（离线聚合，不占 GPU）。
 
 面板好看不代表数字是真的。本脚本逐条核对服务端指标与客户端 bench 汇总的守恒关系；
-**E2 不过关就不该相信后面任何基于面板的结论**。
+E2 不过关就不该相信后面任何基于面板的结论。
 
 不变量：
   I1 Δvllm:request_success_total      == bench completed
@@ -14,8 +14,8 @@
   I7 抓取覆盖率：1s 采样点数 ≈ 窗口秒数（丢点率）
   I8 DCGM 与 NVML 的 GPU util / 显存读数一致（正交第二证据源）
 
-另产出**量化结论（非判据）**：服务端直方图**近似**分位数 vs 客户端 **exact percentile** 的偏差。
-注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，**不是** server metric 的 ground truth。
+另产出量化结论（非判据）：服务端直方图近似分位数 vs 客户端 exact percentile 的偏差。
+注意：客户端 exact percentile 是 client/SLO 口径的 ground truth，不是 server metric 的 ground truth。
 
 用法：python scripts/m21_validate.py [--runs outputs/m21/raw/e3_shapeA_60s_runs.jsonl]
 """
@@ -30,7 +30,7 @@ import m21_common as C
 MAX_NUM_SEQS = 64
 SCRAPE_COVERAGE_MIN = 0.8   # 采样点数 / 窗口秒数 的下限
 
-# 两种 P99 的差异**不能**单归因于某一个机制（2026-08-12 audit 修正：
+# 两种 P99 的差异不能单归因于某一个机制（2026-08-12 audit 修正：
 # 首版写成「bucket 上界向上取整所致」，属于过强的因果归因）。
 HIST_VS_CLIENT_NOTE = (
     "两者不是同一个量，差异至少可能由三类原因共同产生，本实验**无法**把 +9.7% 归因到其中任何单一项："

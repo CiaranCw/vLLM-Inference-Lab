@@ -7,15 +7,15 @@
     python scripts/reproduce.py --module m17 --verify-only   # 查环境 + 查产物 + 跑不变量
     python scripts/reproduce.py --module m17 --run --confirm-gpu
 
-**安全设计（对应 AGENTS.md 的硬规则）**：
-  - `--run` 默认**只跑 status != done 的步骤**，不会重跑并覆盖已核验的数据；
+安全设计（对应 AGENTS.md 的硬规则）：
+  - `--run` 默认只跑 status != done 的步骤，不会重跑并覆盖已核验的数据；
     要重跑必须显式加 `--include-done`（会打印将被覆盖的文件并要求 `--confirm-overwrite`）。
-  - 任何 `creates_engine=true` 的步骤都**单独起一个子进程**（vLLM 的 KV 显存
+  - 任何 `creates_engine=true` 的步骤都单独起一个子进程（vLLM 的 KV 显存
     `del engine` + `empty_cache()` 归还不掉，同进程建第二个引擎会失败）。
-  - `--run` 涉及 GPU 时必须显式 `--confirm-gpu`；本工具**不自动判定 GPU 是否空闲**，
+  - `--run` 涉及 GPU 时必须显式 `--confirm-gpu`；本工具不自动判定 GPU 是否空闲，
     因为 WSL2 下 `nvidia-smi --query-compute-apps` 可能看不到真实占用进程。
   - 子进程失败立即停止，不用 `|| true` 之类掩盖。
-  - 本工具**不做任何 git 操作**（不 commit / 不 push）。
+  - 本工具不做任何 git 操作（不 commit / 不 push）。
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(ROOT, "config", "repro_manifest.yaml")
 RUN_LOG_DIR = os.path.join(ROOT, "logs", "repro")
 
-# `--run` 的默认范围。刻意**不含** `optional`：可选扩展必须用 `--only <id>` 显式点名
+# `--run` 的默认范围。刻意不含 `optional`：可选扩展必须用 `--only <id>` 显式点名
 # 才会执行，避免"顺手把可选项也跑了"，也避免它们让主线看起来没做完。
 RUNNABLE_STATUS = {"implemented", "in_progress"}
 OPTIONAL_STATUS = {"optional"}
@@ -73,7 +73,9 @@ def cmd_list(man):
             f"{len(st):<7} {mod.get('title', '')}"
             + (f"   [{pend} 步待执行]" if pend else "")
         )
-    print("\n未执行的登记项（如实标注，不得记为完成）：")
+    # 这里混着三类：明确未做（optional_todo）、可选但已跑（optional）、以及已完成的遗留登记（done）。
+    # 每项都带自己的 status，不要靠标题去推断执行状态。
+    print("\n开放登记项与已知缺口（状态以每项的 status 为准，如实标注）：")
     any_open = False
     for name, mod in man["modules"].items():
         for item in mod.get("open_items", []) or []:

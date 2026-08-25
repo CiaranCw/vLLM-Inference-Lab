@@ -7,8 +7,8 @@
 
 方法（每个 workload×mode）：
   - 复用 M6 的引擎构建 / 精确 token / step 循环基础设施。
-  - **干净计时相**（不开 profiler，profiler 有开销）：cuda.synchronize 夹 perf_counter 测 step wall。
-  - **profiler 相**：torch.profiler 包住若干个目标 step，取 GPU kernel 总时间、CPU 总时间、
+  - 干净计时相（不开 profiler，profiler 有开销）：cuda.synchronize 夹 perf_counter 测 step wall。
+  - profiler 相：torch.profiler 包住若干个目标 step，取 GPU kernel 总时间、CPU 总时间、
     CUDA kernel 启动次数、按 CUDA/CPU 排序的 top 项，并导出 chrome trace。
   - 关键推断：cpu_gap_ms = 干净 step_wall − gpu_busy_ms ≈ GPU 空等 CPU 下发 kernel 的开销
     （地板假设成立则该 gap 在 eager 下很大、compiled(图回放) 下很小）。
@@ -61,8 +61,8 @@ def _analyze_trace(prof, trace_path: str, n_steps: int) -> dict:
 
     - GPU 时间只取真正的底层 kernel（chrome trace `cat=="kernel"`），避免把"高层 PyTorch
       算子的 device 归属"与"底层 kernel"重复相加（key_averages 求和会双计）。
-    - 分别给出：kernel 时间**求和**（多 stream 重叠时会 > wall）与 kernel **区间并集**（真忙碌墙钟，去重叠）。
-    - CPU 提交调用**全覆盖**：runtime(cudaLaunchKernel/ExC) + driver(cuLaunchKernel) + graph(cudaGraphLaunch)。
+    - 分别给出：kernel 时间求和（多 stream 重叠时会 > wall）与 kernel 区间并集（真忙碌墙钟，去重叠）。
+    - CPU 提交调用全覆盖：runtime(cudaLaunchKernel/ExC) + driver(cuLaunchKernel) + graph(cudaGraphLaunch)。
     """
     from collections import Counter, defaultdict
     ev = json.load(open(trace_path, encoding="utf-8"))["traceEvents"]

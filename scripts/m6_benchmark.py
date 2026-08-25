@@ -222,7 +222,7 @@ def run_diag(engine, spy, tf, mode, prefix, prefill_lengths, decode_batches, out
     """正式诊断入口：临时开 exec trace，逐个 prefill 长度、逐个 decode batch 各跑 1 步，
     读回真实 cudagraph_mode。用于回答“每个 prefill 长度走什么模式”“每个 decode batch 是否都走 FULL”。
 
-    这是**诊断相**（trace 开、throwaway、不进入任何计时样本），可复现地生成结构化结果文件。
+    这是诊断相（trace 开、throwaway、不进入任何计时样本），可复现地生成结构化结果文件。
     """
     sched = get_scheduler(engine)
     raw = os.path.join(out_dir, "config", f"_diag_raw_{tag}.jsonl")

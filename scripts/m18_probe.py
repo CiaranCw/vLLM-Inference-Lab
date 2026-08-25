@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """M18 Gate 0 · W4A16(AWQ/GPTQ) 在本机 sm_120 上的可行性探针。
 
-**零成本**：不下载任何模型、不建 vLLM 引擎、不跑 benchmark。
+零成本：不下载任何模型、不建 vLLM 引擎、不跑 benchmark。
 只做三件事：
   1. 读设备 capability 与量化方法的准入门槛；
   2. 直接调用 `choose_mp_linear_kernel()`，看真实会选中哪个 kernel（或拿到失败原因）；
-  3. 用**极小张量**真跑一次选中 kernel 的底层 op —— 这是唯一能证明
+  3. 用极小张量真跑一次选中 kernel 的底层 op —— 这是唯一能证明
      「预编译 wheel 里确实有 sm_120 cubin」的方法（VLLM_USE_PRECOMPILED=1，
      本项目不自行编译 CUDA，所以「源码支持」≠「本机二进制可用」）。
 
@@ -99,11 +99,11 @@ def probe_kernel_choice():
 
 
 def probe_marlin_ops():
-    """检查 Marlin 相关 op 是否存在于**已安装的二进制**中，并用极小张量真跑。
+    """检查 Marlin 相关 op 是否存在于已安装的二进制中，并用极小张量真跑。
 
     `hasattr` 只能证明符号存在；只有真的 launch 一次，才知道 wheel 里有没有
     针对 sm_120 编译的 cubin（否则会报 "no kernel image is available for execution"）。
-    **repack 与 GEMM 必须分别验证**：它们是两个独立的 kernel，可能各自做 arch 门控。
+    repack 与 GEMM 必须分别验证：它们是两个独立的 kernel，可能各自做 arch 门控。
     """
     out = {"ops_present": {}, "smoke": {}}
     # 注意：本版本 GEMM 叫 marlin_gemm（不是旧名 gptq_marlin_gemm）；

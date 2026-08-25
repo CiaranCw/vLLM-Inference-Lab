@@ -1,0 +1,19 @@
+[m19] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m19/output_equivalence_detail.csv (126 个请求级比对)
+[m19] 完全一致 111/126
+  high_repeat  batch=1   一致 3/3
+  high_repeat  batch=4   一致 12/12
+  high_repeat  batch=16  一致 48/48
+  low_repeat   batch=1   一致 3/3
+  low_repeat   batch=4   一致 3/12 首个分歧下标 min=11 median=19 max=19（输出长 128）
+  low_repeat   batch=16  一致 42/48 首个分歧下标 min=9 median=10.0 max=11（输出长 128）
+
+[m19] 正交对照 —— 仅改变 batch 组成（同一侧内部，req_index=0）：
+  baseline high_repeat  batch1 vs batch4  : 一致 3/3
+  baseline high_repeat  batch1 vs batch16 : 一致 3/3
+  baseline low_repeat   batch1 vs batch4  : 一致 0/3  首个分歧下标=[19, 19, 19]
+  baseline low_repeat   batch1 vs batch16 : 一致 3/3
+  ngram    high_repeat  batch1 vs batch4  : 一致 3/3
+  ngram    high_repeat  batch1 vs batch16 : 一致 3/3
+  ngram    low_repeat   batch1 vs batch4  : 一致 3/3
+  ngram    low_repeat   batch1 vs batch16 : 一致 3/3
+[m19] wrote /home/ciaran/projects/vllm-inference-lab/outputs/m19/batch_shape_control.csv

@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """M21 · E5 「一张卡能承载多少用户」—— 纯离线推导（不占 GPU、不 import vllm）。
 
-方法：**Interactive Response Time Law**（闭环交互式系统的 population 估计），
-可由 Little's law 推出，但**必须和「系统内并发请求数」区分开**：
+方法：Interactive Response Time Law（闭环交互式系统的 population 估计），
+可由 Little's law 推出，但必须和「系统内并发请求数」区分开：
 
     closed_loop_user_population  N = X × (R + Z)
     average_in_system_requests   L = X × R          ← 这才是「同时在服务器里的请求数」
-    estimated_thinking_users     T = X × Z          ← 正在思考、**不在**服务系统内
+    estimated_thinking_users     T = X × Z          ← 正在思考、不在服务系统内
 
 其中 X = 稳定吞吐（本模块取 SLO 达标的最大 offered QPS），R = 服务响应时间（E2EL），
 Z = 用户思考时间。
 
-**语义红线**：`X × (R + Z)` 得到的是**闭环用户总数**（含正在等响应的 + 正在思考的），
-**不能**读作「同时有这么多请求在服务器里执行」——后者是 `X × R`，量级完全不同。
+语义红线：`X × (R + Z)` 得到的是闭环用户总数（含正在等响应的 + 正在思考的），
+不能读作「同时有这么多请求在服务器里执行」——后者是 `X × R`，量级完全不同。
 （本脚本首版把前者命名为 `estimated_concurrent_users`，属于误导性命名，已修正。）
 
-**必须显式声明的假设**（否则这个数字毫无意义）：
+必须显式声明的假设（否则这个数字毫无意义）：
   A1 每个用户串行发请求：拿到上一条完整回答后思考 think_time 秒再发下一条。
   A2 请求形状固定为本实验的 Shape（in256/out128），真实用户不会这么整齐。
   A3 SLO 采用 M12 冻结口径（P99 TTFT ≤ 300ms），容量取「3 seed worst-case 仍达标」的最大档。
   A4 结论仅限：单卡 RTX 5080 / WSL2 / Qwen2.5-0.5B-Instruct / enforce_eager / 单副本。
-     换模型、换 shape、开 CUDA Graph 都会变，**不外推**。
+     换模型、换 shape、开 CUDA Graph 都会变，不外推。
 
 输出区间而非单点：think_time 取 5 / 15 / 30 s 三档做敏感性。
 

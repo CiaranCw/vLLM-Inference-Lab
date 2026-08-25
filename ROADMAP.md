@@ -55,8 +55,9 @@
   ——正是 M17 审计暴露的盲区）。三种结论严格区分 **PASS / FAIL / PENDING**，PENDING（实验未执行）**不计为通过**。
   已用变异测试验证其有效性（改文档数字 / 删一个 measure 样本 / 破坏 hit 守恒 → **3/3 均被捕获并非零退出**）。
 - 🔄 待补（据实标记，尚未落地）：
-  - `check_invariants.py` 目前**只登记了 M17**，M1–M16 的规则待逐步迁移（架构已支持按模块注册）。
+  - `check_invariants.py` 目前登记了 **m0 / m17 / m18 / m19 / m21 / m22 / m23 / m24**（`python scripts/check_invariants.py` → 152 PASS / 0 FAIL）；**M1–M16 的逐样本规则仍未迁移**（架构已支持按模块注册，只是没写）。
   - 文档溯源目前覆盖 E1 主表 + E3-single 表（反向）与关键结论数字（正向）；**§1.2 斜率、§5 对照表等正文推导值尚未覆盖**（已在脚本输出中如实声明，不当作全覆盖）。
+  - `config/repro_manifest.yaml` 目前**只登记 m0 / m17 / m19 / m22**；**M18 / M20 / M21 / M23 / M24 虽已完成，复现命令仍只写在各自 `notes/mN/results.md` 里**，未收敛进统一入口。
   - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（本地维护、不入库，见"持续维护任务"）。
   - ✅ 目录/命名已统一：M1–M3 由 `dayN` 改为 `mN`（`notes/m1–m3`、`outputs/m1–m3`、`logs/m1–m3`、`scripts/m{1,2,3}_*.py`，2026-08-17）。磁盘上 `backups/dayN/` 是历史备份目录名，未改。
 
@@ -76,7 +77,7 @@
 - **必做（当前真实 backend 主线）**：当前机器最终选中的 backend；Q/K/V reshape；KV Cache tensor shape；slot_mapping 如何进入 KV cache update；block_table 如何进入 attention kernel；Prefill/Decode 如何通过 metadata 表达；Python 层与底层 kernel 的边界。
 - **可选（不作退出条件）**：穷举所有 backend、强制多 backend 完整性能对照、深挖 FlashInfer 与 sm_120 兼容、其他平台/量化 Query/KV sharing 等支线。
 - **退出标准（已达成）**：以真实 Trace 证明 **SchedulerOutput → KV 写入(slot_mapping) → Attention 读取(block_table)** 的完整闭环。
-- 产出：在 `flash_attn.py` 加 2 处只读钩子（`attention/kv_write`、`attention/attn_read`，layer0，回归零副作用）；`notes/m4_attention_backend.md`、`outputs/m4/m4_closed_loop.jsonl`、`logs/m4/m4_closed_loop.log`；备份 `backups/m4/flash_attn.py.pre_m4`。
+- 产出：在 `flash_attn.py` 加 2 处只读钩子（`attention/kv_write`、`attention/attn_read`，layer0，回归零副作用）；`notes/m4/m4_attention_backend.md`、`outputs/m4/m4_closed_loop.jsonl`、`logs/m4/m4_closed_loop.log`；备份 `backups/m4/flash_attn.py.pre_m4`。
 
 ### M5 执行模式（本机实际路径验证）　✅
 - 覆盖：确认当前 commit + 当前硬件**实际启用**的执行模式；`enforce_eager` 具体改变了什么；是否使用 torch.compile；CUDA Graph 是 FULL / PIECEWISE / NONE；观察 capture、padding、replay 与非图区域；**只对本环境实际可运行的模式提供证据**。

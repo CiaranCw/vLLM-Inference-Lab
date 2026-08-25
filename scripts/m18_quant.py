@@ -2,11 +2,11 @@
 """M18 · W4A16（AWQ / GPTQ）量化对比 —— 单配置 driver。
 
 设计冻结见 `notes/m18/quantization_w4a16.md`。要点：
-  - **一个进程只建一个引擎**（AGENTS.md §4：KV 显存 del + empty_cache 也归还不掉）；
-  - 同一进程内**分离** perf 与 quality 两阶段（perf 绝不开 prompt_logprobs）；
-  - **显式冻结激活 dtype=bfloat16**：量化 checkpoint 的 config 声明 float16、BF16 基线声明
+  - 一个进程只建一个引擎（AGENTS.md §4：KV 显存 del + empty_cache 也归还不掉）；
+  - 同一进程内分离 perf 与 quality 两阶段（perf 绝不开 prompt_logprobs）；
+  - 显式冻结激活 dtype=bfloat16：量化 checkpoint 的 config 声明 float16、BF16 基线声明
     bfloat16，用 dtype=auto 会把量化效应和激活 dtype 混在一起（Gate 0-c 已验证可强制）；
-  - 显存/质量/性能三类测量直接**复用 M10 的实现**（`m10_quant.py`），保证口径可对接。
+  - 显存/质量/性能三类测量直接复用 M10 的实现（`m10_quant.py`），保证口径可对接。
 
 用法（每配置一个独立进程）：
     python scripts/m18_quant.py --model 0.5b --config Q0
@@ -44,7 +44,7 @@ MODELS = {
 }
 
 # 公共 engine 参数：与 M10 的 COMMON 逐项一致，唯一有意的差别是 dtype 由 "auto" 改为显式
-# "bfloat16"（见设计冻结 §3 V1）。**除模型与量化外不得再有第二个变量。**
+# "bfloat16"（见设计冻结 §3 V1）。除模型与量化外不得再有第二个变量。
 COMMON = dict(
     dtype="bfloat16",
     max_model_len=2048,
@@ -60,7 +60,7 @@ COMMON = dict(
 )
 
 # 冻结网格（设计 §4.2）：prompt 长度与 decode 场景与 M10 相同；
-# 样本量取本项目通用口径 5 warmup + 15 measure（M10 是 8+30，故**不与 M10 绝对值相减**）。
+# 样本量取本项目通用口径 5 warmup + 15 measure（M10 是 8+30，故不与 M10 绝对值相减）。
 PREFILL_LENGTHS = [128, 512, 2000]
 DECODE_MATRIX = [(64, [1, 64]), (1024, [1, 8])]
 WARMUP, REPS = 5, 15
@@ -72,7 +72,7 @@ def build(model_id: str) -> LLMEngine:
 
 
 def dump_config(engine, model_key: str, cfg: str, model_id: str) -> dict:
-    """把**生效**配置从引擎读回（不信 CLI 参数，只信引擎回读）。"""
+    """把生效配置从引擎读回（不信 CLI 参数，只信引擎回读）。"""
     vc = engine.vllm_config
     mc, cc = vc.model_config, vc.cache_config
     hf_quant = None

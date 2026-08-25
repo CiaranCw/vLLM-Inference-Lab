@@ -1,4 +1,4 @@
-"""M6 · 独立进程编排器 —— 每种 (mode, prefix) 配置在**独立子进程**里跑 m6_benchmark.py，
+"""M6 · 独立进程编排器 —— 每种 (mode, prefix) 配置在独立子进程里跑 m6_benchmark.py，
 避免 CUDA context / caching allocator / CUDA Graph 内存池 / torch.compile 缓存跨配置污染显存快照。
 
 用法：

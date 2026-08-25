@@ -3,10 +3,10 @@
 
 硬约束（冻结稿 v4/v5 §5.0.2）：
   - 正式跨引擎比较只允许同 lane：`T-E vs V-E` 与 `T-O vs V-O`。
-  - 允许 `V-O vs V-E`、`T-O vs T-E` 作为**同引擎 execution-mode ablation**。
-  - **禁止交叉 lane**（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup。
-  - 差值**不得**称为「纯 engine intrinsic speedup」。
-  - 显存**只报 total**（host nvidia-smi 整卡口径），分项 `unavailable`，禁止残差推导。
+  - 允许 `V-O vs V-E`、`T-O vs T-E` 作为同引擎 execution-mode ablation。
+  - 禁止交叉 lane（`T-E vs V-O` / `T-O vs V-E`）做 engine speedup。
+  - 差值不得称为「纯 engine intrinsic speedup」。
+  - 显存只报 total（host nvidia-smi 整卡口径），分项 `unavailable`，禁止残差推导。
 
 产出：`outputs/m23/cross_engine.csv`、`outputs/m23/cross_engine_summary.json`
 
@@ -89,7 +89,7 @@ def main():
         w.writerows(rows)
     print("->", csv_path)
 
-    # ---- lane 内对照（T vs V），**不跨 lane** ----
+    # ---- lane 内对照（T vs V），不跨 lane ----
     comps = {}
     for lane, (v, t) in LANES.items():
         cmp_ = {}

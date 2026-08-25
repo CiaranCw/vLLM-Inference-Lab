@@ -2,8 +2,8 @@
 """M21 公共设施：server 生命周期 / Prometheus 查询 / bench 调用 / 指标快照。
 
 设计约束（notes/m21/monitoring_and_capacity.md）：
-  - 服务端配置**直接沿用 M12 冻结命令**（含端口 8014），保证结论可与 M12 交叉验证。
-  - 进程管理只认**自己 Popen 出来的 PID**，并写 PID 文件；
+  - 服务端配置直接沿用 M12 冻结命令（含端口 8014），保证结论可与 M12 交叉验证。
+  - 进程管理只认自己 Popen 出来的 PID，并写 PID 文件；
     禁止 pkill/killall 之类模糊匹配（M12 曾因此 kill 掉执行 shell）。
 """
 
@@ -38,7 +38,7 @@ SERVER_CMD = [
 ]
 
 SHAPES = {"A": (256, 128), "B": (1024, 32),
-          # C：长输出，用于从**需求侧**制造 KV 压力（压低显存预算到 0.10 仍只到 59%）
+          # C：长输出，用于从需求侧制造 KV 压力（压低显存预算到 0.10 仍只到 59%）
           "C": (128, 1900)}
 
 # M12 冻结 SLO（本模块不新造标准，直接引用）
@@ -73,7 +73,7 @@ _COUNTER_RE = r"^{name}(?:\{{[^}}]*\}})?\s+([0-9.eE+-]+)"
 def scrape_vllm_metrics():
     """抓一次 vLLM /metrics，返回 {gauge: 值, counter: 累计和}。
 
-    counter 带 label（如 finished_reason / engine），故对同名样本**求和**；
+    counter 带 label（如 finished_reason / engine），故对同名样本求和；
     gauge 取最大值（单引擎下等价于取值）。
     """
     text = http_get(f"http://{HOST}:{PORT}/metrics", timeout=10)
@@ -114,10 +114,10 @@ def wait_idle(timeout=40, need=3, interval=0.5):
 
 
 def warmup(n=10):
-    """打若干条极短请求，避开 **Triton GPU-kernel JIT** 冷启动（AGENTS.md §5）。
+    """打若干条极短请求，避开 Triton GPU-kernel JIT 冷启动（AGENTS.md §5）。
 
-    这里的 Triton 指 **OpenAI Triton GPU 编程语言/编译器**的 kernel JIT，
-    **不是** NVIDIA Triton Inference Server（M21 主实验没有用到推理服务器，
+    这里的 Triton 指 OpenAI Triton GPU 编程语言/编译器的 kernel JIT，
+    不是 NVIDIA Triton Inference Server（M21 主实验没有用到推理服务器，
     Triton Inference Server 是 M20 的对象）。下文简称 Triton kernel JIT。
     """
     url = f"http://{HOST}:{PORT}/v1/completions"
@@ -153,8 +153,8 @@ def prom_scalar(expr, default=None):
 def prom_scalar_at(expr, ts, default=None):
     """在指定时刻求值（用于「对整个压测窗口做 increase() 后取分位数」这类查询）。
 
-    **单位警告**：本函数原样返回 PromQL 的数值，**不做任何单位换算**。
-    vLLM 的延迟直方图是 `*_seconds_bucket`，返回值单位是**秒**；
+    单位警告：本函数原样返回 PromQL 的数值，不做任何单位换算。
+    vLLM 的延迟直方图是 `*_seconds_bucket`，返回值单位是秒；
     存进名为 `*_ms` 的字段前必须自己 ×1000（E6 首版漏了这一步，19.57s 被记成 19.57ms）。
     """
     q = urllib.parse.urlencode({"query": expr, "time": ts})
@@ -250,7 +250,7 @@ class Server:
     def child_pids(self):
         """列出 server 的子进程（vLLM V1 的 EngineCore 跑在子进程里，显存由它持有）。
 
-        必须在 kill 父进程**之前**调用并落盘：SIGKILL 父进程不会连带杀死 EngineCore，
+        必须在 kill 父进程之前调用并落盘：SIGKILL 父进程不会连带杀死 EngineCore，
         它会被 init 收养并继续占着显存（实测 9.8GB 不释放，新实例随后起不来）。
         记录下来才能在演练后按「只操作已记录 PID」的规则安全清理。
         """
@@ -266,7 +266,7 @@ class Server:
 
     @staticmethod
     def kill_recorded_pids(records, expect_name="VLLM::EngineCore", sig=9):
-        """清理先前**已记录**的子进程 PID；逐个校验身份后才发信号。"""
+        """清理先前已记录的子进程 PID；逐个校验身份后才发信号。"""
         import psutil
         out = []
         for r in records:

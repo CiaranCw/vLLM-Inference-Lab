@@ -1,12 +1,12 @@
 """M17 · Prefix Caching & Chunked Prefill —— 实验脚本（E1 / E3-single / E3-concurrency）。
 
 ============================================================================
-状态：**本脚本已实测运行过**（结论见 notes/m17/results.md）。
+状态：本脚本已实测运行过（结论见 notes/m17/results.md）。
 运行需 GPU（会建真实 vLLM 引擎）。
 
-**必须用 --shard 分片跑：一个进程只建一个引擎。**
-原因：vLLM 引擎的 `del engine + torch.cuda.empty_cache()` **不足以归还 KV cache
-显存**，同一进程内建第二个引擎会因显存不足失败（nvidia-smi 显示空闲、但 vLLM 只看到
+必须用 --shard 分片跑：一个进程只建一个引擎。
+原因：vLLM 引擎的 `del engine + torch.cuda.empty_cache()` 不足以归还 KV cache
+显存，同一进程内建第二个引擎会因显存不足失败（nvidia-smi 显示空闲、但 vLLM 只看到
 一小部分）。这与 M6 的做法一致（scripts/m6_run_all.py 每配置起一个子进程）。
 
 真实可运行命令（逐条执行；shard 之间留几秒让显存归还）：
@@ -22,7 +22,7 @@
     python scripts/m17_prefix_cache.py --shard e3-conc --conc-mode nochunk
     python scripts/m17_prefix_cache.py --shard summarize    # 不建引擎、不需 GPU
 
-后续追加的两组实验（**实现完成，待 GPU 执行**；同样一个进程一个引擎）：
+后续追加的两组实验（实现完成，待 GPU 执行；同样一个进程一个引擎）：
     # P0 · E3 no-chunk 生成正确性对照（补 M17 未验证的一环）
     python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode chunked
     python scripts/m17_prefix_cache.py --shard e3-correctness --conc-mode nochunk
@@ -33,7 +33,7 @@
     python scripts/m17_prefix_cache.py --shard e1-output-len-off
     python scripts/m17_prefix_cache.py --shard e1-output-len-summarize    # 不建引擎
 
-**新增 shard 一律写独立文件**（e3_correctness.csv / apc_output_length*.csv），
+新增 shard 一律写独立文件（e3_correctness.csv / apc_output_length*.csv），
 不并入、不覆盖 M17 已核验的 prefix_cache_*.csv 与 chunked_prefill*.csv。
 
 设计 / 源码定位 / 不变量：notes/m17/prefix_cache_and_chunked_prefill.md
@@ -42,16 +42,16 @@
 复用 M6 已验证的闭环内省法（见 scripts/m6_benchmark.py）：
   - LLMEngine + ScheduleSpy 抓 SchedulerOutput；
   - 命中证据 = actual_prompt_tokens - scheduled_prompt_tokens（命中 → scheduled < actual）；
-  - **注意区分两种 scheduled < actual 的原因**：
-      · E1（APC）里是 **prefix 命中**导致的（每请求仍只跑 1 个 prefill step）
-        → 记 `prefix_cache_hit` + `prefill_step_count`，**不写 chunked 字段**；
-      · E3 里才是**未命中部分被切成多个 chunk** → 以 **prefill step 数 > 1** 为
+  - 注意区分两种 scheduled < actual 的原因：
+      · E1（APC）里是 prefix 命中导致的（每请求仍只跑 1 个 prefill step）
+        → 记 `prefix_cache_hit` + `prefill_step_count`，不写 chunked 字段；
+      · E3 里才是未命中部分被切成多个 chunk → 以 prefill step 数 > 1 为
         「请求真的跨多个 prefill step」的最终证据，并按每请求 num_scheduled_tokens
         累计到 prompt 算完为止（避免把 decode step 误计为 chunk）。
   - 计时：先 torch.cuda.synchronize() 再取 perf_counter()，收尾同样先 synchronize()。
 
-**指标口径（重要，勿与 M12 的在线 TTFT 混淆）**：本脚本所有延迟都是
-**进程内 engine 路径**测量（in-process），**不含** HTTP / 网络 / tokenization /
+指标口径（重要，勿与 M12 的在线 TTFT 混淆）：本脚本所有延迟都是
+进程内 engine 路径测量（in-process），不含 HTTP / 网络 / tokenization /
 异步服务队列 / 跨请求排队。在线 TTFT 口径见 M12。
 
 E1：长共享前缀 on/off —— 随共享前缀长度 P 增大，看 APC 省出的 prefill 延迟能否超过
@@ -125,7 +125,7 @@ CORR_WARMUP = 1  # 吸收首次 Triton JIT；warmup 样本不参与比对
 CORR_REPEATS = 3
 
 # ---- P2 · I5-b 输出长度定量实验（APC 只省 prefill 不省 decode 的定量边界）----
-# 冻结网格：只有当 128 档仍看不到相对收益下降趋势时，才可**再次征求用户确认**后追加 256；
+# 冻结网格：只有当 128 档仍看不到相对收益下降趋势时，才可再次征求用户确认后追加 256；
 # 严禁跑完再挑有利档位。
 I5B_PREFIX_LEN = 2048
 I5B_SUFFIX_LEN = 16
@@ -273,17 +273,17 @@ def _prefill_once(engine, spy, rid, ids):
 class OutputCollector:
     """累积每个请求的完整输出 token 序列。
 
-    vLLM 的 `SamplingParams.output_kind` 默认是 **CUMULATIVE**
+    vLLM 的 `SamplingParams.output_kind` 默认是 CUMULATIVE
     （`vllm/sampling_params.py:301`），因此每次 `RequestOutput` 携带的
-    `outputs[0].token_ids` 是**到目前为止的全量序列**而非增量
+    `outputs[0].token_ids` 是到目前为止的全量序列而非增量
     （`vllm/v1/engine/output_processor.py:389-390`：非 DELTA 时直接取
     `detokenizer.output_token_ids`）。
 
     两个必须防的坑：
-      1. `token_ids` 是引擎内部会继续 append 的**同一个 list 对象** → 必须 `list(...)` 拷贝，
+      1. `token_ids` 是引擎内部会继续 append 的同一个 list 对象 → 必须 `list(...)` 拷贝，
          否则记录下来的"历史快照"会被后续 step 就地改写。
       2. 若上游哪天改成 DELTA 语义，长度会突然变短——此时直接把样本标为失败并记录原因，
-         **不能让它静默产生一个"看起来相等"的错误结论**。
+         不能让它静默产生一个"看起来相等"的错误结论。
     """
 
     def __init__(self):
@@ -329,7 +329,7 @@ class OutputCollector:
 def _run_request_to_completion(engine, spy, rid, ids, max_tokens, collector=None):
     """跑单个多 token 请求直到结束，返回逐样本计时与调度事实。
 
-    prefill / decode 的分界：**该请求产出第一个 token 之前**被调度的 token 计入
+    prefill / decode 的分界：该请求产出第一个 token 之前被调度的 token 计入
     prefill chunk，之后每步 1 token 计入 decode——与 E3-single 同口径，避免把
     decode step 误计为 prompt chunk。
 
@@ -443,7 +443,7 @@ def run_e1(prefix_on: bool):
                             "actual_prompt_tokens": actual,
                             "scheduled_prompt_tokens": sched,
                             "hit_tokens": hit,
-                            # E1 里 scheduled < actual 的原因是 **prefix 命中**，
+                            # E1 里 scheduled < actual 的原因是 prefix 命中，
                             # 不是「未命中部分被切成多个 chunk」。E1 每个请求只跑
                             # 一个 prefill step（_prefill_once 只调一次 timed_step），
                             # 所以这里不写 chunked 字段，改用两个语义明确的字段。
@@ -743,14 +743,14 @@ def run_e3_correctness(mode: str):
 
     背景：`enable_chunked_prefill=False` 在本模型上会触发上游告警
     （arg_utils.py:2476-2480，"may cause the engine to crash or produce incorrect
-    outputs"）。M17 E3 已验证调度守恒与延迟，但**从未比较过两侧的输出 token**——
+    outputs"）。M17 E3 已验证调度守恒与延迟，但从未比较过两侧的输出 token——
     调度守恒不等于生成正确。本 shard 补这一环。
 
     两个场景：
       A：单个长请求（prompt 2048 / max_tokens 64）；
       B：复现 E3-concurrency（D 稳定 decode 后插入长 prefill P），比较 D 与 P 的完整输出。
 
-    prompt 由 TokenFactory 确定性构造（uniq 串**不含 mode**），故两个独立进程
+    prompt 由 TokenFactory 确定性构造（uniq 串不含 mode），故两个独立进程
     构造出的 prompt token ids 必然逐一相同——由落盘的 prompt_hash 事后核验，
     不依赖任何进程内随机状态。
     """
@@ -925,7 +925,7 @@ def run_e3_correctness(mode: str):
 
 # ============ P2 · I5-b：APC 收益随输出长度变化（新增） ============
 def run_e1_output_len(prefix_on: bool):
-    """I5-b：固定 2048 共享前缀，扫 max_tokens ∈ {1,8,32,128}，看 APC 的**相对**收益
+    """I5-b：固定 2048 共享前缀，扫 max_tokens ∈ {1,8,32,128}，看 APC 的相对收益
     是否随输出变长而下降（APC 只省 prefill、不省 decode 的定量边界）。
 
     与 E1 同一引擎配置（mbt=8192、chunked on），prompt 2064 token 单步算完
@@ -1447,7 +1447,7 @@ def summarize_e1_output_len():
     """I5-b 汇总：按 max_tokens 比较 off 与 hot 的首 token / 完成延迟。
 
     统计口径与 M17 其余部分一致：median difference 的 Bootstrap 95% CI
-    （10000 次，固定 seed=0，仅 stdlib）。**不使用 σ**；CI 含 0 只能写
+    （10000 次，固定 seed=0，仅 stdlib）。不使用 σ；CI 含 0 只能写
     「未观察到稳定差异」。写独立 CSV，不并入 prefix_cache_*.csv。
     """
     os.makedirs(OUT, exist_ok=True)

@@ -8,7 +8,7 @@
 与「Acceptance 重要但非充分；Coverage + Round Cost 共同决定 speedup」。
 其余（不变量、输出一致性）是布尔判定或表格事实，画图不增信息。
 
-**只读正式 CSV**：不重跑实验、不 import vllm、不使用任何人造数据。
+只读正式 CSV：不重跑实验、不 import vllm、不使用任何人造数据。
 复现：source .venv/bin/activate && python scripts/m19_figures.py
 数据边界：单卡 RTX 5080 / sm_120 / WSL2 / Qwen2.5-0.5B / enforce_eager / in-process。
 """

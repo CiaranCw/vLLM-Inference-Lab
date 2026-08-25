@@ -5,19 +5,19 @@
 # scripts/check_invariants.py 共同消费。
 #
 # 依赖说明：使用 YAML 是因为 PyYAML 已随 vLLM 进入本 venv（vllm 的硬依赖），
-# 因此**不引入任何新依赖**。若将来该依赖消失，可平移为 JSON（结构完全相同）。
+# 因此不引入任何新依赖。若将来该依赖消失，可平移为 JSON（结构完全相同）。
 #
 # 状态取值（诚实标注，不得因“理论成立”而提前置为 done）：
 #   done            已执行且已核验
-#   implemented     脚本已实现但**尚未执行**，无数据
+#   implemented     脚本已实现但尚未执行，无数据
 #   in_progress     部分完成
-#   optional        可选扩展：脚本可能已就绪，但**不属于主线**，不阻塞后续模块。
-#                   `reproduce.py --run` **不会**自动执行，必须 `--only <id>` 显式点名。
+#   optional        可选扩展：脚本可能已就绪，但不属于主线，不阻塞后续模块。
+#                   `reproduce.py --run` 不会自动执行，必须 `--only <id>` 显式点名。
 #   optional_todo   可选、明确未做（连脚本都没有）
 #
 # 约定：
 #   - requires_gpu=true 的步骤一律「一个进程一个引擎」；
-#   - creates_engine=true 的步骤在 --dry-run / --verify-only 下**绝不执行**；
+#   - creates_engine=true 的步骤在 --dry-run / --verify-only 下绝不执行；
 #   - summarize / figures 类步骤 requires_gpu=false，只读已落盘数据。
 
 version: 1
@@ -64,13 +64,14 @@ modules:
     invariants: [env_vars, vllm_points_to_src]
     known_gaps:
       # 如实登记：本轮补了统一入口与正式不变量脚本；M1–M3 目录已于 2026-08-17 从 dayN 改为 mN（不再是 gap）
-      - "check_invariants 目前登记了 M17 / M19 / M22，M1–M16 的规则待逐步迁移"
-      - "文档数字反向溯源目前只覆盖 M17 的两张主表，M19 的表格尚未纳入自动核对"
+      - "check_invariants 目前登记了 m0/m17/m18/m19/m21/m22/m23/m24；M1–M16 的逐样本规则待逐步迁移"
+      - "文档数字反向溯源目前只覆盖 M17 的两张主表；其余模块只做字段存在性/守恒检查，未做逐数字反算"
+      - "本 manifest 目前只登记 m0/m17/m19/m22；m18/m20/m21/m23/m24 虽已完成，复现命令仍只写在各自 notes/mN/results.md 里，未收敛进来"
 
   m17:
     title: Prefix Caching & Chunked Prefill 深化
     # 核心实验（E1 / E3-single / E3-concurrency）已完成并核验；
-    # P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期为**可选扩展**，
+    # P0 no-chunk correctness、I5-b 输出长度实验、E2 block 生命周期为可选扩展，
     # 不阻塞后续模块（M19 已在其之后独立完成）。
     status: done
     requires_gpu: true
@@ -248,7 +249,7 @@ modules:
           - figures/fig5_m17_apc.png
           - figures/fig6_m17_chunked.png
         optional_outputs:
-          # 只有 I5-b 数据落盘后才会生成；无数据时脚本跳过，**不生成伪图**
+          # 只有 I5-b 数据落盘后才会生成；无数据时脚本跳过，不生成伪图
           - figures/m17_apc_output_length.png
         status: done
 
@@ -276,16 +277,20 @@ modules:
       - >-
         no-chunk 对照：当前模型不正式支持关闭 chunked prefill
         （vllm/engine/arg_utils.py:2476-2480 有明确告警）。因此 E3 的现有结果主要支持
-        **调度形态与延迟观察**，不外推为普适的生成正确性保证。
+        调度形态与延迟观察，不外推为普适的生成正确性保证。
 
     open_items:
-      # 均为**可选扩展**，不阻塞后续模块；如实标注，未执行的一律不得勾选
+      # 均为可选扩展，不阻塞后续模块；如实标注，未执行的一律不得勾选
       - id: I5-b
-        desc: 输出长度定量实验（扫 max_tokens 验证 APC 相对收益随输出变长而下降）
-        status: optional      # 脚本就绪，尚未执行；可选扩展
+        desc: >-
+          输出长度定量实验（扫 max_tokens 验证 APC 相对收益随输出变长而下降）。
+          2026-08-13 已执行，结果见 notes/m17/results.md §9.2。
+        status: optional      # 可选扩展（--run 不自动跑），但已执行并落盘
       - id: E3-no-chunk-correctness
-        desc: chunked / nochunk 两侧生成 token 的逐一比对
-        status: optional      # 脚本就绪，尚未执行；可选扩展
+        desc: >-
+          chunked / nochunk 两侧生成 token 的逐一比对。
+          2026-08-13 已执行（9/9 逐一相同），结果见 notes/m17/results.md §9.1。
+        status: optional      # 可选扩展（--run 不自动跑），但已执行并落盘
       - id: E2
         desc: block 生命周期 ref_cnt / 驱逐内省
         status: optional_todo # 明确未做，不为完成度强行实现
@@ -478,7 +483,7 @@ modules:
         requires_gpu: true
         creates_engine: false
         log: logs/m22/preflight.log
-        status: implemented
+        status: done
       - id: nccl-smoke
         desc: 独立 torch.distributed all-reduce 冒烟（不 import vllm），切开故障域
         cmd: [python, scripts/m22_nccl_smoke.py, --world-size, "4"]
@@ -486,11 +491,11 @@ modules:
         creates_engine: false
         log: logs/m22/nccl_smoke.log
         outputs: [outputs/m22/nccl_smoke.json]
-        status: implemented
+        status: done
       - id: local-preflight-tp1
         desc: >-
           本地 RTX5080 单卡 TP=1 全链路预演（0.5B/quick）。
-          **不是 H20 结果**，tag=local_preflight，绝不混入正式 CSV。
+          不是 H20 结果，tag=local_preflight，绝不混入正式 CSV。
         cmd: [python, scripts/m22_tensor_parallel.py, --tp, "1", --tag, local_preflight,
               --model, Qwen/Qwen2.5-0.5B-Instruct, --quick]
         requires_gpu: true
@@ -507,14 +512,14 @@ modules:
           - outputs/m22/raw/h20_formal_tp1_run.jsonl
           - outputs/m22/raw/h20_formal_tp2_run.jsonl
           - outputs/m22/raw/h20_formal_tp4_run.jsonl
-        status: implemented
+        status: done
       - id: tp-profile
         desc: P1 collective communication evidence（ProfilerConfig；每 rank 一份 trace）
         cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --tp, "2,4", --profile]
         requires_gpu: true
         creates_engine: true
         outputs: [outputs/m22/traces]
-        status: implemented
+        status: done
       - id: summarize
         desc: 离线汇总（speedup/efficiency 全部由 D2 派生，不另跑实验）
         cmd: [python, scripts/m22_tensor_parallel.py, --shard, summarize, --tag, h20_formal]
@@ -526,39 +531,39 @@ modules:
           - outputs/m22/h20_formal_decode_effect.csv
           - outputs/m22/h20_formal_prefill.csv
           - outputs/m22/h20_formal_output_consistency.csv
-        status: implemented
+        status: done
       - id: figures
         desc: 由正式 CSV 离线出图；只有一档 TP 时拒绝生成伪图
         cmd: [python, scripts/m22_figures.py, --tag, h20_formal]
         requires_gpu: false
         creates_engine: false
         optional_outputs: [figures/fig9_m22_tp_scaling_h20_formal.png]
-        status: implemented
+        status: done
       - id: transfer-test
         desc: >-
-          远端生成几 KB 测试文件 + sha256，供**本地主动 pull** 演练。
+          远端生成几 KB 测试文件 + sha256，供本地主动 pull 演练。
           必须在 T+0:10 就做：本地能 SSH 到 H20 不代表 H20 能反连本地，
           rsync/key/路径错必须尽早暴露。
         cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --transfer-test]
         requires_gpu: false
         creates_engine: false
-        status: implemented
+        status: done
       - id: trace-analyze
         desc: >-
           P1 trace 离线分类（区间并集口径；per-workload/per-rank/per-kernel）。
-          在**数据回传后本地**执行，不占 H20 机时。
+          在数据回传后本地执行，不占 H20 机时。
         cmd: [python, scripts/m22_trace_analyze.py, --trace-dir, outputs/m22/traces,
               --tag, h20_formal]
         requires_gpu: false
         creates_engine: false
         optional_outputs: [outputs/m22/h20_formal_comm_profile.csv]
-        status: implemented
+        status: done
       - id: package
         desc: 打包 + sha256（数据没带走 == 实验失败）
         cmd: [python, scripts/m22_run_all.py, --tag, h20_formal, --package]
         requires_gpu: false
         creates_engine: false
-        status: implemented
+        status: done
 
     invariants:
       - m22_single_variable
@@ -575,20 +580,20 @@ modules:
       - m22_consistency_same_prompt
 
     limitations:
-      - H20(sm_90) 与本地 RTX5080(sm_120) 的绝对性能**不可横向比较**，只可比趋势与机制
+      - H20(sm_90) 与本地 RTX5080(sm_120) 的绝对性能不可横向比较，只可比趋势与机制
       - executor backend 随 TP 变化(TP=1→uni / TP>1→mp)，属固有伴随变量，无法消除
-      - 「每卡权重≈1/k」「KV 容量随 TP 上升」是**预期观察**而非不变量，不符时须解释而非判失败
+      - 「每卡权重≈1/k」「KV 容量随 TP 上升」是预期观察而非不变量，不符时须解释而非判失败
       - 通信 kernel 的 GPU 时间占比 ≠ 通信造成的净 wall-time 损失（可能与计算重叠）
-      - 本轮只做 TP；**PP/DP/EP/CP/P-D 明确不在范围内**，未编写任何实现，仍为 ⬜。
+      - 本轮只做 TP；PP/DP/EP/CP/P-D 明确不在范围内，未编写任何实现，仍为 ⬜。
         PP 不进入正式时间预算/主实验矩阵/降级阶梯/最低成功线/目标成功线
 
     open_items:
       - id: E-H-data
         desc: 4×H20 实测数据（TP=1/2/4）
-        status: implemented   # 脚本就绪，**尚未执行**
+        status: done   # 2026-08-09 已在 4×H20 执行完毕，结论见 notes/m22/results.md
       - id: model-7b-divisibility
         desc: >-
-          Qwen2.5-7B-Instruct 结构兼容性**已用公开 config metadata 静态确认**：
+          Qwen2.5-7B-Instruct 结构兼容性已用公开 config metadata 静态确认：
           heads=28 / kv_heads=4 / hidden=3584 / inter=18944 / vocab=152064 /
           tie_word_embeddings=false。TP=1/2/4 的 28%tp 均为 0，且 KV 不会被复制。
           远端仍读一次实际 config.json 做一致性 sanity check（非 blocker）。

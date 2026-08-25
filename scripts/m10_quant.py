@@ -1,6 +1,6 @@
 """M10 · 量化对比 单配置 driver（BF16 / 在线 FP8 W8A8 / FP8 KV）。
 
-一次只处理一个配置（独立进程，见 m10_run_all.py）。同一进程内**分离** perf 与 quality 两阶段：
+一次只处理一个配置（独立进程，见 m10_run_all.py）。同一进程内分离 perf 与 quality 两阶段：
   - perf（prefill/decode 计时）：绝不开 prompt_logprobs。
   - quality（token 加权 PPL）：用 prompt_logprobs、不计时。
 公共 Engine 参数由 COMMON 固定并落盘；各配置仅改 quantization / kv_cache_dtype / attention_backend(/calculate_kv_scales)。
@@ -41,7 +41,7 @@ CONFIG_MATRIX = {
 }
 
 # 固定质量语料（内置、无下载）：中英文各一段较长文本，tokenize 后裁到目标长度。
-# 注：为达 ≥4000 评分 token 会对源文本做 tile；PPL 绝对值因重复偏低，但**同一文本对所有配置一致，相对 ΔPPL 有效**（笔记注明）。
+# 注：为达 ≥4000 评分 token 会对源文本做 tile；PPL 绝对值因重复偏低，但同一文本对所有配置一致，相对 ΔPPL 有效（笔记注明）。
 _ZH = ("大型语言模型的推理过程分为预填充和解码两个阶段。预填充阶段一次性处理整个提示词，"
        "计算所有输入 token 的键和值并写入缓存；解码阶段每一步只生成一个新 token，"
        "但需要读取此前全部历史的键值缓存。键值缓存的显存占用随序列长度线性增长，"

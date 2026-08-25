@@ -1,0 +1,13 @@
+[run_all] === tag=h20_formal tp=1 shard=run === -> /root/logs/m22/h20_formal_tp1_run.log
+[run_all] tp=1 run rc=0 elapsed=104.3s
+[run_all] === tag=h20_formal tp=2 shard=run === -> /root/logs/m22/h20_formal_tp2_run.log
+[run_all] tp=2 run rc=0 elapsed=115.4s
+[run_all] === tag=h20_formal tp=4 shard=run === -> /root/logs/m22/h20_formal_tp4_run.log
+[run_all] tp=4 run rc=0 elapsed=108.3s
+[m22] wrote /root/outputs/m22/h20_formal_memory_kv.csv
+[m22] wrote /root/outputs/m22/h20_formal_decode.csv
+[m22] wrote /root/outputs/m22/h20_formal_decode_effect.csv
+[m22] wrote /root/outputs/m22/h20_formal_prefill.csv
+[m22] wrote /root/outputs/m22/h20_formal_output_consistency.csv
+[m22] summarize done. tag=h20_formal measure samples: 318
+[run_all] all done.
