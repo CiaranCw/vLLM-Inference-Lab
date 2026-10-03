@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import py_compile
@@ -2247,6 +2248,475 @@ def check_m24(rep):
         )
 
 
+M27_TAG = "h20_formal"
+M27_SCRIPTS = [
+    "m27_common.py",
+    "m27_launch.py",
+    "m27_proxy.py",
+    "m27_workload.py",
+    "m27_run_all.py",
+    "m27_summarize.py",
+    "m27_trace_analyze.py",
+    "m27_figures.py",
+    "m27_preflight.sh",
+]
+M27_PLAN = "notes/m27/M27_H20_PLAN.md"
+M27_FREEZE_RE = re.compile(
+    r"<!-- M27_FROZEN_CONFIG:BEGIN -->\s*```json\s*(\{.*?\})\s*```\s*<!-- M27_FROZEN_CONFIG:END -->",
+    re.S,
+)
+M27_EFFECTIVE_FREE_KEYS = {
+    "max_num_batched_tokens",
+    "kv_connector",
+    "kv_role",
+    "kv_load_failure_policy",
+    "kv_engine_id",
+}
+
+
+def _m27_common():
+    sd = _p("scripts")
+    if sd not in sys.path:
+        sys.path.insert(0, sd)
+    import m27_common  # 仅标准库，不 import vllm
+
+    return m27_common
+
+
+def _m27_raw(tag):
+    """{(exp, arm): rows}；不含 proxy / lifecycle 文件。"""
+    d = _p("outputs/m27/raw")
+    out = {}
+    if not os.path.isdir(d):
+        return out
+    for n in sorted(os.listdir(d)):
+        if not (n.startswith(tag + "_") and n.endswith(".jsonl")):
+            continue
+        if n.endswith("_proxy.jsonl") or n == f"{tag}_lifecycle.jsonl":
+            continue
+        exp, _, arm = n[len(tag) + 1 : -len(".jsonl")].partition("_")
+        out[(exp, arm)] = load_jsonl(f"outputs/m27/raw/{n}") or []
+    return out
+
+
+def _m27_static(rep, C):
+    M = "m27"
+    missing, broken = [], []
+    with tempfile.TemporaryDirectory(prefix="m27_pyc_") as tmpd:
+        for name in M27_SCRIPTS:
+            path = _p("scripts", name)
+            if not os.path.exists(path):
+                missing.append(name)
+                continue
+            if name.endswith(".sh"):
+                continue
+            try:
+                py_compile.compile(path, cfile=os.path.join(tmpd, name + "c"), doraise=True)
+            except py_compile.PyCompileError as e:
+                broken.append(f"{name}: {str(e).strip().splitlines()[-1][:120]}")
+    rep.check(M, "m27_scripts_present", not missing and not broken,
+              f"缺失 {missing}；编译失败 {broken}", "M27 脚本齐全且 py_compile 通过")
+
+    F = C.FROZEN
+    plan = open(_p(M27_PLAN), encoding="utf-8").read() if os.path.exists(_p(M27_PLAN)) else ""
+    m = M27_FREEZE_RE.search(plan)
+    block = None
+    if m:
+        try:
+            block = json.loads(m.group(1))
+        except json.JSONDecodeError as e:
+            block = f"json error: {e}"
+    rep.check(M, "m27_config_freeze", block == json.loads(json.dumps(F)),
+              f"{M27_PLAN} 的 M27_FROZEN_CONFIG 块缺失或 ≠ m27_common.FROZEN",
+              "计划文档冻结块 == m27_common.FROZEN（逐键相等）")
+
+    e = F["engine"]
+    want = {"tensor_parallel_size": 1, "dtype": "bfloat16", "seed": 0, "enforce_eager": True,
+            "enable_prefix_caching": False, "async_scheduling": False,
+            "enable_chunked_prefill": True, "block_size": 16, "max_model_len": 32768,
+            "max_num_batched_tokens": 8192, "max_num_seqs": 256,
+            "gpu_memory_utilization": 0.85, "quantization": None, "speculative_config": None}
+    bad = {k: e.get(k) for k, v in want.items() if e.get(k) != v}
+    lf = F["legal_fallback"]
+    if not (F["max_prompt_len"] == 16384 < e["max_model_len"]
+            and lf["max_model_len"] == 16384 and lf["max_prompt_len"] == 8192):
+        bad["max_prompt/fallback"] = (F["max_prompt_len"], lf)
+    shapes = F["e3"]["shapes"]
+    if any(i + o > e["max_model_len"] or i > F["max_prompt_len"] for i, o in shapes.values()):
+        bad["e3_shapes"] = shapes
+    if max(F["e1"]["contexts"]) > F["max_prompt_len"] or max(F["e2"]["p_lens"]) > F["max_prompt_len"]:
+        bad["context_points"] = (F["e1"]["contexts"], F["e2"]["p_lens"])
+    if abs(sum(F["e3"]["mixture"].values()) - 1.0) > 1e-9:
+        bad["mixture_weights"] = F["e3"]["mixture"]
+    if F["warmup"] < 5 or F["measure"] < 15:
+        bad["samples"] = (F["warmup"], F["measure"])
+    if F["kv_transfer"]["kv_load_failure_policy"] != "fail":
+        bad["kv_load_failure_policy"] = F["kv_transfer"]["kv_load_failure_policy"]
+    rep.check(M, "m27_frozen_constraints", not bad, f"冻结配置违反约束：{bad}",
+              "TP1/eager/APC off/async off/chunked ON/bs16/mml32768/max_prompt16384/fail-policy；"
+              "warmup≥5 measure≥15")
+
+    per_tok = C.kv_bytes_per_token()
+    mm = F["model"]
+    rep.check(M, "m27_kv_bytes_per_token",
+              per_tok == F["kv_bytes_per_token"] == 57344 ==
+              2 * mm["num_hidden_layers"] * mm["num_key_value_heads"] * mm["head_dim"] * 2
+              and C.kv_theory(16384)["theory_bytes_blocks"] == 16384 * 57344
+              and C.kv_theory(17)["theory_blocks"] == 2,
+              f"KV 理论值不符：{per_tok}", "2×28×4×128×2 = 57344 B/token；整 block 向上取整")
+
+    # 只核对仓库内的身份文件；模型目录是机器本地资源，由 H20 preflight 校验，不在这里要求存在
+    sums_path = _p(mm["identity_manifest"])
+    viol = []
+    if not os.path.exists(sums_path):
+        viol.append("identity manifest 缺失")
+    else:
+        with open(sums_path, "rb") as f:
+            raw = f.read()
+        if hashlib.sha256(raw).hexdigest() != mm["identity_manifest_sha256"]:
+            viol.append("identity manifest sha256 ≠ FROZEN")
+        entries = dict(reversed(line.split(None, 1)) for line in raw.decode().splitlines() if line.strip())
+        names = set(entries)
+        need = {"config.json", "generation_config.json", "tokenizer.json", "tokenizer_config.json",
+                "vocab.json", "merges.txt", "model.safetensors.index.json"}
+        shards = {n for n in names if re.fullmatch(r"model-\d{5}-of-\d{5}\.safetensors", n)}
+        if len(names) != mm["file_count"] or not need <= names or len(shards) != 4:
+            viol.append(f"manifest 条目不符：{len(names)} 个文件，{len(shards)} 个分片，缺 {sorted(need - names)}")
+        if not all(re.fullmatch(r"[0-9a-f]{64}", h) for h in entries.values()):
+            viol.append("manifest 中有非 sha256 值")
+        hf = load_json("notes/m27/model_artifact/hf_revision_match.json") or {}
+        if hf.get("hf_revision") != mm["hf_revision"] or hf.get("all_hf_files_matched") is not True:
+            viol.append("hf_revision_match.json 缺失、revision 不符或未全部一致")
+        elif any(r["sha256"] != entries.get(r["file"]) for r in hf.get("files", [])):
+            viol.append("hf_revision_match.json 与 identity manifest 的 sha256 不一致")
+    rep.check(M, "m27_model_identity", not viol, f"模型身份文件不一致：{viol}",
+              f"identity manifest sha256 == FROZEN；{mm['file_count']} 个文件（4 分片 + index + config/tokenizer）；"
+              f"内容与 HF {mm['hf_repo']}@{mm['hf_revision'][:8]} 一致")
+
+    m22 = next((r for r in (load_jsonl("outputs/m22/raw/h20_formal_tp1_run.jsonl") or [])
+                if r.get("sum_available_kv_bytes")), None)
+    if m22 is None:
+        rep.pending(M, "m27_kv_theory_cross_m22", "缺 M22 TP1 formal raw，无法做第二来源核对")
+    else:
+        avail = m22["sum_available_kv_bytes"]
+        toks = (m22.get("effective_cfg") or {}).get("sched_kv_cache_size_tokens")
+        bs = e["block_size"]
+        rep.check(M, "m27_kv_theory_cross_m22", toks == (avail // (bs * per_tok)) * bs,
+                  f"M22 引擎 KV 容量 {toks} tokens 与 {avail}//({bs}×{per_tok})×{bs} 不符",
+                  f"M22 H20 TP1 引擎实测：{avail} B → {toks} tokens，与 57344 B/token 整 block 推算一致")
+
+    all_arms = sorted(set(F["e2"]["arms"]) | set(F["e3"]["arms"]) | set(F["e4"]["arms"])
+                      | set(F["e5_optional"]["arms"]) | {F["e3"]["calibration_arm"],
+                                                         F["e4"]["calibration_arm"]})
+    viol = []
+    for arm in all_arms:
+        t = C.parse_arm(arm)
+        ins = C.build_instances(arm, list(range(t["n_gpus"])))
+        for key in ("gpu", "http_port", "side_channel_port"):
+            if len({i[key] for i in ins}) != len(ins):
+                viol.append((arm, key))
+        roles = [i["role"] for i in ins]
+        if t["kind"] == "pd" and (roles.count("P"), roles.count("D")) != (t["n_p"], t["n_d"]):
+            viol.append((arm, "roles"))
+        if t["kind"] == "pd" and t["mbt"] != e["max_num_batched_tokens"]:
+            viol.append((arm, "pd_mbt"))
+        for i in ins:
+            ktc = C.kv_transfer_config(i["role"])
+            want_role = {"P": "kv_producer", "D": "kv_consumer", "colo": None}[i["role"]]
+            if (ktc or {}).get("kv_role") != want_role:
+                viol.append((arm, i["name"], "kv_role"))
+    rep.check(M, "m27_arm_construction", not viol, f"arm 构造违规：{viol[:6]}",
+              f"{len(all_arms)} 个 arm：GPU/HTTP/side-channel 端口唯一，角色与 kv_role 对应")
+
+    m24_plan = _p("notes/m24/M24_H20_PLAN.md")
+    rep.check(M, "m27_m24_plan_not_mutated",
+              os.path.exists(m24_plan) and "M27" not in open(m24_plan, encoding="utf-8").read(),
+              "M24_H20_PLAN.md 缺失或被写入 M27 内容（冻结计划不得改动）",
+              "M24 冻结计划未被写入 M27 内容")
+
+    try:
+        import yaml
+
+        man = yaml.safe_load(open(_p("config/repro_manifest.yaml"), encoding="utf-8"))
+        mod = (man.get("modules") or {}).get("m27") or {}
+        steps = mod.get("steps") or []
+        leaks = [s.get("id") for s in steps
+                 if s.get("requires_gpu") and (not s.get("formal_only")
+                                               or s.get("status") in ("implemented", "in_progress"))]
+        rep.check(M, "m27_manifest_not_runnable",
+                  bool(steps) and mod.get("status") not in ("implemented", "in_progress") and not leaks,
+                  f"manifest m27 缺失或 GPU 步骤可被 --run 启动：status={mod.get('status')} leaks={leaks}",
+                  f"m27 status={mod.get('status')}；{sum(1 for s in steps if s.get('requires_gpu'))} 个 GPU "
+                  "步骤均 formal_only 且非 runnable")
+    except ImportError:
+        rep.pending(M, "m27_manifest_not_runnable", "无 PyYAML，跳过 manifest 核对")
+
+
+def check_m27(rep):
+    """M27 P-D 解耦 + NIXL 不变量。无 H20 raw 时 PENDING；「PD 更快」不是不变量。"""
+    M = "m27"
+    C = _m27_common()
+    _m27_static(rep, C)
+    tag = M27_TAG
+    R = _m27_raw(tag)
+
+    derived = sorted(
+        n for n in (os.listdir(_p("outputs/m27")) if os.path.isdir(_p("outputs/m27")) else [])
+        if n.startswith(tag + "_") and n.endswith((".csv", ".json"))
+    ) + sorted(n for n in os.listdir(_p("figures"))
+               if re.match(rf"fig1[678]_.*_{tag}\.png$", n))
+    if not R:
+        rep.check(M, "m27_no_derived_without_raw", not derived,
+                  f"没有 raw 却存在派生产物（疑似伪造/残留）：{derived[:5]}",
+                  "无 raw 时没有任何派生 CSV/JSON/图")
+        rep.pending(M, "artifacts",
+                    f"outputs/m27/raw/{tag}_*.jsonl 不存在 —— M27 H20 实验尚未执行。"
+                    "当前仅 T/O + DESIGN，不得标 E/H")
+        return
+
+    F = C.FROZEN
+    pf = load_json(f"outputs/m27/configs/preflight_{tag}.json") or {}
+    gm = load_json(f"outputs/m27/configs/gpu_map_{tag}.json") or {}
+    rep.check(M, "m27_preflight_pass", pf.get("result") == "PASS" and bool(gm.get("gpu_ids")),
+              f"preflight={pf.get('result')} gpu_map={gm.get('gpu_ids')}",
+              f"Gate 0 PASS @ {pf.get('hostname')}；gpu_ids={gm.get('gpu_ids')}")
+    allowed_gpus = set(gm.get("gpu_ids") or [])
+    mml = F["legal_fallback"]["max_model_len"] if gm.get("max_model_len_fallback") else F["engine"]["max_model_len"]
+
+    bad_schema, not_done = [], []
+    for (exp, arm), rows in R.items():
+        for r in rows:
+            if (r.get("schema") != C.SCHEMA or r.get("tag") != tag or r.get("experiment") != exp
+                    or r.get("arm") != arm
+                    or (r.get("phase") != "arm_done" and r.get("plan_version") != F["plan_version"])):
+                bad_schema.append((exp, arm, r.get("phase")))
+        if not any(r.get("phase") == "arm_done" for r in rows):
+            not_done.append((exp, arm))
+    rep.check(M, "m27_raw_schema", not bad_schema, f"{len(bad_schema)} 行 schema/身份不符：{bad_schema[:4]}",
+              f"{sum(len(v) for v in R.values())} 行 schema={C.SCHEMA}、tag/experiment/arm 与文件名一致")
+    rep.check(M, "m27_arm_complete", not not_done, f"未完成（无 arm_done）：{not_done}",
+              f"{len(R)} 个 (exp, arm) 均有 arm_done")
+
+    effs = {}
+    for (exp, arm) in R:
+        effs[(exp, arm)] = load_json(f"outputs/m27/configs/{tag}_{exp}_{arm}_effective.json")
+    eff_bad = [k for k, v in effs.items() if not v or v.get("effective_matches_requested") is not True]
+    rep.check(M, "m27_effective_config_readback", not eff_bad,
+              f"缺回读或生效≠请求：{eff_bad}", "每个 (exp, arm) 启动回读：server_info + 日志双来源 == 请求")
+
+    ref, diff, gpu_viol, role_viol = None, [], [], []
+    for (exp, arm), ef in effs.items():
+        if not ef:
+            continue
+        t = C.parse_arm(arm)
+        insts = ef.get("instances") or {}
+        gpus = [v["instance"]["gpu"] for v in insts.values()]
+        ports = [v["instance"]["http_port"] for v in insts.values()]
+        sides = [v["instance"]["side_channel_port"] for v in insts.values()]
+        if (len(set(gpus)) != len(gpus) or len(set(ports)) != len(ports)
+                or len(set(sides)) != len(sides) or not set(gpus) <= allowed_gpus
+                or len(gpus) != t["n_gpus"]):
+            gpu_viol.append((exp, arm, gpus))
+        for name, v in insts.items():
+            eff = v.get("effective") or {}
+            common = {k: x for k, x in eff.items() if k not in M27_EFFECTIVE_FREE_KEYS}
+            if ref is None:
+                ref = (exp, arm, name, common)
+            elif common != ref[3]:
+                diff.append((exp, arm, name, sorted(k for k in common if common.get(k) != ref[3].get(k))))
+            role = v["instance"]["role"]
+            want_role = {"P": "kv_producer", "D": "kv_consumer", "colo": None}[role]
+            if eff.get("kv_role") != want_role or eff.get("max_num_batched_tokens") != t["mbt"]:
+                role_viol.append((exp, arm, name, eff.get("kv_role"), eff.get("max_num_batched_tokens")))
+            if eff.get("max_model_len") != mml:
+                role_viol.append((exp, arm, name, "max_model_len", eff.get("max_model_len")))
+    rep.check(M, "m27_common_engine_args", not diff,
+              f"除 mbt/kv_role 外存在生效差异：{diff[:4]}",
+              "所有 arm / 实例除 max_num_batched_tokens 与 kv_transfer 角色外生效配置逐键相同")
+    rep.check(M, "m27_only_variable", not role_viol, f"mbt/kv_role/max_model_len 不符：{role_viol[:4]}",
+              "PD 的 mbt=8192；colo 的 mbt=arm 名；P=kv_producer / D=kv_consumer / colo=无 connector")
+    rep.check(M, "m27_gpu_assignment", not gpu_viol, f"GPU/端口重复或越出 gpu_map：{gpu_viol[:4]}",
+              f"每个 arm 的 GPU ⊆ gpu_map {sorted(allowed_gpus)} 且 GPU/端口唯一")
+
+    def flat(rows):
+        """展开到单请求记录（E2 的 d / inj 嵌套）。fault_probe 的 success 表示「拿到 502」，不是服务成功。"""
+        for r in rows:
+            if r.get("phase") == "fault_probe":
+                continue
+            if r.get("experiment") == "e2":
+                for sub in ("d", "inj"):
+                    if r.get(sub):
+                        yield r, r[sub]
+            elif "prompt_sha256" in r:
+                yield r, r
+
+    usage_viol, echo_viol, ident = [], [], {}
+    for (exp, arm), rows in R.items():
+        for _, q in flat(rows):
+            u = q.get("usage") or {}
+            if q.get("success") and (u.get("completion_tokens") != q.get("n_output_tokens")
+                                     or u.get("prompt_tokens") != q.get("prompt_len")):
+                usage_viol.append((exp, arm, q.get("label")))
+            if q.get("prompt_sha256_returned") and q["prompt_sha256_returned"] != q["prompt_sha256"]:
+                echo_viol.append((exp, arm, q.get("label")))
+            if q.get("label"):
+                ident.setdefault(q["label"], set()).add(q["prompt_sha256"])
+    split = [k for k, v in ident.items() if len(v) > 1]
+    rep.check(M, "m27_output_length", not usage_viol,
+              f"{len(usage_viol)} 个成功请求的服务端 usage 与客户端 token 计数不符：{usage_viol[:4]}",
+              "成功请求：客户端逐 chunk token 数 == 服务端 usage.completion_tokens；prompt_len == usage.prompt_tokens")
+    rep.check(M, "m27_prompt_identity", not split and not echo_viol,
+              f"同 key 不同 prompt：{split[:4]}；服务端回显不符：{echo_viol[:4]}",
+              f"{len(ident)} 个 request key 在所有 arm 上 prompt sha256 相同，且与服务端回显一致")
+
+    cnt_viol, warm_viol, xfer_viol, theory_viol = [], [], [], []
+    for (exp, arm), rows in R.items():
+        kind = C.parse_arm(arm)["kind"]
+        groups = {}
+        for r in rows:
+            if r.get("phase") in ("measure", "warmup") and exp in ("e0", "e1", "e2"):
+                g = r.get("context") if exp == "e1" else r.get("p_len") if exp == "e2" else 0
+                groups.setdefault(g, {"measure": [], "warmup": []})[r["phase"]].append(r)
+        for g, ph in groups.items():
+            n_m = 5 if exp == "e0" else F["measure"]
+            n_w = 3 if exp == "e0" else F["warmup"]
+            ok = [r for r in ph["measure"] if r.get("success") is True]
+            if len(ph["measure"]) != n_m or len(ok) != n_m:
+                cnt_viol.append((exp, arm, g, len(ph["measure"]), len(ok)))
+            if len(ph["warmup"]) != n_w:
+                warm_viol.append((exp, arm, g, len(ph["warmup"])))
+        if kind != "pd":
+            continue
+        d_names = [i["name"] for i in (rows[0].get("instances") or []) if i["role"] == "D"] if rows else []
+        p_names = [i["name"] for i in (rows[0].get("instances") or []) if i["role"] == "P"] if rows else []
+        for r in rows:
+            if r.get("phase") != "measure":
+                continue
+            if exp in ("e0", "e1"):
+                md, L = r.get("metrics_delta") or {}, r["prompt_len"]
+                ok = (r.get("metrics_settled") is True
+                      and sum((md.get(d) or {}).get("prompt_external_kv_transfer") or 0 for d in d_names) == L
+                      and all((md.get(d) or {}).get("prompt_local_compute") == 0 for d in d_names)
+                      and all((md.get(d) or {}).get("nixl_failed_transfers") == 0 for d in d_names)
+                      and sum((md.get(p) or {}).get("prompt_local_compute") or 0 for p in p_names) == L)
+                if not ok:
+                    xfer_viol.append((exp, arm, r.get("request_key")))
+                if exp == "e1":
+                    th = C.kv_theory(r["context"])
+                    nb = sum((md.get(d) or {}).get("nixl_bytes_sum") or 0 for d in d_names)
+                    if any(r.get(k) != v for k, v in th.items()) or not nb > 0:
+                        theory_viol.append((arm, r.get("request_key"), nb))
+            elif exp == "e2" and r.get("p_len") and r.get("success"):
+                md = r.get("metrics_delta_inj_phase") or {}
+                if not (sum((md.get(d) or {}).get("prompt_external_kv_transfer") or 0 for d in d_names) == r["p_len"]
+                        and all((md.get(d) or {}).get("nixl_failed_transfers") == 0 for d in d_names)):
+                    xfer_viol.append((exp, arm, r.get("p_request_key")))
+        for r in rows:
+            if r.get("phase") != "measure_run_summary":
+                continue
+            md = r.get("metrics_delta") or {}
+            if r.get("n_fail") == 0 and not all(
+                    (md.get(d) or {}).get("prompt_local_compute") == 0
+                    and (md.get(d) or {}).get("nixl_failed_transfers") == 0 for d in d_names):
+                xfer_viol.append((exp, arm, r.get("workload_shape"), r.get("seed"), r.get("load_frac")))
+    rep.check(M, "m27_sample_count", not cnt_viol, f"measure 数或成功数不符（期望全成功）：{cnt_viol[:4]}",
+              "E0 每 arm 5 measure；E1/E2 每点 15 measure，全部 success（E2 含 overlap_valid）")
+    rep.check(M, "m27_warmup_exclusion", not warm_viol, f"warmup 数不符：{warm_viol[:4]}",
+              "warmup 单独标 phase（E0 3 / E1–E2 5），汇总只用 measure")
+    rep.check(M, "m27_transfer_success", not xfer_viol,
+              f"{len(xfer_viol)} 个 PD 样本未满足 D 外部 KV == prompt_len / D 本地计算 0 / 失败 0：{xfer_viol[:4]}",
+              "PD：D external_kv_transfer == prompt_len、D local_compute == 0、P local_compute == prompt_len、"
+              "nixl_failed == 0（metrics 稳定后读取）")
+    if ("e1", "pd_1p1d") in R:
+        rep.check(M, "m27_theoretical_kv_metadata", not theory_viol, f"理论值/实测 bytes 缺失：{theory_viol[:4]}",
+                  "E1 每样本同时记录理论 bytes（token/block 口径）与 NIXL 实测 bytes（二者不要求相等）")
+
+    life = load_jsonl(f"outputs/m27/raw/{tag}_lifecycle.jsonl") or []
+    log_viol = []
+    for ev in life:
+        if ev.get("event") != "stop":
+            continue
+        for name, le in (ev.get("log_evidence") or {}).items():
+            if (le.get("kv_load_fail_events") or le.get("nixl_compat_mismatch") or le.get("tracebacks")
+                    or le.get("log_missing")):
+                log_viol.append((ev.get("exp"), ev.get("arm"), name))
+            if name.startswith("D") and ev.get("reason") == "normal" and not le.get("nixl_compat_pass"):
+                log_viol.append((ev.get("exp"), ev.get("arm"), name, "no_compat_pass"))
+    rep.check(M, "m27_no_failures_log", bool(life) and not log_viol,
+              f"lifecycle 缺失或日志出现 KV load 失败/兼容性不符/Traceback：{log_viol[:4]}",
+              "第二来源（服务日志）：无 KV load failure、无 compat mismatch、无 Traceback；D 均有 compat pass")
+
+    fp = [r for r in R.get(("e0", "pd_1p1d"), []) if r.get("phase") == "fault_probe"]
+    if fp:
+        f = fp[-1]
+        d = next((i["name"] for i in f.get("instances", []) if i["role"] == "D"), None)
+        dd = ((f.get("metrics_delta") or {}).get(d) or {}).get("prompt_tokens_total")
+        rep.check(M, "m27_fail_closed_probe", f.get("http_status") == 502 and dd == 0,
+                  f"故障注入未 fail-closed：http={f.get('http_status')} D prompt Δ={dd}",
+                  "丢弃 kv_transfer_params → proxy 502，D 未收到请求（prompt_tokens Δ=0）")
+    elif ("e0", "pd_1p1d") in R:
+        rep.fail(M, "m27_fail_closed_probe", "E0 pd_1p1d 缺 fault_probe 行")
+
+    e2_keys = {arm: {(r["p_len"], r["idx"]) for r in rows if r.get("phase") == "measure"}
+               for (exp, arm), rows in R.items() if exp == "e2"}
+    if e2_keys:
+        ks = list(e2_keys.values())
+        rep.check(M, "m27_paired_keys_e2", all(k == ks[0] for k in ks),
+                  f"E2 各 arm 的 (p_len, idx) 不配对：{ {a: len(k) for a, k in e2_keys.items()} }",
+                  f"E2 {len(e2_keys)} 个 arm 的 (p_len, idx) 完全配对")
+    for exp in ("e3", "e4", "e5"):
+        summ = {arm: rows for (x, arm), rows in R.items() if x == exp}
+        if not summ:
+            continue
+        rates_path = _p(f"outputs/m27/configs/{tag}_{exp}cal_rates.json")
+        rates_sha = None
+        if os.path.exists(rates_path):
+            rates_sha = C.sha256_file(rates_path)
+        sched, viol, failed_runs = {}, [], []
+        for arm, rows in summ.items():
+            for r in rows:
+                if r.get("phase") != "measure_run_summary":
+                    continue
+                key = (r["workload_shape"], r["seed"], r["load_frac"])
+                if r.get("n_fail") != 0:
+                    failed_runs.append((arm, key, r.get("n_fail")))
+                sched.setdefault(key, {})[arm] = r["schedule_sha256"]
+                if r.get("rates_file_sha256") != rates_sha:
+                    viol.append((arm, key, "rates_sha"))
+        for key, by_arm in sched.items():
+            if len(set(by_arm.values())) != 1 or set(by_arm) != set(summ):
+                viol.append((key, sorted(by_arm)))
+        rep.check(M, f"m27_paired_schedules_{exp}", bool(sched) and not viol,
+                  f"{exp} 到达序列/速率文件不配对：{viol[:4]}",
+                  f"{exp}：{len(sched)} 个 (shape, seed, load) 在 {len(summ)} 个 arm 上 schedule sha256 相同，"
+                  "速率文件 sha 一致")
+        rep.check(M, f"m27_online_no_failed_requests_{exp}", not failed_runs,
+                  f"{exp} 有请求失败的 run（不得静默剔除）：{failed_runs[:4]}",
+                  f"{exp} 全部 run 的 n_fail == 0")
+
+    e1csv = load_csv(f"outputs/m27/{tag}_e1_transfer.csv")
+    if e1csv is not None and ("e1", "pd_1p1d") in R:
+        want = {}
+        for r in R[("e1", "pd_1p1d")]:
+            if r.get("phase") == "measure" and r.get("success") is True:
+                want[r["context"]] = want.get(r["context"], 0) + 1
+        got = {int(r["context"]): int(r["n"]) for r in e1csv}
+        rep.check(M, "m27_e1_csv_n_matches_jsonl", got == want, f"E1 CSV n {got} != jsonl {want}",
+                  "E1 CSV n == jsonl measure∧success")
+    e2csv = load_csv(f"outputs/m27/{tag}_e2_interference.csv")
+    if e2csv is not None:
+        want = {}
+        for (exp, arm), rows in R.items():
+            if exp != "e2":
+                continue
+            for r in rows:
+                if r.get("phase") == "measure" and r.get("success") is True:
+                    want[(arm, r["p_len"])] = want.get((arm, r["p_len"]), 0) + 1
+        got = {(r["arm"], int(r["p_len"])): int(r["n"]) for r in e2csv}
+        rep.check(M, "m27_e2_csv_n_matches_jsonl", got == want, "E2 CSV n != jsonl measure∧success",
+                  "E2 CSV n == jsonl measure∧success")
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -2268,6 +2738,7 @@ CHECKS = {
     "m22": [check_m22],
     "m23": [check_m23],
     "m24": [check_m24],
+    "m27": [check_m27],
 }
 
 

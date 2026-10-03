@@ -20,7 +20,7 @@
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
 - **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
-- **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。P-D 未跑（M24）。
+- **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。P-D 未跑（M24；P-D 部分转入阶段 K / M27：T/O + DESIGN READY，**E/H NOT EXECUTED**，无性能数字）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
@@ -28,7 +28,7 @@
 
 > **招聘者请先看这两个**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md) —— 四个项目（A/B/C/D）按同一模板写成 5 分钟能看懂的形式，并用「🟢已验证 / 🟡只读源码 / ⚪仅理论」三档**明确标注能力边界**（含**未完成项与其阻塞原因**）；[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件。
 >
-> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26）。面试三档表达：[第一阶段](notes/m16/interview_and_presentation.md) · [第二阶段](notes/m26/interview_second_stage.md)。
+> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26 + 阶段 K · M27）。面试三档表达：[第一阶段](notes/m16/interview_and_presentation.md) · [第二阶段](notes/m26/interview_second_stage.md)。
 >
 > **接手/协作者请先读**：[`HANDOFF.md`](HANDOFF.md)（当前进度、下一步选项、已知坑）与 [`AGENTS.md`](AGENTS.md)（硬性工作规则：诚实性红线 / Git 署名 / GPU 安全 / 必需环境变量）。
 
@@ -58,6 +58,7 @@
 | 投机解码（N-gram：Coverage/Acceptance/execution rounds/吞吐） | 能证 + 能量化 ✅ | M19 |
 | 张量并行 TP（多卡：step vs 吞吐口径） | 能证 + 能量化 ✅ | M22 |
 | Decode Context Parallel（多卡：KV 容量 vs step 延迟） | 能证 + 能量化 ✅ | M24 |
+| P-D 分离 + NIXL KV 传输（多卡） | 源码核实 + 实验设计就绪；**E/H NOT EXECUTED** ⬜ | M27 |
 
 ---
 
@@ -143,6 +144,7 @@
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
+| **M27** P-D 分离 + NIXL（阶段 K） | 测量 P-D 的 KV 传输/编排成本与干扰隔离收益，“没有收益”是允许的结果 | **T/O + DESIGN READY，E/H NOT EXECUTED**；没有性能数字 | 无 | `notes/m27/`（理论、冻结计划、runbook、结果模板） |
 ★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
 ---
@@ -238,7 +240,7 @@ python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity
     ├── outputs/        # 实验输出（csv/json/jsonl；大件 raw/traces 走 gitignore、可复现）
     ├── figures/        # 核心图（由 CSV 离线生成）
     ├── logs/           # 实验日志、git 状态快照
-    ├── ROADMAP.md      # 两阶段里程碑（M0–M26）
+    ├── ROADMAP.md      # 两阶段里程碑（M0–M26）+ 阶段 K（M27）
     ├── AGENTS.md / HANDOFF.md
 ```
 

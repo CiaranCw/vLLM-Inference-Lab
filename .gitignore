@@ -77,3 +77,13 @@ outputs/m24/transfer_test_*
 *.whl
 wheelhouse/
 outputs/m21/raw/.m21_experiment.lock
+
+# M27：离线包 / H20 回传包 / 传输自检 / 非 formal 产物（raw/backup_* 是续跑留痕，入库）
+m27_offline/
+m27_transfer_test/
+**/m27_*.tar.gz
+**/m27_*.tar.gz.sha256
+outputs/m27/transfer_test_*
+outputs/m27/package_*.json
+outputs/m27/raw/local_preflight_*
+outputs/m27/raw/*smoke*

@@ -14,6 +14,7 @@
     `del engine` + `empty_cache()` 归还不掉，同进程建第二个引擎会失败）。
   - `--run` 涉及 GPU 时必须显式 `--confirm-gpu`；本工具不自动判定 GPU 是否空闲，
     因为 WSL2 下 `nvidia-smi --query-compute-apps` 可能看不到真实占用进程。
+  - `formal_only=true` 的步骤（如 M27 的 H20 多卡实验）即使 `--only` 点名也拒绝执行。
   - 子进程失败立即停止，不用 `|| true` 之类掩盖。
   - 本工具不做任何 git 操作（不 commit / 不 push）。
 """
@@ -110,6 +111,8 @@ def cmd_dry_run(man, module, only):
         tag = s.get("status", "?")
         gpu = "GPU" if s.get("requires_gpu") else "cpu"
         print(f"# [{tag:<11}] [{gpu}] {s['id']}: {s.get('desc', '').strip()}")
+        if s.get("formal_only"):
+            print("#   ↑ formal_only：只在目标机按 runbook 手动执行；reproduce.py --run 拒绝启动")
         if s.get("requires_gpu"):
             print("#   ↑ 跑前先 nvidia-smi 确认 GPU 空闲；一个进程一个引擎")
         print(shlex.join(s["cmd"]))
@@ -247,6 +250,15 @@ def cmd_run(man, module, only, include_done, confirm_gpu, confirm_overwrite):
         if not only and not include_done and s.get("status") not in RUNNABLE_STATUS:
             continue
         sel.append(s)
+    formal = [s["id"] for s in sel if s.get("formal_only")]
+    if formal:
+        print("以下步骤 formal_only=true（只能在目标机按 runbook 手动执行，本工具拒绝启动）：")
+        for sid in formal:
+            print(f"  - {sid}")
+        hint = mod.get("runbook")
+        if hint:
+            print(f"\n见 {hint}")
+        return 2
     if not sel:
         print(
             "没有需要执行的步骤（默认跳过 status=done；用 --include-done 可强制重跑）。"

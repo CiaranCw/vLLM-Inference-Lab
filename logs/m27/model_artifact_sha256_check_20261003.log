@@ -1,0 +1,18 @@
+start 2026-10-03 18:06:40 +0800
+.gitattributes: OK
+LICENSE: OK
+README.md: OK
+config.json: OK
+configuration.json: OK
+generation_config.json: OK
+merges.txt: OK
+model-00001-of-00004.safetensors: OK
+model-00002-of-00004.safetensors: OK
+model-00003-of-00004.safetensors: OK
+model-00004-of-00004.safetensors: OK
+model.safetensors.index.json: OK
+tokenizer.json: OK
+tokenizer_config.json: OK
+vocab.json: OK
+rc=0
+end 2026-10-03 18:12:20 +0800

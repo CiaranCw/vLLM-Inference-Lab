@@ -55,6 +55,7 @@
 | M24 | CP / Ring Attention / P-D 分离 | ✅/⬜ | **T + DCP E+O+H COMPLETE**（4×H20，`notes/m24/results.md`）；**Ring / P-D 未做** |
 | M25 | 压缩（蒸馏/剪枝/低秩） | ✅ | **T COMPLETE**（`notes/m25/compression.md`）；本轮明确不做 E |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
+| **M27** | 阶段 K · P-D 分离 + NIXL KV 传输（M24 P-D 部分转入这里） | ✅/⬜ | **T/O + DESIGN READY（冻结 v1）+ 实现就绪；E/H NOT EXECUTED**，没有性能数字；见 `notes/m27/README.md` |
 
 > 每个模块的完整定义（要做什么 / 记什么指标 / 产出什么文件 / 硬件门控）都在 [`ROADMAP.md`](ROADMAP.md) 对应小节，**动手前务必读该小节**，不要凭本表的一句话概括就开工。
 
@@ -153,7 +154,15 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-08-17 更新（当前下一步）**
+> **2026-10-03 更新（当前下一步）**
+> - **M27（阶段 K · P-D 分离 + NIXL）= T/O + DESIGN READY，E/H NOT EXECUTED**。下一步：**H20 M27 Gate 0 / E0**，按 [`notes/m27/M27_H20_RUNBOOK.md`](notes/m27/M27_H20_RUNBOOK.md) 执行（先 preflight，任一 STOP 条件就停下询问）。
+> - 上机资源分三部分（见 [`notes/m27/offline_package.md`](notes/m27/offline_package.md) §3）：code = pre-H20 anchor commit（未 push）；
+>   wheelhouse = `~/m27_offline/wheelhouse/`（NIXL，sha256 已核对）；model = 7B 身份由 `notes/m27/model_artifact/qwen2.5-7b-instruct.sha256` 冻结，
+>   本地恢复副本在 `/mnt/f/wsl_backup/m22_offline/models/Qwen2.5-7B-Instruct`（[`model_artifact_manifest.md`](notes/m27/model_artifact_manifest.md)）。
+>   H20 上仍需确认 `/root/.venv` 与 `/root/m22_offline` 是否还在。
+> - 未验证的风险：UCX 在 driver 535 + cuda-compat 13 下能否走同机 GPU 直连；H20 实际可见 GPU 数与 NV 拓扑（M22 只看到 4 卡）。
+>
+> **2026-08-17 更新（历史）**
 > - **命名统一已落地**：M1–M3 由 `dayN` 改为 `mN`（`notes/` / `outputs/` / `logs/` / `scripts/`）。原始 `.log` / `.jsonl` 内容未改；`backups/dayN/` 是历史备份目录名，未改。
 > - **M24 DCP E+O+H COMPLETE**：4×H20 / 1.5B / TP=4；KV tokens 恰好 2.0×，六档 decode step DCP=2 更慢（CI 排除 0）；PCP 负例在 `world_size=8` 被拒。**Ring Attention / P-D 仍 ⬜**。见 `notes/m24/results.md`。
 > - **M23 L1 已冻结**：不扩 L2/L3/kernel profiling。

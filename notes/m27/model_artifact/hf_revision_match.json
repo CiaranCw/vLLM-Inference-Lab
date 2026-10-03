@@ -1,0 +1,142 @@
+{
+ "hf_repo": "Qwen/Qwen2.5-7B-Instruct",
+ "hf_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+ "checked_at": "2026-10-03 (Asia/Shanghai)",
+ "method": "HfApi.model_info(files_metadata=True)：safetensors 比对 LFS sha256；其余文件比对 git blob id（git hash-object）；未下载任何文件",
+ "artifact_files": 15,
+ "hf_repo_files": 14,
+ "matched": 14,
+ "all_hf_files_matched": true,
+ "files": [
+  {
+   "file": ".gitattributes",
+   "size_bytes": 1519,
+   "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+   "local_blob_id": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+   "match": true
+  },
+  {
+   "file": "LICENSE",
+   "size_bytes": 11343,
+   "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab",
+   "local_blob_id": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab",
+   "match": true
+  },
+  {
+   "file": "README.md",
+   "size_bytes": 6240,
+   "sha256": "f366f33bbf6bcadbb7d87f0a21a7b65584a56b8d58b0743c77c88bee625b93a6",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "4e9536cebaeb5cac673952ad5d0eeae469900f81",
+   "local_blob_id": "4e9536cebaeb5cac673952ad5d0eeae469900f81",
+   "match": true
+  },
+  {
+   "file": "config.json",
+   "size_bytes": 663,
+   "sha256": "7463bb0ea78315365e6c6b74de4e73bbcc8359dfb0c5a737584e077d42c0b03c",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "0178295f88afc3c7f279ed284f961f8c1be00654",
+   "local_blob_id": "0178295f88afc3c7f279ed284f961f8c1be00654",
+   "match": true
+  },
+  {
+   "file": "configuration.json",
+   "size_bytes": 2,
+   "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "hf_kind": "not_in_hf_repo",
+   "match": null,
+   "note": "ModelScope 下载器附带的文件（内容为 '{}'）"
+  },
+  {
+   "file": "generation_config.json",
+   "size_bytes": 243,
+   "sha256": "3a8f9087e486054c8a4a08dae2e5a3ba62e23da212b5b8c08bc42cb983c3459f",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "0eb3c536657dcd12626e09eca4b6198c0cbcde1e",
+   "local_blob_id": "0eb3c536657dcd12626e09eca4b6198c0cbcde1e",
+   "match": true
+  },
+  {
+   "file": "merges.txt",
+   "size_bytes": 1671839,
+   "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0",
+   "local_blob_id": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0",
+   "match": true
+  },
+  {
+   "file": "model-00001-of-00004.safetensors",
+   "size_bytes": 3945441440,
+   "sha256": "a1333e6293854747c481288ea83b348226af178dd565c49b6f9495ba1966aba7",
+   "hf_kind": "lfs",
+   "hf_lfs_sha256": "a1333e6293854747c481288ea83b348226af178dd565c49b6f9495ba1966aba7",
+   "match": true
+  },
+  {
+   "file": "model-00002-of-00004.safetensors",
+   "size_bytes": 3864726352,
+   "sha256": "f5d25a2772cb825164a2a2c0fb6d51a87e282abf21e4dd75bc5cfb3cd0ea6185",
+   "hf_kind": "lfs",
+   "hf_lfs_sha256": "f5d25a2772cb825164a2a2c0fb6d51a87e282abf21e4dd75bc5cfb3cd0ea6185",
+   "match": true
+  },
+  {
+   "file": "model-00003-of-00004.safetensors",
+   "size_bytes": 3864726424,
+   "sha256": "8efdec4c1bc12317ae1a38dc42b595ce777738a64deea3fcb8a0a91381bcdfd5",
+   "hf_kind": "lfs",
+   "hf_lfs_sha256": "8efdec4c1bc12317ae1a38dc42b595ce777738a64deea3fcb8a0a91381bcdfd5",
+   "match": true
+  },
+  {
+   "file": "model-00004-of-00004.safetensors",
+   "size_bytes": 3556377672,
+   "sha256": "1a72d403cdf0c1ec3cb7f289f17b394a01e64394c2e9b3c0f94dbce3faf879bd",
+   "hf_kind": "lfs",
+   "hf_lfs_sha256": "1a72d403cdf0c1ec3cb7f289f17b394a01e64394c2e9b3c0f94dbce3faf879bd",
+   "match": true
+  },
+  {
+   "file": "model.safetensors.index.json",
+   "size_bytes": 27752,
+   "sha256": "624bf7c47cd12468fdc16e38a47cf4f19e0415b859a223ba3c027eed2f0e1028",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "14d037fdda5a1311dcc0275003a7a370d84114e6",
+   "local_blob_id": "14d037fdda5a1311dcc0275003a7a370d84114e6",
+   "match": true
+  },
+  {
+   "file": "tokenizer.json",
+   "size_bytes": 7031645,
+   "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "443909a61d429dff23010e5bddd28ff530edda00",
+   "local_blob_id": "443909a61d429dff23010e5bddd28ff530edda00",
+   "match": true
+  },
+  {
+   "file": "tokenizer_config.json",
+   "size_bytes": 7305,
+   "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "07bfe0640cb5a0037f9322287fbfc682806cf672",
+   "local_blob_id": "07bfe0640cb5a0037f9322287fbfc682806cf672",
+   "match": true
+  },
+  {
+   "file": "vocab.json",
+   "size_bytes": 2776833,
+   "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+   "hf_kind": "git_blob",
+   "hf_blob_id": "4783fe10ac3adce15ac8f358ef5462739852c569",
+   "local_blob_id": "4783fe10ac3adce15ac8f358ef5462739852c569",
+   "match": true
+  }
+ ]
+}
