@@ -28,7 +28,7 @@
 
 > **招聘者请先看这两个**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md) —— 四个项目（A/B/C/D）按同一模板写成 5 分钟能看懂的形式，并用「🟢已验证 / 🟡只读源码 / ⚪仅理论」三档**明确标注能力边界**（含**未完成项与其阻塞原因**）；[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件。
 >
-> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26 + 阶段 K · M27）。面试三档表达：[第一阶段](notes/m16/interview_and_presentation.md) · [第二阶段](notes/m26/interview_second_stage.md)。
+> 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26 + 阶段 K · M27）。
 >
 > **接手/协作者请先读**：[`HANDOFF.md`](HANDOFF.md)（当前进度、下一步选项、已知坑）与 [`AGENTS.md`](AGENTS.md)（硬性工作规则：诚实性红线 / Git 署名 / GPU 安全 / 必需环境变量）。
 
@@ -236,7 +236,7 @@ python scripts/m21_figures.py                    # -> figures/fig11_m21_capacity
 └── vllm-inference-lab/ # 本工作区
     ├── scripts/        # 各模块实验脚本 + 离线出图 + reproduce.py / check_invariants.py
     ├── config/         # repro_manifest.yaml（模块→命令/产物/日志/环境/不变量 的统一登记）
-    ├── notes/          # 逐模块源码学习笔记（含 evidence_index / m16 面试表达）
+    ├── notes/          # 逐模块源码学习笔记（含 evidence_index）
     ├── outputs/        # 实验输出（csv/json/jsonl；大件 raw/traces 走 gitignore、可复现）
     ├── figures/        # 核心图（由 CSV 离线生成）
     ├── logs/           # 实验日志、git 状态快照
