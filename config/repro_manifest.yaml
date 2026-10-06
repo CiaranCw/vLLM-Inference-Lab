@@ -607,9 +607,11 @@ modules:
         status: done
 
   m27:
-    title: Prefill–Decode 解耦 + NIXL KV Transfer（Stage K）—— 设计冻结，H20 未执行
-    # T/O + DESIGN READY；E/H NOT EXECUTED。承接 M24 中未做的 P-D 实验部分（M24 冻结计划不改）。
-    status: not_executed
+    title: Prefill–Decode 解耦 + NIXL KV Transfer（Stage K）—— 8×H20 同实例 Gate0→E4 已实测
+    # T+E+O+H COMPLETE（2026-10-05，ins-a8qac2ve）；E5 可选、经 Gate 8 跳过；P1 profiler 未执行。
+    # 独立 post-hoc 审计：M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION（notes/m27/audit/）。
+    # 单文件 >100MB 的 formal raw 不在 Git 中，身份见 notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv。
+    status: done
     requires_gpu: true
     requires_multi_gpu: true
     runbook: notes/m27/M27_H20_RUNBOOK.md
@@ -622,7 +624,7 @@ modules:
       - notes/m27/results.md
       - notes/m27/offline_package.md
       - notes/m27/model_artifact_manifest.md
-    readiness: T_O_DESIGN_READY
+    readiness: TEOH_COMPLETE_E5_SKIPPED
     frozen_config:
       # 唯一来源：scripts/m27_common.py FROZEN；notes/m27/M27_H20_PLAN.md 的冻结块与之逐键相等
       source_of_truth: scripts/m27_common.py
@@ -651,14 +653,14 @@ modules:
         outputs:
           - outputs/m27/configs/preflight_h20_formal.json
           - outputs/m27/configs/gpu_map_h20_formal.json
-        status: not_executed
+        status: done
       - id: transfer-test
         desc: 远端生成测试文件 + sha256，本地主动 pull 演练（T+0:10 内完成）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --transfer-test]
         requires_gpu: false
         creates_engine: false
         formal_only: true
-        status: not_executed
+        status: done
       - id: e0-correctness
         desc: Gate 1 —— 1P1D 正确性 / 无重算 / fail-closed 故障注入 + colocated 输出对照
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e0]
@@ -669,7 +671,7 @@ modules:
         outputs:
           - outputs/m27/raw/h20_formal_e0_pd_1p1d.jsonl
           - outputs/m27/raw/h20_formal_e0_colo1_mbt8192.jsonl
-        status: not_executed
+        status: done
       - id: e1-transfer
         desc: E1 KV transfer scaling（context 512–16384；NIXL 实测 bytes/xfer/post vs 理论值）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e1]
@@ -678,7 +680,7 @@ modules:
         creates_engine: true
         formal_only: true
         outputs: [outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl]
-        status: not_executed
+        status: done
       - id: e2-interference
         desc: E2 受控干扰（D 128/512 ignore_eos；在第 64 token 事件驱动注入 P∈{0,2048,8192,16384}）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e2]
@@ -691,7 +693,7 @@ modules:
           - outputs/m27/raw/h20_formal_e2_colo1_mbt4096.jsonl
           - outputs/m27/raw/h20_formal_e2_colo1_mbt8192.jsonl
           - outputs/m27/raw/h20_formal_e2_pd_1p1d.jsonl
-        status: not_executed
+        status: done
       - id: e3-calibration
         desc: E3 速率校准（colo2_mbt8192 上逐 shape 找 C_cal，冻结到 rates 文件）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e3cal]
@@ -700,7 +702,7 @@ modules:
         creates_engine: true
         formal_only: true
         outputs: [outputs/m27/configs/h20_formal_e3cal_rates.json]
-        status: not_executed
+        status: done
       - id: e3-online
         desc: E3 在线 Poisson（burstiness 1，3 seeds × 3 负载 × 4 shape × 5 arm，客户端精确分位数）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e3]
@@ -708,8 +710,8 @@ modules:
         requires_multi_gpu: true
         creates_engine: true
         formal_only: true
-        outputs: [outputs/m27/raw/h20_formal_e3_pd_1p1d.jsonl]
-        status: not_executed
+        outputs: [outputs/m27/raw/h20_formal_e3_pd_1p1d_proxy.jsonl]   # 请求级 raw >100MB，外部证据见 manifest
+        status: done
       - id: e4-calibration
         desc: E4 速率校准（colo4_mbt8192）；需 Gate 0 的 4 卡 NV 互联
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e4cal]
@@ -718,7 +720,7 @@ modules:
         creates_engine: true
         formal_only: true
         outputs: [outputs/m27/configs/h20_formal_e4cal_rates.json]
-        status: not_executed
+        status: done
       - id: e4-ratio
         desc: E4 P:D 比例（4 卡：colo4 vs 1P3D / 2P2D / 3P1D；不预设最优）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e4]
@@ -726,8 +728,8 @@ modules:
         requires_multi_gpu: true
         creates_engine: true
         formal_only: true
-        outputs: [outputs/m27/raw/h20_formal_e4_pd_2p2d.jsonl]
-        status: not_executed
+        outputs: [outputs/m27/raw/h20_formal_e4_pd_2p2d_proxy.jsonl]   # 请求级 raw >100MB，外部证据见 manifest
+        status: done
       - id: e5-ratio-8gpu
         desc: E5 可选 8 卡（2P6D / 4P4D / 6P2D）；仅当 Gate 8 判定 8 卡两两 NV 互联
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e5]
@@ -735,7 +737,7 @@ modules:
         requires_multi_gpu: true
         creates_engine: true
         formal_only: true
-        status: optional
+        status: skipped_optional   # Gate 8 跳过（时间预算），无 E5 数据
       - id: summarize
         desc: 离线汇总（E0 gate / E1 transfer / E2 interference+effect / E3–E5 online+effect）；缺 raw 打印 PENDING
         cmd: [python, scripts/m27_summarize.py, --tag, h20_formal]
@@ -748,14 +750,14 @@ modules:
           - outputs/m27/h20_formal_e2_effect.csv
           - outputs/m27/h20_formal_e3_online.csv
           - outputs/m27/h20_formal_e3_effect.csv
-        status: not_executed
+        status: done
       - id: trace-analyze
         desc: 服务日志证据汇总（KV load 失败 / compat / Traceback / KV layout）；缺日志打印 PENDING
         cmd: [python, scripts/m27_trace_analyze.py, --tag, h20_formal]
         requires_gpu: false
         creates_engine: false
         optional_outputs: [outputs/m27/h20_formal_log_evidence.json]
-        status: not_executed
+        status: done
       - id: figures
         desc: 由正式 CSV 离线出图；CSV 缺失时 PENDING 退出，不画伪图
         cmd: [python, scripts/m27_figures.py, --tag, h20_formal]
@@ -765,20 +767,27 @@ modules:
           - figures/fig16_m27_e1_transfer_h20_formal.png
           - figures/fig17_m27_e2_interference_h20_formal.png
           - figures/fig18_m27_e3_online_h20_formal.png
-        status: not_executed
+        status: done
       - id: invariants
-        desc: M27 不变量（静态项本机可 PASS；raw 相关项无数据时 PENDING）
+        desc: M27 不变量（静态项本机可 PASS；外部 raw 不在本地时相关项 PENDING）
         cmd: [python, scripts/check_invariants.py, --module, m27]
         requires_gpu: false
         creates_engine: false
-        status: implemented
+        status: done
+      - id: final-evidence-audit
+        desc: 离线重算 final evidence audit 73 项（post-hoc 补齐生成器；原 H20 文件不动）
+        cmd: [python, scripts/m27_final_evidence_audit.py]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs: [outputs/m27/final_evidence_audit_regenerated.json]
+        status: done
       - id: package
         desc: 打包 outputs/m27 + logs/m27 + 逐文件 SHA256SUMS + tar.gz.sha256（数据没带走 == 实验失败）
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --package]
         requires_gpu: false
         creates_engine: false
         formal_only: true
-        status: not_executed
+        status: done
 
     invariants:
       - m27_config_freeze
@@ -798,6 +807,9 @@ modules:
       - m27_only_variable
       - m27_gpu_assignment
       - m27_output_length
+      - m27_external_raw_manifest
+      - m27_external_raw_identity
+      - m27_final_evidence_audit_regenerable
       - m27_prompt_identity
       - m27_sample_count
       - m27_warmup_exclusion
@@ -810,7 +822,7 @@ modules:
       - m27_online_no_failed_requests_e3
 
     limitations:
-      - 本模块尚无任何 H20 数据；所有性能结论均为 NOT EXECUTED，不得引用
+      - 绝对值只适用于 8×H20 / Qwen2.5-7B bf16 / TP1 / eager / HND / ins-a8qac2ve；前一实例中途数据只作独立参考，不 pool
       - 「PD 更快 / tail ITL 更好」不是不变量；「无收益」是允许的正式结论
       - arm 顺序执行，时间漂移是伴随变量；enforce_eager 抬高 ITL 绝对值（CPU launch bound）
       - B（tuned colocated）比较不是单变量对照；A（mbt 8192 colo1 vs 1P1D）在 EngineArgs 上最接近单变量，但 GPU 数不同（1 vs 2）
@@ -822,13 +834,13 @@ modules:
 
     open_items:
       - id: h20-e-h-data
-        desc: H20 上 Gate 0 → Gate 1 → E1 → E2 → E3 → E4（E5 可选）全部未执行
-        status: not_executed
+        desc: H20 上 Gate 0 → Gate 1 → E1 → E2 → E3 → E4 已在同一新实例 ins-a8qac2ve 完成；E5 可选，经 Gate 8 跳过
+        status: done
       - id: ucx-transport-on-h20
         desc: >-
-          driver 535 + cuda-compat 13 下 UCX cuda_ipc / IB 选择未验证；
-          Gate 1 用 UCX_PROTO_INFO=y 记录实际传输层，非 cuda_ipc 时 STOP 并询问
-        status: not_executed
+          driver 535 + cuda-compat 13 下 UCX 实际传输层：当前实例 E0 D 侧 UCX_PROTO_INFO 显示
+          zero-copy cuda_ipc/cuda（logs/m27/h20_formal/e0_pd_1p1d_D1.log）
+        status: done
       - id: p1-profiler
         desc: 可选 P1 torch profiler（D 侧 KV load 与 decode 重叠证据）——未实现
         status: optional_todo

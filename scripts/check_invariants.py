@@ -2258,9 +2258,12 @@ M27_SCRIPTS = [
     "m27_summarize.py",
     "m27_trace_analyze.py",
     "m27_figures.py",
+    "m27_final_evidence_audit.py",
     "m27_preflight.sh",
 ]
 M27_PLAN = "notes/m27/M27_H20_PLAN.md"
+M27_RAW_MANIFEST = "notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv"
+M27_ARCHIVE_SHA256 = "fb1664ca9506efb75bb784ab19a8b65186c6eabedf69127805e8e72b29633ad6"
 M27_FREEZE_RE = re.compile(
     r"<!-- M27_FROZEN_CONFIG:BEGIN -->\s*```json\s*(\{.*?\})\s*```\s*<!-- M27_FROZEN_CONFIG:END -->",
     re.S,
@@ -2473,11 +2476,79 @@ def _m27_static(rep, C):
         rep.pending(M, "m27_manifest_not_runnable", "无 PyYAML，跳过 manifest 核对")
 
 
+def _m27_external_raw(rep):
+    """>100MB 的 formal raw 不在 Git 中：manifest 与 .gitignore 必须一致；本地存在时逐字节核对，缺失记 PENDING。"""
+    M = "m27"
+    path = _p(M27_RAW_MANIFEST)
+    rows = []
+    if os.path.exists(path):
+        with open(path, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f, delimiter="\t"))
+    ignored = set()
+    if os.path.exists(_p(".gitignore")):
+        with open(_p(".gitignore"), encoding="utf-8") as f:
+            ignored = {line.strip() for line in f}
+    bad = [r.get("relative_path") for r in rows
+           if r.get("archive_sha256") != M27_ARCHIVE_SHA256
+           or r.get("repository_policy") != "external_evidence_not_git_tracked"
+           or int(r.get("size_bytes") or 0) <= 100 * 2**20
+           or not re.fullmatch(r"[0-9a-f]{64}", r.get("sha256") or "")
+           or r.get("relative_path") not in ignored]
+    rep.check(M, "m27_external_raw_manifest", len(rows) == 11 and not bad,
+              f"{M27_RAW_MANIFEST} 缺失/条目数≠11/字段或 .gitignore 精确路径不符：{bad[:4]}",
+              f"{len(rows)} 个 >100MB raw：archive sha256 一致、policy=external_evidence_not_git_tracked、"
+              ".gitignore 逐条精确列出")
+    absent, mismatch = [], []
+    for r in rows:
+        fp = _p(r["relative_path"])
+        if not os.path.exists(fp):
+            absent.append(r["relative_path"])
+            continue
+        h = hashlib.sha256()
+        with open(fp, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 22), b""):
+                h.update(chunk)
+        if os.path.getsize(fp) != int(r["size_bytes"]) or h.hexdigest() != r["sha256"]:
+            mismatch.append(r["relative_path"])
+    if mismatch or not absent:
+        rep.check(M, "m27_external_raw_identity", bool(rows) and not mismatch,
+                  f"本地外部 raw 与 manifest 的 size/sha256 不符：{mismatch[:4]}",
+                  f"{len(rows)} 个外部 raw 本地存在且 size/sha256 与 manifest 逐个一致")
+    else:
+        rep.pending(M, "m27_external_raw_identity",
+                    f"{len(absent)} 个外部 raw 不在本地（完整字节见 archive {M27_ARCHIVE_SHA256[:12]}…）；"
+                    "依赖它们的 E3/E4 检查未运行")
+
+
+def _m27_final_evidence_audit(rep):
+    M = "m27"
+    try:
+        import m27_final_evidence_audit as G
+        out = G.build()
+    except ImportError as e:
+        rep.pending(M, "m27_final_evidence_audit_regenerable", f"缺依赖，无法重算：{e}")
+        return
+    if out["status"] == "INCOMPLETE":
+        rep.pending(M, "m27_final_evidence_audit_regenerable",
+                    f"{out['n_unavailable']} 项依赖的外部 raw 不在本地，无法完整重算 final evidence audit")
+        return
+    on_disk = load_json(G.OUTPUT) or {}
+    out = json.loads(json.dumps(out))
+    rep.check(M, "m27_final_evidence_audit_regenerable",
+              out["status"] == "PASS" and out["original"]["check_names_equal"]
+              and out["original"]["all_original_true"] and on_disk == out,
+              f"status={out['status']} {out['n_pass']}/{out['n_checks']}；"
+              f"原 73 项同名={out['original']['check_names_equal']}；落盘一致={on_disk == out}",
+              f"离线重算 {out['n_pass']}/{out['n_checks']} PASS，检查项与 H20 原文件同名同序，"
+              f"与 {G.OUTPUT} 逐键一致")
+
+
 def check_m27(rep):
     """M27 P-D 解耦 + NIXL 不变量。无 H20 raw 时 PENDING；「PD 更快」不是不变量。"""
     M = "m27"
     C = _m27_common()
     _m27_static(rep, C)
+    _m27_external_raw(rep)
     tag = M27_TAG
     R = _m27_raw(tag)
 
@@ -2761,6 +2832,7 @@ def check_m27(rep):
         got = {(r["arm"], int(r["p_len"])): int(r["n"]) for r in e2csv}
         rep.check(M, "m27_e2_csv_n_matches_jsonl", got == want, "E2 CSV n != jsonl measure∧success",
                   "E2 CSV n == jsonl measure∧success")
+    _m27_final_evidence_audit(rep)
 
 
 CHECKS = {
