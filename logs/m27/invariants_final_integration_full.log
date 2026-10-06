@@ -1,0 +1,199 @@
+# cmd: env VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 .venv/bin/python scripts/check_invariants.py --verbose
+# env: VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0; python=Python 3.12.13
+# start_utc: 2026-10-06T11:39:47Z
+# git HEAD: c9e317f5b71d3fdb84a133219315f59e5700842a（工作树另有本轮未提交的 N4 文档改动；11 个外部 raw 已从 archive 放回并逐个核对 sha256）
+# host: local WSL2，无 GPU 实验（仅离线检查）
+[  ok  ] env              env[VLLM_USE_FLASHINFER_SAMPLER]                   VLLM_USE_FLASHINFER_SAMPLER=0
+[  ok  ] env              env[VLLM_ENABLE_V1_MULTIPROCESSING]                VLLM_ENABLE_V1_MULTIPROCESSING=0
+[  ok  ] env              env[VLLM_LAB_M9_COALESCE]                          VLLM_LAB_M9_COALESCE 未设置或为 0
+[  ok  ] env              env[VLLM_LAB_TRACE]                                VLLM_LAB_TRACE 未设置或为 0
+[  ok  ] m17/E1           no_failed_measure_sample                         
+[  ok  ] m17/E1           e1_i1_hit_alignment                                60 个 hot 样本全部对齐
+[  ok  ] m17/E1           e1_i2_hit_conservation                             180/180 个样本满足
+[  ok  ] m17/E1           e1_i3_off_no_hit                                   60 个 off 样本 hit 恒为 0
+[  ok  ] m17/E1           e1_hot_fields                                      60 个 hot 样本字段全部正确
+[  ok  ] m17/E1           e1_cold_off_fields                                 120 个 cold/off 样本字段全部正确
+[  ok  ] m17/E1           e1_sample_counts                                   12 组 × 15 measure 样本
+[  ok  ] m17/E1           e1_warmup_excluded                                 warmup 60 条已落盘且不进汇总（measure 180/240）
+[  ok  ] m17/E3-single    no_failed_measure_sample                         
+[  ok  ] m17/E3-single    e3_single_chunk_conservation                       75 个样本 Σchunks 恒为 2048
+[  ok  ] m17/E3-single    e3_single_chunk_within_budget                    
+[  ok  ] m17/E3-single    e3_single_step_count_matches                     
+[  ok  ] m17/E3-single    e3_single_step_counts                              512→4、1024→2、2048→1、4096→1 全部符合
+[  ok  ] m17/E3-single    e3_single_sample_counts                            5 组 × 15 measure 样本
+[  ok  ] m17/E3-conc      no_failed_measure_sample                         
+[  ok  ] m17/E3-conc      e3_conc_sample_count[chunked]                      chunked 侧 15 个 measure 样本
+[  ok  ] m17/E3-conc      e3_conc_chunk_shape[chunked]                       chunked 侧长 prefill 恒为 [512, 512, 512, 512]
+[  ok  ] m17/E3-conc      e3_conc_chunk_conservation[chunked]              
+[  ok  ] m17/E3-conc      e3_conc_itl_count_stable[chunked]                  chunked 侧各 repeat ITL 样本数恒为 {92}
+[  ok  ] m17/E3-conc      e3_conc_sample_count[nochunk]                      nochunk 侧 15 个 measure 样本
+[  ok  ] m17/E3-conc      e3_conc_chunk_shape[nochunk]                       nochunk 侧长 prefill 恒为 [2048]
+[  ok  ] m17/E3-conc      e3_conc_chunk_conservation[nochunk]              
+[  ok  ] m17/E3-conc      e3_conc_itl_count_stable[nochunk]                  nochunk 侧各 repeat ITL 样本数恒为 {92}
+[  ok  ] m17/E3-conc      e3_conc_itl_sample_consistency                     两侧 ITL 样本数相同（{92}）
+[  ok  ] m17/E3-correctness e3_correctness_pairs_exist                         9 对 case 成对
+[  ok  ] m17/E3-correctness e3_correctness_prompt_hash                       
+[  ok  ] m17/E3-correctness e3_correctness_output_token_ids                    9 对 case 的完整输出 token 序列逐一相同
+[  ok  ] m17/E3-correctness e3_correctness_output_hash                       
+[  ok  ] m17/E3-correctness e3_correctness_output_len                        
+[  ok  ] m17/E3-correctness e3_correctness_chunk_conservation                
+[  ok  ] m17/E3-correctness e3_correctness_sample_count[chunked]               chunked 侧 9 个 measure 样本
+[  ok  ] m17/E3-correctness e3_correctness_chunk_shape[chunked]              
+[  ok  ] m17/E3-correctness e3_correctness_sample_count[nochunk]               nochunk 侧 9 个 measure 样本
+[  ok  ] m17/E3-correctness e3_correctness_chunk_shape[nochunk]              
+[  ok  ] m17/I5-b         no_failed_measure_sample                         
+[  ok  ] m17/I5-b         i5b_output_len_exact                               180 个样本输出长度精确等于请求的 max_tokens
+[  ok  ] m17/I5-b         i5b_hot_fields                                     60 个 hot 样本字段全部正确
+[  ok  ] m17/I5-b         i5b_off_fields                                     60 个 off 样本字段全部正确
+[  ok  ] m17/I5-b         i5b_cold_hot_same_prefix                         
+[  ok  ] m17/I5-b         i5b_cold_hot_diff_suffix                         
+[  ok  ] m17/I5-b         i5b_off_hot_same_prompt                            60 组 off/hot prompt hash 完全相同
+[  ok  ] m17/I5-b         i5b_output_hash_present                          
+[  ok  ] m17/I5-b         i5b_latency_non_negative                         
+[  ok  ] m17/I5-b         i5b_tpot_definition                              
+[  ok  ] m17/I5-b         i5b_sample_counts                                  12 组 × 15 measure 样本
+[  ok  ] m17/CSV↔JSONL    sweep_csv_n_matches_jsonl                          12 行 n 全部等于 JSONL measure 样本数
+[  ok  ] m17/CSV↔JSONL    effect_csv_recomputable                            4 档的 median / 差值 / Bootstrap CI 均可由 JSONL 逐位重算
+[  ok  ] m17/CSV↔JSONL    chunked_prefill_csv_n_matches_jsonl                5 行 n 全部一致
+[  ok  ] m17/CSV↔JSONL    conc_csv_n_matches_jsonl                           2 行 n 全部一致
+[  ok  ] m17/文档溯源         e1_table_numbers_traceable                         E1 主表 4 行 × 8 个数字全部可由 CSV 重算
+[  ok  ] m17/文档溯源         e3_single_table_numbers_traceable                  E3-single 表 5 行全部可由 CSV 重算
+[  ok  ] m17/文档溯源         doc_key_numbers_present                            6 个由 CSV 算出的关键数字均出现在文档中
+[  ok  ] m17/文档溯源         coverage_note                                      覆盖：E1 主表 + E3-single 表的全部数字（反向）、E3-conc 与 E1 显著档的关键数字（正向）。**未覆盖**：§1.2 斜率、§5 对照表等正文推导值 —— 如实声明，勿当全覆盖
+[  ok  ] m18              m18_i1_dtype_frozen_bfloat16                       6 个配置的生效 dtype 全部为 torch.bfloat16（量化 checkpoint 声明 float16，已被显式覆盖）
+[  ok  ] m18              m18_i2_same_attention_backend                      全部一致：<unset:default>
+[  ok  ] m18              m18_i3_same_kv_cache_dtype                         全部一致：auto
+[  ok  ] m18              m18_i5a_w4a16_has_int32_packed_weights             Q1/Q2 均存在 int32 打包权重（Marlin repack 后的布局）
+[  ok  ] m18              m18_i5b_embed_lm_head_not_quantized                embed/lm_head 在三配置中字节数完全相同 → 未被量化，这解释了整体降幅达不到理论 75%
+[  ok  ] m18              m18_i6_kv_capacity_not_decreasing                  权重下降的配置，KV 容量均不减（显存预算守恒方向正确）
+[  ok  ] m18              m18_i7_measure_sample_count                        全部网格点均为 15 个 measure 样本（warmup 未写入 raw）
+[  ok  ] m18              m18_i8_all_samples_valid                           所有性能样本 valid=True（decode 每步 scheduled_tokens 与 running 数均符合预期）
+[  ok  ] m18              m18_i9_same_scored_tokens                          六个配置的评分 token 数均为 5364
+[  ok  ] m18              m18_weight_saving_record[0.5b](diagnostic)         整体权重 942→437 MiB（-53.6%），但**可量化部分** 683→177 MiB（-74.0%，接近 4bit 理论值）；差距来自未被量化的 embed/lm_head（260 MiB，占基线 28%）
+[  ok  ] m18              m18_weight_saving_record[1.5b](diagnostic)         整体权重 2944→1095 MiB（-62.8%），但**可量化部分** 2499→649 MiB（-74.0%，接近 4bit 理论值）；差距来自未被量化的 embed/lm_head（445 MiB，占基线 15%）
+[  ok  ] m19/samples      no_failed_measure_sample                         
+[  ok  ] m19/samples      m19_output_len_exact                               180 个样本的每个请求都恰好产出 128 个 token
+[  ok  ] m19/samples      m19_baseline_no_spec_counts                        90 个 baseline 样本的 proposed/accepted/drafts 恒为 0
+[  ok  ] m19/samples      m19_baseline_one_token_per_step                    baseline 每个 engine step 恰好产出 1 个 token（steps/token≈1.0）
+[  ok  ] m19/samples      m19_accepted_within_proposed                       90 个 ngram 样本满足 0 <= accepted <= proposed
+[  ok  ] m19/samples      m19_acceptance_rate_range                        
+[  ok  ] m19/samples      m19_proposed_equals_drafts_times_k                 proposed 恒等于 num_drafts × k（k=3）
+[  ok  ] m19/samples      m19_per_pos_conservation                           逐位置 accepted/draft 之和 == 总 accepted/proposed
+[  ok  ] m19/samples      m19_ngram_cfg_effective                            生效配置 = method=ngram / k=3 / prompt_lookup 3..5（从引擎读回，而非「我传了什么」）
+[  ok  ] m19/samples      m19_single_variable                                两侧仅 speculative_config 不同，其余生效配置逐字相同
+[  ok  ] m19/samples      m19_same_prompt_both_sides                         90 组两侧 prompt hash 完全相同
+[  ok  ] m19/samples      m19_sample_counts                                  12 组 × 15 measure 样本
+[  ok  ] m19/samples      m19_warmup_excluded                                warmup 60 条已落盘且不进汇总（measure 180/240）
+[  ok  ] m19/CSV↔JSONL    m19_summary_n_matches_jsonl                        12 行 n 全部一致
+[  ok  ] m19/CSV↔JSONL    m19_effect_csv_recomputable                        6 组的 median / 差值 / Bootstrap CI 均可由 JSONL 逐位重算
+[  ok  ] m19/输出一致性        m19_equiv_same_length                              126 个请求两侧输出长度全部一致
+[  ok  ] m19/输出一致性        m19_equiv_no_divergence_at_zero                    没有任何请求在第 0 个 token 分歧
+[  ok  ] m19/输出一致性        m19_within_config_reproducible                     所有配置在同一配置内跨 repeat 输出完全一致（排除随机性解释）
+[  ok  ] m19/输出一致性        m19_equiv_record                                   baseline↔ngram 逐 token 完全一致 111/126；正交对照中 **baseline 自身**仅换 batch 组成就出现分歧的配置有 1 个 → 与 batch-shape numerical sensitivity 一致；现有证据未发现明确 Spec Decode correctness bug（详见 notes/m19/results.md §5；非严格逐例排除）
+[  ok  ] m21              m21_scripts_compile                                12 个 M21 正式脚本全部 py_compile 通过
+[  ok  ] m21              m21_e3_sample_count                                21 条 measure 记录
+[  ok  ] m21              m21_e2_server_client_conservation                  21 个窗口的 I1/I2/I3 全部精确相等
+[  ok  ] m21              m21_i4_running_le_max_num_seqs                     全程 running ≤ 64
+[  ok  ] m21              m21_i5_kv_usage_in_range                           kv_cache_usage_perc ∈ [0,1]
+[  ok  ] m21              m21_i6_counter_monotonic                           所有 counter 增量非负
+[  ok  ] m21              m21_i7_scrape_coverage                             每个窗口的抓取覆盖率 ≥ 0.8
+[  ok  ] m21              m21_e4_scenarios                                   E4 场景齐全：['B1_cpu_submit', 'B2_gpu_compute', 'B3_kv_pressure', 'B3b_kv_long_output', 'B4_queue']
+[  ok  ] m21              m21_e4_preemption_constructed                      抢占已构造成功：B3b_kv_long_output_util0.12，290 次
+[  ok  ] m21              m21_e4_supply_side_negative(diagnostic)            只压显存预算（B3，Shape A）到 util=0.10 仍只到 0.59 且零抢占 —— 如实记为负结果，抢占是靠需求侧（B3b 长输出）才造出来的
+[  ok  ] m21              m21_e5_closed_loop_semantics                       E5 已分列：L=X·R=41.4 与 N=X·(R+Z)=[161.4, 401.4, 761.4]
+[  ok  ] m21              m21_e6_ttft_unit_consistency                       服务端 19.57s vs 客户端 17.37s，比值 1.13（同量级，单位一致）
+[  ok  ] m21              m21_e6_all_alert_rules_fired                       7 条规则全部真实 firing 过：['GPUMemoryNearFull', 'HostExporterTargetDown', 'VLLMKVCacheNearFull', 'VLLMPreemptionHappening', 'VLLMQueueBacklog', 'VLLMServerDown', 'VLLMTTFTP99AboveSLO']
+[  ok  ] m21              m21_e6_drills_pass                                 4 个演练全部 PASS
+[  ok  ] m22              m22_no_failed_measure_sample                     
+[  ok  ] m22              m22_single_variable                                3 档 TP 除并行度外生效配置逐字相同
+[  ok  ] m22              m22_executor_backend_note                          executor backend 随 TP 变化（{1: 'uni', 2: 'mp', 4: 'mp'}）——这是 TP 的固有伴随变量，无法消除，结论中必须声明
+[  ok  ] m22              m22_tp_effective[1]                              
+[  ok  ] m22              m22_async_sched_off[1]                           
+[  ok  ] m22              m22_tp_effective[2]                              
+[  ok  ] m22              m22_async_sched_off[2]                           
+[  ok  ] m22              m22_tp_effective[4]                              
+[  ok  ] m22              m22_async_sched_off[4]                           
+[  ok  ] m22              m22_d2_output_len_exact                            180 个 D2 样本每请求输出长度精确
+[  ok  ] m22              m22_d2_steady_batch_stable                         180 个 D2 样本稳态窗口内 batch 恒定（已排除 tail effect）
+[  ok  ] m22              m22_d2_enough_steady_steps                       
+[  ok  ] m22              m22_scheduler_introspection                        逐 step scheduler 内省在所有 TP 档均可用
+[  ok  ] m22              m22_d3_prompt_within_limit                       
+[  ok  ] m22              m22_sample_counts_uniform                          D2 共 12 组，每组 {15} 个 measure 样本
+[  ok  ] m22              m22_warmup_excluded                                warmup 105 条已落盘且不进汇总
+[  ok  ] m22              m22_d1_all_ranks_reported                          3 档 TP 的 per-rank 显存/KV 均已采到（collective_rpc）
+[  ok  ] m22              m22_memory_observation(expected, not invariant)    每卡权重是否≈1/k、KV 容量是否随 TP 上升，属**预期观察**而非不变量：[{'tp': 1, 'weight_MiB_per_rank': [14632.7], 'kv_MiB_per_rank': [66790.5], 'kv_heads_replicated': False, 'weight_ratio_vs_tp1': 1.0, 'ideal_ratio': 1.0}, {'tp': 2, 'weight_MiB_per_rank': [7327.6, 7327.6], 'kv_MiB_per_rank': [74021.6, 74021.6], 'kv_heads_replicated': False, 'weight_ratio_vs_tp1': 0.5008, 'ideal_ratio': 0.5}, {'tp': 4, 'weight_MiB_per_rank': [3720.5, 3720.5, 3720.5, 3720.5], 'kv_MiB_per_rank': [77727.9, 77727.9, 77727.9, 77727.9], 'kv_heads_replicated': False, 'weight_ratio_vs_tp1': 0.2543, 'ideal_ratio': 0.25}]。若偏离 1/k，须用 embedding/lm_head 是否切分、KV head 复制（config/model.py:1259-1270）等结构事实解释，**不得判为实验失败**
+[  ok  ] m22              m22_consistency_same_length                        120 组跨 TP 输出长度一致
+[  ok  ] m22              m22_consistency_same_prompt                      
+[  ok  ] m22              m22_consistency_record(diagnostic, not pass/fail)  跨 TP 输出逐 token 完全一致 60/120。TP 改变 GEMM 切分与归约顺序，有限精度下贪心 argmax 可能翻转（M5/M19 已有同类先例），故**不一致本身不判 FAIL**；但若出现在第 0 个 token 或长度不符，需升级为「需要调查」
+[  ok  ] m22              m22_level_note                                     当前已采集 TP 档：[1, 2, 4]。**只有真实跑过的档位可标 E/H**；PP/DP/EP/CP/P-D 本轮未做，仍为 ⬜
+[  ok  ] m23              m23_scripts_compile                                7 个 M23 脚本全部 py_compile 通过
+[  ok  ] m23              m23_consistency_raw[V-E]                           V-E 6/6 非空
+[  ok  ] m23              m23_consistency_raw[V-O]                           V-O 6/6 非空
+[  ok  ] m23              m23_consistency_raw[T-E]                           T-E 6/6 非空
+[  ok  ] m23              m23_consistency_raw[T-O]                           T-O 6/6 非空
+[  ok  ] m23              m23_functional_sanity_pass                         无崩溃/空输出/超长
+[  ok  ] m23              m23_mismatch_not_correctness_failure               numerical divergence, NOT correctness failure
+[  ok  ] m23              m23_cross_engine_pairs_only_same_lane              仅 T-E vs V-E、T-O vs V-O
+[  ok  ] m23              m23_no_cross_lane_engine_speedup_in_artifact       交叉 lane 未进入正式对照
+[  ok  ] m23              m23_off_lane_exact_2_of_6                          2/6
+[  ok  ] m23              m23_on_lane_exact_1_of_6                           1/6
+[  ok  ] m23              m23_trt_eos_early_stop_is_prefix                   T-E prompt4 = 45 token，且是 V-E 的前缀
+[  ok  ] m23              m23_vo_ve_matches_vctr_preflight                   两侧都是 1/6，与 V-ctr preflight 一致
+[  ok  ] m23              m23_bench_four_groups                              四组性能汇总齐全
+[  ok  ] m23              m23_shapeA_out_len_128                             四组 raw+csv 均为 out_len_all_equal=True（330 条 × 128 token）
+[  ok  ] m23              m23_results_doc_numbers                            一致性数字与比较纪律已写入 results.md
+[  ok  ] m24              m24_scripts_present                                M24 脚本齐全且 py_compile 通过
+[  ok  ] m24              m24_plan_frozen                                    H20 计划已冻结
+[  ok  ] m24              m24_single_variable_dcp                            2 档除 DCP 外生效配置相同
+[  ok  ] m24              m24_dcp_effective[1]                             
+[  ok  ] m24              m24_tp_frozen[1]                                 
+[  ok  ] m24              m24_pcp_off[1]                                   
+[  ok  ] m24              m24_dcp_effective[2]                             
+[  ok  ] m24              m24_tp_frozen[2]                                 
+[  ok  ] m24              m24_pcp_off[2]                                   
+[  ok  ] m24              m24_gqa_divisible[2]                             
+[  ok  ] m24              m24_d2_output_len_exact                            180 个 D2 measure 输出长度精确
+[  ok  ] m24              m24_d2_steady_batch_stable                         180 个 D2 稳态 batch 恒定
+[  ok  ] m24              m24_csv_n_matches_jsonl                            decode CSV 与 jsonl measure n 一致
+[  ok  ] m27              m27_scripts_present                                M27 脚本齐全且 py_compile 通过
+[  ok  ] m27              m27_config_freeze                                  计划文档冻结块 == m27_common.FROZEN（逐键相等）
+[  ok  ] m27              m27_frozen_constraints                             TP1/eager/APC off/async off/chunked ON/bs16/mml32768/max_prompt16384/fail-policy；warmup≥5 measure≥15
+[  ok  ] m27              m27_kv_bytes_per_token                             2×28×4×128×2 = 57344 B/token；整 block 向上取整
+[  ok  ] m27              m27_calibration_rate_window                        30s Poisson 到达窗口 offered 与 delivered 同分母；wall 吞吐另报
+[  ok  ] m27              m27_warmup_schedule_bounded                        warmup 仅生成 16 个且保留 Poisson seed/key/shape，正式 schedule 不变
+[  ok  ] m27              m27_model_identity                                 identity manifest sha256 == FROZEN；15 个文件（4 分片 + index + config/tokenizer）；内容与 HF Qwen/Qwen2.5-7B-Instruct@a09a3545 一致
+[  ok  ] m27              m27_kv_theory_cross_m22                            M22 H20 TP1 引擎实测：70034921575 B → 1221312 tokens，与 57344 B/token 整 block 推算一致
+[  ok  ] m27              m27_arm_construction                               15 个 arm：GPU/HTTP/side-channel 端口唯一，角色与 kv_role 对应
+[  ok  ] m27              m27_m24_plan_not_mutated                           M24 冻结计划未被写入 M27 内容
+[  ok  ] m27              m27_manifest_not_runnable                          m27 status=done；9 个 GPU 步骤均 formal_only 且非 runnable
+[  ok  ] m27              m27_external_raw_manifest                          11 个 >100MB raw：archive sha256 一致、policy=external_evidence_not_git_tracked、.gitignore 逐条精确列出
+[  ok  ] m27              m27_external_raw_identity                          11 个外部 raw 本地存在且 size/sha256 与 manifest 逐个一致
+[  ok  ] m27              m27_preflight_pass                                 Gate 0 PASS @ TENCENT64.site；gpu_ids=[0, 1, 2, 3, 4, 5, 6, 7]
+[  ok  ] m27              m27_raw_schema                                     228573 行 schema=m27.v1、tag/experiment/arm 与文件名一致
+[  ok  ] m27              m27_upstream_connection_policy                     全部正式 arm 的 proxy 上游均 force_close（避免复用已断开的长连接）
+[  ok  ] m27              m27_arm_complete                                   18 个 (exp, arm) 均有 arm_done
+[  ok  ] m27              m27_effective_config_readback                      每个 (exp, arm) 启动回读：server_info + 日志双来源 == 请求
+[  ok  ] m27              m27_common_engine_args                             所有 arm / 实例除 max_num_batched_tokens 与 kv_transfer 角色外生效配置逐键相同
+[  ok  ] m27              m27_only_variable                                  PD 的 mbt=8192；colo 的 mbt=arm 名；P=kv_producer / D=kv_consumer / colo=无 connector
+[  ok  ] m27              m27_gpu_assignment                                 每个 arm 的 GPU ⊆ gpu_map [0, 1, 2, 3, 4, 5, 6, 7] 且 GPU/端口唯一
+[  ok  ] m27              m27_output_length                                  成功请求：客户端逐 chunk token 数 == 服务端 usage.completion_tokens；prompt_len == usage.prompt_tokens
+[  ok  ] m27              m27_prompt_identity                                60074 个 request key 在所有 arm 上 prompt sha256 相同，且与服务端回显一致
+[  ok  ] m27              m27_sample_count                                   E0 每 arm 5 measure；E1/E2 每点 15 measure，全部 success（E2 含 overlap_valid）
+[  ok  ] m27              m27_warmup_exclusion                               warmup 单独标 phase（E0 3 / E1–E2 5），汇总只用 measure
+[  ok  ] m27              m27_transfer_success                               PD：D external_kv_transfer == prompt_len、D local_compute == 0、P local_compute == prompt_len、nixl_failed == 0（metrics 稳定后读取）
+[  ok  ] m27              m27_theoretical_kv_metadata                        E1 每样本同时记录理论 bytes（token/block 口径）与 NIXL 实测 bytes（二者不要求相等）
+[  ok  ] m27              m27_lifecycle_attempt_boundary                     归档失败尝试不加入当前 raw 的日志判定
+[  ok  ] m27              m27_no_failures_log                                当前正式 raw 对应生命周期的服务日志：无 KV load failure、compat mismatch、Traceback；D 有 compat pass
+[  ok  ] m27              m27_fail_closed_probe                              丢弃 kv_transfer_params → proxy 502，D 未收到请求（prompt_tokens Δ=0）
+[  ok  ] m27              m27_paired_keys_e2                                 E2 4 个 arm 的 (p_len, idx) 完全配对
+[  ok  ] m27              m27_paired_schedules_e3                            e3：36 个 (shape, seed, load) 在 5 个 arm 上 schedule sha256 相同，速率文件 sha 一致
+[  ok  ] m27              m27_online_no_failed_requests_e3                   e3 全部 run 的 n_fail == 0
+[  ok  ] m27              m27_paired_schedules_e4                            e4：27 个 (shape, seed, load) 在 4 个 arm 上 schedule sha256 相同，速率文件 sha 一致
+[  ok  ] m27              m27_online_no_failed_requests_e4                   e4 全部 run 的 n_fail == 0
+[  ok  ] m27              m27_e1_csv_n_matches_jsonl                         E1 CSV n == jsonl measure∧success
+[  ok  ] m27              m27_e2_csv_n_matches_jsonl                         E2 CSV n == jsonl measure∧success
+[  ok  ] m27              m27_final_evidence_audit_regenerable               离线重算 73/73 PASS，检查项与 H20 原文件同名同序，与 outputs/m27/final_evidence_audit_regenerated.json 逐键一致
+
+合计：190 PASS / 0 FAIL / 0 PENDING（模块：m0, m17, m18, m19, m21, m22, m23, m24, m27）
+# exit_code: 0
+# end_utc: 2026-10-06T11:40:24Z

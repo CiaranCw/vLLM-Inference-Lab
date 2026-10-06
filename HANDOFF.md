@@ -1,6 +1,6 @@
 # HANDOFF.md —— 项目交接文档（交由 Cursor 继续）
 
-> **2026-10-05 M27 更新**：阶段 K 的 M27 已在新实例 `ins-a8qac2ve`（与上一台碰巧同 hostname `TENCENT64.site`）完成 fresh Gate0→E4；`M27_E/H = COMPLETE`，E5 经 Gate8 可选跳过。RQ1–RQ4、负结果、恢复提交、全链审计和同实例 raw 见 [`notes/m27/results.md`](notes/m27/results.md) 与 [`notes/m27/execution_record.md`](notes/m27/execution_record.md)。下文早期交接描述 M27 未执行仅指当时的历史状态，不覆盖本次结论；M24 冻结计划不改。
+> **2026-10-06 M27 当前状态**：阶段 K 的 M27 **COMPLETE**——新实例 `ins-a8qac2ve`（与上一台碰巧同 hostname `TENCENT64.site`）完成 fresh Gate0→E4，E0–E4 COMPLETE；E5 经 Gate8 可选跳过（SKIPPED），P1 profiler NOT RUN。独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，文档修正已闭环（[`notes/m27/FINAL_CLOSURE_ADDENDUM.md`](notes/m27/FINAL_CLOSURE_ADDENDUM.md)）。H20 原提交 `884503dc` / `c4db4561` 已规范化重放为 CiaranCw 提交，对应关系见 [`notes/m27/H20_COMMIT_PROVENANCE.md`](notes/m27/H20_COMMIT_PROVENANCE.md)；11 个 >100MB raw 不在 Git 中，身份见 [`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`](notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv)。RQ1–RQ4、负结果和计费见 [`notes/m27/results.md`](notes/m27/results.md) 与 [`notes/m27/execution_record.md`](notes/m27/execution_record.md)。下文早期交接中「M27 未执行 / 下一步上 H20」都是当时的历史状态，不代表当前；M24 冻结计划不改。
 
 > **交接时间**：2026-08-06　**交接自**：Claude Code　**交接至**：Cursor
 > **仓库**：`/home/ciaran/projects/vllm-inference-lab` → `github.com/CiaranCw/vLLM-Inference-Lab`
@@ -57,7 +57,7 @@
 | M24 | CP / Ring Attention / P-D 分离 | ✅/⬜ | **T + DCP E+O+H COMPLETE**（4×H20，`notes/m24/results.md`）；**Ring / P-D 未做** |
 | M25 | 压缩（蒸馏/剪枝/低秩） | ✅ | **T COMPLETE**（`notes/m25/compression.md`）；本轮明确不做 E |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
-| **M27** | 阶段 K · P-D 分离 + NIXL KV 传输（M24 P-D 部分转入这里） | ✅/⬜ | **T/O + DESIGN READY（冻结 v1）+ 实现就绪；E/H NOT EXECUTED**，没有性能数字；见 `notes/m27/README.md` |
+| **M27** | 阶段 K · P-D 分离 + NIXL KV 传输（M24 P-D 部分转入这里） | ✅ | **T+E+O+H COMPLETE**（8×H20，E0–E4；E5 可选跳过、P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION）；见 `notes/m27/README.md` |
 
 > 每个模块的完整定义（要做什么 / 记什么指标 / 产出什么文件 / 硬件门控）都在 [`ROADMAP.md`](ROADMAP.md) 对应小节，**动手前务必读该小节**，不要凭本表的一句话概括就开工。
 
@@ -156,7 +156,7 @@ larger batch/model knee；compiled×Spec；small draft model；EAGLE/MTP/Medusa�
 
 ## 5. 下一步做什么（建议先和所有者确认）
 
-> **2026-10-03 更新（当前下一步）**
+> **2026-10-03 更新（历史：当时的下一步，已由 2026-10-05 的 H20 执行完成，见文首）**
 > - **M27（阶段 K · P-D 分离 + NIXL）= T/O + DESIGN READY，E/H NOT EXECUTED**。下一步：**H20 M27 Gate 0 / E0**，按 [`notes/m27/M27_H20_RUNBOOK.md`](notes/m27/M27_H20_RUNBOOK.md) 执行（先 preflight，任一 STOP 条件就停下询问）。
 > - 上机资源分三部分（见 [`notes/m27/offline_package.md`](notes/m27/offline_package.md) §3）：code = pre-H20 anchor commit（未 push）；
 >   wheelhouse = `~/m27_offline/wheelhouse/`（NIXL，sha256 已核对）；model = 7B 身份由 `notes/m27/model_artifact/qwen2.5-7b-instruct.sha256` 冻结，

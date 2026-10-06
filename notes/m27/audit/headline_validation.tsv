@@ -1,0 +1,78 @@
+claim	report_value	recomputed_value	tolerance	source_file	verdict
+E0 PD measure success	5/5	5/5	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E0 D external KV tokens	10240	10240	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E0 D local compute tokens	0	0	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E0 NIXL transfers / failed	5 / 0	5 / 0	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E0 fault probe fail-closed HTTP	502	502	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E0 fault probe D prompt delta	0	0	exact	outputs/m27/raw/h20_formal_e0_*.jsonl + metrics deltas (independent recompute)	PASS
+E1 ctx512 NIXL bytes == 57344*L	29360128	29360128 (min 29360128, max 29360128)	exact	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx512 xfer median ms	6.914	6.914	0.0005	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx512 effective GB/s median	4.25	4.2465	0.005	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx2048 NIXL bytes == 57344*L	117440512	117440512 (min 117440512, max 117440512)	exact	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx4096 NIXL bytes == 57344*L	234881024	234881024 (min 234881024, max 234881024)	exact	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx8192 NIXL bytes == 57344*L	469762048	469762048 (min 469762048, max 469762048)	exact	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx16384 NIXL bytes == 57344*L	939524096	939524096 (min 939524096, max 939524096)	exact	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx16384 xfer median ms	208.242	208.242	0.0005	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E1 ctx16384 effective GB/s median	4.51	4.5117	0.005	outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl	PASS
+E2 rows total / measure / overlap_valid	320 / 240 / 320	320 / 240 / 320	exact	outputs/m27/raw/h20_formal_e2_*.jsonl	PASS
+E2 8K PD max-stall median ms	105.05	105.0536	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 8K colo1_mbt8192 max-stall median ms	886.03	886.0316	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 8K colo-PD median diff ms	780.98	780.9780	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 8K CI95 lo	780.51	780.5102	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 8K CI95 hi	781.36	781.3615	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 p=0 PD median ms	13.43	13.4267	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 p=0 colo median ms	11.84	11.8372	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 p=0 colo-PD diff ms	-1.59	-1.5895	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 p=0 CI95 lo	-1.95	-1.9483	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 p=0 CI95 hi	-0.93	-0.9255	0.005	outputs/m27/raw/h20_formal_e2_*.jsonl (median-diff bootstrap, random.Random(0), 10000)	PASS
+E2 D tokens after injection >= 16 (min across arms)	>=16	250	rule	outputs/m27/raw/h20_formal_e2_*.jsonl	PASS
+E3 balanced 0.9 pd_1p1d ITL P99	102.5	102.5129	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 balanced 0.9 pd_1p1d TTFT P99	28728	28728.1063	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 balanced 0.9 pd_1p1d achieved req/s	4.7	4.7386	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 balanced 0.9 colo2_mbt8192 ITL P99	424.6	424.557	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 balanced 0.9 colo2_mbt8192 TTFT P99	1197	1196.8425	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 balanced 0.9 colo2_mbt8192 achieved req/s	6.9	6.862	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 p_heavy 0.9 pd_1p1d ITL P99	12.5	12.4653	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 p_heavy 0.9 pd_1p1d TTFT P99	38764	38763.555	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 p_heavy 0.9 colo2_mbt8192 ITL P99	893.3	893.336	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 p_heavy 0.9 colo2_mbt8192 TTFT P99	3708	3707.7136	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 d_heavy 0.9 pd_1p1d ITL P99	32.7	32.6904	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 d_heavy 0.9 pd_1p1d TTFT P99	252	252.3952	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 d_heavy 0.9 colo2_mbt8192 ITL P99	38.0	38.05	0.05	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E3 d_heavy 0.9 colo2_mbt8192 TTFT P99	82	82.1757	0.5	outputs/m27/h20_formal_e3_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 colo4_mbt8192 TTFT P99	151	150.7852	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 colo4_mbt8192 ITL P99	78	77.9875	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_1p3d TTFT P99	26636	26635.7776	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_1p3d ITL P99	53	53.0062	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_2p2d TTFT P99	15133	15133.2156	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_2p2d ITL P99	78	78.1728	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_3p1d TTFT P99	93690	93689.4967	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 d_heavy 0.9 pd_3p1d ITL P99	47	47.4547	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 colo4_mbt8192 TTFT P99	3254	3254.3469	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 colo4_mbt8192 ITL P99	897	896.701	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_1p3d TTFT P99	134208	134208.3054	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_1p3d ITL P99	12	12.3451	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_2p2d TTFT P99	38313	38312.9485	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_2p2d ITL P99	13	13.1846	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_3p1d TTFT P99	7191	7190.7064	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 p_heavy 0.9 pd_3p1d ITL P99	110	110.1418	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 colo4_mbt8192 TTFT P99	5148	5148.4393	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 colo4_mbt8192 ITL P99	906	906.0656	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_1p3d TTFT P99	151333	151333.004	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_1p3d ITL P99	15	15.2859	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_2p2d TTFT P99	49985	49985.2527	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_2p2d ITL P99	35	35.2182	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_3p1d TTFT P99	17620	17619.6684	1.0	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+E4 mixture 0.9 pd_3p1d ITL P99	159	158.5141	0.5	outputs/m27/h20_formal_e4_online.csv (independent raw recompute: median of 3 per-seed P99)	PASS
+e3 balanced 0.9 itl_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI lo	320.90924680233	320.9092	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 balanced 0.9 itl_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI hi	322.27396592497826	322.274	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 balanced 0.9 ttft_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI lo	-27556.433018296957	-27556.433	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 balanced 0.9 ttft_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI hi	-27067.79221072793	-27067.7922	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 p_heavy 0.9 itl_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI lo	880.205400288105	880.2054	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 p_heavy 0.9 itl_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI hi	880.9748440980911	880.9748	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 p_heavy 0.9 ttft_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI lo	-36164.29662331939	-36164.2966	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e3 p_heavy 0.9 ttft_p99 colo2_mbt8192-pd_1p1d cluster-bootstrap CI hi	-34725.37833079696	-34725.3783	1e-06	outputs/m27/h20_formal_e3_effect.csv (independent bootstrap rerun)	PASS
+e4 p_heavy 0.9 itl_p99 colo4_mbt8192-pd_3p1d cluster-bootstrap CI lo	786.501582711935	786.5016	1e-06	outputs/m27/h20_formal_e4_effect.csv (independent bootstrap rerun)	PASS
+e4 p_heavy 0.9 itl_p99 colo4_mbt8192-pd_3p1d cluster-bootstrap CI hi	787.847526371479	787.8475	1e-06	outputs/m27/h20_formal_e4_effect.csv (independent bootstrap rerun)	PASS
+e4 p_heavy 0.9 ttft_p99 colo4_mbt8192-pd_3p1d cluster-bootstrap CI lo	-5222.163386642933	-5222.1634	1e-06	outputs/m27/h20_formal_e4_effect.csv (independent bootstrap rerun)	PASS
+e4 p_heavy 0.9 ttft_p99 colo4_mbt8192-pd_3p1d cluster-bootstrap CI hi	-4348.169039934874	-4348.169	1e-06	outputs/m27/h20_formal_e4_effect.csv (independent bootstrap rerun)	PASS

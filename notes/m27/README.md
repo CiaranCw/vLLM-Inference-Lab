@@ -1,6 +1,6 @@
 # M27 · Prefill–Decode Disaggregation & NIXL KV Transfer（Stage K · Distributed Serving Deep Dive）
 
-**状态：M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE（Gate 0→E4 fresh 同实例；E5 按 Gate 8 可选跳过）。**
+**状态：M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE（Gate 0→E4 fresh 同实例，E0–E4 COMPLETE；E5 按 Gate 8 可选跳过；P1 profiler 未做）。2026-10-06 独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环（[`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md)）。**
 正式结果与负结果见 [`results.md`](results.md) 顶部；上一台独立中转数字只作为其附录参考，不和本机 raw 池化。实例 ID `ins-a8qac2ve`，与上一实例意外同名 `TENCENT64.site`，以任务起点和新 raw/校准产生时间隔离证据。M24 冻结计划与结论不改。
 
 | 文件 | 内容 |
@@ -10,8 +10,12 @@
 | [`M27_H20_RUNBOOK.md`](M27_H20_RUNBOOK.md) | H20 执行顺序：Gate 0 → Gate 1(E0) → E1 → E2 → E3 → E4 → Gate 8 → E5 → Package，每步 PASS / STOP |
 | [`offline_package.md`](offline_package.md) | NIXL wheel 清单与 sha256、安装方式、三部分交接包（code / wheelhouse / model）、未闭环风险 |
 | [`model_artifact_manifest.md`](model_artifact_manifest.md) | 7B 模型身份：逐文件 sha256（[`model_artifact/`](model_artifact/)）、来源证据链、HF revision 比对、模型 Gate |
-| [`execution_record.md`](execution_record.md) | 本机 H20 现场执行、失败与偏离、当前有效证据边界 |
-| [`results.md`](results.md) | 当前新实例 E0–E4 完整正式结果、RQ1–RQ4、负结果；旧机独立附录与 Gate 8/E5 判定 |
+| [`execution_record.md`](execution_record.md) | H20 现场执行（§1–§9 前一实例历史、§10 当前实例）、失败与偏离、§11 post-hoc 修正 |
+| [`results.md`](results.md) | 当前新实例 E0–E4 完整正式结果、RQ1–RQ4、负结果、口径/计费/证据存放；旧机独立附录与 Gate 8/E5 判定 |
+| [`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md) | H20 原始最终报告与 post-hoc 修正两层；F-M01…F-M07 逐条闭环 |
+| [`H20_COMMIT_PROVENANCE.md`](H20_COMMIT_PROVENANCE.md) | H20 原提交 `884503dc` / `c4db4561` 与规范化提交的对应、内容关系、超大 raw 排除策略 |
+| [`H20_RAW_ARCHIVE_MANIFEST.tsv`](H20_RAW_ARCHIVE_MANIFEST.tsv) | 11 个 >100MB raw 的外部证据身份（size / sha256 / H20 原 blob） |
+| [`audit/`](audit/) | 独立 post-hoc 审计报告与 requirement / headline / rebuild / findings 表 |
 
 ## 脚本
 
@@ -26,9 +30,10 @@
 | `scripts/m27_summarize.py` | raw → CSV/JSON（Bootstrap CI）；缺 raw 时 PENDING | 否 |
 | `scripts/m27_trace_analyze.py` | 服务日志证据汇总 | 否 |
 | `scripts/m27_figures.py` | fig16–18，离线；缺 CSV 时 PENDING，不画占位图 | 否 |
-| `scripts/check_invariants.py --module m27` | 静态项 PASS；raw 相关项 PENDING | 否 |
+| `scripts/m27_final_evidence_audit.py` | 离线重算 final evidence audit 73 项并附证据；`--check` 与落盘结果比对；外部 raw 缺失时 INCOMPLETE | 否 |
+| `scripts/check_invariants.py --module m27` | 静态 + raw/派生全链检查；外部 raw 不在本地时相关项 PENDING（不算通过） | 否 |
 
-## 本轮本地验证（不是 H20 证据）
+## H20 之前的本地验证（历史，不是 H20 证据）
 
 只做了 CPU / 静态检查：py_compile、`bash -n`、manifest 解析、用 pinned 树的 arg parser 解析全部 serve 参数、
 用本地 0.5B 快照的 config 离线构造 `VllmConfig` 来核对回读 key、

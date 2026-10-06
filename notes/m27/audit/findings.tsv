@@ -1,0 +1,18 @@
+id	severity	area	finding	required_action
+F-M01	MINOR	billing	Report covers formal 12.44h ~= 99.5 GPU*h only; instance stayed allocated after completion until refreshed 168 GPU*h quota exhausted (~68.5 GPU*h idle).	Add billing addendum to results.md/execution_record.md/FINAL_REPORT; clarify 'refreshed 168 GPU*h' sentence.
+F-M02	MINOR	docs	Stale contradictory status: README.md L62/L148 'E/H NOT EXECUTED'; notes/evidence_index.md L31 old M27 row; execution_record.md header + 1-7 describe previous host, 5 calibration table empty.	Remove/mark-historical stale rows; update execution_record header.
+F-M03	MINOR	interpretation	RQ3 headline ITL gap vs untuned colo2_mbt8192 (102.5 vs 424.6 ms balanced); tuned colo2_mbt2048 is 220.3 ms (gap halves, direction unchanged). E4 sentence 'decode-heavy 1P:3D reduces ITL tail' ambiguous: at 90% d_heavy 3P1D ITL 47.5 < 1P3D 53.0.	State tuned-colocated comparison explicitly; fix E4 ratio wording.
+F-M04	MINOR	calibration	Calibration fix divides delivered by arrival horizon, making achieved>=0.95*offered equivalent to n_ok/n_offered (non-binding with 0 failures); TTFT criterion was the binding one. Not stated.	Document that the throughput criterion became non-binding.
+F-M05	MINOR	evidence_discipline	Current-host first 2-FAIL full-invariant run not preserved (only ledger text); final invariant logs are summary-only (no cmd/env/time); 10 previous-host E0-E2 server logs overwritten in tree (kept only in git 884503d).	Record cmd/env/timestamp in invariant logs; never overwrite logs (backup first).
+F-M06	MINOR	repository_integration	Both H20 commits authored root@TENCENT64.site with English messages (violates AGENTS.md); 11 tracked raw files >100MB (max 365MB) cannot be pushed to GitHub; local main has f41f04b not in this chain.	Owner decision needed: re-author (hash change, record mapping) and keep raw out of git (external archive/LFS) before push.
+F-M07	MINOR	reproducibility	final_evidence_audit.json has no generator in scripts/, holds 73 booleans without per-check evidence; details.trace_totals is a truncated stringified dict.	Commit generator or relabel as manual checklist; this audit independently corroborates all 73 categories.
+F-I01	INFO	package	archive.sha256 and http logs listed in FINAL_REPORT were not in received dir; manifest hash reconstructible and verified.	
+F-I02	INFO	package	FINAL_REPORT.md received with CRLF (89 CR); LF-normalized content matches manifest exactly.	
+F-I03	INFO	environment	PYTHONPATH/LD_LIBRARY_PATH include IDE shim paths (/root/.codebuddy-server-cn/...); no evidence of effect on vLLM import.	
+F-I04	INFO	display	E4 d_heavy 3P1D TTFT 93,689.497 displayed 93,690 (rounding).	
+F-I05	INFO	display	E1 GB/s '4.25->4.51' endpoint notation hides non-monotonic peak 4.86 at 2048.	
+F-I06	INFO	statistics	E3/E4 CI resamples requests within pooled 3 seeds (frozen plan) - ignores seed-level variance and intra-run queue correlation, so CIs are narrow; effect-CSV point (pooled P99) and headline (median of per-seed P99) are different estimands.	
+F-I07	INFO	package	Archive stores raw twice (worktree + .git objects).	
+F-I08	INFO	git	31 dangling pre-handoff CiaranCw commits in .git.	
+F-I09	INFO	e5	E5 label 'SKIPPED_BY_TIME_BUDGET_OR_GATE8' is disjunctive; ~68 GPU*h quota remained but internal stop-loss projection is documented; E5 optional.	
+F-I10	INFO	metric	achieved_rate = n_ok / wall incl. drain, ~0.95x offered even unsaturated.	

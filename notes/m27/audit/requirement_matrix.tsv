@@ -1,0 +1,52 @@
+id	area	requirement	verdict	evidence
+R01	received	received dir read-only; 3 files; SHA256 recorded	PASS	received_files.tsv / received_files.sha256
+R02	received	archive SHA256 == manifest	PASS	fb1664ca...33ad6 both
+R03	received	archive.sha256 present in received dir	FAIL	not received; manifest hash 0a820e3f reconstructed bit-exact (105 B) -> F-I01
+R04	received	FINAL_REPORT.md == manifest hash	PASS	raw CRLF 11294B differs; CRLF->LF gives 11206B a6433830 exact (transfer normalization) -> F-I02
+R05	archive	zstd -t integrity	PASS	4,373,350,400 B decompressed
+R06	archive	safe paths (no abs, no .., no links)	PASS	4811 entries, 0 abs/../links
+R07	archive	no model/wheel/venv/cache/vllm-src/Qwen3/SGLang	PASS	find: 0 hits
+R08	archive	size explained	PASS	active raw 2.7GB + backup raw 0.23GB + .git 1.3GB (raw tracked twice) -> F-I07
+R09	security	secret scan (tree + new text blobs)	PASS	0 hits for 10 credential classes
+R10	git	423575cd -> 884503dc -> c4db4561 ancestry	PASS	merge-base --is-ancestor YES x2
+R11	git	clean tree, empty index diff, no tag	PASS	status/diff/diff --cached empty; git tag empty
+R12	git	commit identity per repo policy (CiaranCw, Chinese msg)	FAIL	both H20 commits root@TENCENT64.site, English -> F-M06
+R13	git	tracked files pushable to GitHub (<100MB)	FAIL	11 tracked raw >100MB (max 365MB) -> F-M06
+R14	design	FROZEN dict identical anchor vs final vs PLAN JSON	PASS	diff 0; PLAN/RUNBOOK diff 0 lines
+R15	design	code deviations documented	PASS	execution_record.md 8-10 (shutdown timeout, force_close, calib horizon, warmup bound)
+R16	design	18 effective configs == frozen (model 7B bf16 TP1 eager HND FLASH_ATTN APC off chunked on mbt)	PASS	config_audit.txt 18 arms 0 problems; server_info + log evidence
+R17	design	GPU budget per experiment (E2 1v2, E3 2v2, E4 4v4)	PASS	config_audit.txt roles/GPU counts
+R18	design	calibration rule semantics unchanged in effect	PASS	rule applied; throughput criterion became non-binding (n_ok/n_offered) and not stated -> F-M04
+R19	gate0	fresh preflight after TASK_START, 8xH20 NV18, versions	PASS	preflight_h20_formal.json 20:29:06+0800; gpu_map all NV18
+R20	e0	PD true KV transfer, D local 0, fail-closed probe	PASS	headline_validation E0 rows
+R21	e1	5 contexts x (5 warmup + 15 measure), bytes == 57344*L	PASS	recompute_e0_e2.json e1
+R22	e2	320 total / 240 measure, all overlap_valid, >=16 D tokens after	PASS	recompute_e0_e2.json
+R23	e2	8K headline + CI + p=0 reproduced; 1-vs-2 GPU boundary stated	PASS	exact; README/ROADMAP/results say 'mechanism only'
+R24	e3	180 runs, 78,685 requests, 0 failed, rates SHA 9d5e...	PASS	online_audit.json
+R25	e4	108 runs, 130,428 requests, 0 failed, rates SHA 5cd7...	PASS	online_audit.json
+R26	online	schedules rebuilt independently (SHA, rate, per-request fields)	PASS	online_audit.json 0 problems
+R27	online	cross-arm request identity	PASS	160,769 pairs, 0 mismatch
+R28	online	PD counters: D local 0, D ext == sum prompt, nixl fails 0	PASS	online_audit.json
+R29	online	proxy force_close in all arms; no non-200 / kv_reject	PASS	online_audit.json
+R30	online	E3/E4 headline tables reproduced from raw	PASS	50/50 online claims; 2304 per-run values 0 mismatch
+R31	stats	bootstrap method == frozen plan; CIs reproduced bitwise (6 cases)	PASS	audit_headline.py
+R32	stats	warmup excluded from summaries	PASS	measure-only filters verified in recompute
+R33	stats	failure accounting would surface failures	PASS	run_online appends all; success == full tokens & no error
+R34	fallback	no hidden model/backend/layout fallback	PASS	log_evidence: non_hnd 0, tracebacks 0, compat mismatch 0; FLASH_ATTN all
+R35	isolation	previous-host raw not pooled (code-level)	PASS	summarize raws() non-recursive glob; backup_* excluded; first ts > TASK_START
+R36	isolation	previous-host evidence preserved	PASS	46/46 overwritten raw/config blobs preserved verbatim in backup_*; 10 server logs only in git 884503d -> F-M05
+R37	e5p1	E5 optional skip justified; P1 not claimed	PASS	Gate8 note with projection; 'P1 未执行，不声称 overlap proven'
+R38	rebuild	summarize rebuild bitwise identical (9 derived CSV/JSON)	PASS	rebuild_comparison.tsv
+R39	rebuild	trace_analyze rebuild	PASS	log_evidence.json bitwise identical
+R40	rebuild	figures rebuild	PASS	3 PNG pixel-identical (bytes differ: metadata)
+R41	invariants	m27 35/0/0 and full 187/0/0 with frozen env	PASS	invariants_*_auditor.log
+R42	invariants	first-failure invariant log on current host preserved; final logs carry cmd/env	FAIL	only summary lines retained -> F-M05
+R43	audit_json	final_evidence_audit.json 73/73 corroborated	PASS	all 73 categories independently re-verified by this audit
+R44	audit_json	final_evidence_audit.json regenerable / per-check evidence	FAIL	no generator in scripts/; booleans only -> F-M07
+R45	time	wall-clock ledger consistent with report and 746 min	PASS	12.308h ledger / 12.3619h snapshot / ~12.44h final
+R46	billing	provider-side total cost documented (168 GPU*h exhausted)	FAIL	needs addendum -> F-M01
+R47	billing	provider invoice independently checked	UNVERIFIED	no provider statement received; 168 GPU*h from owner statement
+R48	docs	live-doc status consistent	FAIL	README L62/L148, evidence_index L31, execution_record header stale -> F-M02
+R49	docs	RQ3/RQ4 wording matches data	FAIL	untuned-baseline headline; E4 1P3D ITL wording -> F-M03
+R50	negative	negative results preserved (TTFT, achieved rate, colo4 TTFT dominance, p=0)	PASS	results.md 'Gate 8、负结果与限制'
+R51	raw	raw execution genuinely on GPU (beyond log/metric/counter consistency)	UNVERIFIED	cannot be proven post-hoc; all internal cross-sources consistent

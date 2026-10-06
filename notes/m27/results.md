@@ -12,11 +12,17 @@
 
 ## RQ2 · KV transport 随 context 增长（E1）
 
-每档 15 measure；理论 57,344 B/token。512→16384 token 时 NIXL 实测 bytes **29,360,128→939,524,096**，累计 xfer 中位 **6.914→208.242 ms**，有效 GB/s **4.25→4.51**；五档全表见 `outputs/m27/h20_formal_e1_transfer.csv`、`figures/fig16_m27_e1_transfer_h20_formal.png`。本例理论与实测恰相等，不是普适 invariant；xfer 是累计 handle 时间而非独立墙钟。
+每档 15 measure；理论 57,344 B/token。512→16384 token 时 NIXL 实测 bytes **29,360,128→939,524,096**，累计 xfer 中位 **6.914→208.242 ms**。等效带宽（bytes / 累计 xfer）大致在 4–5 GB/s，**不是单调变化**：512 档 4.25、2048 档最高 4.86、4096 档 4.82、8192 档 4.59、16384 档 4.51 GB/s；五档全表见 `outputs/m27/h20_formal_e1_transfer.csv`、`figures/fig16_m27_e1_transfer_h20_formal.png`。本例理论与实测恰相等，不是普适 invariant；xfer 是累计 handle 时间而非独立墙钟。
 
 ## RQ3 · 同成本部署（E3）
 
-fresh `E3cal` 的 rates SHA256 `9d5e69466371ca72d9d45f830cf4049c24a1bef61bb039172d146c017f386e0a`；5 arm × 4 workload × 3 load × 3 seed = 180 runs，**78,685/78,685 请求成功**；Poisson open-loop、统一 `force_close=True`。同样 2 GPU 的 PD 1P1D 与 colo2_mbt8192 在 90% 校准负载：balanced ITL P99 的三 seed 中位 **102.5 vs 424.6 ms**（PD 低），但 TTFT P99 **28,728 vs 1,197 ms** 且 achieved **4.7 vs 6.9 req/s**（PD 差）；prefill-heavy ITL P99 **12.5 vs 893.3 ms**，TTFT P99 **38,764 vs 3,708 ms**；decode-heavy ITL P99 **32.7 vs 38.0 ms**，TTFT P99 **252 vs 82 ms**。`colo2_mbt2048/4096` 也完整采集；同 workload 的预先冻结共享 SLO 门槛与请求簇 Poisson bootstrap 见 `h20_formal_e3_{online,effect}.csv`。**不存在 PD 全面胜出**，不能把 ITL 改善当成 TTFT/E2E/吞吐改善；90% 档严重排队时本表的 achieved 和 offered 不同。
+fresh `E3cal` 的 rates SHA256 `9d5e69466371ca72d9d45f830cf4049c24a1bef61bb039172d146c017f386e0a`；5 arm × 4 workload × 3 load × 3 seed = 180 runs，**78,685/78,685 请求成功**；Poisson open-loop、统一 `force_close=True`。以下均为 90% 校准负载、三 seed 组内 P99 的中位数（`h20_formal_e3_online.csv`）。
+
+**冻结基线对照（PD 1P1D vs colo2_mbt8192，同 2 GPU、同 mbt 8192）**：balanced ITL P99 **102.5 vs 424.6 ms**（PD 低），但 TTFT P99 **28,728 vs 1,197 ms** 且 achieved **4.7 vs 6.9 req/s**（目标速率 7.2，PD 差）；prefill-heavy ITL P99 **12.5 vs 893.3 ms**，TTFT P99 **38,764 vs 3,708 ms**；decode-heavy ITL P99 **32.7 vs 38.0 ms**，TTFT P99 **252 vs 82 ms**。
+
+**调优后对照（PD vs 实测最好的合法 2 GPU colocated，候选 colo2_mbt{2048,4096,8192}）**：424.6 ms 不是调优后的最好结果。最好的 mbt 随指标而变——按 ITL 选，balanced / prefill-heavy / mixed 都是 colo2_mbt2048（**220.3 / 251.8 / 259.7 ms**，PD 为 102.5 / 12.5 / 40.1 ms），decode-heavy 是 colo2_mbt8192（38.0 ms，PD 32.7 ms）；而 balanced / mixed 下 mbt2048 的 TTFT P99（1,243 / 8,601 ms）反而比 mbt8192（1,197 / 6,451 ms）差，所以没有一个 mbt 同时把 ITL 和 TTFT 调到最好。调优把 balanced 的 ITL 差距从约 4.1× 缩小到约 2.1×，**方向没有反转**：本例 PD 的 ITL P99 仍然更低，colocated 的 TTFT P99 和 achieved rate 仍然更好。
+
+同 workload 的预先冻结共享 SLO 门槛与请求簇 Poisson bootstrap 见 `h20_formal_e3_{online,effect}.csv`（effect 表比较的是 PD 对三个 colo2 设置）。colo1_mbt8192 是 1 GPU 的 A 层参照，不是同成本选项。**不存在 PD 全面胜出**，不能把 ITL 改善当成 TTFT/E2E/吞吐改善；90% 档严重排队时本表的 achieved 和 offered 不同。
 
 ## RQ4 · 四 GPU ratio（E4）
 
@@ -28,11 +34,28 @@ fresh `E4cal` 的 rates SHA256 `5cd7a9637e870e1dd47a29ba6fd8a5ba3ed77aa235ed3b9d
 | prefill-heavy | 3,254 / 897 | 134,208 / 12 | 38,313 / 13 | 7,191 / 110 |
 | mixed | 5,148 / 906 | 151,333 / 15 | 49,985 / 35 | 17,620 / 159 |
 
-比率取舍随工作负载而变：偏 P 的 3P:1D 在 prefill-heavy/mixed 的 PD 选项中缓和 TTFT 排队，decode-heavy 的 1P:3D 减小 ITL tail；然而本轮各 90% 档 **colo4 的 TTFT P99 均优于 PD**，不能宣称某 PD ratio 全局最佳。对照 CI 和全部请求数见 `h20_formal_e4_{online,effect}.csv`。
+比率取舍随工作负载与指标而变（90% 档，PD 选项之间比较）：prefill-heavy / mixed 下 3P:1D 的 TTFT 排队最轻（7,191 / 17,620 ms），1P:3D 的 ITL tail 最低（12 / 15 ms）；decode-heavy 下 2P:2D 的 TTFT 最好（15,133 ms），ITL tail 最低的是 **3P:1D（47.5 ms），低于 1P:3D（53.0 ms）**。然而本轮各 90% 档 **colo4 的 TTFT P99 均优于全部 PD ratio**，不能宣称某 PD ratio 全局最佳。表中 93,690 为 93,689.5 的四舍五入。对照 CI 和全部请求数见 `h20_formal_e4_{online,effect}.csv`。
 
 ## Gate 8、负结果与限制
 
-Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 E5 只属 scale confirmation，可选且需保留充分 closure 时间。本次 **E5=SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler 未做，不能称 compute/comm overlap proven。正式结果仅适用于本机 H20 / 7B / vLLM 0.24.0 / NIXL 1.2.0 / HND / eager / 这组 workload、负载与网络拓扑；不和 M22/M24 不同布局与口径绝对值相减。前一台独立花费 4.844513 GPU·h，本次 refreshed 168 GPU·h（整机 8×墙钟小时）。本轮强负结果为高载 PD TTFT 排队及无注入时略差的 stall。全部头条数字来源 `outputs/m27/h20_formal_e{0,1,2,3,4}_*`；审核 `outputs/m27/final_evidence_audit.json` 73/73 PASS；全仓 invariants 187 PASS。前机数据不参与本轮任一 CSV/CI。
+Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 E5 只属 scale confirmation，可选且需保留充分 closure 时间。本次 **E5=SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler 未做，不能称 compute/comm overlap proven。正式结果仅适用于本机 H20 / 7B / vLLM 0.24.0 / NIXL 1.2.0 / HND / eager / 这组 workload、负载与网络拓扑；不和 M22/M24 不同布局与口径绝对值相减。前一台的技术用量见 `outputs/m27/gpu_hour_ledger.csv`（累计 4.844513 GPU·h）；本实例计费见下文「计费与资源」。本轮强负结果为高载 PD TTFT 排队及无注入时略差的 stall。全部头条数字来源 `outputs/m27/h20_formal_e{0,1,2,3,4}_*`；H20 收口时 `outputs/m27/final_evidence_audit.json` 73/73 PASS、全仓 invariants 187 PASS。前机数据不参与本轮任一 CSV/CI。
+
+## 指标口径与统计局限（2026-10-06 post-hoc 补充）
+
+- **achieved rate**：`n_ok / wall_s`，wall 从首个请求发出算到最后一个响应结束，**包含排空（drain）时间**，所以即使未饱和也略低于目标速率（例如 decode-heavy 90% 档 colo2 为 18.97 / 20.36 req/s）。CSV 中 `rate` 是目标 Poisson 速率、`n_offered` 是 schedule 长度。
+- **E3/E4 速率校准判据的局限**：arrival-horizon 修正（`execution_record.md` §8–§9）让 delivered 与 offered 同用 30 s 到达窗口作分母，于是 `delivered ≥ 0.95×offered` 等价于 `n_ok/n_offered ≥ 0.95`。在 0 失败请求时它恒成立，基本失去区分能力：E3cal / E4cal 共 75 个校准级中，每一级 achieved 都恰好等于 offered，且每一级是否通过都与 `TTFT P99 ≤ 10×空载中位` 完全一致。真正起门槛作用的是 TTFT 判据，因此 C_cal 是「TTFT 尾部尚未爆炸的最高速率」，**不是**经吞吐判据证明的 capacity。这是校准判据的局限，不改变 raw workload、共享 schedule 与正式结果。
+- **E3/E4 CI**：冻结方法是以请求为簇的 Poisson bootstrap（3 seed 合并），没有对 seed 间差异与 run 内排队相关性逐层建模，报告的 CI 可能偏窄（偏乐观）。effect 表的点估计是三 seed 合并后的分位数，与上文表格「三 seed 各自 P99 的中位数」不是同一个统计量。冻结方法本身已通过独立审计，此处只是披露，不替换正式 CI。
+
+## 计费与资源（2026-10-06 post-hoc 修正）
+
+正式 M27 执行与收尾（TASK_START `2026-10-05T12:14:20Z` 起）约 **12.44 h**，按 8 卡整机计约 **99.5 GPU·h**。12.44 h 来自 H20 执行方最终回复（12.442 h）和所有者观察的 746 min（12.433 h），不是 ledger 行；落盘的 `wall_clock_ledger.csv` 最后一行（打包前）为 12.308 h，原 FINAL_REPORT 快照为 12.3619 h / 98.89 GPU·h，三者一致地递增。实验结束后实例仍保持分配，refreshed 的 **168 GPU·h** 额度最终全部耗尽；其后约 **8.56 h / 68.5 GPU·h** 是实验完成后的分配/空闲时间，计入云端实际资源消耗，但**不属于正式实验负载**。`current_host_gpu_technical_ledger.csv` 只统计各 arm 活跃 GPU 时间，不是计费口径；原始 ledger 未改动。
+
+## 证据存放与 post-hoc 审计（2026-10-06）
+
+- 完整 raw 的长期身份是 reviewed archive `m27_h20_final_20261006T003354Z.tar.zst`（2,465,709,981 B，SHA256 `fb1664ca9506efb75bb784ab19a8b65186c6eabedf69127805e8e72b29633ad6`），以文件名 + 大小 + SHA256 为准，不依赖任何本地路径。其中 11 个单文件 >100MB 的 raw 不在普通 Git 历史中，逐文件身份见 [`H20_RAW_ARCHIVE_MANIFEST.tsv`](H20_RAW_ARCHIVE_MANIFEST.tsv)；其余 raw、configs、派生 CSV、图仍在 Git 中。
+- 独立 post-hoc 审计结论 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`（CRITICAL 0 / MAJOR 0）：9 个派生文件重建逐位一致、3 张图逐像素一致、77/77 headline、6 个 CI 逐位复现。材料见 [`audit/`](audit/)，修正闭环见 [`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md)，H20 原提交与规范化提交的对应关系见 [`H20_COMMIT_PROVENANCE.md`](H20_COMMIT_PROVENANCE.md)。
+- `final_evidence_audit.json` 是 H20 收口时手工汇总的 73 个布尔值；post-hoc 补齐的生成器 `scripts/m27_final_evidence_audit.py` 离线重算同名 73 项并附证据，结果在 `final_evidence_audit_regenerated.json`（73/73 PASS）。
+- 本节之前的 RQ2–RQ4 文字已按审计修正（E1 带宽非单调、RQ3 区分冻结基线与调优后对照、RQ4 decode-heavy 的 ITL 最优 ratio）；所有数字未变，均可在派生 CSV 中复核。
 
 ---
 

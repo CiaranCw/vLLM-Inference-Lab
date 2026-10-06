@@ -1,0 +1,47 @@
+# cmd: env VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0 .venv/bin/python scripts/check_invariants.py --module m27 --verbose
+# env: VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_ENABLE_V1_MULTIPROCESSING=0; python=Python 3.12.13
+# start_utc: 2026-10-06T11:39:10Z
+# git HEAD: c9e317f5b71d3fdb84a133219315f59e5700842a（工作树另有本轮未提交的 N4 文档改动；11 个外部 raw 已从 archive 放回并逐个核对 sha256）
+# host: local WSL2，无 GPU 实验（仅离线检查）
+[  ok  ] m27              m27_scripts_present                   M27 脚本齐全且 py_compile 通过
+[  ok  ] m27              m27_config_freeze                     计划文档冻结块 == m27_common.FROZEN（逐键相等）
+[  ok  ] m27              m27_frozen_constraints                TP1/eager/APC off/async off/chunked ON/bs16/mml32768/max_prompt16384/fail-policy；warmup≥5 measure≥15
+[  ok  ] m27              m27_kv_bytes_per_token                2×28×4×128×2 = 57344 B/token；整 block 向上取整
+[  ok  ] m27              m27_calibration_rate_window           30s Poisson 到达窗口 offered 与 delivered 同分母；wall 吞吐另报
+[  ok  ] m27              m27_warmup_schedule_bounded           warmup 仅生成 16 个且保留 Poisson seed/key/shape，正式 schedule 不变
+[  ok  ] m27              m27_model_identity                    identity manifest sha256 == FROZEN；15 个文件（4 分片 + index + config/tokenizer）；内容与 HF Qwen/Qwen2.5-7B-Instruct@a09a3545 一致
+[  ok  ] m27              m27_kv_theory_cross_m22               M22 H20 TP1 引擎实测：70034921575 B → 1221312 tokens，与 57344 B/token 整 block 推算一致
+[  ok  ] m27              m27_arm_construction                  15 个 arm：GPU/HTTP/side-channel 端口唯一，角色与 kv_role 对应
+[  ok  ] m27              m27_m24_plan_not_mutated              M24 冻结计划未被写入 M27 内容
+[  ok  ] m27              m27_manifest_not_runnable             m27 status=done；9 个 GPU 步骤均 formal_only 且非 runnable
+[  ok  ] m27              m27_external_raw_manifest             11 个 >100MB raw：archive sha256 一致、policy=external_evidence_not_git_tracked、.gitignore 逐条精确列出
+[  ok  ] m27              m27_external_raw_identity             11 个外部 raw 本地存在且 size/sha256 与 manifest 逐个一致
+[  ok  ] m27              m27_preflight_pass                    Gate 0 PASS @ TENCENT64.site；gpu_ids=[0, 1, 2, 3, 4, 5, 6, 7]
+[  ok  ] m27              m27_raw_schema                        228573 行 schema=m27.v1、tag/experiment/arm 与文件名一致
+[  ok  ] m27              m27_upstream_connection_policy        全部正式 arm 的 proxy 上游均 force_close（避免复用已断开的长连接）
+[  ok  ] m27              m27_arm_complete                      18 个 (exp, arm) 均有 arm_done
+[  ok  ] m27              m27_effective_config_readback         每个 (exp, arm) 启动回读：server_info + 日志双来源 == 请求
+[  ok  ] m27              m27_common_engine_args                所有 arm / 实例除 max_num_batched_tokens 与 kv_transfer 角色外生效配置逐键相同
+[  ok  ] m27              m27_only_variable                     PD 的 mbt=8192；colo 的 mbt=arm 名；P=kv_producer / D=kv_consumer / colo=无 connector
+[  ok  ] m27              m27_gpu_assignment                    每个 arm 的 GPU ⊆ gpu_map [0, 1, 2, 3, 4, 5, 6, 7] 且 GPU/端口唯一
+[  ok  ] m27              m27_output_length                     成功请求：客户端逐 chunk token 数 == 服务端 usage.completion_tokens；prompt_len == usage.prompt_tokens
+[  ok  ] m27              m27_prompt_identity                   60074 个 request key 在所有 arm 上 prompt sha256 相同，且与服务端回显一致
+[  ok  ] m27              m27_sample_count                      E0 每 arm 5 measure；E1/E2 每点 15 measure，全部 success（E2 含 overlap_valid）
+[  ok  ] m27              m27_warmup_exclusion                  warmup 单独标 phase（E0 3 / E1–E2 5），汇总只用 measure
+[  ok  ] m27              m27_transfer_success                  PD：D external_kv_transfer == prompt_len、D local_compute == 0、P local_compute == prompt_len、nixl_failed == 0（metrics 稳定后读取）
+[  ok  ] m27              m27_theoretical_kv_metadata           E1 每样本同时记录理论 bytes（token/block 口径）与 NIXL 实测 bytes（二者不要求相等）
+[  ok  ] m27              m27_lifecycle_attempt_boundary        归档失败尝试不加入当前 raw 的日志判定
+[  ok  ] m27              m27_no_failures_log                   当前正式 raw 对应生命周期的服务日志：无 KV load failure、compat mismatch、Traceback；D 有 compat pass
+[  ok  ] m27              m27_fail_closed_probe                 丢弃 kv_transfer_params → proxy 502，D 未收到请求（prompt_tokens Δ=0）
+[  ok  ] m27              m27_paired_keys_e2                    E2 4 个 arm 的 (p_len, idx) 完全配对
+[  ok  ] m27              m27_paired_schedules_e3               e3：36 个 (shape, seed, load) 在 5 个 arm 上 schedule sha256 相同，速率文件 sha 一致
+[  ok  ] m27              m27_online_no_failed_requests_e3      e3 全部 run 的 n_fail == 0
+[  ok  ] m27              m27_paired_schedules_e4               e4：27 个 (shape, seed, load) 在 4 个 arm 上 schedule sha256 相同，速率文件 sha 一致
+[  ok  ] m27              m27_online_no_failed_requests_e4      e4 全部 run 的 n_fail == 0
+[  ok  ] m27              m27_e1_csv_n_matches_jsonl            E1 CSV n == jsonl measure∧success
+[  ok  ] m27              m27_e2_csv_n_matches_jsonl            E2 CSV n == jsonl measure∧success
+[  ok  ] m27              m27_final_evidence_audit_regenerable  离线重算 73/73 PASS，检查项与 H20 原文件同名同序，与 outputs/m27/final_evidence_audit_regenerated.json 逐键一致
+
+合计：38 PASS / 0 FAIL / 0 PENDING（模块：m27）
+# exit_code: 0
+# end_utc: 2026-10-06T11:39:47Z
