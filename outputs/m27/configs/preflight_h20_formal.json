@@ -1,0 +1,97 @@
+{
+  "env_fingerprint": {
+    "env": {
+      "CUDA_VISIBLE_DEVICES": null,
+      "HF_HUB_OFFLINE": null,
+      "LD_LIBRARY_PATH": "/root/cuda-compat/usr/local/cuda-13.0/compat",
+      "M27_MODEL": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
+      "PYTHONHASHSEED": null,
+      "PYTHONPATH": "/root/m27_offline/site",
+      "TRANSFORMERS_OFFLINE": null,
+      "UCX_NET_DEVICES": "bond1",
+      "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
+      "VLLM_KV_CACHE_LAYOUT": null,
+      "VLLM_NIXL_SIDE_CHANNEL_HOST": null,
+      "VLLM_NIXL_SIDE_CHANNEL_PORT": null,
+      "VLLM_SERVER_DEV_MODE": null,
+      "VLLM_USE_FLASHINFER_SAMPLER": "0"
+    },
+    "gpus": [
+      {
+        "driver": "535.247.01",
+        "index": 0,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 1,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 2,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 3,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 4,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 5,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 6,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 7,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      }
+    ],
+    "hostname": "TENCENT64.site",
+    "packages": {
+      "aiohttp": "3.14.3",
+      "nixl": "1.2.0",
+      "nixl-cu12": null,
+      "nixl-cu13": "1.2.0",
+      "torch": "2.11.0+cu130",
+      "transformers": "5.18.0",
+      "vllm": "0.24.0"
+    },
+    "python": "3.11.13",
+    "time": "2026-10-04T20:27:11+0800",
+    "uname": "Linux TENCENT64.site 5.4.241-1-tlinux4-0017.7 #1 SMP Thu Jan 18 11:33:00 CST 2024 x86_64 x86_64"
+  },
+  "fails": [],
+  "frozen_plan_version": "v1",
+  "hostname": "TENCENT64.site",
+  "result": "PASS",
+  "tag": "h20_formal",
+  "time": "2026-10-04T20:27:11+0800"
+}

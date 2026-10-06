@@ -1,0 +1,127 @@
+{
+  "arm": "colo2_mbt8192",
+  "exp": "e3cal",
+  "rule": {
+    "horizon_s": 30,
+    "pass_if": "achieved>=0.95*offered and n_fail==0 and ttft_p99<=10*unloaded_ttft_median",
+    "start_rate": 0.5,
+    "step": 1.4142135623730951
+  },
+  "shapes": {
+    "balanced": {
+      "c_cal": null,
+      "ladder": [
+        {
+          "achieved": 0.4682604496511718,
+          "offered": 0.5,
+          "passed": false,
+          "rate": 0.5,
+          "ttft_p99_ms": 227.0066474378109
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 215.27089178562164
+    },
+    "d_heavy": {
+      "c_cal": null,
+      "ladder": [
+        {
+          "achieved": 0.3458212113910551,
+          "offered": 0.36666666666666664,
+          "passed": false,
+          "rate": 0.5,
+          "ttft_p99_ms": 47.34265729784966
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 34.3189537525177
+    },
+    "mixture": {
+      "c_cal": 0.5,
+      "ladder": [
+        {
+          "achieved": 0.4141296649260477,
+          "offered": 0.43333333333333335,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 826.3787958025938
+        },
+        {
+          "achieved": 0.7464928279778575,
+          "offered": 0.8,
+          "passed": false,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 927.4101253598928
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 898.4352499246597
+    },
+    "p_heavy": {
+      "c_cal": 2.0000000000000004,
+      "ladder": [
+        {
+          "achieved": 0.6474805441641039,
+          "offered": 0.6666666666666666,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 915.439844429493
+        },
+        {
+          "achieved": 0.893929563874857,
+          "offered": 0.9333333333333333,
+          "passed": true,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 1741.5656950324774
+        },
+        {
+          "achieved": 1.1042085242065605,
+          "offered": 1.0666666666666667,
+          "passed": true,
+          "rate": 1.0000000000000002,
+          "ttft_p99_ms": 1887.1999845653772
+        },
+        {
+          "achieved": 1.0038495917419588,
+          "offered": 1.0333333333333334,
+          "passed": true,
+          "rate": 1.4142135623730954,
+          "ttft_p99_ms": 1747.7610543370247
+        },
+        {
+          "achieved": 1.7134803475032374,
+          "offered": 1.8,
+          "passed": true,
+          "rate": 2.0000000000000004,
+          "ttft_p99_ms": 3829.810062125325
+        },
+        {
+          "achieved": 2.1232732678098016,
+          "offered": 2.966666666666667,
+          "passed": false,
+          "rate": 2.8284271247461907,
+          "ttft_p99_ms": 12096.101604700089
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 898.4352499246597
+    }
+  },
+  "unloaded": {
+    "balanced": {
+      "itl_median_ms": 9.74959135055542,
+      "n": 15,
+      "ttft_median_ms": 215.27089178562164
+    },
+    "d_heavy": {
+      "itl_median_ms": 9.981267154216766,
+      "n": 15,
+      "ttft_median_ms": 34.3189537525177
+    },
+    "p_heavy": {
+      "itl_median_ms": 10.11713594198227,
+      "n": 15,
+      "ttft_median_ms": 898.4352499246597
+    }
+  }
+}

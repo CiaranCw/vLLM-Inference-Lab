@@ -1,0 +1,17 @@
+{
+  "colo_measure": 5,
+  "d_external_kv_tokens": 10240.0,
+  "d_local_compute_tokens": 0,
+  "d_nixl_failed": 0,
+  "d_nixl_transfers": 5.0,
+  "fault_probe_d_prompt_tokens_delta": 0.0,
+  "fault_probe_http_status": 502,
+  "first_token_match": 4,
+  "full_output_match": 4,
+  "metrics_settled_all": true,
+  "n_pairs": 5,
+  "p_local_compute_tokens": 10240.0,
+  "pd_measure": 5,
+  "prompt_tokens_sent": 10240,
+  "tag": "h20_formal"
+}

@@ -1,0 +1,2 @@
+[budget] used=2.674 GPU-h; next reservation=6.000; hard cap=168.0
+[budget] stage=e3_pd_1p1d actual=0.228 cumulative=2.902 GPU-h

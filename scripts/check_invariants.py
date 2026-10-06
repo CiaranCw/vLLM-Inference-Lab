@@ -2364,6 +2364,23 @@ def _m27_static(rep, C):
               and C.kv_theory(16384)["theory_bytes_blocks"] == 16384 * 57344
               and C.kv_theory(17)["theory_blocks"] == 2,
               f"KV 理论值不符：{per_tok}", "2×28×4×128×2 = 57344 B/token；整 block 向上取整")
+    delivered = C.calibration_delivered_rate(11, 30)
+    rep.check(M, "m27_calibration_rate_window",
+              delivered == 11 / 30 and delivered >= 0.95 * (11 / 30) and
+              11 / 31.808343842625618 < 0.95 * (11 / 30),
+              "校准用 30s offered 对排空后 wall achieved，首级会被机械判失败",
+              "30s Poisson 到达窗口 offered 与 delivered 同分母；wall 吞吐另报")
+    try:
+        from m27_workload import build_schedule
+        full = build_schedule("mixture", 2.0, 30, 9999)
+        capped = build_schedule("mixture", 2.0, 1e9, 9999, max_requests=16)
+        rep.check(M, "m27_warmup_schedule_bounded",
+                  len(full) >= 16 and len(capped) == 16 and capped == full[:16] and
+                  build_schedule("d_heavy", 2.0, 1e9, 9999, max_requests=16)[-1]["i"] == 15,
+                  "warmup 截断改变了原首 16 个 Poisson 请求或仍无限生成",
+                  "warmup 仅生成 16 个且保留 Poisson seed/key/shape，正式 schedule 不变")
+    except ImportError:
+        rep.pending(M, "m27_warmup_schedule_bounded", "缺 aiohttp，无法导入 workload 验证 E3 warmup")
 
     # 只核对仓库内的身份文件；模型目录是机器本地资源，由 H20 preflight 校验，不在这里要求存在
     sums_path = _p(mm["identity_manifest"])
@@ -2425,6 +2442,10 @@ def _m27_static(rep, C):
             want_role = {"P": "kv_producer", "D": "kv_consumer", "colo": None}[i["role"]]
             if (ktc or {}).get("kv_role") != want_role:
                 viol.append((arm, i["name"], "kv_role"))
+            cmd = C.serve_cmd("/readonly/model", i)
+            pos = cmd.index("--shutdown-timeout") if "--shutdown-timeout" in cmd else -1
+            if pos < 0 or cmd[pos + 1] != str(C.SHUTDOWN_TIMEOUT_S):
+                viol.append((arm, i["name"], "shutdown_timeout"))
     rep.check(M, "m27_arm_construction", not viol, f"arm 构造违规：{viol[:6]}",
               f"{len(all_arms)} 个 arm：GPU/HTTP/side-channel 端口唯一，角色与 kv_role 对应")
 
@@ -2494,6 +2515,15 @@ def check_m27(rep):
             not_done.append((exp, arm))
     rep.check(M, "m27_raw_schema", not bad_schema, f"{len(bad_schema)} 行 schema/身份不符：{bad_schema[:4]}",
               f"{sum(len(v) for v in R.values())} 行 schema={C.SCHEMA}、tag/experiment/arm 与文件名一致")
+    proxy_bad = []
+    for exp, arm in R:
+        events = load_jsonl(f"outputs/m27/raw/{tag}_{exp}_{arm}_proxy.jsonl") or []
+        configs = [r for r in events if r.get("event") == "upstream_transport_config"]
+        if len(configs) != 1 or configs[0].get("force_close") is not True:
+            proxy_bad.append((exp, arm))
+    rep.check(M, "m27_upstream_connection_policy", not proxy_bad,
+              f"PD/colo 的代理上游连接策略未双臂一致或旧 raw 未重跑：{proxy_bad[:5]}",
+              "全部正式 arm 的 proxy 上游均 force_close（避免复用已断开的长连接）")
     rep.check(M, "m27_arm_complete", not not_done, f"未完成（无 arm_done）：{not_done}",
               f"{len(R)} 个 (exp, arm) 均有 arm_done")
 
@@ -2632,19 +2662,35 @@ def check_m27(rep):
                   "E1 每样本同时记录理论 bytes（token/block 口径）与 NIXL 实测 bytes（二者不要求相等）")
 
     life = load_jsonl(f"outputs/m27/raw/{tag}_lifecycle.jsonl") or []
+    # A failed/replaced attempt stays in the immutable lifecycle/backup, but must
+    # not be joined to the current raw after run_all has archived and rerun it.
+    first_raw = {(exp, arm): min(r["unix_ts"] for r in rows) for (exp, arm), rows in R.items() if rows}
+    def formal_stops(events, cutoffs):
+        return [ev for ev in events if ev.get("event") == "stop" and
+                (ev.get("exp"), ev.get("arm")) in cutoffs and
+                ev["unix_ts"] >= cutoffs[(ev["exp"], ev["arm"])]]
+    synthetic = [{"event": "stop", "exp": "e0", "arm": "pd_1p1d", "unix_ts": 1},
+                 {"event": "stop", "exp": "e0", "arm": "pd_1p1d", "unix_ts": 3}]
+    rep.check(M, "m27_lifecycle_attempt_boundary",
+              formal_stops(synthetic, {("e0", "pd_1p1d"): 2}) == [synthetic[1]],
+              "lifecycle retry 边界回归失败", "归档失败尝试不加入当前 raw 的日志判定")
+    stops = formal_stops(life, first_raw)
     log_viol = []
-    for ev in life:
-        if ev.get("event") != "stop":
-            continue
+    stop_keys = {(ev["exp"], ev["arm"]) for ev in stops if ev.get("reason") == "normal"}
+    if set(R) != stop_keys:
+        log_viol.append(("missing_normal_stop", sorted(set(R) - stop_keys)))
+    for ev in stops:
+        if ev.get("reason") != "normal":
+            log_viol.append((ev["exp"], ev["arm"], ev.get("reason")))
         for name, le in (ev.get("log_evidence") or {}).items():
             if (le.get("kv_load_fail_events") or le.get("nixl_compat_mismatch") or le.get("tracebacks")
                     or le.get("log_missing")):
                 log_viol.append((ev.get("exp"), ev.get("arm"), name))
-            if name.startswith("D") and ev.get("reason") == "normal" and not le.get("nixl_compat_pass"):
+            if name.startswith("D") and not le.get("nixl_compat_pass"):
                 log_viol.append((ev.get("exp"), ev.get("arm"), name, "no_compat_pass"))
-    rep.check(M, "m27_no_failures_log", bool(life) and not log_viol,
-              f"lifecycle 缺失或日志出现 KV load 失败/兼容性不符/Traceback：{log_viol[:4]}",
-              "第二来源（服务日志）：无 KV load failure、无 compat mismatch、无 Traceback；D 均有 compat pass")
+    rep.check(M, "m27_no_failures_log", bool(stops) and not log_viol,
+              f"当前 raw 的生命周期缺失/异常或服务日志含 KV load 失败/compat mismatch/Traceback：{log_viol[:4]}",
+              "当前正式 raw 对应生命周期的服务日志：无 KV load failure、compat mismatch、Traceback；D 有 compat pass")
 
     fp = [r for r in R.get(("e0", "pd_1p1d"), []) if r.get("phase") == "fault_probe"]
     if fp:

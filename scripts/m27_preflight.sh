@@ -122,7 +122,12 @@ except Exception as e:
     print("vLLM NIXL import FAIL", type(e).__name__, e); bad.append("vllm_nixl")
 print("UCX env:", {k: v for k, v in os.environ.items() if k.startswith("UCX_")} or "<none>")
 print("RESULT", "FAIL " + ",".join(bad) if bad else "PASS")
-sys.exit(1 if bad else 0)
+# NIXL 1.2.0's bundled libnl-route crashes in _dl_fini on this host; do not
+# run shared-library destructors in this short-lived preflight subprocess.
+# An exception or missing backend still exits nonzero; E0 verifies actual transfer.
+sys.stdout.flush()
+sys.stderr.flush()
+os._exit(1 if bad else 0)
 PY
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "NIXL / vLLM NixlConnector 可导入，UCX agent 可创建" || bad "NIXL 导入或 UCX agent 失败"
 

@@ -85,7 +85,9 @@ class Proxy:
     async def start(self, app):
         self.session = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=None, sock_connect=10),
-            connector=aiohttp.TCPConnector(limit=0))
+            connector=aiohttp.TCPConnector(limit=0, force_close=True))
+        self.record({"event": "upstream_transport_config", "force_close": True,
+                     "reason": "avoid stale upstream keep-alive socket reuse"})
 
     async def stop(self, app):
         if self.session:

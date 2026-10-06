@@ -1,0 +1,51 @@
+[budget] used=1.747 GPU-h; next reservation=7.000; hard cap=168.0
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e3cal_colo2_mbt8192.jsonl -> outputs/m27/raw/backup_20261004T214933/raw/
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e3cal_colo2_mbt8192_proxy.jsonl -> outputs/m27/raw/backup_20261004T214933/raw/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3cal_colo2_mbt8192_colo0_server_info.json -> outputs/m27/raw/backup_20261004T214933/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3cal_colo2_mbt8192_colo1_server_info.json -> outputs/m27/raw/backup_20261004T214933/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3cal_colo2_mbt8192_effective.json -> outputs/m27/raw/backup_20261004T214933/configs/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e3cal_colo2_mbt8192_colo0_startup.prom -> outputs/m27/raw/backup_20261004T214933/metrics/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e3cal_colo2_mbt8192_colo1_startup.prom -> outputs/m27/raw/backup_20261004T214933/metrics/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e3cal_colo2_mbt8192_timeseries.jsonl -> outputs/m27/raw/backup_20261004T214933/metrics/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3cal_rates.json -> outputs/m27/raw/backup_20261004T214933/configs/
+[e3cal] colo2_mbt8192 d_heavy rate=0.500 seed=0 ok=11/11
+[e3cal] colo2_mbt8192 d_heavy rate=0.707 seed=0 ok=27/27
+[e3cal] colo2_mbt8192 d_heavy rate=1.000 seed=0 ok=31/31
+[e3cal] colo2_mbt8192 d_heavy rate=1.414 seed=0 ok=37/37
+[e3cal] colo2_mbt8192 d_heavy rate=2.000 seed=0 ok=57/57
+[e3cal] colo2_mbt8192 d_heavy rate=2.828 seed=0 ok=109/109
+[e3cal] colo2_mbt8192 d_heavy rate=4.000 seed=0 ok=124/124
+[e3cal] colo2_mbt8192 d_heavy rate=5.657 seed=0 ok=169/169
+[e3cal] colo2_mbt8192 d_heavy rate=8.000 seed=0 ok=236/236
+[e3cal] colo2_mbt8192 d_heavy rate=11.314 seed=0 ok=321/321
+[e3cal] colo2_mbt8192 d_heavy rate=16.000 seed=0 ok=510/510
+[e3cal] colo2_mbt8192 d_heavy rate=22.627 seed=0 ok=707/707
+[e3cal] colo2_mbt8192 d_heavy rate=32.000 seed=0 ok=1005/1005
+[e3cal] colo2_mbt8192 balanced rate=0.500 seed=0 ok=15/15
+[e3cal] colo2_mbt8192 balanced rate=0.707 seed=0 ok=18/18
+[e3cal] colo2_mbt8192 balanced rate=1.000 seed=0 ok=16/16
+[e3cal] colo2_mbt8192 balanced rate=1.414 seed=0 ok=42/42
+[e3cal] colo2_mbt8192 balanced rate=2.000 seed=0 ok=64/64
+[e3cal] colo2_mbt8192 balanced rate=2.828 seed=0 ok=70/70
+[e3cal] colo2_mbt8192 balanced rate=4.000 seed=0 ok=122/122
+[e3cal] colo2_mbt8192 balanced rate=5.657 seed=0 ok=152/152
+[e3cal] colo2_mbt8192 balanced rate=8.000 seed=0 ok=266/266
+[e3cal] colo2_mbt8192 balanced rate=11.314 seed=0 ok=365/366
+[e3cal] colo2_mbt8192 p_heavy rate=0.500 seed=0 ok=20/20
+[e3cal] colo2_mbt8192 p_heavy rate=0.707 seed=0 ok=28/28
+[e3cal] colo2_mbt8192 p_heavy rate=1.000 seed=0 ok=32/32
+[e3cal] colo2_mbt8192 p_heavy rate=1.414 seed=0 ok=31/31
+[e3cal] colo2_mbt8192 p_heavy rate=2.000 seed=0 ok=54/54
+[e3cal] colo2_mbt8192 p_heavy rate=2.828 seed=0 ok=89/89
+[e3cal] colo2_mbt8192 mixture rate=0.500 seed=0 ok=13/13
+[e3cal] colo2_mbt8192 mixture rate=0.707 seed=0 ok=24/24
+[e3cal] colo2_mbt8192 mixture rate=1.000 seed=0 ok=33/33
+[e3cal] colo2_mbt8192 mixture rate=1.414 seed=0 ok=33/33
+[e3cal] colo2_mbt8192 mixture rate=2.000 seed=0 ok=60/60
+[e3cal] colo2_mbt8192 mixture rate=2.828 seed=0 ok=82/82
+[e3cal] colo2_mbt8192 mixture rate=4.000 seed=0 ok=119/119
+[e3cal] colo2_mbt8192 mixture rate=5.657 seed=0 ok=180/180
+[e3cal] colo2_mbt8192 mixture rate=8.000 seed=0 ok=256/256
+[e3cal] colo2_mbt8192 mixture rate=11.314 seed=0 ok=345/345
+[run_all] stage=e3cal rc=0 elapsed=1667s
+[budget] stage=e3cal_window_fix actual=0.926 cumulative=2.674 GPU-h

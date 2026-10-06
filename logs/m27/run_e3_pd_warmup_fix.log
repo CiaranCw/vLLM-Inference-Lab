@@ -1,0 +1,23 @@
+[budget] used=2.902 GPU-h; next reservation=6.000; hard cap=168.0
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3_pd_1p1d_D1_server_info.json -> outputs/m27/raw/backup_20261004T222909/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3_pd_1p1d_P0_server_info.json -> outputs/m27/raw/backup_20261004T222909/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e3_pd_1p1d_effective.json -> outputs/m27/raw/backup_20261004T222909/configs/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e3_pd_1p1d_D1_startup.prom -> outputs/m27/raw/backup_20261004T222909/metrics/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e3_pd_1p1d_P0_startup.prom -> outputs/m27/raw/backup_20261004T222909/metrics/
+[e3] pd_1p1d d_heavy rate=11.314 seed=0 ok=693/693
+[e3] pd_1p1d d_heavy rate=16.971 seed=0 ok=1000/1000
+[e3] pd_1p1d d_heavy rate=20.365 seed=0 ok=1223/1223
+[e3] pd_1p1d d_heavy rate=11.314 seed=1 ok=686/686
+[e3] pd_1p1d d_heavy rate=16.971 seed=1 ok=1047/1047
+[e3] pd_1p1d d_heavy rate=20.365 seed=1 ok=1174/1174
+[e3] pd_1p1d d_heavy rate=11.314 seed=2 ok=686/686
+[e3] pd_1p1d d_heavy rate=16.971 seed=2 ok=1025/1025
+[e3] pd_1p1d d_heavy rate=20.365 seed=2 ok=1188/1189
+[e3] pd_1p1d balanced rate=4.000 seed=0 ok=247/247
+[e3] pd_1p1d balanced rate=6.000 seed=0 ok=355/355
+[e3] pd_1p1d balanced rate=7.200 seed=0 ok=433/433
+[e3] pd_1p1d balanced rate=4.000 seed=1 ok=250/250
+[e3] pd_1p1d balanced rate=6.000 seed=1 ok=399/399
+[e3] pd_1p1d balanced rate=7.200 seed=1 ok=431/431
+[e3] pd_1p1d balanced rate=4.000 seed=2 ok=252/252
+[budget] stage=e3_pd_warmup_fix actual=0.733 cumulative=3.635 GPU-h

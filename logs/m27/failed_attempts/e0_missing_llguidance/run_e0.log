@@ -1,0 +1,17 @@
+[budget] used=0.000 GPU-h; next reservation=3.000; hard cap=168.0
+Traceback (most recent call last):
+  File "/root/m27_work/vLLM-Inference-Lab/scripts/m27_run_all.py", line 323, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/root/m27_work/vLLM-Inference-Lab/scripts/m27_run_all.py", line 317, in main
+    rc = run_stage(a)
+         ^^^^^^^^^^^^
+  File "/root/m27_work/vLLM-Inference-Lab/scripts/m27_run_all.py", line 176, in run_stage
+    with Topology(tag, exp, arm, gpu_ids, a.model, allow_fault=fault) as topo:
+  File "/root/m27_work/vLLM-Inference-Lab/scripts/m27_launch.py", line 375, in __enter__
+    return self.start()
+           ^^^^^^^^^^^^
+  File "/root/m27_work/vLLM-Inference-Lab/scripts/m27_launch.py", line 233, in start
+    raise RuntimeError(f"{name} 提前退出 rc={proc.returncode}；见 {self.logs[name]}")
+RuntimeError: P0 提前退出 rc=1；见 /root/m27_work/vLLM-Inference-Lab/logs/m27/h20_formal/e0_pd_1p1d_P0.log
+[budget] stage=e0 actual=0.004 cumulative=0.004 GPU-h

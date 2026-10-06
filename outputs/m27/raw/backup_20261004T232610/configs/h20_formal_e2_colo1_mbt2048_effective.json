@@ -1,0 +1,231 @@
+{
+  "arm": "colo1_mbt2048",
+  "effective_matches_requested": true,
+  "env_fingerprint": {
+    "env": {
+      "CUDA_VISIBLE_DEVICES": null,
+      "HF_HUB_OFFLINE": null,
+      "LD_LIBRARY_PATH": "/root/cuda-compat/usr/local/cuda-13.0/compat:/root/.codebuddy-server-cn/bin/stable-757a5b2fd56bc7e1fcabb38b58d2ac1694f78f6d/lib",
+      "M27_MODEL": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
+      "PYTHONHASHSEED": null,
+      "PYTHONPATH": "/root/m27_offline/site",
+      "TRANSFORMERS_OFFLINE": null,
+      "UCX_NET_DEVICES": "bond1",
+      "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
+      "VLLM_KV_CACHE_LAYOUT": null,
+      "VLLM_NIXL_SIDE_CHANNEL_HOST": null,
+      "VLLM_NIXL_SIDE_CHANNEL_PORT": null,
+      "VLLM_SERVER_DEV_MODE": null,
+      "VLLM_USE_FLASHINFER_SAMPLER": "0"
+    },
+    "gpus": [
+      {
+        "driver": "535.247.01",
+        "index": 0,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 83351,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 1,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 2,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 3,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 4,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 5,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 6,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      },
+      {
+        "driver": "535.247.01",
+        "index": 7,
+        "memory_total_mib": 97871,
+        "memory_used_mib": 0,
+        "name": "NVIDIA H20"
+      }
+    ],
+    "hostname": "TENCENT64.site",
+    "packages": {
+      "aiohttp": "3.14.3",
+      "nixl": "1.2.0",
+      "nixl-cu12": null,
+      "nixl-cu13": "1.2.0",
+      "torch": "2.11.0+cu130",
+      "transformers": "5.18.0",
+      "vllm": "0.24.0"
+    },
+    "python": "3.11.13",
+    "time": "2026-10-04T21:12:43+0800",
+    "uname": "Linux TENCENT64.site 5.4.241-1-tlinux4-0017.7 #1 SMP Thu Jan 18 11:33:00 CST 2024 x86_64 x86_64"
+  },
+  "exp": "e2",
+  "frozen_plan_version": "v1",
+  "instances": {
+    "colo0": {
+      "cmd": [
+        "vllm",
+        "serve",
+        "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8400",
+        "--served-model-name",
+        "m27-model",
+        "--tensor-parallel-size",
+        "1",
+        "--dtype",
+        "bfloat16",
+        "--seed",
+        "0",
+        "--gpu-memory-utilization",
+        "0.85",
+        "--max-num-seqs",
+        "256",
+        "--max-num-batched-tokens",
+        "2048",
+        "--block-size",
+        "16",
+        "--max-model-len",
+        "32768",
+        "--attention-backend",
+        "FLASH_ATTN",
+        "--stream-interval",
+        "1",
+        "--kv-cache-dtype",
+        "auto",
+        "--no-enable-prefix-caching",
+        "--no-async-scheduling",
+        "--enable-chunked-prefill",
+        "--disable-uvicorn-access-log",
+        "--shutdown-timeout",
+        "15",
+        "--enforce-eager"
+      ],
+      "effective": {
+        "async_scheduling": false,
+        "attention_backend": "FLASH_ATTN",
+        "block_size": 16,
+        "dtype": "bfloat16",
+        "enable_chunked_prefill": true,
+        "enable_prefix_caching": false,
+        "enforce_eager": true,
+        "gpu_memory_utilization": 0.85,
+        "kv_cache_dtype": "auto",
+        "kv_connector": null,
+        "kv_engine_id": null,
+        "kv_load_failure_policy": null,
+        "kv_role": null,
+        "max_model_len": 32768,
+        "max_num_batched_tokens": 2048,
+        "max_num_seqs": 256,
+        "quantization": null,
+        "seed": 0,
+        "shutdown_timeout": 15,
+        "speculative_config": null,
+        "stream_interval": 1,
+        "tensor_parallel_size": 1,
+        "vllm_env_kv_layout": "HND"
+      },
+      "instance": {
+        "gpu": 0,
+        "http_port": 8400,
+        "mbt": 2048,
+        "name": "colo0",
+        "role": "colo",
+        "side_channel_port": 5600
+      },
+      "log_evidence": {
+        "attn_backend_log": [
+          "FLASH_ATTN"
+        ],
+        "engine_config_log": {
+          "dtype": "torch.bfloat16",
+          "enable_chunked_prefill": "True",
+          "enable_prefix_caching": "False",
+          "enforce_eager": "True",
+          "kv_cache_dtype": "auto",
+          "max_seq_len": "32768",
+          "quantization": "None",
+          "seed": "0",
+          "tensor_parallel_size": "1"
+        },
+        "engine_version_log": "0.24.0",
+        "kv_cache_tokens_log": [
+          1230976
+        ],
+        "kv_layout_log": [
+          "HND"
+        ],
+        "kv_load_fail_events": 0,
+        "kv_load_recovered_events": 0,
+        "log_missing": false,
+        "nixl_available_log": false,
+        "nixl_compat_mismatch": 0,
+        "nixl_compat_pass": [],
+        "tracebacks": 0
+      },
+      "requested": {
+        "async_scheduling": false,
+        "attention_backend": "FLASH_ATTN",
+        "block_size": 16,
+        "dtype": "bfloat16",
+        "enable_chunked_prefill": true,
+        "enable_prefix_caching": false,
+        "enforce_eager": true,
+        "gpu_memory_utilization": 0.85,
+        "kv_cache_dtype": "auto",
+        "kv_connector": null,
+        "kv_load_failure_policy": null,
+        "kv_role": null,
+        "max_model_len": 32768,
+        "max_num_batched_tokens": 2048,
+        "max_num_seqs": 256,
+        "quantization": null,
+        "seed": 0,
+        "shutdown_timeout": 15,
+        "speculative_config": null,
+        "stream_interval": 1,
+        "tensor_parallel_size": 1,
+        "vllm_env_kv_layout": "HND"
+      }
+    }
+  },
+  "kind": "colo",
+  "mismatches": [],
+  "model_dir": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
+  "startup_s": 24.0,
+  "tag": "h20_formal"
+}

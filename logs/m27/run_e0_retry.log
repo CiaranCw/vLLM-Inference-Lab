@@ -1,0 +1,3 @@
+[budget] used=0.004 GPU-h; next reservation=3.000; hard cap=168.0
+[run_all] stage=e0 rc=0 elapsed=219s
+[budget] stage=e0_retry_llguidance actual=0.100 cumulative=0.104 GPU-h

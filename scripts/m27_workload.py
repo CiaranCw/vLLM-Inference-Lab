@@ -283,14 +283,15 @@ async def run_e2(topo, raw_path, p_lens, warmup, measure):
 
 
 # --------------------------------------------------------------------------- E3/E4/E5
-def build_schedule(shape: str, rate: float, duration_s: float, seed: int) -> list[dict]:
-    """Poisson（burstiness=1 → 指数间隔）到达；mixture 按冻结权重逐请求抽样。"""
+def build_schedule(shape: str, rate: float, duration_s: float, seed: int,
+                   max_requests: int | None = None) -> list[dict]:
+    """Poisson arrivals; optional first-N cap is exclusively for online warmup."""
     rng = random.Random(f"{shape}-{rate:.6f}-{seed}")
     shapes = C.FROZEN["e3"]["shapes"]
     mix = C.FROZEN["e3"]["mixture"]
     names, weights = list(mix), [mix[k] for k in mix]
     t, out, i = 0.0, [], 0
-    while True:
+    while max_requests is None or i < max_requests:
         t += rng.expovariate(rate)
         if t >= duration_s:
             break
@@ -377,7 +378,7 @@ async def run_online(topo, raw_path, exp, shape, rate, seed, load_frac, rates_sh
 
 
 async def warmup_online(topo, raw_path, exp, shape):
-    sched = build_schedule(shape, 2.0, 1e9, 9999)[:E3_WARMUP_REQUESTS]
+    sched = build_schedule(shape, 2.0, 1e9, 9999, max_requests=E3_WARMUP_REQUESTS)
     for k, x in enumerate(sched):
         x["t_offset_s"] = 0.25 * k
     async with _session() as s:
@@ -392,7 +393,8 @@ async def calibrate(topo, raw_path, exp, shapes, rates_path, warmup, measure):
     """在同 GPU 预算的 colocated 基线上找每个 shape 的 C_cal（规则见 M27_H20_PLAN §E3）。"""
     out = {"arm": topo.arm, "exp": exp, "rule": {
         "start_rate": CAL_START_RATE, "step": CAL_STEP, "horizon_s": CAL_HORIZON_S,
-        "pass_if": f"achieved>={CAL_ACHIEVED_FRAC}*offered and n_fail==0 and "
+        "rate_denominator": "arrival_horizon_s for both delivered and offered; wall throughput recorded separately",
+        "pass_if": f"delivered_per_arrival_window>={CAL_ACHIEVED_FRAC}*offered and n_fail==0 and "
                    f"ttft_p99<={CAL_TTFT_MULT}*unloaded_ttft_median"}, "shapes": {}}
     shapes_cfg = C.FROZEN["e3"]["shapes"]
     base_needed = sorted({b for sh in shapes for b in (shapes_cfg if sh == "mixture" else [sh])})
@@ -425,10 +427,15 @@ async def calibrate(topo, raw_path, exp, shapes, rates_path, warmup, measure):
         for _ in range(CAL_MAX_STEPS):
             summ = await run_online(topo, raw_path, exp, shape, rate, 0, None, None,
                                     CAL_HORIZON_S, phase="calibration")
+            # The Poisson arrival window ends at 30 s, but _fire drains every
+            # in-flight request. Divide completed and offered counts by the
+            # same frozen arrival horizon; never count normal drain as a miss.
+            delivered = C.calibration_delivered_rate(summ["n_ok"], CAL_HORIZON_S)
             passed = (ttft_med is not None and summ["n_fail"] == 0 and
-                      summ["achieved_rate"] >= CAL_ACHIEVED_FRAC * summ["offered_rate"] and
+                      delivered >= CAL_ACHIEVED_FRAC * summ["offered_rate"] and
                       (summ["ttft_p99_ms"] or 1e18) <= CAL_TTFT_MULT * ttft_med)
-            ladder.append({"rate": rate, "passed": passed, "achieved": summ["achieved_rate"],
+            ladder.append({"rate": rate, "passed": passed, "achieved": delivered,
+                           "achieved_wall": summ["achieved_rate"],
                            "offered": summ["offered_rate"], "ttft_p99_ms": summ["ttft_p99_ms"]})
             if not passed:
                 break

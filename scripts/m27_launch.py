@@ -259,6 +259,7 @@ class Topology:
                 f.write(prom)
             vc = si.get("vllm_config") if isinstance(si.get("vllm_config"), dict) else {}
             eff = {k: _norm(k, _get(vc, path)) for k, path, _ in READBACK_KEYS}
+            eff["shutdown_timeout"] = vc.get("shutdown_timeout", MISSING)
             ktc = vc.get("kv_transfer_config") if isinstance(vc, dict) else None
             eff["kv_connector"] = (ktc or {}).get("kv_connector")
             eff["kv_role"] = (ktc or {}).get("kv_role")
@@ -273,6 +274,7 @@ class Topology:
             req["kv_connector"] = (want_ktc or {}).get("kv_connector")
             req["kv_role"] = (want_ktc or {}).get("kv_role")
             req["kv_load_failure_policy"] = (want_ktc or {}).get("kv_load_failure_policy")
+            req["shutdown_timeout"] = C.SHUTDOWN_TIMEOUT_S
             req["vllm_env_kv_layout"] = C.FROZEN["kv_cache_layout"]
             for k, want in req.items():
                 if eff.get(k) != want:
@@ -343,16 +345,38 @@ class Topology:
         if proc is None or proc.poll() is not None:
             return "already_exited"
         try:
-            os.killpg(proc.pid, signal.SIGTERM)
+            proc.send_signal(signal.SIGTERM)
+            proc.wait(timeout=60)
         except ProcessLookupError:
             return "gone"
-        try:
-            proc.wait(timeout=60)
-            return "sigterm"
         except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
-            proc.wait(timeout=30)
-            return "sigkill"
+            os.killpg(proc.pid, signal.SIGTERM)
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait(timeout=30)
+                return "sigkill_group"
+            return "sigterm_group"
+        # Let vLLM's API server shut its EngineCore down before signalling
+        # surviving processes in this launcher-owned process group.
+        for _ in range(30):
+            active = []
+            for app in C.gpu_compute_apps():
+                try:
+                    pid = int(app.split(",", 1)[0])
+                    if os.getpgid(pid) == proc.pid:
+                        active.append(pid)
+                except (ValueError, ProcessLookupError, PermissionError):
+                    continue
+            if not active:
+                return "sigterm_graceful"
+            time.sleep(1)
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return "sigterm_graceful"
+        return "sigterm_orphan_group"
 
     def stop(self, reason="normal"):
         res = {"proxy": self._stop_group(self.proxy)}

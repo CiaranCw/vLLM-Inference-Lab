@@ -1,0 +1,6 @@
+[ FAIL ] m27              m27_no_failures_log             当前 raw 的生命周期缺失/异常或服务日志含 KV load 失败/compat mismatch/Traceback：[('e0', 'pd_1p1d', 'P0')]
+
+合计：23 PASS / 1 FAIL / 0 PENDING（模块：m27）
+
+FAIL：
+  - m27 · m27_no_failures_log: 当前 raw 的生命周期缺失/异常或服务日志含 KV load 失败/compat mismatch/Traceback：[('e0', 'pd_1p1d', 'P0')]

@@ -1,0 +1,14 @@
+[budget] used=1.401 GPU-h; next reservation=7.000; hard cap=168.0
+[e3cal] colo2_mbt8192 d_heavy rate=0.500 seed=0 ok=11/11
+[e3cal] colo2_mbt8192 balanced rate=0.500 seed=0 ok=15/15
+[e3cal] colo2_mbt8192 p_heavy rate=0.500 seed=0 ok=20/20
+[e3cal] colo2_mbt8192 p_heavy rate=0.707 seed=0 ok=28/28
+[e3cal] colo2_mbt8192 p_heavy rate=1.000 seed=0 ok=32/32
+[e3cal] colo2_mbt8192 p_heavy rate=1.414 seed=0 ok=31/31
+[e3cal] colo2_mbt8192 p_heavy rate=2.000 seed=0 ok=54/54
+[e3cal] colo2_mbt8192 p_heavy rate=2.828 seed=0 ok=89/89
+[e3cal] colo2_mbt8192 mixture rate=0.500 seed=0 ok=13/13
+[e3cal] colo2_mbt8192 mixture rate=0.707 seed=0 ok=24/24
+[run_all] STOP：校准未得到有效 C_cal 的 shape：['d_heavy', 'balanced']（见 /root/m27_work/vLLM-Inference-Lab/outputs/m27/configs/h20_formal_e3cal_rates.json）
+[run_all] stage=e3cal rc=3 elapsed=625s
+[budget] stage=e3cal actual=0.347 cumulative=1.747 GPU-h

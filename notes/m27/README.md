@@ -1,7 +1,7 @@
 # M27 · Prefill–Decode Disaggregation & NIXL KV Transfer（Stage K · Distributed Serving Deep Dive）
 
-**状态：T（源码核实）+ O（工程准备）+ DESIGN FROZEN v1 + 实现就绪；E/H = NOT EXECUTED。**
-本目录没有任何实测性能数字。M24 中没有执行的 P-D 实验部分在这里继续（M24 的冻结计划与结论不改）。
+**状态：DESIGN FROZEN v1；真实 H20 Gate 0/E0/E1 已通过，E2 A/B 已按统一代理策略完成，E3–E5 尚未完成；M27_E/H = NOT COMPLETE。**
+当前机时受限，先生成中转包给下一台机器续跑；原始交接包另行提供。当前数字见 [`results.md`](results.md)，操作及旧策略归档见 [`execution_record.md`](execution_record.md)。M24 冻结计划与结论不改。
 
 | 文件 | 内容 |
 |---|---|
@@ -10,8 +10,8 @@
 | [`M27_H20_RUNBOOK.md`](M27_H20_RUNBOOK.md) | H20 执行顺序：Gate 0 → Gate 1(E0) → E1 → E2 → E3 → E4 → Gate 8 → E5 → Package，每步 PASS / STOP |
 | [`offline_package.md`](offline_package.md) | NIXL wheel 清单与 sha256、安装方式、三部分交接包（code / wheelhouse / model）、未闭环风险 |
 | [`model_artifact_manifest.md`](model_artifact_manifest.md) | 7B 模型身份：逐文件 sha256（[`model_artifact/`](model_artifact/)）、来源证据链、HF revision 比对、模型 Gate |
-| [`execution_record.md`](execution_record.md) | H20 执行记录模板（NOT EXECUTED） |
-| [`results.md`](results.md) | 结果模板 §1–13（NOT EXECUTED） |
+| [`execution_record.md`](execution_record.md) | 本机 H20 现场执行、失败与偏离、当前有效证据边界 |
+| [`results.md`](results.md) | 当前有效 E0/E1 与 E2 待收口的部分实测结果；E3–E5 不做结论 |
 
 ## 脚本
 

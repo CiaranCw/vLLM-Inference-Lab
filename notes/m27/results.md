@@ -1,106 +1,48 @@
-# M27 · 结果（模板）
+# M27 · H20 中途交接结果（非正式收口）
 
-> **status = NOT EXECUTED**。没有任何 H20 formal raw（`outputs/m27/raw/h20_formal_*.jsonl` 不存在），
-> 因此本文件**不含任何实测数字**。本地（RTX 5080 单卡、没有 NIXL）没有执行 P-D smoke，也没有 `local_preflight` 数据。
-> 填写规则：每个数字都必须来自 `outputs/m27/` 的 CSV/JSON，并注明文件名；结论都要带适用边界
-> （H20 / TP1 每实例 / Qwen2.5-7B bf16 / `enforce_eager` / 在线客户端口径 / 本次实测拓扑）。
+> **M27_H20_PARTIAL_HANDOFF**。当前统一上游连接策略 `force_close=True` 下 Gate 0、E0、E1 完成；E2 A/B 已重跑且通过 overlap/paired-key/transfer 不变量；E3cal/E3/E4/E5 未形成可用正式结果。M27_E/M27_H **NOT COMPLETE**。本文件不是正式结论。H20 / vLLM 0.24.0 / NIXL 1.2.0 / Qwen2.5-7B bf16 / TP1 / eager / HND / 本机 NV18 / 在线客户端口径。
 
-## 1. Environment
+## Gate 0 · 环境
 
-NOT EXECUTED。来源将是 `outputs/m27/configs/preflight_h20_formal.json`、`gpu_map_h20_formal.json`，以及
-[`execution_record.md`](execution_record.md) §2。
+8×NVIDIA H20 97871 MiB，driver 535.247.01 + 官方 cuda-compat 13.0；Python 3.11.13、torch 2.11.0+cu130、vLLM 0.24.0、NIXL 1.2.0。GPU0–7 两两 NV18，但 GPU0–3 属于 NUMA 0，GPU4–7 属于 NUMA 1。交接包 1129/1129 SHA256 OK；模型 15/15 OK，HF revision `a09a35458c702b33eeacc393d103063234e8bc28`，无 context fallback。详见 `outputs/m27/configs/preflight_h20_formal.json`、`gpu_map_h20_formal.json` 和 `logs/m27/gate0_environment_inventory.log`。
 
-## 2. Formal configuration
+## E0 · 正确性（PASS）
 
-冻结配置见 [`M27_H20_PLAN.md`](M27_H20_PLAN.md) §2（v1）。生效配置将取自 `outputs/m27/configs/h20_formal_*_effective.json`
-（server_info + 日志双来源回读）。NOT EXECUTED。
+当前有效 raw：`outputs/m27/raw/h20_formal_e0_pd_1p1d.jsonl` 与 `h20_formal_e0_colo1_mbt8192.jsonl`；派生 `outputs/m27/h20_formal_e0_gate.json`。PD 5 measure 中 D external KV tokens = P local compute = 发出 prompt tokens = 10240；D local compute = 0；NIXL transfers = 5、failed = 0、指标稳定；fault probe 返回 HTTP 502、D prompt 增量 0。D 日志 `UCX_PROTO_INFO=y` 记录 GPU `cuda_ipc/cuda` zero-copy、控制面 `tcp/bond1`；不以 `tcp` 字样误判 KV 数据通道。P/D `kv_load_failure_policy=fail`、HND 与配置双来源回读；服务日志无 KV failure、compat mismatch、Traceback。与 colocated 首 token/完整输出各 4/5 一致；不是通过条件。旧失败尝试在 `raw/backup_*/` 和 `logs/m27/failed_attempts/`，不得合并。
 
-## 3. E0 correctness
+## E1 · KV 传输缩放（COMPLETE，RQ2 局部回答）
 
-NOT EXECUTED。来源：`outputs/m27/h20_formal_e0_gate.json`、`h20_formal_log_evidence.json`。
+当前有效 raw：`outputs/m27/raw/h20_formal_e1_pd_1p1d.jsonl`；派生 `outputs/m27/h20_formal_e1_transfer.csv`。每点 5 warmup 与 15 measure 分离，下面均为成功 measure 的中位数；GB/s = 实测 NIXL bytes / 累计 xfer time，而非墙钟带宽。
 
-| 判据 | 结果 |
-|---|---|
-| D external_kv_transfer == prompt tokens sent | NOT EXECUTED |
-| D local_compute == 0 / P local_compute == sent | NOT EXECUTED |
-| NIXL transfers ≥ 5 / failed == 0 | NOT EXECUTED |
-| fault probe 502 且 D 未收到请求 | NOT EXECUTED |
-| 日志：compat pass / 无 KV load failure / 无 Traceback / KV layout = HND | NOT EXECUTED |
-| UCX 实际传输层 | NOT EXECUTED |
+| Context tokens | 理论整块 KV bytes | NIXL 实测 bytes | xfer ms | post ms | 等效 GB/s | 客户端 TTFT ms |
+|---:|---:|---:|---:|---:|---:|---:|
+| 512 | 29,360,128 | 29,360,128 | 7.354 | 5.761 | 3.992 | 85.726 |
+| 2048 | 117,440,512 | 117,440,512 | 24.570 | 16.871 | 4.780 | 260.465 |
+| 4096 | 234,881,024 | 234,881,024 | 48.820 | 41.481 | 4.811 | 502.584 |
+| 8192 | 469,762,048 | 469,762,048 | 104.631 | 92.563 | 4.490 | 1033.345 |
+| 16384 | 939,524,096 | 939,524,096 | 211.424 | 186.936 | 4.444 | 2235.930 |
 
-## 4. E1 KV transfer scaling（RQ2）
+本轮恰好数值相等是实测观察，**不是理论 bytes 必须等于 NIXL bytes 的一般不变量**；xfer 为 handle 时间之和，不能等同于独立通信墙钟时间；没有 profiler 时间线，不声称 compute/communication overlap。
 
-NOT EXECUTED。来源：`outputs/m27/h20_formal_e1_transfer.csv`、`figures/fig16_m27_e1_transfer_h20_formal.png`。
+## E2 · 受控 Prefill 干扰（RQ1）
 
-| context | 理论 bytes（block） | NIXL 实测 bytes | 实测/理论 | xfer ms | post ms | GB/s | 客户端 TTFT | proxy P 阶段 | D 首字节 |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 512 | 29,360,128 | NOT EXECUTED | | | | | | | |
-| 2048 | 117,440,512 | NOT EXECUTED | | | | | | | |
-| 4096 | 234,881,024 | NOT EXECUTED | | | | | | | |
-| 8192 | 469,762,048 | NOT EXECUTED | | | | | | | |
-| 16384 | 939,524,096 | NOT EXECUTED | | | | | | | |
+**当前代理策略 E2 完成**：4 arm × 4 context × (5 warmup+15 measure) = 320/320 overlap_valid。
+派生 `outputs/m27/h20_formal_e2_{interference,effect}.csv` 只取本轮当前 raw；旧策略 raw 已归档。
+下表的 max stall 为客户端逐请求最大 ITL 的组内中位数；差值是 `colo1_mbt8192 − PD` 的 median difference 和冻结 Bootstrap 95% CI。
 
-（理论列是公式计算值，不是测量值。）
+| 注入 tokens | PD max stall 中位 ms | colo1_mbt8192 max stall 中位 ms | 差值 [95% CI] ms |
+|---:|---:|---:|---:|
+| 0 | 13.09 | 11.77 | -1.32 [-1.86, -1.09] |
+| 2048 | 29.86 | 210.70 | 180.84 [179.58, 181.49] |
+| 8192 | 105.03 | 885.10 | 780.06 [778.73, 781.27] |
+| 16384 | 200.60 | 1075.87 | 875.27 [874.61, 875.83] |
 
-## 5. E2 interference isolation（RQ1）
+E2 是不同 GPU 数（1 vs 2）的干扰隔离机制比较，**不能**据此回答同成本部署效率；见 `h20_formal_e2_effect.csv` 的另外两个合法 colo chunk 对照。
 
-> 证据性质：**mechanism / interference-isolation**。colo1（1 卡）vs 1P1D（2 卡），不是同 GPU 预算的部署比较。
+## E3 / E4 / E5 · 尚未完成（RQ3/RQ4 暂无答案）
 
-NOT EXECUTED。来源：`outputs/m27/h20_formal_e2_interference.csv`、`h20_formal_e2_effect.csv`、
-`figures/fig17_m27_e2_interference_h20_formal.png`。
+E3cal 曾按旧连接策略完成，**其速率文件、raw 现已移入 `outputs/m27/raw/backup_20261004T231827/`，不属于当前有效正式证据，不能沿用其 C_cal 或 SHA**。E3 PD 旧策略高负载发生过一次 `ServerDisconnectedError` HTTP 502，已完整保留原失败证据，但不能纳入汇总。新服务器在当前代理策略下必须从 `--stage e3cal` 重新生成共享基线，然后运行冻结 E3/E4；E5 只在 Gate 8 满足时运行。不得把未跑的 E3/E4/E5 写成负结果或 PASS。
 
-| p_len | arm | max stall 中位 | D ITL p99 中位 | 注入 TTFT 中位 | colo − pd 差值 [95% CI] |
-|---:|---|---:|---:|---:|---|
-| 0 / 2048 / 8192 / 16384 | colo1_mbt{2048,4096,8192} / pd_1p1d | NOT EXECUTED | | | |
+## 局限和完整证据链
 
-## 6. E3 online workload（RQ3）
-
-NOT EXECUTED。来源：`outputs/m27/h20_formal_e3_online.csv`、`h20_formal_e3_effect.csv`、`configs/h20_formal_e3cal_rates.json`、
-`figures/fig18_m27_e3_online_h20_formal.png`。主比较是 `pd_1p1d` vs `colo2_*`（GPU 预算相同，**equal-GPU-budget deployment comparison**）。
-goodput 门槛 = m × `colo2_mbt8192` 校准时的无负载中位（共享、冻结）；必须同时报告绝对 TTFT / ITL / E2E。
-
-## 7. E4 P:D resource ratio（RQ4）
-
-NOT EXECUTED。来源：`outputs/m27/h20_formal_e4_online.csv`、`h20_formal_e4_effect.csv`。
-
-## 8. 8-GPU confirmation
-
-NOT EXECUTED（Gate 8 尚未评估；M22 时容器只看到 4 张 GPU）。
-
-## 9. Profiler evidence
-
-NOT EXECUTED（P1 未实现）。在没有 timeline 证据之前，“NIXL 异步 READ 与 decode 计算重叠”只能写“未验证”。
-
-## 10. Failed hypotheses
-
-NOT EXECUTED。（要求：如实列出被数据否定的假设，例如“PD 降低 E3 的 ITL p99”若 CI 含 0 或方向相反。）
-
-## 11. Limitations
-
-- 单机 H20、每实例 TP1、Qwen2.5-7B bf16、`enforce_eager`（ITL 绝对值偏高）、客户端在线口径；不外推到跨节点、TP>1 或 compiled 模式。
-- arm 顺序执行，时间漂移是伴随变量。
-- B 层（调优后的 colocated）比较不是单变量对照。
-- E2 是机制实验（colo1 = 1 卡，1P1D = 2 卡），只回答干扰是否被隔离；同 GPU 预算的部署结论只来自 E3（colo2 vs 1P1D）和 E4。
-- goodput 门槛来自校准 arm 的共享基线（同一实验内所有 arm 门槛相同），只在同一实验内比较；主结论以绝对 TTFT / ITL / E2E 为准。
-- M27 formal conclusions are scoped to HND layout。M22 / M24 未设布局（按源码默认推断为 NHD）且是 in-process 口径，
-  绝对延迟只作背景，不与 M27 相减，也不归因于并行策略。
-- 模型身份由 `notes/m27/model_artifact/qwen2.5-7b-instruct.sha256` 冻结（与 M22 下载时生成的 manifest 逐行相同；
-  恢复副本被认为就是 M22 artifact，但没有密码学证据证明它与 M22 在 H20 上使用的那份逐位相同），
-  见 [`model_artifact_manifest.md`](model_artifact_manifest.md)。H20 上的副本须在 Gate 0 重新校验。
-- 理论 KV bytes ≠ NIXL 实测 bytes。
-- 吞吐和尾部延迟隔离分开报告；官方文档明确说 P-D 不提升吞吐。
-
-## 12. Interview answer
-
-NOT EXECUTED。（待数据后用三句话回答：PD 付出了多少传输/编排成本、换来了多少干扰隔离、在什么 workload / 配比下值得；
-允许答案是“不值得”。）
-
-## 13. Evidence map
-
-| 结论 | 证据文件 | 生成脚本 |
-|---|---|---|
-| （尚无结论） | `outputs/m27/raw/h20_formal_*.jsonl`（不存在） | `scripts/m27_run_all.py` |
-| | `outputs/m27/h20_formal_*.csv` | `scripts/m27_summarize.py` |
-| | `outputs/m27/h20_formal_log_evidence.json` | `scripts/m27_trace_analyze.py` |
-| | `figures/fig1{6,7,8}_m27_*_h20_formal.png` | `scripts/m27_figures.py` |
-| | 不变量 | `scripts/check_invariants.py --module m27` |
+M27 目前可用 E1 回答 RQ2 的本机 KV 传输缩放、用完整 E2 回答 RQ1 的机制级干扰隔离；RQ3、RQ4 缺同预算 E3/E4，仍未回答。原启动、停机、校准窗口和代理修复均在 `notes/m27/execution_record.md` §8–9 有根因及旧 raw 归档；`outputs/m27/gpu_hour_ledger.csv` 含失败尝试用量。历史 M22/M24 口径/布局不同，不拿绝对延迟做直接相减归因。此中转包不是最终结果，不进行 final commit / push / tag / release。

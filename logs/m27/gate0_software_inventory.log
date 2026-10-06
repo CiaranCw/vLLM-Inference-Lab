@@ -1,0 +1,22 @@
+UTC 2026-10-04T11:59:25+00:00
+nixl 1.2.0
+nixl-cu13 1.2.0
+nvidia-nccl-cu13 2.28.9
+ucx-py not installed
+vllm 0.24.0
+torch 2.11.0+cu130
+transformers 5.18.0
+aiohttp 3.14.3
+torch cuda 13.0 cudnn 91900 nccl (2, 28, 9)
+libucm_cuda.la
+libucm_cuda.so
+libucm_cuda.so.0
+libucm_cuda.so.0.0.0
+libuct_cma.la
+libuct_cma.so
+libuct_cma.so.0
+libuct_cma.so.0.0.0
+libuct_cuda.la
+libuct_cuda.so
+openssl3-libs-3.5.5-6.el8.x86_64
+81cfb0e12c2ccf94e992e75cd15d830080b7b47a53b25fe3d14896c9c2478c76  /root/cuda-compat-13-0-580.95.05-1.el8.x86_64.rpm

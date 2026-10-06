@@ -1,0 +1,6 @@
+[ FAIL ] m27              m27_upstream_connection_policy  PD/colo 的代理上游连接策略未双臂一致或旧 raw 未重跑：[('e1', 'pd_1p1d'), ('e2', 'colo1_mbt2048'), ('e2', 'colo1_mbt4096'), ('e2', 'colo1_mbt8192'), ('e2', 'pd_1p1d')]
+
+合计：30 PASS / 1 FAIL / 0 PENDING（模块：m27）
+
+FAIL：
+  - m27 · m27_upstream_connection_policy: PD/colo 的代理上游连接策略未双臂一致或旧 raw 未重跑：[('e1', 'pd_1p1d'), ('e2', 'colo1_mbt2048'), ('e2', 'colo1_mbt4096'), ('e2', 'colo1_mbt8192'), ('e2', 'pd_1p1d')]

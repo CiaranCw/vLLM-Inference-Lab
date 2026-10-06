@@ -1,0 +1,16 @@
+stage,start_time,end_time,gpu_count,elapsed_hours,gpu_hours,cumulative_gpu_hours,reason
+e0,2026-10-04T19:59:20+08:00,2026-10-04T19:59:29+08:00,2,0.002480,0.004448,0.004448,rc=1; lifecycle start/stop
+e0_retry_llguidance,2026-10-04T20:27:19+08:00,2026-10-04T20:30:59+08:00,2,0.061079,0.099765,0.104213,rc=0; lifecycle start/stop
+e0_rerun_shutdown_fix,2026-10-04T20:32:33+08:00,2026-10-04T20:35:54+08:00,2,0.055793,0.088519,0.192732,rc=0; lifecycle start/stop
+e0_rerun_shutdown_grace,2026-10-04T20:38:27+08:00,2026-10-04T20:42:13+08:00,2,0.062871,0.102314,0.295046,rc=0; lifecycle start/stop
+e1,2026-10-04T20:43:05+08:00,2026-10-04T20:48:20+08:00,2,0.087423,0.172511,0.467557,rc=0; lifecycle start/stop
+e2a,2026-10-04T20:48:55+08:00,2026-10-04T21:11:16+08:00,2,0.372546,0.556644,1.024201,rc=0; lifecycle start/stop
+e2b,2026-10-04T21:11:40+08:00,2026-10-04T21:34:17+08:00,1,0.376736,0.376335,1.400536,rc=0; lifecycle start/stop
+e3cal,2026-10-04T21:34:52+08:00,2026-10-04T21:45:18+08:00,2,0.173746,0.346959,1.747495,rc=3; lifecycle start/stop
+e3cal_window_fix,2026-10-04T21:49:33+08:00,2026-10-04T22:17:21+08:00,2,0.463276,0.926037,2.673532,rc=0; lifecycle start/stop
+e3_pd_1p1d,2026-10-04T22:20:31+08:00,2026-10-04T22:27:23+08:00,2,0.114477,0.228475,2.902007,rc=-15; lifecycle start/stop; incomplete sessions charged until stage end
+e3_pd_warmup_fix,2026-10-04T22:29:07+08:00,2026-10-04T22:51:09+08:00,2,0.367118,0.732993,3.635000,rc=-15; lifecycle start/stop; incomplete sessions charged until stage end
+e0_rerun_proxy_policy,2026-10-04T22:53:02+08:00,2026-10-04T22:56:44+08:00,2,0.061761,0.100603,3.735603,rc=0; lifecycle start/stop
+e1_rerun_proxy_policy,2026-10-04T22:57:34+08:00,2026-10-04T23:02:46+08:00,2,0.086715,0.172933,3.908536,rc=0; lifecycle start/stop
+e2a_rerun_proxy_policy,2026-10-04T23:03:29+08:00,2026-10-04T23:26:05+08:00,2,0.376688,0.564563,4.473099,rc=0; lifecycle start/stop
+e2b_rerun_proxy_policy,2026-10-04T23:26:09+08:00,2026-10-04T23:48:28+08:00,1,0.371808,0.371414,4.844513,rc=0; lifecycle start/stop

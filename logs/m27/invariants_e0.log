@@ -1,0 +1,6 @@
+[ FAIL ] m27              m27_no_failures_log            lifecycle 缺失或日志出现 KV load 失败/兼容性不符/Traceback：[('e0', 'pd_1p1d', 'P0'), ('e0', 'pd_1p1d', 'D1'), ('e0', 'colo1_mbt8192', 'colo0')]
+
+合计：22 PASS / 1 FAIL / 0 PENDING（模块：m27）
+
+FAIL：
+  - m27 · m27_no_failures_log: lifecycle 缺失或日志出现 KV load 失败/兼容性不符/Traceback：[('e0', 'pd_1p1d', 'P0'), ('e0', 'pd_1p1d', 'D1'), ('e0', 'colo1_mbt8192', 'colo0')]

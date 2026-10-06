@@ -1,0 +1,12 @@
+[ FAIL ] env              env[VLLM_USE_FLASHINFER_SAMPLER]                   VLLM_USE_FLASHINFER_SAMPLER=None，期望 '0'（缺了会在 sm_120 上崩，见 AGENTS.md §5）
+[ FAIL ] env              env[VLLM_ENABLE_V1_MULTIPROCESSING]                VLLM_ENABLE_V1_MULTIPROCESSING=None，期望 '0'（缺了会在 sm_120 上崩，见 AGENTS.md §5）
+[PENDING] m27              artifacts                                          outputs/m27/raw/h20_formal_*.jsonl 不存在 —— M27 H20 实验尚未执行。当前仅 T/O + DESIGN，不得标 E/H
+
+合计：160 PASS / 2 FAIL / 1 PENDING（模块：m0, m17, m18, m19, m21, m22, m23, m24, m27）
+
+PENDING（实验尚未执行，**不得记为通过**）：
+  - m27 · artifacts: outputs/m27/raw/h20_formal_*.jsonl 不存在 —— M27 H20 实验尚未执行。当前仅 T/O + DESIGN，不得标 E/H
+
+FAIL：
+  - env · env[VLLM_USE_FLASHINFER_SAMPLER]: VLLM_USE_FLASHINFER_SAMPLER=None，期望 '0'（缺了会在 sm_120 上崩，见 AGENTS.md §5）
+  - env · env[VLLM_ENABLE_V1_MULTIPROCESSING]: VLLM_ENABLE_V1_MULTIPROCESSING=None，期望 '0'（缺了会在 sm_120 上崩，见 AGENTS.md §5）

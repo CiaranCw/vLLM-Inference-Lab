@@ -40,6 +40,7 @@ HOST = "127.0.0.1"
 PROXY_PORT = 8300
 HTTP_PORT_BASE = 8400
 SIDE_CHANNEL_PORT_BASE = 5600
+SHUTDOWN_TIMEOUT_S = 15  # process lifecycle only; no effect before shutdown
 
 FROZEN = {
     "plan_version": "v1",
@@ -155,6 +156,13 @@ REQUIRED_ENV = {
 }
 
 
+def calibration_delivered_rate(n_ok: int, arrival_horizon_s: float) -> float:
+    """Delivered/offered rates share the frozen arrival horizon, not drain wall time."""
+    if arrival_horizon_s <= 0:
+        raise ValueError("arrival horizon must be positive")
+    return n_ok / arrival_horizon_s
+
+
 # --------------------------------------------------------------------------- KV 理论值
 def kv_bytes_per_token(model=None) -> int:
     m = model or FROZEN["model"]
@@ -249,6 +257,7 @@ def serve_cmd(model_dir: str, inst: dict, engine: dict | None = None) -> list[st
         "--no-async-scheduling",
         "--enable-chunked-prefill",
         "--disable-uvicorn-access-log",
+        "--shutdown-timeout", str(SHUTDOWN_TIMEOUT_S),
     ]
     if e["enforce_eager"]:
         cmd.append("--enforce-eager")

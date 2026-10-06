@@ -89,3 +89,6 @@ outputs/m27/transfer_test_*
 outputs/m27/package_*.json
 outputs/m27/raw/local_preflight_*
 outputs/m27/raw/*smoke*
+# M27：单文件 >100MB 的 formal raw 不进普通 Git 历史（逐个列出，不用通配）。
+# 完整字节在 reviewed archive，逐文件 sha256 见 notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv
+outputs/m27/raw/backup_20261004T225246/raw/h20_formal_e3_pd_1p1d.jsonl

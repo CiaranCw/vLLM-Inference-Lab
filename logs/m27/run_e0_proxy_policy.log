@@ -1,0 +1,15 @@
+[budget] used=3.635 GPU-h; next reservation=2.000; hard cap=168.0
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e0_pd_1p1d.jsonl -> outputs/m27/raw/backup_20261004T225302/raw/
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e0_pd_1p1d_proxy.jsonl -> outputs/m27/raw/backup_20261004T225302/raw/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e0_pd_1p1d_D1_server_info.json -> outputs/m27/raw/backup_20261004T225302/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e0_pd_1p1d_P0_server_info.json -> outputs/m27/raw/backup_20261004T225302/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e0_pd_1p1d_effective.json -> outputs/m27/raw/backup_20261004T225302/configs/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e0_pd_1p1d_D1_startup.prom -> outputs/m27/raw/backup_20261004T225302/metrics/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e0_pd_1p1d_P0_startup.prom -> outputs/m27/raw/backup_20261004T225302/metrics/
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e0_colo1_mbt8192.jsonl -> outputs/m27/raw/backup_20261004T225524/raw/
+[run_all] 备份（不删除）outputs/m27/raw/h20_formal_e0_colo1_mbt8192_proxy.jsonl -> outputs/m27/raw/backup_20261004T225524/raw/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e0_colo1_mbt8192_colo0_server_info.json -> outputs/m27/raw/backup_20261004T225524/configs/
+[run_all] 备份（不删除）outputs/m27/configs/h20_formal_e0_colo1_mbt8192_effective.json -> outputs/m27/raw/backup_20261004T225524/configs/
+[run_all] 备份（不删除）outputs/m27/metrics/h20_formal_e0_colo1_mbt8192_colo0_startup.prom -> outputs/m27/raw/backup_20261004T225524/metrics/
+[run_all] stage=e0 rc=0 elapsed=222s
+[budget] stage=e0_rerun_proxy_policy actual=0.101 cumulative=3.736 GPU-h

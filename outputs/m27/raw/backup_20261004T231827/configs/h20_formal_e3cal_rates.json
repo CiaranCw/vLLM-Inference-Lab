@@ -1,0 +1,370 @@
+{
+  "arm": "colo2_mbt8192",
+  "exp": "e3cal",
+  "rule": {
+    "horizon_s": 30,
+    "pass_if": "delivered_per_arrival_window>=0.95*offered and n_fail==0 and ttft_p99<=10*unloaded_ttft_median",
+    "rate_denominator": "arrival_horizon_s for both delivered and offered; wall throughput recorded separately",
+    "start_rate": 0.5,
+    "step": 1.4142135623730951
+  },
+  "shapes": {
+    "balanced": {
+      "c_cal": 8.000000000000002,
+      "ladder": [
+        {
+          "achieved": 0.5,
+          "achieved_wall": 0.4690476825320426,
+          "offered": 0.5,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 219.6881102025509
+        },
+        {
+          "achieved": 0.6,
+          "achieved_wall": 0.5519713712747055,
+          "offered": 0.6,
+          "passed": true,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 288.288867920637
+        },
+        {
+          "achieved": 0.5333333333333333,
+          "achieved_wall": 0.49424767608272385,
+          "offered": 0.5333333333333333,
+          "passed": true,
+          "rate": 1.0000000000000002,
+          "ttft_p99_ms": 222.88093902170658
+        },
+        {
+          "achieved": 1.4,
+          "achieved_wall": 1.3131908521895048,
+          "offered": 1.4,
+          "passed": true,
+          "rate": 1.4142135623730954,
+          "ttft_p99_ms": 229.22325521707538
+        },
+        {
+          "achieved": 2.1333333333333333,
+          "achieved_wall": 2.0030326611774085,
+          "offered": 2.1333333333333333,
+          "passed": true,
+          "rate": 2.0000000000000004,
+          "ttft_p99_ms": 267.1973040699959
+        },
+        {
+          "achieved": 2.3333333333333335,
+          "achieved_wall": 2.147875190182469,
+          "offered": 2.3333333333333335,
+          "passed": true,
+          "rate": 2.8284271247461907,
+          "ttft_p99_ms": 426.39267444610596
+        },
+        {
+          "achieved": 4.066666666666666,
+          "achieved_wall": 3.709701445093458,
+          "offered": 4.066666666666666,
+          "passed": true,
+          "rate": 4.000000000000001,
+          "ttft_p99_ms": 443.0736478418113
+        },
+        {
+          "achieved": 5.066666666666666,
+          "achieved_wall": 4.629337423318049,
+          "offered": 5.066666666666666,
+          "passed": true,
+          "rate": 5.6568542494923815,
+          "ttft_p99_ms": 539.6253020316365
+        },
+        {
+          "achieved": 8.866666666666667,
+          "achieved_wall": 7.258189207634033,
+          "offered": 8.866666666666667,
+          "passed": true,
+          "rate": 8.000000000000002,
+          "ttft_p99_ms": 2059.569657593966
+        },
+        {
+          "achieved": 12.166666666666666,
+          "achieved_wall": 7.58122473980082,
+          "offered": 12.2,
+          "passed": false,
+          "rate": 11.313708498984763,
+          "ttft_p99_ms": 9032.627577781679
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 216.64884686470032
+    },
+    "d_heavy": {
+      "c_cal": 22.627416997969526,
+      "ladder": [
+        {
+          "achieved": 0.36666666666666664,
+          "achieved_wall": 0.3464694761626359,
+          "offered": 0.36666666666666664,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 50.153317302465446
+        },
+        {
+          "achieved": 0.9,
+          "achieved_wall": 0.8423375484261143,
+          "offered": 0.9,
+          "passed": true,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 46.07636809349059
+        },
+        {
+          "achieved": 1.0333333333333334,
+          "achieved_wall": 1.016291417770585,
+          "offered": 1.0333333333333334,
+          "passed": true,
+          "rate": 1.0000000000000002,
+          "ttft_p99_ms": 43.955808877944946
+        },
+        {
+          "achieved": 1.2333333333333334,
+          "achieved_wall": 1.1436289224165725,
+          "offered": 1.2333333333333334,
+          "passed": true,
+          "rate": 1.4142135623730954,
+          "ttft_p99_ms": 43.88548672199249
+        },
+        {
+          "achieved": 1.9,
+          "achieved_wall": 1.7510534277443752,
+          "offered": 1.9,
+          "passed": true,
+          "rate": 2.0000000000000004,
+          "ttft_p99_ms": 43.972264528274536
+        },
+        {
+          "achieved": 3.6333333333333333,
+          "achieved_wall": 3.345358648579788,
+          "offered": 3.6333333333333333,
+          "passed": true,
+          "rate": 2.8284271247461907,
+          "ttft_p99_ms": 44.476569294929504
+        },
+        {
+          "achieved": 4.133333333333334,
+          "achieved_wall": 3.783244651959978,
+          "offered": 4.133333333333334,
+          "passed": true,
+          "rate": 4.000000000000001,
+          "ttft_p99_ms": 46.1986643821001
+        },
+        {
+          "achieved": 5.633333333333334,
+          "achieved_wall": 5.2306406285695894,
+          "offered": 5.633333333333334,
+          "passed": true,
+          "rate": 5.6568542494923815,
+          "ttft_p99_ms": 45.76210051774978
+        },
+        {
+          "achieved": 7.866666666666666,
+          "achieved_wall": 7.230404020169692,
+          "offered": 7.866666666666666,
+          "passed": true,
+          "rate": 8.000000000000002,
+          "ttft_p99_ms": 53.496154397726066
+        },
+        {
+          "achieved": 10.7,
+          "achieved_wall": 9.842881512728855,
+          "offered": 10.7,
+          "passed": true,
+          "rate": 11.313708498984763,
+          "ttft_p99_ms": 63.48875612020505
+        },
+        {
+          "achieved": 17.0,
+          "achieved_wall": 15.707789548009313,
+          "offered": 17.0,
+          "passed": true,
+          "rate": 16.000000000000004,
+          "ttft_p99_ms": 72.31378592550755
+        },
+        {
+          "achieved": 23.566666666666666,
+          "achieved_wall": 21.567824448597968,
+          "offered": 23.566666666666666,
+          "passed": true,
+          "rate": 22.627416997969526,
+          "ttft_p99_ms": 105.43335139751444
+        },
+        {
+          "achieved": 33.5,
+          "achieved_wall": 27.149910670616073,
+          "offered": 33.5,
+          "passed": false,
+          "rate": 32.00000000000001,
+          "ttft_p99_ms": 367.58150815963813
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 33.71523320674896
+    },
+    "mixture": {
+      "c_cal": 8.000000000000002,
+      "ladder": [
+        {
+          "achieved": 0.43333333333333335,
+          "achieved_wall": 0.413685986718766,
+          "offered": 0.43333333333333335,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 831.7600545287138
+        },
+        {
+          "achieved": 0.8,
+          "achieved_wall": 0.7451595643196407,
+          "offered": 0.8,
+          "passed": true,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 933.1106743961573
+        },
+        {
+          "achieved": 1.1,
+          "achieved_wall": 1.045054698830867,
+          "offered": 1.1,
+          "passed": true,
+          "rate": 1.0000000000000002,
+          "ttft_p99_ms": 1058.8951689004898
+        },
+        {
+          "achieved": 1.1,
+          "achieved_wall": 1.039402858344809,
+          "offered": 1.1,
+          "passed": true,
+          "rate": 1.4142135623730954,
+          "ttft_p99_ms": 1649.749110341072
+        },
+        {
+          "achieved": 2.0,
+          "achieved_wall": 1.8704358079182004,
+          "offered": 2.0,
+          "passed": true,
+          "rate": 2.0000000000000004,
+          "ttft_p99_ms": 1114.7877936065197
+        },
+        {
+          "achieved": 2.7333333333333334,
+          "achieved_wall": 2.5375023868223585,
+          "offered": 2.7333333333333334,
+          "passed": true,
+          "rate": 2.8284271247461907,
+          "ttft_p99_ms": 1553.4075002372258
+        },
+        {
+          "achieved": 3.966666666666667,
+          "achieved_wall": 3.5997813785316373,
+          "offered": 3.966666666666667,
+          "passed": true,
+          "rate": 4.000000000000001,
+          "ttft_p99_ms": 1980.7330799102774
+        },
+        {
+          "achieved": 6.0,
+          "achieved_wall": 5.011136628459364,
+          "offered": 6.0,
+          "passed": true,
+          "rate": 5.6568542494923815,
+          "ttft_p99_ms": 3385.076824128628
+        },
+        {
+          "achieved": 8.533333333333333,
+          "achieved_wall": 6.9381231326443835,
+          "offered": 8.533333333333333,
+          "passed": true,
+          "rate": 8.000000000000002,
+          "ttft_p99_ms": 4203.764641284942
+        },
+        {
+          "achieved": 11.5,
+          "achieved_wall": 6.13872046695788,
+          "offered": 11.5,
+          "passed": false,
+          "rate": 11.313708498984763,
+          "ttft_p99_ms": 19532.05448806286
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 898.5399305820465
+    },
+    "p_heavy": {
+      "c_cal": 2.0000000000000004,
+      "ladder": [
+        {
+          "achieved": 0.6666666666666666,
+          "achieved_wall": 0.6468760283727839,
+          "offered": 0.6666666666666666,
+          "passed": true,
+          "rate": 0.5,
+          "ttft_p99_ms": 916.436064094305
+        },
+        {
+          "achieved": 0.9333333333333333,
+          "achieved_wall": 0.8943697037395257,
+          "offered": 0.9333333333333333,
+          "passed": true,
+          "rate": 0.7071067811865476,
+          "ttft_p99_ms": 1738.2054750621319
+        },
+        {
+          "achieved": 1.0666666666666667,
+          "achieved_wall": 1.1048822152054336,
+          "offered": 1.0666666666666667,
+          "passed": true,
+          "rate": 1.0000000000000002,
+          "ttft_p99_ms": 1893.6603461951017
+        },
+        {
+          "achieved": 1.0333333333333334,
+          "achieved_wall": 1.0031204195437777,
+          "offered": 1.0333333333333334,
+          "passed": true,
+          "rate": 1.4142135623730954,
+          "ttft_p99_ms": 1745.5343760550022
+        },
+        {
+          "achieved": 1.8,
+          "achieved_wall": 1.7100509726213442,
+          "offered": 1.8,
+          "passed": true,
+          "rate": 2.0000000000000004,
+          "ttft_p99_ms": 3803.4896595031023
+        },
+        {
+          "achieved": 2.966666666666667,
+          "achieved_wall": 2.1442735889068243,
+          "offered": 2.966666666666667,
+          "passed": false,
+          "rate": 2.8284271247461907,
+          "ttft_p99_ms": 11756.162006258966
+        }
+      ],
+      "ladder_exhausted": false,
+      "ttft_threshold_basis_ms": 898.5399305820465
+    }
+  },
+  "unloaded": {
+    "balanced": {
+      "itl_median_ms": 9.783297777175903,
+      "n": 15,
+      "ttft_median_ms": 216.64884686470032
+    },
+    "d_heavy": {
+      "itl_median_ms": 10.058976709842682,
+      "n": 15,
+      "ttft_median_ms": 33.71523320674896
+    },
+    "p_heavy": {
+      "itl_median_ms": 10.10771095752716,
+      "n": 15,
+      "ttft_median_ms": 898.5399305820465
+    }
+  }
+}
