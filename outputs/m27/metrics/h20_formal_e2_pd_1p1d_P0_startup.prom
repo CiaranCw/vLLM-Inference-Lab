@@ -1,8 +1,8 @@
 # HELP python_gc_objects_collected_total Objects collected during gc
 # TYPE python_gc_objects_collected_total counter
-python_gc_objects_collected_total{generation="0"} 13354.0
-python_gc_objects_collected_total{generation="1"} 2427.0
-python_gc_objects_collected_total{generation="2"} 378.0
+python_gc_objects_collected_total{generation="0"} 13923.0
+python_gc_objects_collected_total{generation="1"} 3312.0
+python_gc_objects_collected_total{generation="2"} 388.0
 # HELP python_gc_objects_uncollectable_total Uncollectable objects found during GC
 # TYPE python_gc_objects_uncollectable_total counter
 python_gc_objects_uncollectable_total{generation="0"} 0.0
@@ -10,24 +10,24 @@ python_gc_objects_uncollectable_total{generation="1"} 0.0
 python_gc_objects_uncollectable_total{generation="2"} 0.0
 # HELP python_gc_collections_total Number of times this generation was collected
 # TYPE python_gc_collections_total counter
-python_gc_collections_total{generation="0"} 2271.0
-python_gc_collections_total{generation="1"} 206.0
+python_gc_collections_total{generation="0"} 2307.0
+python_gc_collections_total{generation="1"} 210.0
 python_gc_collections_total{generation="2"} 11.0
 # HELP python_info Python platform information
 # TYPE python_info gauge
 python_info{implementation="CPython",major="3",minor="11",patchlevel="13",version="3.11.13"} 1.0
 # HELP process_virtual_memory_bytes Virtual memory size in bytes.
 # TYPE process_virtual_memory_bytes gauge
-process_virtual_memory_bytes 6.6424209408e+10
+process_virtual_memory_bytes 6.642653184e+10
 # HELP process_resident_memory_bytes Resident memory size in bytes.
 # TYPE process_resident_memory_bytes gauge
-process_resident_memory_bytes 1.582063616e+09
+process_resident_memory_bytes 1.586085888e+09
 # HELP process_start_time_seconds Start time of the process since unix epoch in seconds.
 # TYPE process_start_time_seconds gauge
-process_start_time_seconds 1.79112620929e+09
+process_start_time_seconds 1.7912064942e+09
 # HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.
 # TYPE process_cpu_seconds_total counter
-process_cpu_seconds_total 29.79
+process_cpu_seconds_total 29.96
 # HELP process_open_fds Number of open file descriptors.
 # TYPE process_open_fds gauge
 process_open_fds 69.0
@@ -53,7 +53,7 @@ vllm:nixl_xfer_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:nixl_xfer_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_xfer_time_seconds_created Histogram of transfer duration for NIXL KV Cache transfers.
 # TYPE vllm:nixl_xfer_time_seconds_created gauge
-vllm:nixl_xfer_time_seconds_created{engine="0",model_name="m27-model"} 1.791126238384786e+09
+vllm:nixl_xfer_time_seconds_created{engine="0",model_name="m27-model"} 1.7912065237054927e+09
 # HELP vllm:nixl_post_time_seconds Histogram of transfer post time for NIXL KV Cache transfers.
 # TYPE vllm:nixl_post_time_seconds histogram
 vllm:nixl_post_time_seconds_bucket{engine="0",le="0.001",model_name="m27-model"} 0.0
@@ -74,7 +74,7 @@ vllm:nixl_post_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:nixl_post_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_post_time_seconds_created Histogram of transfer post time for NIXL KV Cache transfers.
 # TYPE vllm:nixl_post_time_seconds_created gauge
-vllm:nixl_post_time_seconds_created{engine="0",model_name="m27-model"} 1.791126238384858e+09
+vllm:nixl_post_time_seconds_created{engine="0",model_name="m27-model"} 1.791206523705561e+09
 # HELP vllm:nixl_bytes_transferred Histogram of bytes transferred per NIXL KV Cache transfers.
 # TYPE vllm:nixl_bytes_transferred histogram
 vllm:nixl_bytes_transferred_bucket{engine="0",le="2048.0",model_name="m27-model"} 0.0
@@ -94,7 +94,7 @@ vllm:nixl_bytes_transferred_count{engine="0",model_name="m27-model"} 0.0
 vllm:nixl_bytes_transferred_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_bytes_transferred_created Histogram of bytes transferred per NIXL KV Cache transfers.
 # TYPE vllm:nixl_bytes_transferred_created gauge
-vllm:nixl_bytes_transferred_created{engine="0",model_name="m27-model"} 1.7911262383850088e+09
+vllm:nixl_bytes_transferred_created{engine="0",model_name="m27-model"} 1.7912065237057161e+09
 # HELP vllm:nixl_num_descriptors Histogram of number of descriptors per NIXL  KV Cache transfers.
 # TYPE vllm:nixl_num_descriptors histogram
 vllm:nixl_num_descriptors_bucket{engine="0",le="10.0",model_name="m27-model"} 0.0
@@ -116,43 +116,43 @@ vllm:nixl_num_descriptors_count{engine="0",model_name="m27-model"} 0.0
 vllm:nixl_num_descriptors_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_num_descriptors_created Histogram of number of descriptors per NIXL  KV Cache transfers.
 # TYPE vllm:nixl_num_descriptors_created gauge
-vllm:nixl_num_descriptors_created{engine="0",model_name="m27-model"} 1.7911262383850596e+09
+vllm:nixl_num_descriptors_created{engine="0",model_name="m27-model"} 1.7912065237057683e+09
 # HELP vllm:nixl_num_failed_transfers_total Number of failed NIXL KV Cache transfers.
 # TYPE vllm:nixl_num_failed_transfers_total counter
 vllm:nixl_num_failed_transfers_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_num_failed_transfers_created Number of failed NIXL KV Cache transfers.
 # TYPE vllm:nixl_num_failed_transfers_created gauge
-vllm:nixl_num_failed_transfers_created{engine="0",model_name="m27-model"} 1.7911262383850973e+09
+vllm:nixl_num_failed_transfers_created{engine="0",model_name="m27-model"} 1.7912065237058074e+09
 # HELP vllm:nixl_num_failed_notifications_total Number of failed NIXL KV Cache notifications.
 # TYPE vllm:nixl_num_failed_notifications_total counter
 vllm:nixl_num_failed_notifications_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_num_failed_notifications_created Number of failed NIXL KV Cache notifications.
 # TYPE vllm:nixl_num_failed_notifications_created gauge
-vllm:nixl_num_failed_notifications_created{engine="0",model_name="m27-model"} 1.791126238385119e+09
+vllm:nixl_num_failed_notifications_created{engine="0",model_name="m27-model"} 1.7912065237058234e+09
 # HELP vllm:nixl_num_kv_expired_reqs_total Number of requests that had their KV expire. NOTE: This metric is tracked on the P instance.
 # TYPE vllm:nixl_num_kv_expired_reqs_total counter
 vllm:nixl_num_kv_expired_reqs_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:nixl_num_kv_expired_reqs_created Number of requests that had their KV expire. NOTE: This metric is tracked on the P instance.
 # TYPE vllm:nixl_num_kv_expired_reqs_created gauge
-vllm:nixl_num_kv_expired_reqs_created{engine="0",model_name="m27-model"} 1.791126238385133e+09
+vllm:nixl_num_kv_expired_reqs_created{engine="0",model_name="m27-model"} 1.791206523705838e+09
 # HELP vllm:estimated_flops_per_gpu_total Estimated number of floating point operations per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_flops_per_gpu_total counter
 vllm:estimated_flops_per_gpu_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:estimated_flops_per_gpu_created Estimated number of floating point operations per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_flops_per_gpu_created gauge
-vllm:estimated_flops_per_gpu_created{engine="0",model_name="m27-model"} 1.7911262383851511e+09
+vllm:estimated_flops_per_gpu_created{engine="0",model_name="m27-model"} 1.7912065237058563e+09
 # HELP vllm:estimated_read_bytes_per_gpu_total Estimated number of bytes read from memory per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_read_bytes_per_gpu_total counter
 vllm:estimated_read_bytes_per_gpu_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:estimated_read_bytes_per_gpu_created Estimated number of bytes read from memory per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_read_bytes_per_gpu_created gauge
-vllm:estimated_read_bytes_per_gpu_created{engine="0",model_name="m27-model"} 1.7911262383851635e+09
+vllm:estimated_read_bytes_per_gpu_created{engine="0",model_name="m27-model"} 1.7912065237058692e+09
 # HELP vllm:estimated_write_bytes_per_gpu_total Estimated number of bytes written to memory per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_write_bytes_per_gpu_total counter
 vllm:estimated_write_bytes_per_gpu_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:estimated_write_bytes_per_gpu_created Estimated number of bytes written to memory per GPU (for Model Flops Utilization calculations).
 # TYPE vllm:estimated_write_bytes_per_gpu_created gauge
-vllm:estimated_write_bytes_per_gpu_created{engine="0",model_name="m27-model"} 1.7911262383851764e+09
+vllm:estimated_write_bytes_per_gpu_created{engine="0",model_name="m27-model"} 1.791206523705885e+09
 # HELP vllm:num_requests_running Number of requests in model execution batches.
 # TYPE vllm:num_requests_running gauge
 vllm:num_requests_running{engine="0",model_name="m27-model"} 0.0
@@ -176,49 +176,49 @@ vllm:kv_cache_usage_perc{engine="0",model_name="m27-model"} 0.0
 vllm:prefix_cache_queries_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:prefix_cache_queries_created Prefix cache queries, in terms of number of queried tokens.
 # TYPE vllm:prefix_cache_queries_created gauge
-vllm:prefix_cache_queries_created{engine="0",model_name="m27-model"} 1.7911262383853078e+09
+vllm:prefix_cache_queries_created{engine="0",model_name="m27-model"} 1.7912065237060215e+09
 # HELP vllm:prefix_cache_hits_total Prefix cache hits, in terms of number of cached tokens.
 # TYPE vllm:prefix_cache_hits_total counter
 vllm:prefix_cache_hits_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:prefix_cache_hits_created Prefix cache hits, in terms of number of cached tokens.
 # TYPE vllm:prefix_cache_hits_created gauge
-vllm:prefix_cache_hits_created{engine="0",model_name="m27-model"} 1.7911262383853214e+09
+vllm:prefix_cache_hits_created{engine="0",model_name="m27-model"} 1.791206523706035e+09
 # HELP vllm:external_prefix_cache_queries_total External prefix cache queries from KV connector cross-instance cache sharing, in terms of number of queried tokens.
 # TYPE vllm:external_prefix_cache_queries_total counter
 vllm:external_prefix_cache_queries_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:external_prefix_cache_queries_created External prefix cache queries from KV connector cross-instance cache sharing, in terms of number of queried tokens.
 # TYPE vllm:external_prefix_cache_queries_created gauge
-vllm:external_prefix_cache_queries_created{engine="0",model_name="m27-model"} 1.7911262383853347e+09
+vllm:external_prefix_cache_queries_created{engine="0",model_name="m27-model"} 1.791206523706046e+09
 # HELP vllm:external_prefix_cache_hits_total External prefix cache hits from KV connector cross-instance cache sharing, in terms of number of cached tokens.
 # TYPE vllm:external_prefix_cache_hits_total counter
 vllm:external_prefix_cache_hits_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:external_prefix_cache_hits_created External prefix cache hits from KV connector cross-instance cache sharing, in terms of number of cached tokens.
 # TYPE vllm:external_prefix_cache_hits_created gauge
-vllm:external_prefix_cache_hits_created{engine="0",model_name="m27-model"} 1.7911262383853457e+09
+vllm:external_prefix_cache_hits_created{engine="0",model_name="m27-model"} 1.791206523706059e+09
 # HELP vllm:mm_cache_queries_total Multi-modal cache queries, in terms of number of queried items.
 # TYPE vllm:mm_cache_queries_total counter
 vllm:mm_cache_queries_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:mm_cache_queries_created Multi-modal cache queries, in terms of number of queried items.
 # TYPE vllm:mm_cache_queries_created gauge
-vllm:mm_cache_queries_created{engine="0",model_name="m27-model"} 1.7911262383853555e+09
+vllm:mm_cache_queries_created{engine="0",model_name="m27-model"} 1.791206523706071e+09
 # HELP vllm:mm_cache_hits_total Multi-modal cache hits, in terms of number of cached items.
 # TYPE vllm:mm_cache_hits_total counter
 vllm:mm_cache_hits_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:mm_cache_hits_created Multi-modal cache hits, in terms of number of cached items.
 # TYPE vllm:mm_cache_hits_created gauge
-vllm:mm_cache_hits_created{engine="0",model_name="m27-model"} 1.7911262383853652e+09
+vllm:mm_cache_hits_created{engine="0",model_name="m27-model"} 1.7912065237060905e+09
 # HELP vllm:num_preemptions_total Cumulative number of preemption from the engine.
 # TYPE vllm:num_preemptions_total counter
 vllm:num_preemptions_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:num_preemptions_created Cumulative number of preemption from the engine.
 # TYPE vllm:num_preemptions_created gauge
-vllm:num_preemptions_created{engine="0",model_name="m27-model"} 1.791126238385375e+09
+vllm:num_preemptions_created{engine="0",model_name="m27-model"} 1.791206523706101e+09
 # HELP vllm:prompt_tokens_total Number of prefill tokens processed.
 # TYPE vllm:prompt_tokens_total counter
 vllm:prompt_tokens_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:prompt_tokens_created Number of prefill tokens processed.
 # TYPE vllm:prompt_tokens_created gauge
-vllm:prompt_tokens_created{engine="0",model_name="m27-model"} 1.7911262383853846e+09
+vllm:prompt_tokens_created{engine="0",model_name="m27-model"} 1.791206523706111e+09
 # HELP vllm:prompt_tokens_by_source_total Number of prompt tokens by source.
 # TYPE vllm:prompt_tokens_by_source_total counter
 vllm:prompt_tokens_by_source_total{engine="0",model_name="m27-model",source="local_compute"} 0.0
@@ -226,21 +226,21 @@ vllm:prompt_tokens_by_source_total{engine="0",model_name="m27-model",source="loc
 vllm:prompt_tokens_by_source_total{engine="0",model_name="m27-model",source="external_kv_transfer"} 0.0
 # HELP vllm:prompt_tokens_by_source_created Number of prompt tokens by source.
 # TYPE vllm:prompt_tokens_by_source_created gauge
-vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="local_compute"} 1.7911262383854005e+09
-vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="local_cache_hit"} 1.7911262383854058e+09
-vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="external_kv_transfer"} 1.791126238385414e+09
+vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="local_compute"} 1.791206523706126e+09
+vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="local_cache_hit"} 1.791206523706135e+09
+vllm:prompt_tokens_by_source_created{engine="0",model_name="m27-model",source="external_kv_transfer"} 1.7912065237061446e+09
 # HELP vllm:prompt_tokens_cached_total Number of cached prompt tokens (local + external).
 # TYPE vllm:prompt_tokens_cached_total counter
 vllm:prompt_tokens_cached_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:prompt_tokens_cached_created Number of cached prompt tokens (local + external).
 # TYPE vllm:prompt_tokens_cached_created gauge
-vllm:prompt_tokens_cached_created{engine="0",model_name="m27-model"} 1.7911262383854244e+09
+vllm:prompt_tokens_cached_created{engine="0",model_name="m27-model"} 1.7912065237061563e+09
 # HELP vllm:generation_tokens_total Number of generation tokens processed.
 # TYPE vllm:generation_tokens_total counter
 vllm:generation_tokens_total{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:generation_tokens_created Number of generation tokens processed.
 # TYPE vllm:generation_tokens_created gauge
-vllm:generation_tokens_created{engine="0",model_name="m27-model"} 1.7911262383854344e+09
+vllm:generation_tokens_created{engine="0",model_name="m27-model"} 1.7912065237061684e+09
 # HELP vllm:request_success_total Count of successfully processed requests.
 # TYPE vllm:request_success_total counter
 vllm:request_success_total{engine="0",finished_reason="stop",model_name="m27-model"} 0.0
@@ -250,11 +250,11 @@ vllm:request_success_total{engine="0",finished_reason="error",model_name="m27-mo
 vllm:request_success_total{engine="0",finished_reason="repetition",model_name="m27-model"} 0.0
 # HELP vllm:request_success_created Count of successfully processed requests.
 # TYPE vllm:request_success_created gauge
-vllm:request_success_created{engine="0",finished_reason="stop",model_name="m27-model"} 1.7911262383854535e+09
-vllm:request_success_created{engine="0",finished_reason="length",model_name="m27-model"} 1.7911262383854623e+09
-vllm:request_success_created{engine="0",finished_reason="abort",model_name="m27-model"} 1.7911262383854685e+09
-vllm:request_success_created{engine="0",finished_reason="error",model_name="m27-model"} 1.7911262383854744e+09
-vllm:request_success_created{engine="0",finished_reason="repetition",model_name="m27-model"} 1.7911262383854804e+09
+vllm:request_success_created{engine="0",finished_reason="stop",model_name="m27-model"} 1.7912065237061884e+09
+vllm:request_success_created{engine="0",finished_reason="length",model_name="m27-model"} 1.791206523706195e+09
+vllm:request_success_created{engine="0",finished_reason="abort",model_name="m27-model"} 1.7912065237062018e+09
+vllm:request_success_created{engine="0",finished_reason="error",model_name="m27-model"} 1.7912065237062094e+09
+vllm:request_success_created{engine="0",finished_reason="repetition",model_name="m27-model"} 1.7912065237062163e+09
 # HELP vllm:request_prompt_tokens Number of prefill tokens processed.
 # TYPE vllm:request_prompt_tokens histogram
 vllm:request_prompt_tokens_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -276,7 +276,7 @@ vllm:request_prompt_tokens_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_prompt_tokens_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_prompt_tokens_created Number of prefill tokens processed.
 # TYPE vllm:request_prompt_tokens_created gauge
-vllm:request_prompt_tokens_created{engine="0",model_name="m27-model"} 1.7911262383855035e+09
+vllm:request_prompt_tokens_created{engine="0",model_name="m27-model"} 1.7912065237062435e+09
 # HELP vllm:request_generation_tokens Number of generation tokens processed.
 # TYPE vllm:request_generation_tokens histogram
 vllm:request_generation_tokens_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -298,7 +298,7 @@ vllm:request_generation_tokens_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_generation_tokens_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_generation_tokens_created Number of generation tokens processed.
 # TYPE vllm:request_generation_tokens_created gauge
-vllm:request_generation_tokens_created{engine="0",model_name="m27-model"} 1.7911262383855374e+09
+vllm:request_generation_tokens_created{engine="0",model_name="m27-model"} 1.791206523706276e+09
 # HELP vllm:iteration_tokens_total Histogram of number of tokens per engine_step.
 # TYPE vllm:iteration_tokens_total histogram
 vllm:iteration_tokens_total_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -319,7 +319,7 @@ vllm:iteration_tokens_total_count{engine="0",model_name="m27-model"} 0.0
 vllm:iteration_tokens_total_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:iteration_tokens_total_created Histogram of number of tokens per engine_step.
 # TYPE vllm:iteration_tokens_total_created gauge
-vllm:iteration_tokens_total_created{engine="0",model_name="m27-model"} 1.791126238385564e+09
+vllm:iteration_tokens_total_created{engine="0",model_name="m27-model"} 1.791206523706308e+09
 # HELP vllm:request_max_num_generation_tokens Histogram of maximum number of requested generation tokens.
 # TYPE vllm:request_max_num_generation_tokens histogram
 vllm:request_max_num_generation_tokens_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -341,7 +341,7 @@ vllm:request_max_num_generation_tokens_count{engine="0",model_name="m27-model"} 
 vllm:request_max_num_generation_tokens_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_max_num_generation_tokens_created Histogram of maximum number of requested generation tokens.
 # TYPE vllm:request_max_num_generation_tokens_created gauge
-vllm:request_max_num_generation_tokens_created{engine="0",model_name="m27-model"} 1.791126238385591e+09
+vllm:request_max_num_generation_tokens_created{engine="0",model_name="m27-model"} 1.7912065237063386e+09
 # HELP vllm:request_params_n Histogram of the n request parameter.
 # TYPE vllm:request_params_n histogram
 vllm:request_params_n_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -354,7 +354,7 @@ vllm:request_params_n_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_params_n_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_params_n_created Histogram of the n request parameter.
 # TYPE vllm:request_params_n_created gauge
-vllm:request_params_n_created{engine="0",model_name="m27-model"} 1.7911262383856177e+09
+vllm:request_params_n_created{engine="0",model_name="m27-model"} 1.791206523706366e+09
 # HELP vllm:request_params_max_tokens Histogram of the max_tokens request parameter.
 # TYPE vllm:request_params_max_tokens histogram
 vllm:request_params_max_tokens_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -376,7 +376,7 @@ vllm:request_params_max_tokens_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_params_max_tokens_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_params_max_tokens_created Histogram of the max_tokens request parameter.
 # TYPE vllm:request_params_max_tokens_created gauge
-vllm:request_params_max_tokens_created{engine="0",model_name="m27-model"} 1.791126238385638e+09
+vllm:request_params_max_tokens_created{engine="0",model_name="m27-model"} 1.7912065237063894e+09
 # HELP vllm:time_to_first_token_seconds Histogram of time to first token in seconds.
 # TYPE vllm:time_to_first_token_seconds histogram
 vllm:time_to_first_token_seconds_bucket{engine="0",le="0.001",model_name="m27-model"} 0.0
@@ -406,7 +406,7 @@ vllm:time_to_first_token_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:time_to_first_token_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:time_to_first_token_seconds_created Histogram of time to first token in seconds.
 # TYPE vllm:time_to_first_token_seconds_created gauge
-vllm:time_to_first_token_seconds_created{engine="0",model_name="m27-model"} 1.7911262383856645e+09
+vllm:time_to_first_token_seconds_created{engine="0",model_name="m27-model"} 1.7912065237064204e+09
 # HELP vllm:inter_token_latency_seconds Histogram of inter-token latency in seconds.
 # TYPE vllm:inter_token_latency_seconds histogram
 vllm:inter_token_latency_seconds_bucket{engine="0",le="0.01",model_name="m27-model"} 0.0
@@ -433,7 +433,7 @@ vllm:inter_token_latency_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:inter_token_latency_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:inter_token_latency_seconds_created Histogram of inter-token latency in seconds.
 # TYPE vllm:inter_token_latency_seconds_created gauge
-vllm:inter_token_latency_seconds_created{engine="0",model_name="m27-model"} 1.7911262383857007e+09
+vllm:inter_token_latency_seconds_created{engine="0",model_name="m27-model"} 1.7912065237064583e+09
 # HELP vllm:request_time_per_output_token_seconds Histogram of time_per_output_token_seconds per request.
 # TYPE vllm:request_time_per_output_token_seconds histogram
 vllm:request_time_per_output_token_seconds_bucket{engine="0",le="0.01",model_name="m27-model"} 0.0
@@ -460,7 +460,7 @@ vllm:request_time_per_output_token_seconds_count{engine="0",model_name="m27-mode
 vllm:request_time_per_output_token_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_time_per_output_token_seconds_created Histogram of time_per_output_token_seconds per request.
 # TYPE vllm:request_time_per_output_token_seconds_created gauge
-vllm:request_time_per_output_token_seconds_created{engine="0",model_name="m27-model"} 1.7911262383857706e+09
+vllm:request_time_per_output_token_seconds_created{engine="0",model_name="m27-model"} 1.7912065237065341e+09
 # HELP vllm:e2e_request_latency_seconds Histogram of e2e request latency in seconds.
 # TYPE vllm:e2e_request_latency_seconds histogram
 vllm:e2e_request_latency_seconds_bucket{engine="0",le="0.3",model_name="m27-model"} 0.0
@@ -489,7 +489,7 @@ vllm:e2e_request_latency_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:e2e_request_latency_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:e2e_request_latency_seconds_created Histogram of e2e request latency in seconds.
 # TYPE vllm:e2e_request_latency_seconds_created gauge
-vllm:e2e_request_latency_seconds_created{engine="0",model_name="m27-model"} 1.7911262383858056e+09
+vllm:e2e_request_latency_seconds_created{engine="0",model_name="m27-model"} 1.7912065237065685e+09
 # HELP vllm:request_queue_time_seconds Histogram of time spent in WAITING phase for request.
 # TYPE vllm:request_queue_time_seconds histogram
 vllm:request_queue_time_seconds_bucket{engine="0",le="0.3",model_name="m27-model"} 0.0
@@ -518,7 +518,7 @@ vllm:request_queue_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_queue_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_queue_time_seconds_created Histogram of time spent in WAITING phase for request.
 # TYPE vllm:request_queue_time_seconds_created gauge
-vllm:request_queue_time_seconds_created{engine="0",model_name="m27-model"} 1.791126238385839e+09
+vllm:request_queue_time_seconds_created{engine="0",model_name="m27-model"} 1.7912065237066016e+09
 # HELP vllm:request_inference_time_seconds Histogram of time spent in RUNNING phase for request.
 # TYPE vllm:request_inference_time_seconds histogram
 vllm:request_inference_time_seconds_bucket{engine="0",le="0.3",model_name="m27-model"} 0.0
@@ -547,7 +547,7 @@ vllm:request_inference_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_inference_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_inference_time_seconds_created Histogram of time spent in RUNNING phase for request.
 # TYPE vllm:request_inference_time_seconds_created gauge
-vllm:request_inference_time_seconds_created{engine="0",model_name="m27-model"} 1.791126238385871e+09
+vllm:request_inference_time_seconds_created{engine="0",model_name="m27-model"} 1.791206523706635e+09
 # HELP vllm:request_prefill_time_seconds Histogram of time spent in PREFILL phase for request.
 # TYPE vllm:request_prefill_time_seconds histogram
 vllm:request_prefill_time_seconds_bucket{engine="0",le="0.3",model_name="m27-model"} 0.0
@@ -576,7 +576,7 @@ vllm:request_prefill_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_prefill_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_prefill_time_seconds_created Histogram of time spent in PREFILL phase for request.
 # TYPE vllm:request_prefill_time_seconds_created gauge
-vllm:request_prefill_time_seconds_created{engine="0",model_name="m27-model"} 1.7911262383859031e+09
+vllm:request_prefill_time_seconds_created{engine="0",model_name="m27-model"} 1.7912065237066696e+09
 # HELP vllm:request_decode_time_seconds Histogram of time spent in DECODE phase for request.
 # TYPE vllm:request_decode_time_seconds histogram
 vllm:request_decode_time_seconds_bucket{engine="0",le="0.3",model_name="m27-model"} 0.0
@@ -605,7 +605,7 @@ vllm:request_decode_time_seconds_count{engine="0",model_name="m27-model"} 0.0
 vllm:request_decode_time_seconds_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_decode_time_seconds_created Histogram of time spent in DECODE phase for request.
 # TYPE vllm:request_decode_time_seconds_created gauge
-vllm:request_decode_time_seconds_created{engine="0",model_name="m27-model"} 1.7911262383859348e+09
+vllm:request_decode_time_seconds_created{engine="0",model_name="m27-model"} 1.7912065237067018e+09
 # HELP vllm:request_prefill_kv_computed_tokens Histogram of new KV tokens computed during prefill (excluding cached tokens).
 # TYPE vllm:request_prefill_kv_computed_tokens histogram
 vllm:request_prefill_kv_computed_tokens_bucket{engine="0",le="1.0",model_name="m27-model"} 0.0
@@ -627,7 +627,7 @@ vllm:request_prefill_kv_computed_tokens_count{engine="0",model_name="m27-model"}
 vllm:request_prefill_kv_computed_tokens_sum{engine="0",model_name="m27-model"} 0.0
 # HELP vllm:request_prefill_kv_computed_tokens_created Histogram of new KV tokens computed during prefill (excluding cached tokens).
 # TYPE vllm:request_prefill_kv_computed_tokens_created gauge
-vllm:request_prefill_kv_computed_tokens_created{engine="0",model_name="m27-model"} 1.7911262383859708e+09
+vllm:request_prefill_kv_computed_tokens_created{engine="0",model_name="m27-model"} 1.791206523706742e+09
 # HELP vllm:cache_config_info Information of the LLMEngine CacheConfig
 # TYPE vllm:cache_config_info gauge
 vllm:cache_config_info{_block_size_resolved="True",block_size="16",cache_dtype="auto",calculate_kv_scales="False",enable_prefix_caching="False",engine="0",gpu_memory_utilization="0.85",hash_block_size="None",is_attention_free="False",kv_cache_dtype_skip_layers="[]",kv_cache_max_concurrency="37.271484375",kv_cache_memory_bytes="None",kv_cache_size_tokens="1221312",kv_offloading_backend="native",kv_offloading_size="None",kv_sharing_fast_prefill="False",mamba_block_size="None",mamba_cache_dtype="auto",mamba_cache_mode="none",mamba_page_size_padded="None",mamba_ssm_cache_dtype="auto",num_cpu_blocks="None",num_gpu_blocks="76332",num_gpu_blocks_override="None",prefix_caching_hash_algo="sha256",sliding_window="None",user_specified_block_size="True",user_specified_mamba_block_size="False"} 1.0
@@ -665,6 +665,6 @@ http_request_duration_highr_seconds_count 0.0
 http_request_duration_highr_seconds_sum 0.0
 # HELP http_request_duration_highr_seconds_created Latency with many buckets but no API specific labels. Made for more accurate percentile calculations. 
 # TYPE http_request_duration_highr_seconds_created gauge
-http_request_duration_highr_seconds_created 1.7911262384829075e+09
+http_request_duration_highr_seconds_created 1.7912065238046455e+09
 # HELP http_request_duration_seconds Latency with only few buckets by handler. Made to be only used if aggregation by handler is important. 
 # TYPE http_request_duration_seconds histogram

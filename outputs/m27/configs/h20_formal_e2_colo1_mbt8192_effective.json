@@ -8,7 +8,7 @@
       "LD_LIBRARY_PATH": "/root/cuda-compat/usr/local/cuda-13.0/compat:/root/.codebuddy-server-cn/bin/stable-757a5b2fd56bc7e1fcabb38b58d2ac1694f78f6d/lib",
       "M27_MODEL": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
       "PYTHONHASHSEED": null,
-      "PYTHONPATH": "/root/m27_offline/site",
+      "PYTHONPATH": "/root/.codebuddy-server-cn/bin/stable-757a5b2fd56bc7e1fcabb38b58d2ac1694f78f6d/extensions/genie/out/vendor/shim",
       "TRANSFORMERS_OFFLINE": null,
       "UCX_NET_DEVICES": "bond1",
       "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
@@ -87,7 +87,7 @@
       "vllm": "0.24.0"
     },
     "python": "3.11.13",
-    "time": "2026-10-04T23:15:50+0800",
+    "time": "2026-10-05T21:10:59+0800",
     "uname": "Linux TENCENT64.site 5.4.241-1-tlinux4-0017.7 #1 SMP Thu Jan 18 11:33:00 CST 2024 x86_64 x86_64"
   },
   "exp": "e2",
@@ -226,6 +226,6 @@
   "kind": "colo",
   "mismatches": [],
   "model_dir": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
-  "startup_s": 28.0,
+  "startup_s": 26.0,
   "tag": "h20_formal"
 }

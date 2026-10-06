@@ -1,5 +1,7 @@
 # HANDOFF.md —— 项目交接文档（交由 Cursor 继续）
 
+> **2026-10-05 M27 更新**：阶段 K 的 M27 已在新实例 `ins-a8qac2ve`（与上一台碰巧同 hostname `TENCENT64.site`）完成 fresh Gate0→E4；`M27_E/H = COMPLETE`，E5 经 Gate8 可选跳过。RQ1–RQ4、负结果、恢复提交、全链审计和同实例 raw 见 [`notes/m27/results.md`](notes/m27/results.md) 与 [`notes/m27/execution_record.md`](notes/m27/execution_record.md)。下文早期交接描述 M27 未执行仅指当时的历史状态，不覆盖本次结论；M24 冻结计划不改。
+
 > **交接时间**：2026-08-06　**交接自**：Claude Code　**交接至**：Cursor
 > **仓库**：`/home/ciaran/projects/vllm-inference-lab` → `github.com/CiaranCw/vLLM-Inference-Lab`
 > **当前 HEAD**：以 `git log -1` 为准（本文件不写死 commit，避免过时）

@@ -1,0 +1,2 @@
+[trace] 14 instance logs -> outputs/m27/h20_formal_log_evidence.json
+[trace] totals: {'kv_load_fail_events': 0, 'kv_load_recovered_events': 0, 'nixl_compat_mismatch': 0, 'tracebacks': 0, 'non_hnd_layout_instances': []}

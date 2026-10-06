@@ -8,7 +8,7 @@
       "LD_LIBRARY_PATH": "/root/cuda-compat/usr/local/cuda-13.0/compat:/root/.codebuddy-server-cn/bin/stable-757a5b2fd56bc7e1fcabb38b58d2ac1694f78f6d/lib",
       "M27_MODEL": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
       "PYTHONHASHSEED": null,
-      "PYTHONPATH": "/root/m27_offline/site",
+      "PYTHONPATH": "/root/.codebuddy-server-cn/bin/stable-757a5b2fd56bc7e1fcabb38b58d2ac1694f78f6d/extensions/genie/out/vendor/shim",
       "TRANSFORMERS_OFFLINE": null,
       "UCX_NET_DEVICES": "bond1",
       "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
@@ -87,7 +87,7 @@
       "vllm": "0.24.0"
     },
     "python": "3.11.13",
-    "time": "2026-10-04T23:05:15+0800",
+    "time": "2026-10-05T21:23:14+0800",
     "uname": "Linux TENCENT64.site 5.4.241-1-tlinux4-0017.7 #1 SMP Thu Jan 18 11:33:00 CST 2024 x86_64 x86_64"
   },
   "exp": "e2",
@@ -147,7 +147,7 @@
         "gpu_memory_utilization": 0.85,
         "kv_cache_dtype": "auto",
         "kv_connector": "NixlConnector",
-        "kv_engine_id": "120bd5a7-31d7-4a04-8498-0e89f3f914bb",
+        "kv_engine_id": "0db24e2c-a489-4859-8b5d-33ccdb022257",
         "kv_load_failure_policy": "fail",
         "kv_role": "kv_consumer",
         "max_model_len": 32768,
@@ -278,7 +278,7 @@
         "gpu_memory_utilization": 0.85,
         "kv_cache_dtype": "auto",
         "kv_connector": "NixlConnector",
-        "kv_engine_id": "2c33a7a8-436a-475c-95f2-9e67aac75e80",
+        "kv_engine_id": "80b05aee-3977-48ea-9c66-cb35035a05a5",
         "kv_load_failure_policy": "fail",
         "kv_role": "kv_producer",
         "max_model_len": 32768,
@@ -359,6 +359,6 @@
   "kind": "pd",
   "mismatches": [],
   "model_dir": "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct",
-  "startup_s": 34.0,
+  "startup_s": 32.0,
   "tag": "h20_formal"
 }

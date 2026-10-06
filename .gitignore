@@ -92,3 +92,13 @@ outputs/m27/raw/*smoke*
 # M27：单文件 >100MB 的 formal raw 不进普通 Git 历史（逐个列出，不用通配）。
 # 完整字节在 reviewed archive，逐文件 sha256 见 notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv
 outputs/m27/raw/backup_20261004T225246/raw/h20_formal_e3_pd_1p1d.jsonl
+outputs/m27/raw/h20_formal_e3_colo1_mbt8192.jsonl
+outputs/m27/raw/h20_formal_e3_colo2_mbt2048.jsonl
+outputs/m27/raw/h20_formal_e3_colo2_mbt4096.jsonl
+outputs/m27/raw/h20_formal_e3_colo2_mbt8192.jsonl
+outputs/m27/raw/h20_formal_e3_pd_1p1d.jsonl
+outputs/m27/raw/h20_formal_e4_colo4_mbt8192.jsonl
+outputs/m27/raw/h20_formal_e4_pd_1p3d.jsonl
+outputs/m27/raw/h20_formal_e4_pd_2p2d.jsonl
+outputs/m27/raw/h20_formal_e4_pd_3p1d.jsonl
+outputs/m27/raw/h20_formal_e4cal_colo4_mbt8192.jsonl

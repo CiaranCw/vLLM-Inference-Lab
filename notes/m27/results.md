@@ -1,3 +1,45 @@
+# M27 · 当前实例 H20 正式结果
+
+> **M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE。** 2026-10-05 新实例 `ins-a8qac2ve`（hostname 仍为 `TENCENT64.site`）从原始交付 + 上台独立中转证据恢复后，重新采集了同实例 Gate 0→E0→E1→E2→E3cal→E3→E4cal→E4；Gate 8 选择跳过可选 E5。之前机器同名，不用 hostname 单独判定来源：当前 raw/校准/Gate 0 均晚于 `TASK_START=2026-10-05T12:14:20Z`，旧 raw 保留于 `raw/backup_*/`。本节为唯一正式 headline；下方附录保留原机原文，只作独立 replication reference，绝不 pool 样本。
+
+## 环境与正确性
+
+8×H20，各 97871 MiB、GPU0–7 两两 NV18、双 NUMA、driver 535.247.01；Python 3.11.13、torch 2.11.0+cu130、CUDA compat 13.0、vLLM 0.24.0、NIXL 1.2.0；Qwen2.5-7B-Instruct revision `a09a35458c702b33eeacc393d103063234e8bc28`、15/15 文件校验。各实例 BF16 / TP1 / eager / HND、APC/async/spec/quant OFF；未触发 context fallback。fresh E0：D external KV=P local=sent=10240 tokens、D local=0，NIXL READ 5/失败 0；故障探针 HTTP 502 且 D prompt 增量 0；GPU KV 用 `cuda_ipc/cuda`，控制面 `tcp/bond1`。见 `outputs/m27/h20_formal_e0_gate.json`、`final_evidence_audit.json`。
+
+## RQ1 · long prefill 隔离（E2）
+
+四 arm × 四注入长度 × (5 warmup+15 measure)：320/320 overlap_valid，其中 240 个 measure；1 GPU colo1 对 2 GPU PD，只能回答机制，不能冒充同成本收益。8K 注入的 D max stall 中位：PD **105.05 ms**、colo1_mbt8192 **886.03 ms**；colo−PD **+780.98 ms**，Bootstrap 95% CI **[780.51, 781.36]**。无注入 `p=0` 时 PD **13.43 ms** 反而高于 colo **11.84 ms**（colo−PD −1.59 ms，CI [−1.95, −0.93]）。其余两种 mbt 在派生 CSV 中完整保留。
+
+## RQ2 · KV transport 随 context 增长（E1）
+
+每档 15 measure；理论 57,344 B/token。512→16384 token 时 NIXL 实测 bytes **29,360,128→939,524,096**，累计 xfer 中位 **6.914→208.242 ms**，有效 GB/s **4.25→4.51**；五档全表见 `outputs/m27/h20_formal_e1_transfer.csv`、`figures/fig16_m27_e1_transfer_h20_formal.png`。本例理论与实测恰相等，不是普适 invariant；xfer 是累计 handle 时间而非独立墙钟。
+
+## RQ3 · 同成本部署（E3）
+
+fresh `E3cal` 的 rates SHA256 `9d5e69466371ca72d9d45f830cf4049c24a1bef61bb039172d146c017f386e0a`；5 arm × 4 workload × 3 load × 3 seed = 180 runs，**78,685/78,685 请求成功**；Poisson open-loop、统一 `force_close=True`。同样 2 GPU 的 PD 1P1D 与 colo2_mbt8192 在 90% 校准负载：balanced ITL P99 的三 seed 中位 **102.5 vs 424.6 ms**（PD 低），但 TTFT P99 **28,728 vs 1,197 ms** 且 achieved **4.7 vs 6.9 req/s**（PD 差）；prefill-heavy ITL P99 **12.5 vs 893.3 ms**，TTFT P99 **38,764 vs 3,708 ms**；decode-heavy ITL P99 **32.7 vs 38.0 ms**，TTFT P99 **252 vs 82 ms**。`colo2_mbt2048/4096` 也完整采集；同 workload 的预先冻结共享 SLO 门槛与请求簇 Poisson bootstrap 见 `h20_formal_e3_{online,effect}.csv`。**不存在 PD 全面胜出**，不能把 ITL 改善当成 TTFT/E2E/吞吐改善；90% 档严重排队时本表的 achieved 和 offered 不同。
+
+## RQ4 · 四 GPU ratio（E4）
+
+fresh `E4cal` 的 rates SHA256 `5cd7a9637e870e1dd47a29ba6fd8a5ba3ed77aa235ed3b9d5206a03f40aa3cdd`；4 arm × 3 workload × 3 load × 3 seed = 108 runs，**130,428/130,428 请求成功**，每 arm 总占 4 GPU、各实例 TP1。90% 负载、三 seed 的组内 P99 中位（TTFT / ITL，ms）：
+
+| workload | colo4 | 1P:3D | 2P:2D | 3P:1D |
+|---|---:|---:|---:|---:|
+| decode-heavy | 151 / 78 | 26,636 / 53 | 15,133 / 78 | 93,690 / 47 |
+| prefill-heavy | 3,254 / 897 | 134,208 / 12 | 38,313 / 13 | 7,191 / 110 |
+| mixed | 5,148 / 906 | 151,333 / 15 | 49,985 / 35 | 17,620 / 159 |
+
+比率取舍随工作负载而变：偏 P 的 3P:1D 在 prefill-heavy/mixed 的 PD 选项中缓和 TTFT 排队，decode-heavy 的 1P:3D 减小 ITL tail；然而本轮各 90% 档 **colo4 的 TTFT P99 均优于 PD**，不能宣称某 PD ratio 全局最佳。对照 CI 和全部请求数见 `h20_formal_e4_{online,effect}.csv`。
+
+## Gate 8、负结果与限制
+
+Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 E5 只属 scale confirmation，可选且需保留充分 closure 时间。本次 **E5=SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler 未做，不能称 compute/comm overlap proven。正式结果仅适用于本机 H20 / 7B / vLLM 0.24.0 / NIXL 1.2.0 / HND / eager / 这组 workload、负载与网络拓扑；不和 M22/M24 不同布局与口径绝对值相减。前一台独立花费 4.844513 GPU·h，本次 refreshed 168 GPU·h（整机 8×墙钟小时）。本轮强负结果为高载 PD TTFT 排队及无注入时略差的 stall。全部头条数字来源 `outputs/m27/h20_formal_e{0,1,2,3,4}_*`；审核 `outputs/m27/final_evidence_audit.json` 73/73 PASS；全仓 invariants 187 PASS。前机数据不参与本轮任一 CSV/CI。
+
+---
+
+## 附录：前一实例中途交接原文（独立参考，不参与当前正式结论）
+
+以下保留原历史交接陈述；其中“本机”“当前”均指上一实例，不是本次 `ins-a8qac2ve`。旧机摘要：8K E2 stall PD 105.03 ms、colo 885.10 ms，E3/E4 未完成；只是定性 replication，严禁样本合并。
+
 # M27 · H20 中途交接结果（非正式收口）
 
 > **M27_H20_PARTIAL_HANDOFF**。当前统一上游连接策略 `force_close=True` 下 Gate 0、E0、E1 完成；E2 A/B 已重跑且通过 overlap/paired-key/transfer 不变量；E3cal/E3/E4/E5 未形成可用正式结果。M27_E/M27_H **NOT COMPLETE**。本文件不是正式结论。H20 / vLLM 0.24.0 / NIXL 1.2.0 / Qwen2.5-7B bf16 / TP1 / eager / HND / 本机 NV18 / 在线客户端口径。

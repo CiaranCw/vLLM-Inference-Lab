@@ -1,7 +1,7 @@
 # M27 · Prefill–Decode Disaggregation & NIXL KV Transfer（Stage K · Distributed Serving Deep Dive）
 
-**状态：DESIGN FROZEN v1；真实 H20 Gate 0/E0/E1 已通过，E2 A/B 已按统一代理策略完成，E3–E5 尚未完成；M27_E/H = NOT COMPLETE。**
-当前机时受限，先生成中转包给下一台机器续跑；原始交接包另行提供。当前数字见 [`results.md`](results.md)，操作及旧策略归档见 [`execution_record.md`](execution_record.md)。M24 冻结计划与结论不改。
+**状态：M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE（Gate 0→E4 fresh 同实例；E5 按 Gate 8 可选跳过）。**
+正式结果与负结果见 [`results.md`](results.md) 顶部；上一台独立中转数字只作为其附录参考，不和本机 raw 池化。实例 ID `ins-a8qac2ve`，与上一实例意外同名 `TENCENT64.site`，以任务起点和新 raw/校准产生时间隔离证据。M24 冻结计划与结论不改。
 
 | 文件 | 内容 |
 |---|---|
@@ -11,7 +11,7 @@
 | [`offline_package.md`](offline_package.md) | NIXL wheel 清单与 sha256、安装方式、三部分交接包（code / wheelhouse / model）、未闭环风险 |
 | [`model_artifact_manifest.md`](model_artifact_manifest.md) | 7B 模型身份：逐文件 sha256（[`model_artifact/`](model_artifact/)）、来源证据链、HF revision 比对、模型 Gate |
 | [`execution_record.md`](execution_record.md) | 本机 H20 现场执行、失败与偏离、当前有效证据边界 |
-| [`results.md`](results.md) | 当前有效 E0/E1 与 E2 待收口的部分实测结果；E3–E5 不做结论 |
+| [`results.md`](results.md) | 当前新实例 E0–E4 完整正式结果、RQ1–RQ4、负结果；旧机独立附录与 Gate 8/E5 判定 |
 
 ## 脚本
 

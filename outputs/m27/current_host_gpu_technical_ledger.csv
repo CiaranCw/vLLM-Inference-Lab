@@ -1,0 +1,19 @@
+stage,arm,start_utc,end_utc,active_gpu_count,elapsed_hours,technical_gpu_hours,shutdown_reason,note
+e0,pd_1p1d,2026-10-05T12:29:21.204858+00:00,2026-10-05T12:31:58.839247+00:00,2,0.043787,0.087575,normal,technical active-GPU estimate; NOT provider billable
+e0,colo1_mbt8192,2026-10-05T12:31:59.264395+00:00,2026-10-05T12:33:19.186813+00:00,1,0.022201,0.022201,normal,technical active-GPU estimate; NOT provider billable
+e1,pd_1p1d,2026-10-05T12:33:36.151237+00:00,2026-10-05T12:38:48.173036+00:00,2,0.086673,0.173345,normal,technical active-GPU estimate; NOT provider billable
+e2,colo1_mbt2048,2026-10-05T12:38:53.628173+00:00,2026-10-05T12:50:00.687443+00:00,1,0.185294,0.185294,normal,technical active-GPU estimate; NOT provider billable
+e2,colo1_mbt4096,2026-10-05T12:50:01.203281+00:00,2026-10-05T13:01:12.394191+00:00,1,0.186442,0.186442,normal,technical active-GPU estimate; NOT provider billable
+e2,colo1_mbt8192,2026-10-05T13:01:12.806098+00:00,2026-10-05T13:21:21.925761+00:00,1,0.335867,0.335867,normal,technical active-GPU estimate; NOT provider billable
+e2,pd_1p1d,2026-10-05T13:21:34.895405+00:00,2026-10-05T13:32:54.102826+00:00,2,0.188669,0.377337,normal,technical active-GPU estimate; NOT provider billable
+e3cal,colo2_mbt8192,2026-10-05T13:33:10.176718+00:00,2026-10-05T14:01:04.535923+00:00,2,0.4651,0.9302,normal,technical active-GPU estimate; NOT provider billable
+e3,colo2_mbt8192,2026-10-05T14:01:56.285811+00:00,2026-10-05T14:43:17.608352+00:00,2,0.689256,1.378513,normal,technical active-GPU estimate; NOT provider billable
+e3,pd_1p1d,2026-10-05T14:44:13.419490+00:00,2026-10-05T15:35:16.281822+00:00,2,0.850795,1.70159,normal,technical active-GPU estimate; NOT provider billable
+e3,colo2_mbt2048,2026-10-05T15:36:23.569500+00:00,2026-10-05T16:17:52.874860+00:00,2,0.691474,1.382947,normal,technical active-GPU estimate; NOT provider billable
+e3,colo2_mbt4096,2026-10-05T16:18:29.940509+00:00,2026-10-05T16:59:54.924434+00:00,2,0.690273,1.380547,normal,technical active-GPU estimate; NOT provider billable
+e3,colo1_mbt8192,2026-10-05T17:00:37.437990+00:00,2026-10-05T17:56:37.257299+00:00,1,0.933283,0.933283,normal,technical active-GPU estimate; NOT provider billable
+e4cal,colo4_mbt8192,2026-10-05T18:27:29.526756+00:00,2026-10-05T18:55:01.070883+00:00,4,0.458762,1.835049,normal,technical active-GPU estimate; NOT provider billable
+e4,colo4_mbt8192,2026-10-05T18:56:02.196574+00:00,2026-10-05T19:29:37.238475+00:00,4,0.559734,2.238935,normal,technical active-GPU estimate; NOT provider billable
+e4,pd_1p3d,2026-10-05T19:31:10.063568+00:00,2026-10-05T20:36:09.920869+00:00,4,1.083294,4.333175,normal,technical active-GPU estimate; NOT provider billable
+e4,pd_2p2d,2026-10-05T20:37:19.091809+00:00,2026-10-05T21:18:50.904867+00:00,4,0.69217,2.768681,normal,technical active-GPU estimate; NOT provider billable
+e4,pd_3p1d,2026-10-05T21:19:35.283011+00:00,2026-10-05T22:04:02.031632+00:00,4,0.740764,2.963054,normal,technical active-GPU estimate; NOT provider billable

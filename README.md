@@ -22,6 +22,7 @@
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
 - **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。P-D 未跑（M24；P-D 部分转入阶段 K / M27：T/O + DESIGN READY，**E/H NOT EXECUTED**，无性能数字）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
+- **能证实 H20 P-D/NIXL 的真实取舍（M27）**：同一新实例 fresh Gate0→E4，8K 注入时 E2 colo1−PD decode max stall **+780.98ms**（1 vs 2 GPU，仅机制）；同 GPU 成本 E3/E4 下 PD 的 ITL tail 可降低，但 90% 负载下 TTFT 排队/achieved rate 可能明显更差；E1 512→16384 token 的 NIXL bytes 29.36→939.52MB。旧实例数据独立不 pool；E5 可选跳过。详见 [`notes/m27/results.md`](notes/m27/results.md)。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。

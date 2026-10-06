@@ -1,613 +1,613 @@
 # cmd: ["vllm", "serve", "/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct", "--host", "127.0.0.1", "--port", "8401", "--served-model-name", "m27-model", "--tensor-parallel-size", "1", "--dtype", "bfloat16", "--seed", "0", "--gpu-memory-utilization", "0.85", "--max-num-seqs", "256", "--max-num-batched-tokens", "8192", "--block-size", "16", "--max-model-len", "32768", "--attention-backend", "FLASH_ATTN", "--stream-interval", "1", "--kv-cache-dtype", "auto", "--no-enable-prefix-caching", "--no-async-scheduling", "--enable-chunked-prefill", "--disable-uvicorn-access-log", "--shutdown-timeout", "15", "--enforce-eager", "--kv-transfer-config", "{\"kv_connector\":\"NixlConnector\",\"kv_role\":\"kv_consumer\",\"kv_load_failure_policy\":\"fail\",\"kv_buffer_device\":\"cuda\",\"kv_connector_extra_config\":{\"backends\":[\"UCX\"]}}"]
 # gpu=1 role=D
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339] 
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339]        █     █     █▄   ▄█
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.24.0
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339]   █▄█▀ █     █     █     █  model   /root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:339] 
-(APIServer pid=77657) INFO 10-04 22:53:10 [api_utils.py:273] non-default args: {'model_tag': '/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 8401, 'disable_uvicorn_access_log': True, 'model': '/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', 'dtype': 'bfloat16', 'max_model_len': 32768, 'enforce_eager': True, 'served_model_name': ['m27-model'], 'attention_backend': 'FLASH_ATTN', 'block_size': 16, 'gpu_memory_utilization': 0.85, 'enable_prefix_caching': False, 'max_num_batched_tokens': 8192, 'max_num_seqs': 256, 'enable_chunked_prefill': True, 'async_scheduling': False, 'kv_transfer_config': KVTransferConfig(kv_connector='NixlConnector', engine_id='3dd624dd-2e66-4c35-bd94-3b190aeb79fd', kv_buffer_device='cuda', kv_buffer_size=1000000000.0, kv_role='kv_consumer', kv_rank=None, kv_parallel_size=1, kv_ip='127.0.0.1', kv_port=14579, kv_connector_extra_config={'backends': ['UCX']}, kv_connector_module_path=None, enable_permute_local_kv=False, kv_load_failure_policy='fail'), 'shutdown_timeout': 15}
-(APIServer pid=77657) WARNING 10-04 22:53:10 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
-(APIServer pid=77657) INFO 10-04 22:53:10 [model.py:598] Resolved architecture: Qwen2ForCausalLM
-(APIServer pid=77657) INFO 10-04 22:53:10 [model.py:1725] Using max model len 32768
-(APIServer pid=77657) INFO 10-04 22:53:10 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
-(APIServer pid=77657) INFO 10-04 22:53:10 [vllm.py:1006] Asynchronous scheduling is disabled.
-(APIServer pid=77657) WARNING 10-04 22:53:10 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
-(APIServer pid=77657) WARNING 10-04 22:53:10 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
-(APIServer pid=77657) INFO 10-04 22:53:10 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
-(APIServer pid=77657) INFO 10-04 22:53:10 [vllm.py:1288] Cudagraph is disabled under eager mode
-(APIServer pid=77657) INFO 10-04 22:53:10 [nixl_utils.py:32] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
-(APIServer pid=77657) INFO 10-04 22:53:10 [nixl_utils.py:68] NIXL is available
-(APIServer pid=77657) INFO 10-04 22:53:12 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
-(EngineCore pid=78160) INFO 10-04 22:53:19 [core.py:114] Initializing a V1 LLM engine (v0.24.0) with config: model='/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', speculative_config=None, tokenizer='/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=m27-model, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
-(EngineCore pid=78160) INFO 10-04 22:53:21 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://29.209.104.54:56483 backend=nccl
-(EngineCore pid=78160) INFO 10-04 22:53:21 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
-(EngineCore pid=78160) INFO 10-04 22:53:21 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
-(EngineCore pid=78160) INFO 10-04 22:53:21 [gpu_model_runner.py:5160] Starting to load model /root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct...
-(EngineCore pid=78160) INFO 10-04 22:53:22 [cuda.py:420] Using AttentionBackendEnum.FLASH_ATTN backend.
-(EngineCore pid=78160) INFO 10-04 22:53:22 [flash_attn.py:670] Using FlashAttention version 3
-(EngineCore pid=78160) INFO 10-04 22:53:22 [weight_utils.py:849] Filesystem type for checkpoints: OVERLAY. Checkpoint size: 14.19 GiB. Available RAM: 2178.52 GiB.
-(EngineCore pid=78160) INFO 10-04 22:53:22 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (OVERLAY) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
-(EngineCore pid=78160) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
-(EngineCore pid=78160) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:00<00:01,  2.03it/s]
-(EngineCore pid=78160) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:01<00:01,  1.71it/s]
-(EngineCore pid=78160) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:01<00:00,  1.61it/s]
-(EngineCore pid=78160) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.64it/s]
-(EngineCore pid=78160) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.66it/s]
-(EngineCore pid=78160) 
-(EngineCore pid=78160) INFO 10-04 22:53:24 [default_loader.py:430] Loading weights took 2.55 seconds
-(EngineCore pid=78160) INFO 10-04 22:53:25 [gpu_model_runner.py:5255] Model loading took 14.29 GiB memory and 2.669624 seconds
-(EngineCore pid=78160) INFO 10-04 22:53:25 [utils.py:104] `VLLM_KV_CACHE_LAYOUT` environment variable detected. Setting KV cache layout to HND.
-(EngineCore pid=78160) INFO 10-04 22:53:27 [gpu_worker.py:508] Available KV cache memory: 65.23 GiB
-(EngineCore pid=78160) INFO 10-04 22:53:27 [kv_cache_utils.py:2146] GPU KV cache size: 1,221,312 tokens
-(EngineCore pid=78160) INFO 10-04 22:53:27 [kv_cache_utils.py:2147] Maximum concurrency for 32,768 tokens per request: 37.27x
-(EngineCore pid=78160) INFO 10-04 22:53:27 [nixl_utils.py:68] NIXL is available
-(EngineCore pid=78160) INFO 10-04 22:53:27 [factory.py:62] Creating v1 connector with name: NixlPullConnector and engine_id: 3dd624dd-2e66-4c35-bd94-3b190aeb79fd
-(EngineCore pid=78160) WARNING 10-04 22:53:27 [base.py:190] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
-(EngineCore pid=78160) INFO 10-04 22:53:27 [base_worker.py:243] Initializing NIXL wrapper
-(EngineCore pid=78160) INFO 10-04 22:53:27 [base_worker.py:244] Initializing NIXL worker 3dd624dd-2e66-4c35-bd94-3b190aeb79fd
-[1791125610.306439] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.306470] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.306472] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.306474] [TENCENT64:78160:0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
-[1791125610.306476] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.306507] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------------------------------------+
-[1791125610.306509] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
-[1791125610.306511] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.306512] [TENCENT64:78160:0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
-[1791125610.306513] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.306540] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.306541] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
-[1791125610.306543] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.306554] [TENCENT64:78160:0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
-[1791125610.306556] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.306593] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.306596] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
-[1791125610.306597] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.306599] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.306611] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.306612] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.306615] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.306617] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.321686] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.321704] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.321706] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.321708] [TENCENT64:78160:0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
-[1791125610.321709] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.321737] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------------------------------------+
-[1791125610.321739] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
-[1791125610.321740] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.321742] [TENCENT64:78160:0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
-[1791125610.321743] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.321768] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.321770] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
-[1791125610.321772] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.321773] [TENCENT64:78160:0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
-[1791125610.321774] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.321814] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.321816] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
-[1791125610.321818] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.321819] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.321832] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.321841] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.321842] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.321844] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.329987] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.330002] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.330005] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.330006] [TENCENT64:78160:0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
-[1791125610.330008] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.330037] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------------------------------------+
-[1791125610.330038] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
-[1791125610.330040] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.330041] [TENCENT64:78160:0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
-[1791125610.330043] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.330067] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.330069] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
-[1791125610.330070] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.330071] [TENCENT64:78160:0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
-[1791125610.330073] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.330110] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.330118] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
-[1791125610.330120] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.330121] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.330133] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.330134] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.330136] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.330137] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.338178] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.338192] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.338194] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.338201] [TENCENT64:78160:0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
-[1791125610.338203] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.338237] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------------------------------------+
-[1791125610.338240] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
-[1791125610.338241] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.338242] [TENCENT64:78160:0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
-[1791125610.338244] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.338271] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.338273] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
-[1791125610.338274] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.338276] [TENCENT64:78160:0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
-[1791125610.338277] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.338317] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.338319] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
-[1791125610.338320] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.338322] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.338334] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.338336] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.338338] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.338339] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.346531] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.346546] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.346548] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.346550] [TENCENT64:78160:0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
-[1791125610.346551] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------+----------------+
-[1791125610.346578] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------------------------------------+
-[1791125610.346579] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
-[1791125610.346581] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.346582] [TENCENT64:78160:0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
-[1791125610.346584] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+----------------+
-[1791125610.346612] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.346614] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
-[1791125610.346616] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.346617] [TENCENT64:78160:0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
-[1791125610.346619] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------+----------------+
-[1791125610.346654] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.346656] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
-[1791125610.346658] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.346659] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------+--+
-[1791125610.346671] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.346673] [TENCENT64:78160:0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.346674] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.346676] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------------+--+
-[1791125610.348846] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------+
-[1791125610.348856] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.348858] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------+------------+
-[1791125610.348860] [TENCENT64:78160:0]   |                   0..inf | zero-copy                                      | cma/memory |
-[1791125610.348862] [TENCENT64:78160:0]   +--------------------------+------------------------------------------------+------------+
-[1791125610.356103] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.356119] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.356122] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-[1791125610.356123] [TENCENT64:78160:0]   |                   0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.356125] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-[1791125610.357086] [TENCENT64:78160:0]   +--------------------------+----------------------------------------------------+
-[1791125610.357090] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* from host memory    |
-[1791125610.357092] [TENCENT64:78160:0]   +--------------------------+----------------------------------------+-----------+
-[1791125610.357093] [TENCENT64:78160:0]   |                        0 | short                                  | tcp/bond1 |
-[1791125610.357095] [TENCENT64:78160:0]   |                 1..65528 | zero-copy                              | tcp/bond1 |
-[1791125610.357097] [TENCENT64:78160:0]   |               65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125610.357099] [TENCENT64:78160:0]   +--------------------------+----------------------------------------+-----------+
-[1791125610.358333] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------------------+
-[1791125610.358343] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125610.358344] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------+-----------+
-[1791125610.358346] [TENCENT64:78160:0]   |                  0..8184 | short                                                   | tcp/bond1 |
-[1791125610.358348] [TENCENT64:78160:0]   |              8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125610.358349] [TENCENT64:78160:0]   |               65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125610.358350] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------+-----------+
-[1791125610.360746] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------------------+
-[1791125610.360752] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send*(multi) from host memory    |
-[1791125610.360754] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------+-----------+
-[1791125610.360756] [TENCENT64:78160:0]   |                  0..8184 | short                                         | tcp/bond1 |
-[1791125610.360757] [TENCENT64:78160:0]   |              8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125610.360759] [TENCENT64:78160:0]   |               65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125610.360760] [TENCENT64:78160:0]   +--------------------------+-----------------------------------------------+-----------+
-[1791125610.361989] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.361994] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.361996] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-[1791125610.361997] [TENCENT64:78160:0]   |                        0 | short                                                  | tcp/bond1 |
-[1791125610.361999] [TENCENT64:78160:0]   |                 1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125610.362000] [TENCENT64:78160:0]   |               65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125610.362001] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-[1791125610.363241] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------------------------------+
-[1791125610.363246] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125610.363248] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.363249] [TENCENT64:78160:0]   |                  0..8176 | short                                                                   | tcp/bond1 |
-[1791125610.363251] [TENCENT64:78160:0]   |               8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125610.363252] [TENCENT64:78160:0]   |              8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125610.363254] [TENCENT64:78160:0]   |               65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125610.363255] [TENCENT64:78160:0]   +--------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.364512] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------------------------+
-[1791125610.364518] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125610.364520] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------------+-----------+
-[1791125610.364521] [TENCENT64:78160:0]   |                  0..8176 | short                                                         | tcp/bond1 |
-[1791125610.364524] [TENCENT64:78160:0]   |              8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125610.364526] [TENCENT64:78160:0]   |               65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125610.364527] [TENCENT64:78160:0]   +--------------------------+---------------------------------------------------------------+-----------+
-[1791125610.366141] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------+
-[1791125610.366149] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.366151] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.366152] [TENCENT64:78160:0]   |                         0..inf | zero-copy                                      | cma/memory |
-[1791125610.366154] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.368310] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.368319] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.368321] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.368322] [TENCENT64:78160:0]   |                         0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.368324] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.369328] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------------------+
-[1791125610.369336] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
-[1791125610.369337] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.369339] [TENCENT64:78160:0]   |                              0 | short                                  | tcp/bond1 |
-[1791125610.369341] [TENCENT64:78160:0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
-[1791125610.369342] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125610.369344] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.370635] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------+
-[1791125610.370640] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125610.370642] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.370643] [TENCENT64:78160:0]   |                        0..8184 | short                                                   | tcp/bond1 |
-[1791125610.370645] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125610.370653] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125610.370654] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.373410] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------------------+
-[1791125610.373417] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
-[1791125610.373419] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.373420] [TENCENT64:78160:0]   |                        0..8184 | short                                         | tcp/bond1 |
-[1791125610.373422] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125610.373423] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125610.373425] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.374674] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.374679] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.374680] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.374681] [TENCENT64:78160:0]   |                              0 | short                                                  | tcp/bond1 |
-[1791125610.374683] [TENCENT64:78160:0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125610.374684] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125610.374685] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.375958] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------------------+
-[1791125610.375964] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125610.375966] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.375967] [TENCENT64:78160:0]   |                        0..8176 | short                                                                   | tcp/bond1 |
-[1791125610.375968] [TENCENT64:78160:0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125610.375971] [TENCENT64:78160:0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125610.375972] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125610.375973] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.377281] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------------+
-[1791125610.377287] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125610.377289] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.377290] [TENCENT64:78160:0]   |                        0..8176 | short                                                         | tcp/bond1 |
-[1791125610.377296] [TENCENT64:78160:0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125610.377298] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125610.377299] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.378604] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------+
-[1791125610.378614] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.378616] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.378617] [TENCENT64:78160:0]   |                         0..inf | zero-copy                                      | cma/memory |
-[1791125610.378618] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.380533] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.380540] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.380541] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.380543] [TENCENT64:78160:0]   |                         0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.380545] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.381458] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------------------+
-[1791125610.381463] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
-[1791125610.381465] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.381466] [TENCENT64:78160:0]   |                              0 | short                                  | tcp/bond1 |
-[1791125610.381468] [TENCENT64:78160:0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
-[1791125610.381470] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125610.381471] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.382674] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------+
-[1791125610.382680] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125610.382682] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.382683] [TENCENT64:78160:0]   |                        0..8184 | short                                                   | tcp/bond1 |
-[1791125610.382685] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125610.382687] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125610.382688] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.385026] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------------------+
-[1791125610.385033] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
-[1791125610.385039] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.385041] [TENCENT64:78160:0]   |                        0..8184 | short                                         | tcp/bond1 |
-[1791125610.385042] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125610.385043] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125610.385045] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.386260] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.386265] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.386267] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.386268] [TENCENT64:78160:0]   |                              0 | short                                                  | tcp/bond1 |
-[1791125610.386270] [TENCENT64:78160:0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125610.386271] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125610.386272] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.387601] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------------------+
-[1791125610.387607] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125610.387608] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.387610] [TENCENT64:78160:0]   |                        0..8176 | short                                                                   | tcp/bond1 |
-[1791125610.387611] [TENCENT64:78160:0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125610.387613] [TENCENT64:78160:0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125610.387614] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125610.387615] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.388834] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------------+
-[1791125610.388839] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125610.388840] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.388842] [TENCENT64:78160:0]   |                        0..8176 | short                                                         | tcp/bond1 |
-[1791125610.388843] [TENCENT64:78160:0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125610.388845] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125610.388847] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.390089] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------+
-[1791125610.390097] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.390099] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.390100] [TENCENT64:78160:0]   |                         0..inf | zero-copy                                      | cma/memory |
-[1791125610.390102] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.391981] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.391987] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.391988] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.391990] [TENCENT64:78160:0]   |                         0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.391992] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.393041] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------------------+
-[1791125610.393048] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
-[1791125610.393049] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.393051] [TENCENT64:78160:0]   |                              0 | short                                  | tcp/bond1 |
-[1791125610.393052] [TENCENT64:78160:0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
-[1791125610.393053] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125610.393055] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.394293] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------+
-[1791125610.394298] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125610.394300] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.394301] [TENCENT64:78160:0]   |                        0..8184 | short                                                   | tcp/bond1 |
-[1791125610.394303] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125610.394304] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125610.394306] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.396703] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------------------+
-[1791125610.396709] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
-[1791125610.396711] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.396712] [TENCENT64:78160:0]   |                        0..8184 | short                                         | tcp/bond1 |
-[1791125610.396714] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125610.396720] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125610.396721] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.398008] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.398014] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.398016] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.398017] [TENCENT64:78160:0]   |                              0 | short                                                  | tcp/bond1 |
-[1791125610.398018] [TENCENT64:78160:0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125610.398020] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125610.398022] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.399331] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------------------+
-[1791125610.399339] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125610.399342] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.399344] [TENCENT64:78160:0]   |                        0..8176 | short                                                                   | tcp/bond1 |
-[1791125610.399346] [TENCENT64:78160:0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125610.399348] [TENCENT64:78160:0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125610.399350] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125610.399351] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.400604] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------------+
-[1791125610.400610] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125610.400612] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.400613] [TENCENT64:78160:0]   |                        0..8176 | short                                                         | tcp/bond1 |
-[1791125610.400615] [TENCENT64:78160:0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125610.400616] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125610.400618] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.401951] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------+
-[1791125610.401959] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
-[1791125610.401961] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.401970] [TENCENT64:78160:0]   |                         0..inf | zero-copy                                      | cma/memory |
-[1791125610.401971] [TENCENT64:78160:0]   +--------------------------------+------------------------------------------------+------------+
-[1791125610.403939] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.403945] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.403947] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.403948] [TENCENT64:78160:0]   |                         0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.403950] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.404906] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------------------+
-[1791125610.404912] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
-[1791125610.404913] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.404915] [TENCENT64:78160:0]   |                              0 | short                                  | tcp/bond1 |
-[1791125610.404917] [TENCENT64:78160:0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
-[1791125610.404918] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125610.404919] [TENCENT64:78160:0]   +--------------------------------+----------------------------------------+-----------+
-[1791125610.406441] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------+
-[1791125610.406449] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125610.406450] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.406452] [TENCENT64:78160:0]   |                        0..8184 | short                                                   | tcp/bond1 |
-[1791125610.406453] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125610.406455] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125610.406456] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125610.408801] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------------------+
-[1791125610.408808] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
-[1791125610.408810] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.408811] [TENCENT64:78160:0]   |                        0..8184 | short                                         | tcp/bond1 |
-[1791125610.408812] [TENCENT64:78160:0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125610.408814] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125610.408815] [TENCENT64:78160:0]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125610.410059] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------------------+
-[1791125610.410069] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125610.410071] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.410072] [TENCENT64:78160:0]   |                              0 | short                                                  | tcp/bond1 |
-[1791125610.410073] [TENCENT64:78160:0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125610.410075] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125610.410076] [TENCENT64:78160:0]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125610.411345] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------------------+
-[1791125610.411349] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125610.411351] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.411352] [TENCENT64:78160:0]   |                        0..8176 | short                                                                   | tcp/bond1 |
-[1791125610.411354] [TENCENT64:78160:0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125610.411356] [TENCENT64:78160:0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125610.411358] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125610.411359] [TENCENT64:78160:0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125610.412626] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------------------+
-[1791125610.412631] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125610.412632] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125610.412634] [TENCENT64:78160:0]   |                        0..8176 | short                                                         | tcp/bond1 |
-[1791125610.412635] [TENCENT64:78160:0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125610.412637] [TENCENT64:78160:0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125610.412638] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------------+-----------+
-(EngineCore pid=78160) 2026-10-04 22:53:30 NIXL INFO    _api.py:390 Backend UCX was instantiated
-(EngineCore pid=78160) 2026-10-04 22:53:30 NIXL INFO    _api.py:268 Initialized NIXL agent: 42fc8a43-b049-4f71-b233-2167b57a53ab
-(EngineCore pid=78160) INFO 10-04 22:53:30 [base_worker.py:468] Detected attention backend(s) ['FLASH_ATTN']
-(EngineCore pid=78160) INFO 10-04 22:53:30 [base_worker.py:472] Detected kv cache layout HND
-(EngineCore pid=78160) INFO 10-04 22:53:30 [base_worker.py:976] Registering KV_Caches. use_mla: False, kv_buffer_device: cuda, use_host_buffer: False
-[1791125610.429061] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------------------+
-[1791125610.429072] [TENCENT64:78160:0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125610.429085] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-[1791125610.429087] [TENCENT64:78160:0]   |                   0..inf | software emulation                                     | tcp/bond1 |
-[1791125610.429088] [TENCENT64:78160:0]   +--------------------------+--------------------------------------------------------+-----------+
-(EngineCore pid=78160) INFO 10-04 22:53:31 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
-(EngineCore pid=78160) INFO 10-04 22:53:31 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
-(EngineCore pid=78160) 2026-10-04 22:53:31,312 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
-(EngineCore pid=78160) 2026-10-04 22:53:31,325 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
-(EngineCore pid=78160) INFO 10-04 22:53:32 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
-(EngineCore pid=78160) INFO 10-04 22:53:32 [core.py:344] init engine (profile, create kv cache, warmup model) took 7.26 s
-(EngineCore pid=78160) INFO 10-04 22:53:32 [factory.py:62] Creating v1 connector with name: NixlPullConnector and engine_id: 3dd624dd-2e66-4c35-bd94-3b190aeb79fd
-(EngineCore pid=78160) WARNING 10-04 22:53:32 [base.py:190] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
-(EngineCore pid=78160) INFO 10-04 22:53:32 [base_scheduler.py:96] Initializing NIXL Scheduler 3dd624dd-2e66-4c35-bd94-3b190aeb79fd
-(EngineCore pid=78160) INFO 10-04 22:53:32 [vllm.py:1006] Asynchronous scheduling is disabled.
-(EngineCore pid=78160) WARNING 10-04 22:53:32 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
-(EngineCore pid=78160) WARNING 10-04 22:53:32 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
-(EngineCore pid=78160) INFO 10-04 22:53:32 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
-(EngineCore pid=78160) INFO 10-04 22:53:32 [vllm.py:1288] Cudagraph is disabled under eager mode
-(EngineCore pid=78160) INFO 10-04 22:53:32 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
-(APIServer pid=77657) INFO 10-04 22:53:32 [api_server.py:577] Supported tasks: ['generate']
-(APIServer pid=77657) WARNING 10-04 22:53:33 [__init__.py:36] SECURITY WARNING: Development endpoints are enabled! This should NOT be used in production!
-(APIServer pid=77657) WARNING 10-04 22:53:33 [model.py:1477] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
-(APIServer pid=77657) INFO 10-04 22:53:33 [hf.py:548] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
-(APIServer pid=77657) INFO 10-04 22:53:33 [api_server.py:581] Starting vLLM server on http://127.0.0.1:8401
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:37] Available routes are:
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /openapi.json, Methods: GET, HEAD
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /docs, Methods: GET, HEAD
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /docs/oauth2-redirect, Methods: GET, HEAD
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /redoc, Methods: GET, HEAD
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /load, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /version, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /health, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /metrics, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /tokenize, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /detokenize, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/models, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /ping, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /ping, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /invocations, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /reset_prefix_cache, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /reset_mm_cache, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /reset_encoder_cache, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /pause, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /resume, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /is_paused, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /init_weight_transfer_engine, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /start_weight_update, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /update_weights, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /finish_weight_update, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /get_world_size, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /collective_rpc, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /server_info, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /sleep, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /wake_up, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /is_sleeping, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/chat/completions, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/chat/completions/batch, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/responses, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/responses/{response_id}, Methods: GET
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/responses/{response_id}/cancel, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/completions, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/messages, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/messages/count_tokens, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /generative_scoring, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /inference/v1/generate, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /scale_elastic_ep, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /is_scaling_elastic_ep, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/chat/completions/render, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/completions/render, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/chat/completions/derender, Methods: POST
-(APIServer pid=77657) INFO 10-04 22:53:33 [launcher.py:46] Route: /v1/completions/derender, Methods: POST
-(APIServer pid=77657) INFO:     Started server process [77657]
-(APIServer pid=77657) INFO:     Waiting for application startup.
-(APIServer pid=77657) INFO:     Application startup complete.
-(APIServer pid=77657) /root/m27-venv/lib64/python3.11/site-packages/_distutils_hack/__init__.py:30: UserWarning: Setuptools is replacing distutils. Support for replacing an already imported distutils is deprecated. In the future, this condition will fail. Register concerns at https://github.com/pypa/setuptools/issues/new?template=distutils-deprecation.yml
-(APIServer pid=77657)   warnings.warn(
-(EngineCore pid=78160) INFO 10-04 22:54:45 [base_worker.py:609] NIXL compatibility check passed (hash: 0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f)
-(EngineCore pid=78160) INFO 10-04 22:54:45 [base_worker.py:1483] Transfer plan: TransferTopology(tp_ratio=1, num_kv_heads=4, local_tp=1, remote_tp=1, remote_pp=0, local_rank=0, remote_block_len=32768)
-[1791125685.898032] [TENCENT64:78160:1]   +--------------------------------+-------------------------------------------------------------+
-[1791125685.898043] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | remote memory write by ucp_put* from host memory to host    |
-[1791125685.898045] [TENCENT64:78160:1]   +--------------------------------+------------------------------------------------+------------+
-[1791125685.898047] [TENCENT64:78160:1]   |                         0..inf | zero-copy                                      | cma/memory |
-[1791125685.898048] [TENCENT64:78160:1]   +--------------------------------+------------------------------------------------+------------+
-[1791125685.898948] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------------------+
-[1791125685.898955] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
-[1791125685.898957] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125685.898958] [TENCENT64:78160:1]   |                         0..inf | software emulation                                     | tcp/bond1 |
-[1791125685.898959] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125685.899920] [TENCENT64:78160:1]   +--------------------------------+----------------------------------------------------+
-[1791125685.899927] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* from host memory    |
-[1791125685.899929] [TENCENT64:78160:1]   +--------------------------------+----------------------------------------+-----------+
-[1791125685.899931] [TENCENT64:78160:1]   |                              0 | short                                  | tcp/bond1 |
-[1791125685.899932] [TENCENT64:78160:1]   |                       1..65528 | zero-copy                              | tcp/bond1 |
-[1791125685.899934] [TENCENT64:78160:1]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
-[1791125685.899936] [TENCENT64:78160:1]   +--------------------------------+----------------------------------------+-----------+
-[1791125685.901314] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------------------+
-[1791125685.901320] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(fast-completion) from host memory    |
-[1791125685.901322] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125685.901323] [TENCENT64:78160:1]   |                        0..8184 | short                                                   | tcp/bond1 |
-[1791125685.901325] [TENCENT64:78160:1]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
-[1791125685.901326] [TENCENT64:78160:1]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
-[1791125685.901328] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------+-----------+
-[1791125685.903825] [TENCENT64:78160:1]   +--------------------------------+-----------------------------------------------------------+
-[1791125685.903833] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(multi) from host memory    |
-[1791125685.903835] [TENCENT64:78160:1]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125685.903836] [TENCENT64:78160:1]   |                        0..8184 | short                                         | tcp/bond1 |
-[1791125685.903838] [TENCENT64:78160:1]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
-[1791125685.903839] [TENCENT64:78160:1]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
-[1791125685.903841] [TENCENT64:78160:1]   +--------------------------------+-----------------------------------------------+-----------+
-[1791125685.905092] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------------------+
-[1791125685.905099] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag from host memory    |
-[1791125685.905101] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125685.905102] [TENCENT64:78160:1]   |                              0 | short                                                  | tcp/bond1 |
-[1791125685.905103] [TENCENT64:78160:1]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
-[1791125685.905105] [TENCENT64:78160:1]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
-[1791125685.905106] [TENCENT64:78160:1]   +--------------------------------+--------------------------------------------------------+-----------+
-[1791125685.906378] [TENCENT64:78160:1]   +--------------------------------+-------------------------------------------------------------------------------------+
-[1791125685.906384] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
-[1791125685.906386] [TENCENT64:78160:1]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125685.906387] [TENCENT64:78160:1]   |                        0..8176 | short                                                                   | tcp/bond1 |
-[1791125685.906388] [TENCENT64:78160:1]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
-[1791125685.906391] [TENCENT64:78160:1]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
-[1791125685.906393] [TENCENT64:78160:1]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
-[1791125685.906394] [TENCENT64:78160:1]   +--------------------------------+-------------------------------------------------------------------------+-----------+
-[1791125685.907661] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------------------------+
-[1791125685.907667] [TENCENT64:78160:1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag(multi) from host memory    |
-[1791125685.907669] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125685.907670] [TENCENT64:78160:1]   |                        0..8176 | short                                                         | tcp/bond1 |
-[1791125685.907672] [TENCENT64:78160:1]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
-[1791125685.907677] [TENCENT64:78160:1]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
-[1791125685.907678] [TENCENT64:78160:1]   +--------------------------------+---------------------------------------------------------------+-----------+
-[1791125687.122624] [TENCENT64:78160:2]   +--------------------------------+--------------------------------------------------------------------------+
-[1791125687.122674] [TENCENT64:78160:2]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
-[1791125687.122677] [TENCENT64:78160:2]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122680] [TENCENT64:78160:2]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
-[1791125687.122681] [TENCENT64:78160:2]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122662] [TENCENT64:78160:3]   +--------------------------------+--------------------------------------------------------------------------+
-[1791125687.122712] [TENCENT64:78160:3]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
-[1791125687.122717] [TENCENT64:78160:3]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122719] [TENCENT64:78160:3]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
-[1791125687.122722] [TENCENT64:78160:3]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122784] [TENCENT64:78160:4]   +--------------------------------+--------------------------------------------------------------------------+
-[1791125687.122810] [TENCENT64:78160:4]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
-[1791125687.122794] [TENCENT64:78160:5]   +--------------------------------+--------------------------------------------------------------------------+
-[1791125687.122838] [TENCENT64:78160:5]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
-[1791125687.122813] [TENCENT64:78160:4]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122845] [TENCENT64:78160:4]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
-[1791125687.122846] [TENCENT64:78160:4]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122840] [TENCENT64:78160:5]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.122855] [TENCENT64:78160:5]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
-[1791125687.122857] [TENCENT64:78160:5]   +--------------------------------+----------------------------------------------------------+---------------+
-[1791125687.170097] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------------------+
-[1791125687.170134] [TENCENT64:78160:0]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(egr) from host memory    |
-[1791125687.170137] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------+-----------+
-[1791125687.170139] [TENCENT64:78160:0]   |                              0 | short                                       | tcp/bond1 |
-[1791125687.170141] [TENCENT64:78160:0]   |                       1..65528 | zero-copy                                   | tcp/bond1 |
-[1791125687.170142] [TENCENT64:78160:0]   |                     65529..inf | multi-frag zero-copy                        | tcp/bond1 |
-[1791125687.170153] [TENCENT64:78160:0]   +--------------------------------+---------------------------------------------+-----------+
-(EngineCore pid=78160) WARNING 10-04 22:54:47 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
-(APIServer pid=77657) INFO 10-04 22:54:53 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
-(APIServer pid=77657) INFO 10-04 22:54:53 [metrics.py:103] KV Transfer metrics: Num successful transfers=4, Avg xfer time (ms)=33.033, P90 xfer time (ms)=48.468, Avg post time (ms)=23.878, P90 post time (ms)=35.264, Avg MB per transfer=112.0, Throughput (MB/s)=3390.523, Avg number of descriptors=7168.0
-(APIServer pid=77657) INFO 10-04 22:55:03 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 12.8 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
-(APIServer pid=77657) INFO 10-04 22:55:03 [metrics.py:103] KV Transfer metrics: Num successful transfers=4, Avg xfer time (ms)=24.402, P90 xfer time (ms)=24.713, Avg post time (ms)=18.292, P90 post time (ms)=18.601, Avg MB per transfer=112.0, Throughput (MB/s)=4589.694, Avg number of descriptors=7168.0
-(APIServer pid=77657) INFO 10-04 22:55:13 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
-(APIServer pid=77657) INFO 10-04 22:55:19 [launcher.py:100] [shutdown] API server: shutdown triggered
-(APIServer pid=77657) INFO 10-04 22:55:19 [launcher.py:116] [shutdown] API server: stopping engine client mode=drain timeout=15s
-(APIServer pid=77657) INFO 10-04 22:55:19 [core_client.py:655] [shutdown] MPClient: start timeout=15s
-(APIServer pid=77657) INFO 10-04 22:55:19 [core_client.py:657] [shutdown] MPClient: stopping engine manager
-(EngineCore pid=78160) INFO 10-04 22:55:19 [core.py:1214] [shutdown] EngineCore: trigger received signal=SIGTERM
-(EngineCore pid=78160) INFO 10-04 22:55:19 [core.py:1333] [shutdown] EngineCore: start mode=drain timeout=15s
-(EngineCore pid=78160) INFO 10-04 22:55:19 [core.py:1364] [shutdown] EngineCore: request processing complete; starting resource teardown
-(EngineCore pid=78160) INFO 10-04 22:55:19 [core.py:1227] [shutdown] EngineCore: exiting busy loop
-(APIServer pid=77657) INFO:     Shutting down
-(APIServer pid=77657) INFO:     Waiting for application shutdown.
-(APIServer pid=77657) INFO:     Application shutdown complete.
-(APIServer pid=77657) INFO:     Finished server process [77657]
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339] 
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339]        █     █     █▄   ▄█
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.24.0
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339]   █▄█▀ █     █     █     █  model   /root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:339] 
+(APIServer pid=6862) INFO 10-05 20:29:27 [api_utils.py:273] non-default args: {'model_tag': '/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 8401, 'disable_uvicorn_access_log': True, 'model': '/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', 'dtype': 'bfloat16', 'max_model_len': 32768, 'enforce_eager': True, 'served_model_name': ['m27-model'], 'attention_backend': 'FLASH_ATTN', 'block_size': 16, 'gpu_memory_utilization': 0.85, 'enable_prefix_caching': False, 'max_num_batched_tokens': 8192, 'max_num_seqs': 256, 'enable_chunked_prefill': True, 'async_scheduling': False, 'kv_transfer_config': KVTransferConfig(kv_connector='NixlConnector', engine_id='ae60fe1d-8811-48b2-a5b6-083cded69027', kv_buffer_device='cuda', kv_buffer_size=1000000000.0, kv_role='kv_consumer', kv_rank=None, kv_parallel_size=1, kv_ip='127.0.0.1', kv_port=14579, kv_connector_extra_config={'backends': ['UCX']}, kv_connector_module_path=None, enable_permute_local_kv=False, kv_load_failure_policy='fail'), 'shutdown_timeout': 15}
+(APIServer pid=6862) WARNING 10-05 20:29:27 [arg_utils.py:1590] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+(APIServer pid=6862) INFO 10-05 20:29:37 [model.py:598] Resolved architecture: Qwen2ForCausalLM
+(APIServer pid=6862) INFO 10-05 20:29:37 [model.py:1725] Using max model len 32768
+(APIServer pid=6862) INFO 10-05 20:29:37 [scheduler.py:252] Chunked prefill is enabled with max_num_batched_tokens=8192.
+(APIServer pid=6862) INFO 10-05 20:29:37 [vllm.py:1006] Asynchronous scheduling is disabled.
+(APIServer pid=6862) WARNING 10-05 20:29:37 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(APIServer pid=6862) WARNING 10-05 20:29:37 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(APIServer pid=6862) INFO 10-05 20:29:37 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+(APIServer pid=6862) INFO 10-05 20:29:37 [vllm.py:1288] Cudagraph is disabled under eager mode
+(APIServer pid=6862) INFO 10-05 20:29:37 [nixl_utils.py:32] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+(APIServer pid=6862) INFO 10-05 20:29:37 [nixl_utils.py:68] NIXL is available
+(APIServer pid=6862) INFO 10-05 20:29:37 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+(EngineCore pid=7731) INFO 10-05 20:29:44 [core.py:114] Initializing a V1 LLM engine (v0.24.0) with config: model='/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', speculative_config=None, tokenizer='/root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_verbose=False), seed=0, served_model_name=m27-model, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, moe_backend='auto', linear_backend='auto')
+(EngineCore pid=7731) INFO 10-05 20:29:46 [parallel_state.py:1588] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://29.209.113.154:41683 backend=nccl
+(EngineCore pid=7731) INFO 10-05 20:29:46 [parallel_state.py:1923] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=7731) INFO 10-05 20:29:46 [topk_topp_sampler.py:39] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.
+(EngineCore pid=7731) INFO 10-05 20:29:46 [gpu_model_runner.py:5160] Starting to load model /root/m27_h20_handoff_423575cd/models/Qwen2.5-7B-Instruct...
+(EngineCore pid=7731) INFO 10-05 20:29:47 [cuda.py:420] Using AttentionBackendEnum.FLASH_ATTN backend.
+(EngineCore pid=7731) INFO 10-05 20:29:47 [flash_attn.py:670] Using FlashAttention version 3
+(EngineCore pid=7731) INFO 10-05 20:29:47 [weight_utils.py:849] Filesystem type for checkpoints: OVERLAY. Checkpoint size: 14.19 GiB. Available RAM: 2180.45 GiB.
+(EngineCore pid=7731) INFO 10-05 20:29:47 [weight_utils.py:872] Auto-prefetch is disabled because the filesystem (OVERLAY) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=7731) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=7731) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:00<00:01,  1.99it/s]
+(EngineCore pid=7731) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:01<00:01,  1.69it/s]
+(EngineCore pid=7731) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:01<00:00,  1.59it/s]
+(EngineCore pid=7731) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.59it/s]
+(EngineCore pid=7731) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.62it/s]
+(EngineCore pid=7731) 
+(EngineCore pid=7731) INFO 10-05 20:29:49 [default_loader.py:430] Loading weights took 2.62 seconds
+(EngineCore pid=7731) INFO 10-05 20:29:50 [gpu_model_runner.py:5255] Model loading took 14.29 GiB memory and 2.774724 seconds
+(EngineCore pid=7731) INFO 10-05 20:29:50 [utils.py:104] `VLLM_KV_CACHE_LAYOUT` environment variable detected. Setting KV cache layout to HND.
+(EngineCore pid=7731) INFO 10-05 20:29:58 [gpu_worker.py:508] Available KV cache memory: 65.23 GiB
+(EngineCore pid=7731) INFO 10-05 20:29:58 [kv_cache_utils.py:2146] GPU KV cache size: 1,221,312 tokens
+(EngineCore pid=7731) INFO 10-05 20:29:58 [kv_cache_utils.py:2147] Maximum concurrency for 32,768 tokens per request: 37.27x
+(EngineCore pid=7731) INFO 10-05 20:29:58 [nixl_utils.py:68] NIXL is available
+(EngineCore pid=7731) INFO 10-05 20:29:58 [factory.py:62] Creating v1 connector with name: NixlPullConnector and engine_id: ae60fe1d-8811-48b2-a5b6-083cded69027
+(EngineCore pid=7731) WARNING 10-05 20:29:58 [base.py:190] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
+(EngineCore pid=7731) INFO 10-05 20:29:58 [base_worker.py:243] Initializing NIXL wrapper
+(EngineCore pid=7731) INFO 10-05 20:29:58 [base_worker.py:244] Initializing NIXL worker ae60fe1d-8811-48b2-a5b6-083cded69027
+[1791203401.695749] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.695783] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.695785] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.695787] [TENCENT64:7731 :0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
+[1791203401.695788] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.695822] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------------------------------------+
+[1791203401.695824] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
+[1791203401.695825] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.695827] [TENCENT64:7731 :0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
+[1791203401.695828] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.695858] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.695861] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
+[1791203401.695863] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.695875] [TENCENT64:7731 :0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
+[1791203401.695878] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.695921] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.695925] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
+[1791203401.695926] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.695928] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.695941] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.695944] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.695946] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.695947] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.847938] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.847972] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.847975] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.847978] [TENCENT64:7731 :0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
+[1791203401.847980] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.848014] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------------------------------------+
+[1791203401.848017] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
+[1791203401.848018] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.848020] [TENCENT64:7731 :0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
+[1791203401.848021] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.848051] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.848054] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
+[1791203401.848055] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.848057] [TENCENT64:7731 :0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
+[1791203401.848058] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.848106] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.848111] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
+[1791203401.848113] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.848115] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.848129] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.848141] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.848143] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.848145] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.860921] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.860940] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.860943] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.860946] [TENCENT64:7731 :0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
+[1791203401.860949] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.860984] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------------------------------------+
+[1791203401.860987] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
+[1791203401.860989] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.860990] [TENCENT64:7731 :0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
+[1791203401.860992] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.861020] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.861023] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
+[1791203401.861025] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.861026] [TENCENT64:7731 :0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
+[1791203401.861028] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.861066] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.861070] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
+[1791203401.861071] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.861073] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.861093] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.861094] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.861096] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.861098] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.870680] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.870697] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.870699] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.870701] [TENCENT64:7731 :0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
+[1791203401.870711] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.870754] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------------------------------------+
+[1791203401.870758] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
+[1791203401.870760] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.870762] [TENCENT64:7731 :0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
+[1791203401.870764] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.870793] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.870796] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
+[1791203401.870798] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.870800] [TENCENT64:7731 :0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
+[1791203401.870801] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.870840] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.870843] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
+[1791203401.870844] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.870846] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.870858] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.870861] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.870863] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.870864] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.880714] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.880732] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.880735] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.880736] [TENCENT64:7731 :0]   |            0..4294967295 | short                                      | cuda_copy/cuda |
+[1791203401.880739] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------+----------------+
+[1791203401.880770] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------------------------------------+
+[1791203401.880773] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(fast-completion) from host memory to host    |
+[1791203401.880774] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.880776] [TENCENT64:7731 :0]   |            0..4294967295 | short                                                       | cuda_copy/cuda |
+[1791203401.880777] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+----------------+
+[1791203401.880811] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.880814] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | remote memory write by ucp_put*(multi) from host memory to host    |
+[1791203401.880815] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.880817] [TENCENT64:7731 :0]   |            0..4294967295 | short                                             | cuda_copy/cuda |
+[1791203401.880818] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------+----------------+
+[1791203401.880857] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.880862] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* from host memory    |
+[1791203401.880864] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.880867] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------+--+
+[1791203401.880879] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.880881] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#0 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.880883] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.880884] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------------+--+
+[1791203401.884643] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------+
+[1791203401.884657] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.884659] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------+------------+
+[1791203401.884661] [TENCENT64:7731 :0]   |                   0..inf | zero-copy                                      | cma/memory |
+[1791203401.884663] [TENCENT64:7731 :0]   +--------------------------+------------------------------------------------+------------+
+[1791203401.895080] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.895094] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203401.895096] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+[1791203401.895098] [TENCENT64:7731 :0]   |                   0..inf | software emulation                                     | tcp/bond1 |
+[1791203401.895100] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+[1791203401.897027] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------------------+
+[1791203401.897038] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* from host memory    |
+[1791203401.897040] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------+-----------+
+[1791203401.897041] [TENCENT64:7731 :0]   |                        0 | short                                  | tcp/bond1 |
+[1791203401.897043] [TENCENT64:7731 :0]   |                 1..65528 | zero-copy                              | tcp/bond1 |
+[1791203401.897045] [TENCENT64:7731 :0]   |               65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203401.897046] [TENCENT64:7731 :0]   +--------------------------+----------------------------------------+-----------+
+[1791203401.901088] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------------------+
+[1791203401.901107] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203401.901110] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------+-----------+
+[1791203401.901112] [TENCENT64:7731 :0]   |                  0..8184 | short                                                   | tcp/bond1 |
+[1791203401.901114] [TENCENT64:7731 :0]   |              8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203401.901117] [TENCENT64:7731 :0]   |               65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203401.901119] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------+-----------+
+[1791203401.907784] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------------------+
+[1791203401.907795] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send*(multi) from host memory    |
+[1791203401.907797] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------+-----------+
+[1791203401.907799] [TENCENT64:7731 :0]   |                  0..8184 | short                                         | tcp/bond1 |
+[1791203401.907800] [TENCENT64:7731 :0]   |              8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203401.907802] [TENCENT64:7731 :0]   |               65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203401.907804] [TENCENT64:7731 :0]   +--------------------------+-----------------------------------------------+-----------+
+[1791203401.910812] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203401.910821] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.910823] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+[1791203401.910824] [TENCENT64:7731 :0]   |                        0 | short                                                  | tcp/bond1 |
+[1791203401.910827] [TENCENT64:7731 :0]   |                 1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203401.910829] [TENCENT64:7731 :0]   |               65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203401.910831] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+[1791203401.915532] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------------------------------+
+[1791203401.915541] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203401.915543] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.915544] [TENCENT64:7731 :0]   |                  0..8176 | short                                                                   | tcp/bond1 |
+[1791203401.915546] [TENCENT64:7731 :0]   |               8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203401.915548] [TENCENT64:7731 :0]   |              8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203401.915550] [TENCENT64:7731 :0]   |               65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203401.915552] [TENCENT64:7731 :0]   +--------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.918969] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------------------------+
+[1791203401.918985] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203401.918987] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------------+-----------+
+[1791203401.918988] [TENCENT64:7731 :0]   |                  0..8176 | short                                                         | tcp/bond1 |
+[1791203401.918990] [TENCENT64:7731 :0]   |              8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203401.918992] [TENCENT64:7731 :0]   |               65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203401.918994] [TENCENT64:7731 :0]   +--------------------------+---------------------------------------------------------------+-----------+
+[1791203401.922616] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------+
+[1791203401.922626] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.922628] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.922630] [TENCENT64:7731 :0]   |                         0..inf | zero-copy                                      | cma/memory |
+[1791203401.922631] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.927257] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.927269] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203401.927271] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.927273] [TENCENT64:7731 :0]   |                         0..inf | software emulation                                     | tcp/bond1 |
+[1791203401.927274] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.931492] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------------------+
+[1791203401.931501] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
+[1791203401.931503] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.931505] [TENCENT64:7731 :0]   |                              0 | short                                  | tcp/bond1 |
+[1791203401.931507] [TENCENT64:7731 :0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
+[1791203401.931509] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203401.931511] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.934910] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------+
+[1791203401.934919] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203401.934921] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.934923] [TENCENT64:7731 :0]   |                        0..8184 | short                                                   | tcp/bond1 |
+[1791203401.934924] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203401.934925] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203401.934933] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.940553] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------------------+
+[1791203401.940564] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
+[1791203401.940567] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.940569] [TENCENT64:7731 :0]   |                        0..8184 | short                                         | tcp/bond1 |
+[1791203401.940571] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203401.940572] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203401.940574] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.943413] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.943420] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.943423] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.943425] [TENCENT64:7731 :0]   |                              0 | short                                                  | tcp/bond1 |
+[1791203401.943428] [TENCENT64:7731 :0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203401.943429] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203401.943431] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.948023] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------------------+
+[1791203401.948034] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203401.948036] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.948037] [TENCENT64:7731 :0]   |                        0..8176 | short                                                                   | tcp/bond1 |
+[1791203401.948039] [TENCENT64:7731 :0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203401.948042] [TENCENT64:7731 :0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203401.948044] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203401.948045] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.951473] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------------+
+[1791203401.951482] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203401.951484] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.951485] [TENCENT64:7731 :0]   |                        0..8176 | short                                                         | tcp/bond1 |
+[1791203401.951495] [TENCENT64:7731 :0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203401.951497] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203401.951498] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.954057] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------+
+[1791203401.954068] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.954070] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.954072] [TENCENT64:7731 :0]   |                         0..inf | zero-copy                                      | cma/memory |
+[1791203401.954079] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.959118] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.959128] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203401.959129] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.959131] [TENCENT64:7731 :0]   |                         0..inf | software emulation                                     | tcp/bond1 |
+[1791203401.959132] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.960951] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------------------+
+[1791203401.960960] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
+[1791203401.960962] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.960963] [TENCENT64:7731 :0]   |                              0 | short                                  | tcp/bond1 |
+[1791203401.960965] [TENCENT64:7731 :0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
+[1791203401.960967] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203401.960969] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.964631] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------+
+[1791203401.964662] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203401.964665] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.964666] [TENCENT64:7731 :0]   |                        0..8184 | short                                                   | tcp/bond1 |
+[1791203401.964668] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203401.964670] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203401.964672] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.969127] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------------------+
+[1791203401.969137] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
+[1791203401.969150] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.969152] [TENCENT64:7731 :0]   |                        0..8184 | short                                         | tcp/bond1 |
+[1791203401.969154] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203401.969155] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203401.969157] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.971724] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.971731] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.971733] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.971734] [TENCENT64:7731 :0]   |                              0 | short                                                  | tcp/bond1 |
+[1791203401.971736] [TENCENT64:7731 :0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203401.971737] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203401.971739] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.974453] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------------------+
+[1791203401.974458] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203401.974460] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.974461] [TENCENT64:7731 :0]   |                        0..8176 | short                                                                   | tcp/bond1 |
+[1791203401.974464] [TENCENT64:7731 :0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203401.974466] [TENCENT64:7731 :0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203401.974468] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203401.974469] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.977047] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------------+
+[1791203401.977054] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203401.977056] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.977057] [TENCENT64:7731 :0]   |                        0..8176 | short                                                         | tcp/bond1 |
+[1791203401.977059] [TENCENT64:7731 :0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203401.977061] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203401.977062] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.981420] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------+
+[1791203401.981432] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.981433] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.981435] [TENCENT64:7731 :0]   |                         0..inf | zero-copy                                      | cma/memory |
+[1791203401.981437] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.985063] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.985071] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203401.985073] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.985079] [TENCENT64:7731 :0]   |                         0..inf | software emulation                                     | tcp/bond1 |
+[1791203401.985081] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.986344] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------------------+
+[1791203401.986351] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
+[1791203401.986353] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.986354] [TENCENT64:7731 :0]   |                              0 | short                                  | tcp/bond1 |
+[1791203401.986356] [TENCENT64:7731 :0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
+[1791203401.986358] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203401.986359] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203401.988051] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------+
+[1791203401.988057] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203401.988059] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.988060] [TENCENT64:7731 :0]   |                        0..8184 | short                                                   | tcp/bond1 |
+[1791203401.988063] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203401.988064] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203401.988066] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203401.991374] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------------------+
+[1791203401.991381] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
+[1791203401.991383] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.991384] [TENCENT64:7731 :0]   |                        0..8184 | short                                         | tcp/bond1 |
+[1791203401.991386] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203401.991393] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203401.991395] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203401.993145] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203401.993150] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203401.993152] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.993153] [TENCENT64:7731 :0]   |                              0 | short                                                  | tcp/bond1 |
+[1791203401.993155] [TENCENT64:7731 :0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203401.993156] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203401.993158] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203401.994777] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------------------+
+[1791203401.994782] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203401.994784] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.994785] [TENCENT64:7731 :0]   |                        0..8176 | short                                                                   | tcp/bond1 |
+[1791203401.994788] [TENCENT64:7731 :0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203401.994790] [TENCENT64:7731 :0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203401.994791] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203401.994793] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203401.996469] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------------+
+[1791203401.996474] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203401.996476] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.996477] [TENCENT64:7731 :0]   |                        0..8176 | short                                                         | tcp/bond1 |
+[1791203401.996479] [TENCENT64:7731 :0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203401.996480] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203401.996482] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203401.998181] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------+
+[1791203401.998190] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to host    |
+[1791203401.998191] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203401.998197] [TENCENT64:7731 :0]   |                         0..inf | zero-copy                                      | cma/memory |
+[1791203401.998198] [TENCENT64:7731 :0]   +--------------------------------+------------------------------------------------+------------+
+[1791203402.000750] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203402.000756] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203402.000758] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203402.000759] [TENCENT64:7731 :0]   |                         0..inf | software emulation                                     | tcp/bond1 |
+[1791203402.000761] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203402.001969] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------------------+
+[1791203402.001975] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* from host memory    |
+[1791203402.001977] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203402.001978] [TENCENT64:7731 :0]   |                              0 | short                                  | tcp/bond1 |
+[1791203402.001980] [TENCENT64:7731 :0]   |                       1..65528 | zero-copy                              | tcp/bond1 |
+[1791203402.001981] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203402.001983] [TENCENT64:7731 :0]   +--------------------------------+----------------------------------------+-----------+
+[1791203402.003596] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------+
+[1791203402.003602] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203402.003604] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203402.003605] [TENCENT64:7731 :0]   |                        0..8184 | short                                                   | tcp/bond1 |
+[1791203402.003606] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203402.003609] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203402.003611] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203402.006183] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------------------+
+[1791203402.006190] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send*(multi) from host memory    |
+[1791203402.006191] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203402.006193] [TENCENT64:7731 :0]   |                        0..8184 | short                                         | tcp/bond1 |
+[1791203402.006194] [TENCENT64:7731 :0]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203402.006196] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203402.006198] [TENCENT64:7731 :0]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203402.007557] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------------------+
+[1791203402.007563] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203402.007570] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203402.007572] [TENCENT64:7731 :0]   |                              0 | short                                                  | tcp/bond1 |
+[1791203402.007573] [TENCENT64:7731 :0]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203402.007574] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203402.007576] [TENCENT64:7731 :0]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203402.009016] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------------------+
+[1791203402.009022] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203402.009023] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203402.009025] [TENCENT64:7731 :0]   |                        0..8176 | short                                                                   | tcp/bond1 |
+[1791203402.009026] [TENCENT64:7731 :0]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203402.009028] [TENCENT64:7731 :0]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203402.009029] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203402.009031] [TENCENT64:7731 :0]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203402.010391] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------------------+
+[1791203402.010398] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#1 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203402.010399] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203402.010401] [TENCENT64:7731 :0]   |                        0..8176 | short                                                         | tcp/bond1 |
+[1791203402.010403] [TENCENT64:7731 :0]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203402.010405] [TENCENT64:7731 :0]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203402.010406] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------------+-----------+
+(EngineCore pid=7731) 2026-10-05 20:30:02 NIXL INFO    _api.py:390 Backend UCX was instantiated
+(EngineCore pid=7731) 2026-10-05 20:30:02 NIXL INFO    _api.py:268 Initialized NIXL agent: fd5049a3-1df9-45ce-b3cb-f54403f27b7a
+(EngineCore pid=7731) INFO 10-05 20:30:02 [base_worker.py:468] Detected attention backend(s) ['FLASH_ATTN']
+(EngineCore pid=7731) INFO 10-05 20:30:02 [base_worker.py:472] Detected kv cache layout HND
+(EngineCore pid=7731) INFO 10-05 20:30:02 [base_worker.py:976] Registering KV_Caches. use_mla: False, kv_buffer_device: cuda, use_host_buffer: False
+[1791203402.177179] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------------------+
+[1791203402.177192] [TENCENT64:7731 :0]   | ucp_context_0 self cfg#1 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203402.177195] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+[1791203402.177208] [TENCENT64:7731 :0]   |                   0..inf | software emulation                                     | tcp/bond1 |
+[1791203402.177210] [TENCENT64:7731 :0]   +--------------------------+--------------------------------------------------------+-----------+
+(EngineCore pid=7731) INFO 10-05 20:30:03 [deep_gemm.py:175] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(EngineCore pid=7731) INFO 10-05 20:30:03 [deep_gemm.py:202] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(EngineCore pid=7731) 2026-10-05 20:30:03,236 - INFO - autotuner.py:622 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=7731) 2026-10-05 20:30:03,302 - INFO - autotuner.py:641 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=7731) INFO 10-05 20:30:04 [jit_monitor.py:60] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+(EngineCore pid=7731) INFO 10-05 20:30:04 [core.py:344] init engine (profile, create kv cache, warmup model) took 14.19 s
+(EngineCore pid=7731) INFO 10-05 20:30:04 [factory.py:62] Creating v1 connector with name: NixlPullConnector and engine_id: ae60fe1d-8811-48b2-a5b6-083cded69027
+(EngineCore pid=7731) WARNING 10-05 20:30:04 [base.py:190] Initializing KVConnectorBase_V1. This API is experimental and subject to change in the future as we iterate the design.
+(EngineCore pid=7731) INFO 10-05 20:30:04 [base_scheduler.py:96] Initializing NIXL Scheduler ae60fe1d-8811-48b2-a5b6-083cded69027
+(EngineCore pid=7731) INFO 10-05 20:30:04 [vllm.py:1006] Asynchronous scheduling is disabled.
+(EngineCore pid=7731) WARNING 10-05 20:30:04 [vllm.py:1062] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(EngineCore pid=7731) WARNING 10-05 20:30:04 [vllm.py:1110] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(EngineCore pid=7731) INFO 10-05 20:30:04 [kernel.py:276] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+(EngineCore pid=7731) INFO 10-05 20:30:04 [vllm.py:1288] Cudagraph is disabled under eager mode
+(EngineCore pid=7731) INFO 10-05 20:30:04 [compilation.py:310] Enabled custom fusions: norm_quant, act_quant
+(APIServer pid=6862) INFO 10-05 20:30:04 [api_server.py:577] Supported tasks: ['generate']
+(APIServer pid=6862) WARNING 10-05 20:30:04 [__init__.py:36] SECURITY WARNING: Development endpoints are enabled! This should NOT be used in production!
+(APIServer pid=6862) WARNING 10-05 20:30:05 [model.py:1477] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+(APIServer pid=6862) INFO 10-05 20:30:05 [hf.py:548] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+(APIServer pid=6862) INFO 10-05 20:30:05 [api_server.py:581] Starting vLLM server on http://127.0.0.1:8401
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:37] Available routes are:
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /openapi.json, Methods: GET, HEAD
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /docs, Methods: GET, HEAD
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /redoc, Methods: GET, HEAD
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /load, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /version, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /health, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /metrics, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /tokenize, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /detokenize, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/models, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /ping, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /ping, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /invocations, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /reset_prefix_cache, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /reset_mm_cache, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /reset_encoder_cache, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /pause, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /resume, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /is_paused, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /init_weight_transfer_engine, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /start_weight_update, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /update_weights, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /finish_weight_update, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /get_world_size, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /collective_rpc, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /server_info, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /sleep, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /wake_up, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /is_sleeping, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/chat/completions, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/chat/completions/batch, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/responses, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/responses/{response_id}, Methods: GET
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/responses/{response_id}/cancel, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/completions, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/messages, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/messages/count_tokens, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /generative_scoring, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /inference/v1/generate, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /scale_elastic_ep, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /is_scaling_elastic_ep, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/chat/completions/render, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/completions/render, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/chat/completions/derender, Methods: POST
+(APIServer pid=6862) INFO 10-05 20:30:05 [launcher.py:46] Route: /v1/completions/derender, Methods: POST
+(APIServer pid=6862) INFO:     Started server process [6862]
+(APIServer pid=6862) INFO:     Waiting for application startup.
+(APIServer pid=6862) INFO:     Application startup complete.
+(APIServer pid=6862) /root/m27-venv/lib64/python3.11/site-packages/_distutils_hack/__init__.py:33: UserWarning: Setuptools is replacing distutils.
+(APIServer pid=6862)   warnings.warn("Setuptools is replacing distutils.")
+(EngineCore pid=7731) INFO 10-05 20:31:19 [base_worker.py:609] NIXL compatibility check passed (hash: 0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f)
+(EngineCore pid=7731) INFO 10-05 20:31:19 [base_worker.py:1483] Transfer plan: TransferTopology(tp_ratio=1, num_kv_heads=4, local_tp=1, remote_tp=1, remote_pp=0, local_rank=0, remote_block_len=32768)
+[1791203479.373270] [TENCENT64:7731 :1]   +--------------------------------+-------------------------------------------------------------+
+[1791203479.373282] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | remote memory write by ucp_put* from host memory to host    |
+[1791203479.373284] [TENCENT64:7731 :1]   +--------------------------------+------------------------------------------------+------------+
+[1791203479.373285] [TENCENT64:7731 :1]   |                         0..inf | zero-copy                                      | cma/memory |
+[1791203479.373288] [TENCENT64:7731 :1]   +--------------------------------+------------------------------------------------+------------+
+[1791203479.374201] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------------------+
+[1791203479.374209] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | remote memory write by ucp_put* from host memory to cuda/dev[0]    |
+[1791203479.374211] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203479.374213] [TENCENT64:7731 :1]   |                         0..inf | software emulation                                     | tcp/bond1 |
+[1791203479.374215] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203479.375180] [TENCENT64:7731 :1]   +--------------------------------+----------------------------------------------------+
+[1791203479.375187] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* from host memory    |
+[1791203479.375189] [TENCENT64:7731 :1]   +--------------------------------+----------------------------------------+-----------+
+[1791203479.375192] [TENCENT64:7731 :1]   |                              0 | short                                  | tcp/bond1 |
+[1791203479.375194] [TENCENT64:7731 :1]   |                       1..65528 | zero-copy                              | tcp/bond1 |
+[1791203479.375195] [TENCENT64:7731 :1]   |                     65529..inf | multi-frag zero-copy                   | tcp/bond1 |
+[1791203479.375197] [TENCENT64:7731 :1]   +--------------------------------+----------------------------------------+-----------+
+[1791203479.376469] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------------------+
+[1791203479.376476] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(fast-completion) from host memory    |
+[1791203479.376478] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203479.376480] [TENCENT64:7731 :1]   |                        0..8184 | short                                                   | tcp/bond1 |
+[1791203479.376481] [TENCENT64:7731 :1]   |                    8185..65528 | zero-copy                                               | tcp/bond1 |
+[1791203479.376483] [TENCENT64:7731 :1]   |                     65529..inf | multi-frag zero-copy                                    | tcp/bond1 |
+[1791203479.376485] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------+-----------+
+[1791203479.378934] [TENCENT64:7731 :1]   +--------------------------------+-----------------------------------------------------------+
+[1791203479.378941] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(multi) from host memory    |
+[1791203479.378948] [TENCENT64:7731 :1]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203479.378950] [TENCENT64:7731 :1]   |                        0..8184 | short                                         | tcp/bond1 |
+[1791203479.378951] [TENCENT64:7731 :1]   |                    8185..65528 | zero-copy                                     | tcp/bond1 |
+[1791203479.378953] [TENCENT64:7731 :1]   |                     65529..inf | multi-frag zero-copy                          | tcp/bond1 |
+[1791203479.378954] [TENCENT64:7731 :1]   +--------------------------------+-----------------------------------------------+-----------+
+[1791203479.380212] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------------------+
+[1791203479.380218] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag from host memory    |
+[1791203479.380220] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203479.380221] [TENCENT64:7731 :1]   |                              0 | short                                                  | tcp/bond1 |
+[1791203479.380223] [TENCENT64:7731 :1]   |                       1..65520 | zero-copy                                              | tcp/bond1 |
+[1791203479.380224] [TENCENT64:7731 :1]   |                     65521..inf | multi-frag zero-copy                                   | tcp/bond1 |
+[1791203479.380226] [TENCENT64:7731 :1]   +--------------------------------+--------------------------------------------------------+-----------+
+[1791203479.381476] [TENCENT64:7731 :1]   +--------------------------------+-------------------------------------------------------------------------------------+
+[1791203479.381483] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag(fast-completion) from host memory    |
+[1791203479.381485] [TENCENT64:7731 :1]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203479.381487] [TENCENT64:7731 :1]   |                        0..8176 | short                                                                   | tcp/bond1 |
+[1791203479.381489] [TENCENT64:7731 :1]   |                     8177..8184 | multi-frag copy-in                                                      | tcp/bond1 |
+[1791203479.381491] [TENCENT64:7731 :1]   |                    8185..65520 | zero-copy                                                               | tcp/bond1 |
+[1791203479.381492] [TENCENT64:7731 :1]   |                     65521..inf | multi-frag zero-copy                                                    | tcp/bond1 |
+[1791203479.381493] [TENCENT64:7731 :1]   +--------------------------------+-------------------------------------------------------------------------+-----------+
+[1791203479.382761] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------------------------+
+[1791203479.382768] [TENCENT64:7731 :1]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send* with reply flag(multi) from host memory    |
+[1791203479.382770] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203479.382771] [TENCENT64:7731 :1]   |                        0..8176 | short                                                         | tcp/bond1 |
+[1791203479.382774] [TENCENT64:7731 :1]   |                    8177..65520 | zero-copy                                                     | tcp/bond1 |
+[1791203479.382776] [TENCENT64:7731 :1]   |                     65521..inf | multi-frag zero-copy                                          | tcp/bond1 |
+[1791203479.382777] [TENCENT64:7731 :1]   +--------------------------------+---------------------------------------------------------------+-----------+
+[1791203480.564539] [TENCENT64:7731 :2]   +--------------------------------+--------------------------------------------------------------------------+
+[1791203480.564577] [TENCENT64:7731 :2]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
+[1791203480.564580] [TENCENT64:7731 :2]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564582] [TENCENT64:7731 :2]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
+[1791203480.564583] [TENCENT64:7731 :2]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564615] [TENCENT64:7731 :3]   +--------------------------------+--------------------------------------------------------------------------+
+[1791203480.564639] [TENCENT64:7731 :3]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
+[1791203480.564642] [TENCENT64:7731 :3]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564644] [TENCENT64:7731 :3]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
+[1791203480.564646] [TENCENT64:7731 :3]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564646] [TENCENT64:7731 :4]   +--------------------------------+--------------------------------------------------------------------------+
+[1791203480.564673] [TENCENT64:7731 :4]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
+[1791203480.564678] [TENCENT64:7731 :4]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564682] [TENCENT64:7731 :4]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
+[1791203480.564651] [TENCENT64:7731 :5]   +--------------------------------+--------------------------------------------------------------------------+
+[1791203480.564707] [TENCENT64:7731 :5]   | ucp_context_0 intra-node cfg#1 | remote memory read by ucp_get*(multi) into cuda/GPU0 from cuda/dev[0]    |
+[1791203480.564714] [TENCENT64:7731 :5]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564684] [TENCENT64:7731 :4]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.564717] [TENCENT64:7731 :5]   |                         0..inf | zero-copy                                                | cuda_ipc/cuda |
+[1791203480.564727] [TENCENT64:7731 :5]   +--------------------------------+----------------------------------------------------------+---------------+
+[1791203480.646608] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------------------+
+[1791203480.646638] [TENCENT64:7731 :0]   | ucp_context_0 intra-node cfg#2 | active message by ucp_am_send*(egr) from host memory    |
+[1791203480.646641] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------+-----------+
+[1791203480.646642] [TENCENT64:7731 :0]   |                              0 | short                                       | tcp/bond1 |
+[1791203480.646644] [TENCENT64:7731 :0]   |                       1..65528 | zero-copy                                   | tcp/bond1 |
+[1791203480.646645] [TENCENT64:7731 :0]   |                     65529..inf | multi-frag zero-copy                        | tcp/bond1 |
+[1791203480.646647] [TENCENT64:7731 :0]   +--------------------------------+---------------------------------------------+-----------+
+(EngineCore pid=7731) WARNING 10-05 20:31:20 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(APIServer pid=6862) INFO 10-05 20:31:25 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 9.6 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
+(APIServer pid=6862) INFO 10-05 20:31:25 [metrics.py:103] KV Transfer metrics: Num successful transfers=3, Avg xfer time (ms)=47.312, P90 xfer time (ms)=79.841, Avg post time (ms)=38.228, P90 post time (ms)=65.984, Avg MB per transfer=112.0, Throughput (MB/s)=2367.264, Avg number of descriptors=7168.0
+(APIServer pid=6862) INFO 10-05 20:31:35 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 16.0 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
+(APIServer pid=6862) INFO 10-05 20:31:35 [metrics.py:103] KV Transfer metrics: Num successful transfers=5, Avg xfer time (ms)=23.815, P90 xfer time (ms)=24.006, Avg post time (ms)=19.25, P90 post time (ms)=20.138, Avg MB per transfer=112.0, Throughput (MB/s)=4702.918, Avg number of descriptors=7168.0
+(APIServer pid=6862) INFO 10-05 20:31:45 [loggers.py:273] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%, External prefix cache hit rate: 100.0%
+(APIServer pid=6862) INFO 10-05 20:31:52 [launcher.py:100] [shutdown] API server: shutdown triggered
+(APIServer pid=6862) INFO 10-05 20:31:52 [launcher.py:116] [shutdown] API server: stopping engine client mode=drain timeout=15s
+(APIServer pid=6862) INFO 10-05 20:31:52 [core_client.py:655] [shutdown] MPClient: start timeout=15s
+(APIServer pid=6862) INFO 10-05 20:31:52 [core_client.py:657] [shutdown] MPClient: stopping engine manager
+(EngineCore pid=7731) INFO 10-05 20:31:52 [core.py:1214] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=7731) INFO 10-05 20:31:52 [core.py:1333] [shutdown] EngineCore: start mode=drain timeout=15s
+(EngineCore pid=7731) INFO 10-05 20:31:52 [core.py:1364] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=7731) INFO 10-05 20:31:52 [core.py:1227] [shutdown] EngineCore: exiting busy loop
+(APIServer pid=6862) INFO:     Shutting down
+(APIServer pid=6862) INFO:     Waiting for application shutdown.
+(APIServer pid=6862) INFO:     Application shutdown complete.
+(APIServer pid=6862) INFO:     Finished server process [6862]
 !!!!!!! Segfault encountered !!!!!!!
   File "<unknown>", line 0, in rtnl_tc_unregister
   File "/usr/src/debug/glibc-2.28-225.tl3.6.x86_64/elf/dl-fini.c", line 141, in _dl_fini
@@ -622,6 +622,6 @@
   File "<unknown>", line 0, in _start
   File "<unknown>", line 0, in 0xffffffffffffffff
 
-(APIServer pid=77657) INFO 10-04 22:55:24 [core_client.py:659] [shutdown] MPClient: engine manager stopped
-(APIServer pid=77657) INFO 10-04 22:55:24 [core_client.py:660] [shutdown] MPClient: cleaning up background resources
-(APIServer pid=77657) INFO 10-04 22:55:24 [core_client.py:662] [shutdown] MPClient: complete
+(APIServer pid=6862) INFO 10-05 20:31:58 [core_client.py:659] [shutdown] MPClient: engine manager stopped
+(APIServer pid=6862) INFO 10-05 20:31:58 [core_client.py:660] [shutdown] MPClient: cleaning up background resources
+(APIServer pid=6862) INFO 10-05 20:31:58 [core_client.py:662] [shutdown] MPClient: complete

@@ -306,6 +306,216 @@
       "nixl_compat_pass": [],
       "tracebacks": 0
     },
+    "e3_colo1_mbt8192_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt2048_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1230976
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt2048_colo1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1230976
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt4096_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1230736
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt4096_colo1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1230736
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt8192_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e3_colo2_mbt8192_colo1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
     "e3_pd_1p1d_D1": {
       "attn_backend_log": [
         "FLASH_ATTN"
@@ -427,6 +637,618 @@
       "nixl_compat_mismatch": 0,
       "nixl_compat_pass": [],
       "tracebacks": 0
+    },
+    "e4_colo4_mbt8192_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_colo4_mbt8192_colo1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_colo4_mbt8192_colo2": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_colo4_mbt8192_colo3": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_1p3d_D1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_1p3d_D2": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_1p3d_D3": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_1p3d_P0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_2p2d_D2": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_2p2d_D3": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_2p2d_P0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_2p2d_P1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_3p1d_D3": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [
+        "0197553c327c96a95ef37668f7383314696c15924276f607a185517658a2156f"
+      ],
+      "tracebacks": 0
+    },
+    "e4_pd_3p1d_P0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_3p1d_P1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4_pd_3p1d_P2": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": true,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4cal_colo4_mbt8192_colo0": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4cal_colo4_mbt8192_colo1": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4cal_colo4_mbt8192_colo2": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
+    },
+    "e4cal_colo4_mbt8192_colo3": {
+      "attn_backend_log": [
+        "FLASH_ATTN"
+      ],
+      "engine_config_log": {
+        "dtype": "torch.bfloat16",
+        "enable_chunked_prefill": "True",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "kv_cache_dtype": "auto",
+        "max_seq_len": "32768",
+        "quantization": "None",
+        "seed": "0",
+        "tensor_parallel_size": "1"
+      },
+      "engine_version_log": "0.24.0",
+      "kv_cache_tokens_log": [
+        1221312
+      ],
+      "kv_layout_log": [
+        "HND"
+      ],
+      "kv_load_fail_events": 0,
+      "kv_load_recovered_events": 0,
+      "log_missing": false,
+      "nixl_available_log": false,
+      "nixl_compat_mismatch": 0,
+      "nixl_compat_pass": [],
+      "tracebacks": 0
     }
   },
   "startup_metrics": {
@@ -467,6 +1289,130 @@
       "num_gpu_blocks": "76332"
     },
     "h20_formal_e2_pd_1p1d_P0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3_colo1_mbt8192_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3_colo2_mbt2048_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76936"
+    },
+    "h20_formal_e3_colo2_mbt2048_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76936"
+    },
+    "h20_formal_e3_colo2_mbt4096_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76921"
+    },
+    "h20_formal_e3_colo2_mbt4096_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76921"
+    },
+    "h20_formal_e3_colo2_mbt8192_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3_colo2_mbt8192_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3_pd_1p1d_D1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3_pd_1p1d_P0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3cal_colo2_mbt8192_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e3cal_colo2_mbt8192_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_colo4_mbt8192_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_colo4_mbt8192_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_colo4_mbt8192_colo2_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_colo4_mbt8192_colo3_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_1p3d_D1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_1p3d_D2_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_1p3d_D3_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_1p3d_P0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_2p2d_D2_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_2p2d_D3_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_2p2d_P0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_2p2d_P1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_3p1d_D3_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_3p1d_P0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_3p1d_P1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4_pd_3p1d_P2_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4cal_colo4_mbt8192_colo0_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4cal_colo4_mbt8192_colo1_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4cal_colo4_mbt8192_colo2_startup.prom": {
+      "block_size": "16",
+      "num_gpu_blocks": "76332"
+    },
+    "h20_formal_e4cal_colo4_mbt8192_colo3_startup.prom": {
       "block_size": "16",
       "num_gpu_blocks": "76332"
     }
