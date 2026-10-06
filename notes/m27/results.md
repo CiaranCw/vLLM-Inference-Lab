@@ -1,10 +1,14 @@
 # M27 · 当前实例 H20 正式结果
 
-> **M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE。** 2026-10-05 新实例 `ins-a8qac2ve`（hostname 仍为 `TENCENT64.site`）从原始交付 + 上台独立中转证据恢复后，重新采集了同实例 Gate 0→E0→E1→E2→E3cal→E3→E4cal→E4；Gate 8 选择跳过可选 E5。之前机器同名，不用 hostname 单独判定来源：当前 raw/校准/Gate 0 均晚于 `TASK_START=2026-10-05T12:14:20Z`，旧 raw 保留于 `raw/backup_*/`。本节为唯一正式 headline；下方附录保留原机原文，只作独立 replication reference，绝不 pool 样本。
+> **M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE。** 2026-10-05 新实例 `ins-a8qac2ve`（hostname 仍为 `TENCENT64.site`）从原始交付 + 上台独立中转证据恢复后，重新采集了同实例 Gate 0→E0→E1→E2→E3cal→E3→E4cal→E4；Gate 8 选择跳过可选 E5。运行环境是单节点 8×H20，**正式实验最多用到 4 GPU**（规模边界见下节），M27 以 E0–E4 为最终范围。之前机器同名，不用 hostname 单独判定来源：当前 raw/校准/Gate 0 均晚于 `TASK_START=2026-10-05T12:14:20Z`，旧 raw 保留于 `raw/backup_*/`。本节为唯一正式 headline；下方附录保留原机原文，只作独立 replication reference，绝不 pool 样本。
 
 ## 环境与正确性
 
 8×H20，各 97871 MiB、GPU0–7 两两 NV18、双 NUMA、driver 535.247.01；Python 3.11.13、torch 2.11.0+cu130、CUDA compat 13.0、vLLM 0.24.0、NIXL 1.2.0；Qwen2.5-7B-Instruct revision `a09a35458c702b33eeacc393d103063234e8bc28`、15/15 文件校验。各实例 BF16 / TP1 / eager / HND、APC/async/spec/quant OFF；未触发 context fallback。fresh E0：D external KV=P local=sent=10240 tokens、D local=0，NIXL READ 5/失败 0；故障探针 HTTP 502 且 D prompt 增量 0；GPU KV 用 `cuda_ipc/cuda`，控制面 `tcp/bond1`。见 `outputs/m27/h20_formal_e0_gate.json`、`final_evidence_audit.json`。
+
+## 实验规模边界
+
+运行环境是**单节点 8×H20**，Gate 0 核实了 GPU0–7 的拓扑；但正式实验**只覆盖 1/2/4 GPU**：E0–E3 按 arm 用 1 或 2 GPU（colo1 为 1 GPU，PD 1P1D 与 colo2 为 2 GPU），E3cal 为 2 GPU，E4cal 与 P:D ratio 实验 E4 每 arm 4 GPU（colo4、1P:3D、2P:2D、3P:1D）。各 arm 顺序执行，**最大正式并发 4 GPU**，正式负载只落在 GPU0–3（依据 `outputs/m27/raw/h20_formal_lifecycle.jsonl` 中当前实例 18 个 arm 的启停区间：互不重叠，实例 GPU 编号只有 0–3）。冻结设计中的 E5 是可选的 8-GPU 配比确认，本次未执行，因此 **M27 没有 8-GPU P-D / scaling 结果**，本文任何结论都不外推到 8 GPU。
 
 ## RQ1 · long prefill 隔离（E2）
 
@@ -38,7 +42,7 @@ fresh `E4cal` 的 rates SHA256 `5cd7a9637e870e1dd47a29ba6fd8a5ba3ed77aa235ed3b9d
 
 ## Gate 8、负结果与限制
 
-Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 E5 只属 scale confirmation，可选且需保留充分 closure 时间。本次 **E5=SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler 未做，不能称 compute/comm overlap proven。正式结果仅适用于本机 H20 / 7B / vLLM 0.24.0 / NIXL 1.2.0 / HND / eager / 这组 workload、负载与网络拓扑；不和 M22/M24 不同布局与口径绝对值相减。前一台的技术用量见 `outputs/m27/gpu_hour_ledger.csv`（累计 4.844513 GPU·h）；本实例计费见下文「计费与资源」。本轮强负结果为高载 PD TTFT 排队及无注入时略差的 stall。全部头条数字来源 `outputs/m27/h20_formal_e{0,1,2,3,4}_*`；H20 收口时 `outputs/m27/final_evidence_audit.json` 73/73 PASS、全仓 invariants 187 PASS。前机数据不参与本轮任一 CSV/CI。
+Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡两两 NV18（环境条件满足）；E5 是冻结设计中可选的 8-GPU 配比确认（2P6D / 4P4D / 6P2D），需保留充分 closure 时间。本次 **E5=SKIPPED_BY_TIME_BUDGET_OR_GATE8**，所以没有任何 8-GPU 正式数据；M27 以 E0–E4 为最终范围，不再补跑 E5；P1 profiler 未做，不能称 compute/comm overlap proven。正式结果仅适用于本机 H20 / 7B / vLLM 0.24.0 / NIXL 1.2.0 / HND / eager / 这组 workload、负载与网络拓扑；不和 M22/M24 不同布局与口径绝对值相减。前一台的技术用量见 `outputs/m27/gpu_hour_ledger.csv`（累计 4.844513 GPU·h）；本实例计费见下文「计费与资源」。本轮强负结果为高载 PD TTFT 排队及无注入时略差的 stall。全部头条数字来源 `outputs/m27/h20_formal_e{0,1,2,3,4}_*`；H20 收口时 `outputs/m27/final_evidence_audit.json` 73/73 PASS、全仓 invariants 187 PASS。前机数据不参与本轮任一 CSV/CI。
 
 ## 指标口径与统计局限（2026-10-06 post-hoc 补充）
 
@@ -48,7 +52,7 @@ Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 
 
 ## 计费与资源（2026-10-06 post-hoc 修正）
 
-正式 M27 执行与收尾（TASK_START `2026-10-05T12:14:20Z` 起）约 **12.44 h**，按 8 卡整机计约 **99.5 GPU·h**。12.44 h 来自 H20 执行方最终回复（12.442 h）和所有者观察的 746 min（12.433 h），不是 ledger 行；落盘的 `wall_clock_ledger.csv` 最后一行（打包前）为 12.308 h，原 FINAL_REPORT 快照为 12.3619 h / 98.89 GPU·h，三者一致地递增。实验结束后实例仍保持分配，refreshed 的 **168 GPU·h** 额度最终全部耗尽；其后约 **8.56 h / 68.5 GPU·h** 是实验完成后的分配/空闲时间，计入云端实际资源消耗，但**不属于正式实验负载**。`current_host_gpu_technical_ledger.csv` 只统计各 arm 活跃 GPU 时间，不是计费口径；原始 ledger 未改动。
+正式 M27 执行与收尾（TASK_START `2026-10-05T12:14:20Z` 起）约 **12.44 h**，按 8 卡整机计约 **99.5 GPU·h**（这是计费口径：整机 8 卡都按墙钟计费，但正式实验同时最多只占用 4 卡）。12.44 h 来自 H20 执行方最终回复（12.442 h）和所有者观察的 746 min（12.433 h），不是 ledger 行；落盘的 `wall_clock_ledger.csv` 最后一行（打包前）为 12.308 h，原 FINAL_REPORT 快照为 12.3619 h / 98.89 GPU·h，三者一致地递增。实验结束后实例仍保持分配，refreshed 的 **168 GPU·h** 额度最终全部耗尽；其后约 **8.56 h / 68.5 GPU·h** 是实验完成后的分配/空闲时间，计入云端实际资源消耗，但**不属于正式实验负载**。`current_host_gpu_technical_ledger.csv` 只统计各 arm 活跃 GPU 时间，不是计费口径；原始 ledger 未改动。
 
 ## 证据存放与 post-hoc 审计（2026-10-06）
 
@@ -61,7 +65,7 @@ Gate 8：E4 完成，M27 invariants 35 PASS/0 FAIL/0 PENDING，8 卡 NV18；但 
 
 ## 附录：前一实例中途交接原文（独立参考，不参与当前正式结论）
 
-以下保留原历史交接陈述；其中“本机”“当前”均指上一实例，不是本次 `ins-a8qac2ve`。旧机摘要：8K E2 stall PD 105.03 ms、colo 885.10 ms，E3/E4 未完成；只是定性 replication，严禁样本合并。
+以下保留原历史交接陈述；其中“本机”“当前”均指上一实例，不是本次 `ins-a8qac2ve`。附录里的「下一步」「E5 只在 Gate 8 满足时运行」等都是当时的计划，已经失效：M27 最终范围是上文 E0–E4，不再有 E5 / 8-GPU 计划。旧机摘要：8K E2 stall PD 105.03 ms、colo 885.10 ms，E3/E4 未完成；只是定性 replication，严禁样本合并。
 
 # M27 · H20 中途交接结果（非正式收口）
 

@@ -1,13 +1,13 @@
 # M27 · Prefill–Decode Disaggregation & NIXL KV Transfer（Stage K · Distributed Serving Deep Dive）
 
-**状态：M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE（Gate 0→E4 fresh 同实例，E0–E4 COMPLETE；E5 按 Gate 8 可选跳过；P1 profiler 未做）。2026-10-06 独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环（[`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md)）。**
+**状态：M27_H20_FORMAL_COMPLETE；M27_E/H = COMPLETE（单节点 8×H20 环境、Gate 0→E4 fresh 同实例，E0–E4 COMPLETE 为最终范围；正式实验覆盖 1/2/4 GPU，最大正式并发 4 GPU，P:D ratio 为 4-GPU E4；E5（可选 8-GPU）未执行，没有 8-GPU 实验；P1 profiler 未做）。2026-10-06 独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环（[`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md)）。**
 正式结果与负结果见 [`results.md`](results.md) 顶部；上一台独立中转数字只作为其附录参考，不和本机 raw 池化。实例 ID `ins-a8qac2ve`，与上一实例意外同名 `TENCENT64.site`，以任务起点和新 raw/校准产生时间隔离证据。M24 冻结计划与结论不改。
 
 | 文件 | 内容 |
 |---|---|
 | [`pd_disagg_nixl_theory.md`](pd_disagg_nixl_theory.md) | `ee0da84` 源码事实（file:line）、KV 生命周期、fail-closed 依据、KV 理论值、隐藏变量、对 M24 笔记的更正 |
 | [`M27_H20_PLAN.md`](M27_H20_PLAN.md) | 冻结设计 v1：目标栈、冻结配置 JSON、A/B 对照、RQ1–RQ4、E0–E5 矩阵、统计口径、降级阶梯、设计调整 |
-| [`M27_H20_RUNBOOK.md`](M27_H20_RUNBOOK.md) | H20 执行顺序：Gate 0 → Gate 1(E0) → E1 → E2 → E3 → E4 → Gate 8 → E5 → Package，每步 PASS / STOP |
+| [`M27_H20_RUNBOOK.md`](M27_H20_RUNBOOK.md) | H20 执行顺序：Gate 0 → Gate 1(E0) → E1 → E2 → E3 → E4 → Gate 8 → E5 → Package，每步 PASS / STOP（实际执行到 E4，E5 未执行） |
 | [`offline_package.md`](offline_package.md) | NIXL wheel 清单与 sha256、安装方式、三部分交接包（code / wheelhouse / model）、未闭环风险 |
 | [`model_artifact_manifest.md`](model_artifact_manifest.md) | 7B 模型身份：逐文件 sha256（[`model_artifact/`](model_artifact/)）、来源证据链、HF revision 比对、模型 Gate |
 | [`execution_record.md`](execution_record.md) | H20 现场执行（§1–§9 前一实例历史、§10 当前实例）、失败与偏离、§11 post-hoc 修正 |

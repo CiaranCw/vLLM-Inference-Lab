@@ -1,6 +1,6 @@
 # M27 · H20 执行记录
 
-> **当前状态（2026-10-06 post-hoc 集成后）：M27_H20_FORMAL_COMPLETE；M27_E = COMPLETE、M27_H = COMPLETE。** 新实例 `ins-a8qac2ve` 同实例完成 Gate 0→E0→E1→E2→E3cal→E3→E4cal→E4（§10）；E5 可选、跳过；P1 profiler 未执行。独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，文档修正已闭环（§11）。只记实际观察和原始证据。
+> **当前状态（2026-10-06 post-hoc 集成后）：M27_H20_FORMAL_COMPLETE；M27_E = COMPLETE、M27_H = COMPLETE。** 新实例 `ins-a8qac2ve` 同实例完成 Gate 0→E0→E1→E2→E3cal→E3→E4cal→E4（§10）；E5 可选、跳过；P1 profiler 未执行。运行环境为单节点 8×H20；正式实验覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，E4cal/E4 每 arm 4 GPU），arm 顺序执行、最大正式并发 4 GPU，没有 8-GPU 正式实验；E0–E4 为最终范围。独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，文档修正已闭环（§11）。只记实际观察和原始证据。
 >
 > **阅读顺序**：§1–§9 是**前一实例（2026-10-04，hostname 同为 `TENCENT64.site`）的历史会话记录**，其中“本机”“当前”“尚未完成”“下一台必须…”都指当时的状态，保留原文、不改写；§4 E3 之后的行和 §5、§6 已由本次实例的结果回填，并逐处标注。§10 是当前实例的正式执行，§11 是 2026-10-06 的 post-hoc 修正。
 > 前一实例原文的状态行（历史）：“Gate 0/E0/E1/E2 已在本机实测；M27 模块不变量 31 PASS、全仓 183 PASS、0 FAIL；E3cal/E3/E4/E5 在当前代理策略下尚未完成。机时限制触发中途交接；M27_E/H 不得标 COMPLETE。”
@@ -90,7 +90,7 @@ preflight 日志：`logs/m27/preflight_h20_formal.log`；结果文件：`outputs
 | 8 卡两两 NV 互联（`e5_allowed`） | GPU0–7 两两 NV18 | 是 |
 | E4 完成且 invariants 0 FAIL | E4 完成，M27 35 PASS | 是 |
 | 剩余机时 ≥ 3.5 h | 已用 11.26 h；ledger 原文：E5 + 重分析 + 收尾预计可能接近 19 h、工作负载过载时长不确定，需保留 ≥2 h 收尾 | 按额度数值满足，但执行方按预计总时长选择不跑 |
-| 决定 | **E5 SKIPPED_BY_TIME_BUDGET_OR_GATE8**（E5 是可选的规模确认，优先完成全量 E3/E4 bootstrap、审计与打包） | — |
+| 决定 | **E5 SKIPPED_BY_TIME_BUDGET_OR_GATE8**（E5 是冻结设计中可选的 8-GPU 配比确认，优先完成全量 E3/E4 bootstrap、审计与打包）。因此正式实验最大规模停在 E4 的 4 GPU；M27 以 E0–E4 为最终范围，不再补 E5 | — |
 
 **前一实例（历史）**：
 
@@ -138,7 +138,7 @@ Official distro Python 3.11.13 and openssl3-libs installed; isolated /root/m27-v
 - E0/E1 `--force` 使用脚本自动将先前独立机器正式 raw 备份；E2 四 arm 也都重跑（含 `colo1_mbt2048/4096/8192`、`pd_1p1d`）。首次整批 E2 因调用端空闲超时中断 `colo1_mbt8192` 的尾部，本轮仅向识别为 M27 的 API PID 24158/代理 25524 发 TERM，保留 partial raw 于 `backup_20261005T210958`；单 arm 无 `--force` 恢复时 launcher 自动归档并重新测满；PD 另用 `--force` 覆盖上一机正式 raw。E2 320/320 overlap_valid，正式 240 measure；`raw/backup_*/` 始终未参与 summarize。
 - `E3cal` 当场重新校准，冻结 `rates_file_sha256=9d5e69466371ca72d9d45f830cf4049c24a1bef61bb039172d146c017f386e0a`，同一 `force_close=True` 连接策略；E3 5 arm × 36 measure runs、78,685 请求、0 fail；`E4cal` 重新校准共享 `colo4_mbt8192`，rates SHA `5cd7a9637e870e1dd47a29ba6fd8a5ba3ed77aa235ed3b9d5206a03f40aa3cdd`；E4 4 arm × 27 runs、130,428 请求、0 fail。每个正式在线 run 的 rates SHA 与对应文件逐字一致、相同 shape/fraction/seed 的跨 arm schedule SHA 一致；没有逐请求补发或修改原始 raw。
 - E4 后立即进行 10,000 次请求簇 Poisson bootstrap，E4 派生 108 online/81 effect 行、E3 派生 180 online/108 effect 行。首次 E3 汇总因交互空闲超时只写到 online CSV，重运行 CPU 分析后 effect 完整生成；无 GPU benchmark 重跑。`m27_figures.py` 首次因 matplotlib 未装失败，补装 venv 依赖后重建图 16–18。第一次全仓不变量调用未继承两个冻结环境变量导致仅 env 2 FAIL；按冻结环境重新执行，结果 **M27 35 PASS、全仓 187 PASS，均 0 FAIL/0 PENDING**；初次异常没有触碰 raw，留在命令记录/交接材料。
-- Gate 8：E4 后 M27 35/35 PASS、8 卡 NV18；E5 在 E4 发现的高负载 tail/TTFT 取舍上仅能增加规模确认，本次优先冻结全量 E3/E4 CI、审计与下载包，**E5 SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler NOT RUN，不能声称计算与通信重叠已证。最终显式审计 `outputs/m27/final_evidence_audit.json`：73/73 PASS、活跃 raw 修改时间均晚于本次 TASK_START、前一台数据只在 backup 下。不能仅以相同 hostname 作为来源判据。
+- Gate 8：E4 后 M27 35/35 PASS、8 卡两两 NV18（环境条件）；E5（可选 8-GPU 配比）在 E4 发现的高负载 tail/TTFT 取舍上仅能增加规模确认，本次优先冻结全量 E3/E4 CI、审计与下载包，**E5 SKIPPED_BY_TIME_BUDGET_OR_GATE8**；P1 profiler NOT RUN，不能声称计算与通信重叠已证。最终显式审计 `outputs/m27/final_evidence_audit.json`：73/73 PASS、活跃 raw 修改时间均晚于本次 TASK_START、前一台数据只在 backup 下。不能仅以相同 hostname 作为来源判据。
 - 新机意外/负结果：无 prefill 注入的 PD baseline stall 略高；E3 90% 负载 PD 用更低 decode ITL P99 换来显著更高 TTFT P99/更低 achieved rate；E4 4 卡 PD ratio 负载偏斜和严重 queueing 改变 Pareto 最优。完整数值见 `results.md` 顶部本机正式结果，不从历史附录摘 headline。最终 commit 和下载包标识由 final 报告给出；不 push、不 tag、不 release。
 
 ## 11. Post-hoc 审计与仓库集成（2026-10-06，本地，无 GPU）
@@ -146,7 +146,7 @@ Official distro Python 3.11.13 and openssl3-libs installed; isolated /root/m27-v
 本节不改写 §1–§10 的原始记录，只补充审计发现的遗漏，并说明证据在仓库中的存放方式。审计结论 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`（CRITICAL 0 / MAJOR 0 / MINOR 7），材料见 [`audit/`](audit/)，逐条闭环见 [`FINAL_CLOSURE_ADDENDUM.md`](FINAL_CLOSURE_ADDENDUM.md)。
 
 - **最终 archive 身份**：`m27_h20_final_20261006T003354Z.tar.zst`，2,465,709,981 B，SHA256 `fb1664ca9506efb75bb784ab19a8b65186c6eabedf69127805e8e72b29633ad6`（以名称 + 大小 + SHA256 为准，与存放路径无关）。archive 内仓库的 H20 提交为 `884503dc…`（运行时修复 + 前机中途证据）与 `c4db4561…`（当前实例正式证据）；规范化后的对应提交见 [`H20_COMMIT_PROVENANCE.md`](H20_COMMIT_PROVENANCE.md)。
-- **计费（F-M01）**：正式执行与收尾约 12.44 h ≈ 99.5 GPU·h（8 卡整机）。12.44 h 取自 H20 执行方最终回复（12.442 h）与所有者观察的 746 min，ledger 最后一行（打包前）为 12.308 h、原 FINAL_REPORT 快照为 12.3619 h。实验结束后实例仍保持分配，refreshed 168 GPU·h 额度（168/8 = 21 h）最终耗尽；其后约 8.56 h ≈ 68.5 GPU·h 是完成后的分配/空闲时间，不是正式实验负载。`wall_clock_ledger.csv` 与 `current_host_gpu_technical_ledger.csv` 原样保留，未改动。
+- **计费（F-M01）**：正式执行与收尾约 12.44 h ≈ 99.5 GPU·h（计费按 8 卡整机墙钟；正式实验同时最多占用 4 卡）。12.44 h 取自 H20 执行方最终回复（12.442 h）与所有者观察的 746 min，ledger 最后一行（打包前）为 12.308 h、原 FINAL_REPORT 快照为 12.3619 h。实验结束后实例仍保持分配，refreshed 168 GPU·h 额度（168/8 = 21 h）最终耗尽；其后约 8.56 h ≈ 68.5 GPU·h 是完成后的分配/空闲时间，不是正式实验负载。`wall_clock_ledger.csv` 与 `current_host_gpu_technical_ledger.csv` 原样保留，未改动。
 - **校准判据（F-M04）**：§9 的 arrival-horizon 修正让 `delivered ≥ 0.95×offered` 等价于 `n_ok/n_offered ≥ 0.95`。在 0 失败时它不起区分作用：e3cal 39 级、e4cal 36 级中，achieved 每一级都等于 offered，且每一级是否通过都与 `TTFT P99 ≤ 10×空载中位` 完全一致（由 `configs/h20_formal_e{3,4}cal_rates.json` 逐级核对）。真正起门槛作用的是 TTFT 判据。这是判据设计的局限，不改变 raw、schedule 与正式结果。
 - **首次全仓 invariants 失败的记录（F-M05）**：§10 记载第一次全仓 invariants 因调用端未继承 `VLLM_USE_FLASHINFER_SAMPLER=0` / `VLLM_ENABLE_V1_MULTIPROCESSING=0` 出现 env 类 2 FAIL，补上冻结环境变量后重跑，M27 35 PASS、全仓 187 PASS。**那次失败的原始完整输出没有作为独立日志保留**，只剩 ledger `final_invariants` 行的文字描述；本仓库不补造该日志。审计方在无这两个变量的条件下复现出相同的 2 个 env FAIL（审计目录 `invariants_full_noenv_control.log`，未入库），与该描述一致。H20 上的 `logs/m27/invariants_final_*.log` 只有结果摘要、没有命令/环境/时间；本轮集成后的复验日志 `logs/m27/invariants_final_integration_{m27,full}.log` 在开头记录了命令、环境变量和 UTC 时间。
 - **前一实例 server log（F-M05）**：当前实例 E0–E2 重跑时覆盖了 `logs/m27/h20_formal/` 下 10 个同名 server log（`e0_colo1_mbt8192_colo0`、`e0_pd_1p1d_{P0,D1}`、`e1_pd_1p1d_{P0,D1}`、`e2_colo1_mbt{2048,4096,8192}_colo0`、`e2_pd_1p1d_{P0,D1}`），当前树中的是当前实例的版本。前一实例的原文没有备份到 `failed_attempts/`，只存在于提交历史中：H20 原提交 `884503dc` 与其规范化提交（见 provenance 文档 N1）逐字节相同，可用 `git show <N1>:logs/m27/h20_formal/<name>.log` 取回。前一实例数据本来就只作独立参考、不 pool，因此不影响任何正式结论。

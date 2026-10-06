@@ -31,6 +31,7 @@ INFO 项中需要在文档里说明的也已补上：E1 等效带宽不是单调
 
 ## 收口状态
 
-- M27：**COMPLETE**；E0–E4 COMPLETE；E5 SKIPPED（可选）；P1 NOT RUN。
+- M27：**COMPLETE**；E0–E4 COMPLETE，为最终范围；E5 SKIPPED（冻结设计中可选的 8-GPU 配比，未执行、不再补跑）；P1 NOT RUN。
+- 规模：运行环境为单节点 8×H20；正式实验覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，P:D ratio 实验 E4 每 arm 4 GPU），最大正式并发 4 GPU，没有 8-GPU P-D / scaling 实验。
 - Post-hoc 审计：`M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`；7 条 MINOR 修正 **CLOSED**。
-- 适用边界不变：8×H20 / Qwen2.5-7B bf16 / TP1 / eager / HND / vLLM 0.24.0 / NIXL 1.2.0 / 实例 `ins-a8qac2ve` / 这组 workload 与负载；不外推跨机、其他模型、其他 TP 或 compiled 模式。
+- 适用边界不变：单节点 8×H20 环境、正式实验最多 4 GPU / Qwen2.5-7B bf16 / TP1 / eager / HND / vLLM 0.24.0 / NIXL 1.2.0 / 实例 `ins-a8qac2ve` / 这组 workload 与负载；不外推到 8 GPU、跨机、其他模型、其他 TP 或 compiled 模式。

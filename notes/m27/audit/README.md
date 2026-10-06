@@ -1,7 +1,7 @@
 # M27 · 独立 post-hoc 最终审计（2026-10-06）
 
 **结论：`M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`**（CRITICAL 0 / MAJOR 0 / MINOR 7 / INFO 10）。
-审计对象是 H20 交付的 final archive `m27_h20_final_20261006T003354Z.tar.zst`（2,465,709,981 B，SHA256 `fb1664ca9506efb75bb784ab19a8b65186c6eabedf69127805e8e72b29633ad6`）及其 `FINAL_REPORT.md` / `M27_RESULT_MANIFEST.tsv`。审计在本地 CPU 上完成，没有运行任何 GPU 实验或 `vllm serve`。
+审计对象是 H20 交付的 final archive `m27_h20_final_20261006T003354Z.tar.zst`（2,465,709,981 B，SHA256 `fb1664ca9506efb75bb784ab19a8b65186c6eabedf69127805e8e72b29633ad6`）及其 `FINAL_REPORT.md` / `M27_RESULT_MANIFEST.tsv`。审计在本地 CPU 上完成，没有运行任何 GPU 实验或 `vllm serve`。审计报告中的「8×H20」指运行环境（单节点 8 卡、GPU0–7 拓扑已核实）和整机计费口径；被审计的正式实验最多用到 4 GPU（E4 每 arm 4 GPU），没有 8-GPU 实验。
 
 本目录文件是审计产物的**原样副本**，未做改动；审计报告里出现的 `/home/ciaran/...` 是审计当时的本地位置，不是证据的永久地址（证据身份以 archive 名称 + 大小 + SHA256 为准）。
 

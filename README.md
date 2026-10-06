@@ -20,9 +20,9 @@
 - **能量化调度权衡**：APC 收益要等 prompt 长到穿透 M7 那条固定开销地板才显现（P=2048 省 **58.5%** 首 token，P=256/512 的 CI 含 0）；chunked prefill 把并发 decode 的**最坏 stall 砍半**（22.87→10.51ms）却**不改中位**，代价是长 prefill 自身 TTFT **+47%**（M17，见 §8）。
 - **能加速 decode 并给出机制证据**：N-gram Spec Decode 用额外并行 verification 换更少串行 execution rounds——高初始 prompt 重叠 workload 下 engine rounds **128→33**（acceptance **1.000**），完成延迟降 **72–75.5%**、amortized TPOT **7.6→1.8ms**；低初始 prompt 重叠（非真正低输出重复）workload acceptance 0.75–0.85、降幅 55–57%。建立 Coverage+Acceptance+Round Cost 模型；KV capacity 约 **−1.9%**。**12 组 CI 全排除 0**（M19，见 §9）。
 - **能量化多卡 TP 边界**：4×H20 / 7B 上稳态 decode 单步 TP **显著更慢**（~+19–24%，CI 排除 0）；长 prefill TP4≈**3.39×**；大 batch 吞吐「加速」主要来自并发 prefill 而非 decode 单步。**PP/DP/EP 未做**（M22）。
-- **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。M24 本身未跑 P-D；P-D 部分转入阶段 K / M27，已在 8×H20 实测完成（见下文 M27 条）。
+- **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。M24 本身未跑 P-D；P-D 部分转入阶段 K / M27，已在单节点 8×H20 上以最多 4 GPU 的正式配置实测完成（见下文 M27 条）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
-- **能证实 H20 P-D/NIXL 的真实取舍（M27）**：同一新实例 fresh Gate0→E4，8K 注入时 E2 colo1−PD decode max stall **+780.98ms**（1 vs 2 GPU，仅机制）；同 GPU 成本 E3/E4 下 PD 的 ITL tail 更低（与调优后的 colocated chunk 相比差距缩小、方向不变），但 90% 负载下 TTFT 排队/achieved rate 明显更差；E1 512→16384 token 的 NIXL bytes 29.36→939.52MB，等效约 4–5 GB/s。旧实例数据独立不 pool；E5 可选跳过、P1 profiler 未做；独立 post-hoc 审计 `PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环。详见 [`notes/m27/results.md`](notes/m27/results.md)。
+- **能证实 H20 P-D/NIXL 的真实取舍（M27）**：在单节点 8×H20 环境的同一新实例上 fresh Gate0→E4；正式实验覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，P:D ratio 的 E4 每 arm 4 GPU），最大正式并发 4 GPU，没有 8-GPU 正式实验。8K 注入时 E2 colo1−PD decode max stall **+780.98ms**（1 vs 2 GPU，仅机制）；同 GPU 成本 E3/E4 下 PD 的 ITL tail 更低（与调优后的 colocated chunk 相比差距缩小、方向不变），但 90% 负载下 TTFT 排队/achieved rate 明显更差；E1 512→16384 token 的 NIXL bytes 29.36→939.52MB，等效约 4–5 GB/s。旧实例数据独立不 pool；E5 可选跳过、P1 profiler 未做；独立 post-hoc 审计 `PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环。详见 [`notes/m27/results.md`](notes/m27/results.md)。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。
@@ -59,7 +59,7 @@
 | 投机解码（N-gram：Coverage/Acceptance/execution rounds/吞吐） | 能证 + 能量化 ✅ | M19 |
 | 张量并行 TP（多卡：step vs 吞吐口径） | 能证 + 能量化 ✅ | M22 |
 | Decode Context Parallel（多卡：KV 容量 vs step 延迟） | 能证 + 能量化 ✅ | M24 |
-| P-D 分离 + NIXL KV 传输（多卡） | 能证 + 能量化 ✅（8×H20 / 7B；E5 跳过、P1 未做） | M27 |
+| P-D 分离 + NIXL KV 传输（多卡） | 能证 + 能量化 ✅（8×H20 单节点环境、正式实验 1/2/4 GPU，最大 4 GPU / 7B；无 8-GPU 实验、P1 未做） | M27 |
 
 ---
 
@@ -145,7 +145,7 @@
 | **M21** 监控与容量规划 ★ | Prom+Grafana+DCGM+自写 exporter，容量/瓶颈/故障演练 | 指标守恒 21/21；服务端直方图近似 P99 比客户端 exact percentile 中位 **+9.7%**；本次最后达标档 **24**、首个失败档 32（**C ∈ [24,32)**，跨会话 24–32，不复现 M12 的 40）；监控开销 **≲1%**；7 条告警全部真实触发；**SIGKILL 留下持显存的孤儿 EngineCore**；**COMPLETE** | 无 | `notes/m21/results.md`、`monitoring/*`、`outputs/m21/*`、`figures/fig1{1,2}_m21_*.png` |
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
-| **M27** P-D 分离 + NIXL（阶段 K） | 测量 P-D 的 KV 传输/编排成本与干扰隔离收益，“没有收益”是允许的结果 | 同实例 Gate0→E4；E2 8K 注入 colo1−PD stall **+780.98ms**（1 vs 2 GPU，机制）；E3/E4 同成本 PD ITL P99 更低但 90% 负载 TTFT P99 与 achieved rate 更差，colo4 TTFT 优于全部 PD ratio；**COMPLETE**（E5 跳过，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION） | 无 | `notes/m27/{results,execution_record,FINAL_CLOSURE_ADDENDUM}.md`、`outputs/m27/h20_formal_e{0,1,2,3,4}_*`、`figures/fig1{6,7,8}_m27_*`；11 个 >100MB raw 在外部 archive（`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`） |
+| **M27** P-D 分离 + NIXL（阶段 K） | 测量 P-D 的 KV 传输/编排成本与干扰隔离收益，“没有收益”是允许的结果 | 8×H20 单节点、同实例 Gate0→E4，正式实验最多 4 GPU（E3 每 arm 2 GPU、E4 每 arm 4 GPU）；E2 8K 注入 colo1−PD stall **+780.98ms**（1 vs 2 GPU，机制）；E3/E4 同成本 PD ITL P99 更低但 90% 负载 TTFT P99 与 achieved rate 更差，colo4 TTFT 优于全部 4-GPU PD ratio；**COMPLETE**（范围为 E0–E4，E5 未执行，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION） | 无 | `notes/m27/{results,execution_record,FINAL_CLOSURE_ADDENDUM}.md`、`outputs/m27/h20_formal_e{0,1,2,3,4}_*`、`figures/fig1{6,7,8}_m27_*`；11 个 >100MB raw 在外部 archive（`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`） |
 ★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
 ---

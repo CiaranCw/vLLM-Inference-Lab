@@ -607,8 +607,9 @@ modules:
         status: done
 
   m27:
-    title: Prefill–Decode 解耦 + NIXL KV Transfer（Stage K）—— 8×H20 同实例 Gate0→E4 已实测
+    title: Prefill–Decode 解耦 + NIXL KV Transfer（Stage K）—— 单节点 8×H20 环境、同实例 Gate0→E4 已实测（正式实验最多 4 GPU）
     # T+E+O+H COMPLETE（2026-10-05，ins-a8qac2ve）；E5 可选、经 Gate 8 跳过；P1 profiler 未执行。
+    # 规模：正式实验覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，E4cal/E4 每 arm 4 GPU），最大正式并发 4 GPU；无 8-GPU 实验，E0–E4 为最终范围。
     # 独立 post-hoc 审计：M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION（notes/m27/audit/）。
     # 单文件 >100MB 的 formal raw 不在 Git 中，身份见 notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv。
     status: done
@@ -731,7 +732,7 @@ modules:
         outputs: [outputs/m27/raw/h20_formal_e4_pd_2p2d_proxy.jsonl]   # 请求级 raw >100MB，外部证据见 manifest
         status: done
       - id: e5-ratio-8gpu
-        desc: E5 可选 8 卡（2P6D / 4P4D / 6P2D）；仅当 Gate 8 判定 8 卡两两 NV 互联
+        desc: 冻结设计中的可选 8 卡配比（2P6D / 4P4D / 6P2D）；未执行，不属于 M27 最终范围，不再计划
         cmd: [python, scripts/m27_run_all.py, --tag, h20_formal, --stage, e5]
         requires_gpu: true
         requires_multi_gpu: true
@@ -822,7 +823,7 @@ modules:
       - m27_online_no_failed_requests_e3
 
     limitations:
-      - 绝对值只适用于 8×H20 / Qwen2.5-7B bf16 / TP1 / eager / HND / ins-a8qac2ve；前一实例中途数据只作独立参考，不 pool
+      - 绝对值只适用于单节点 8×H20 环境上最多 4 GPU 的正式配置（1/2/4 GPU arm）/ Qwen2.5-7B bf16 / TP1 / eager / HND / ins-a8qac2ve；前一实例中途数据只作独立参考，不 pool
       - 「PD 更快 / tail ITL 更好」不是不变量；「无收益」是允许的正式结论
       - arm 顺序执行，时间漂移是伴随变量；enforce_eager 抬高 ITL 绝对值（CPU launch bound）
       - B（tuned colocated）比较不是单变量对照；A（mbt 8192 colo1 vs 1P1D）在 EngineArgs 上最接近单变量，但 GPU 数不同（1 vs 2）
@@ -834,7 +835,7 @@ modules:
 
     open_items:
       - id: h20-e-h-data
-        desc: H20 上 Gate 0 → Gate 1 → E1 → E2 → E3 → E4 已在同一新实例 ins-a8qac2ve 完成；E5 可选，经 Gate 8 跳过
+        desc: H20 上 Gate 0 → Gate 1 → E1 → E2 → E3 → E4 已在同一新实例 ins-a8qac2ve 完成（最多 4 GPU）；E5（可选 8 卡）经 Gate 8 跳过，不在最终范围
         status: done
       - id: ucx-transport-on-h20
         desc: >-
@@ -842,5 +843,5 @@ modules:
           zero-copy cuda_ipc/cuda（logs/m27/h20_formal/e0_pd_1p1d_D1.log）
         status: done
       - id: p1-profiler
-        desc: 可选 P1 torch profiler（D 侧 KV load 与 decode 重叠证据）——未实现
+        desc: 可选 P1 torch profiler（D 侧 KV load 与 decode 重叠证据）——未实现；M27 以 E0–E4 为最终范围，不再计划
         status: optional_todo

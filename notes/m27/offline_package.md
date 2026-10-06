@@ -80,3 +80,5 @@ python -m pip install --no-deps --no-index --target /tmp/m27_target_rehearsal \
 | UCX 同机 GPU 传输 | cuda_ipc（NVLink） | NIXL 自带 UCX 1.21.x（wheel 内字符串证据） | driver 535 + cuda-compat 13 组合下 `libuct_cuda` 是否可用，尚未验证；UCX 可能选择 mlx5 网卡而不是 cuda_ipc（M22 的 `topo -m` 中有 42 个 NIC，即 NIC0–41）→ Gate 1 用 `UCX_PROTO_INFO=y` 确认，不符时 STOP |
 | NIXL 与 vLLM 0.24.0 的兼容性 | vLLM 0.24.0 的 NIXL 路径 | preflight 导入 `vllm.distributed.nixl_utils.NixlWrapper` 与 `NixlConnector` | 只有在 H20 上才能端到端验证 |
 | 8 卡拓扑 | 未知 | Gate 0 `topo -m` | M22 时容器只看到 4 卡；E5 可能无法执行 |
+
+> 上表是上机前的风险登记（历史）。H20 结果回填（2026-10-06）：Gate 0 实测 GPU0–7 两两 NV18，E0 证实 GPU KV 走 `cuda_ipc/cuda`；正式实验最多用到 4 GPU（E4），可选的 8-GPU E5 未执行、不属于 M27 最终范围。见 [`results.md`](results.md)。

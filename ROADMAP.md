@@ -451,15 +451,15 @@
 
 ## 阶段 K · Distributed Serving Deep Dive（T+E+O+H，★多卡）
 
-### M27 Prefill–Decode Disaggregation & NIXL KV Transfer　✅ **T+E+O+H COMPLETE**（2026-10-05，同新实例 Gate 0→E4；E0–E4 COMPLETE、E5 可选跳过、P1 未做；2026-10-06 post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION，修正已闭环）
+### M27 Prefill–Decode Disaggregation & NIXL KV Transfer　✅ **T+E+O+H COMPLETE**（2026-10-05，8×H20 单节点同新实例 Gate 0→E4；正式实验最多 4 GPU；E0–E4 COMPLETE 为最终范围，E5 未执行、P1 未做；2026-10-06 post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION，修正已闭环）
 - **目标**：在 H20 上用 vLLM 0.24.0 + NIXL 1.2.0 测量 P-D 分离的**传输/编排成本**与**干扰隔离收益**；**“没有收益”是允许的结果**（官方文档写明 P-D 不提升吞吐，合理配置的 chunked prefill 也可能达到同样效果）。
 - **T**：在 `ee0da84` 上重新核实源码（file:line）：NIXL 是 D 主动 READ（`NixlPullConnector`）、`kv_load_failure_policy` 默认 fail、NIXL 要求 HND 布局而无 connector 时默认 NHD（所以所有 arm 统一设 HND）、`kv_rank` 的“1P1D”注释不适用于 NIXL；对 M24 笔记的更正记录在 [`notes/m27/pd_disagg_nixl_theory.md`](notes/m27/pd_disagg_nixl_theory.md)。KV 理论值 57344 B/token（Qwen2.5-7B bf16），与 M22 的 KV 容量交叉一致；**理论值 ≠ 实测传输量**。
 - **O / DESIGN**：冻结计划 [`notes/m27/M27_H20_PLAN.md`](notes/m27/M27_H20_PLAN.md)（每实例 TP1、bf16、eager、APC 关、async 关、chunked 开、mbt8192；A 层因果对照 colocated vs 1P1D，B 层调优后的 colocated mbt∈{2048,4096,8192} 对 PD，B 层不是单变量对照；chunked-off 不作为正式 arm）；E0 正确性/fail-closed → E1 传输随长度变化 → E2 事件驱动干扰 → E3 在线 Poisson（3 seeds）→ E4 4 卡 P:D 配比 → Gate 8 → E5（可选）。脚本 `scripts/m27_*.py` + `scripts/m27_preflight.sh`；不变量 `check_invariants.py --module m27`（本轮 M27 35 PASS、0 FAIL/0 PENDING）；manifest 中 H20 步骤为 `formal_only`，`reproduce.py --run` 会拒绝启动。
 - **资源**：7B 模型身份已冻结（逐文件 sha256，内容 == HF `Qwen/Qwen2.5-7B-Instruct@a09a3545`；找回的 M22 副本，见 [`notes/m27/model_artifact_manifest.md`](notes/m27/model_artifact_manifest.md)）；NIXL wheel sha256 已核对。证据边界：E2 是机制实验（1 卡 vs 2 卡），同 GPU 预算的部署结论只来自 E3 / E4；结论只适用于 HND，不与 M22 / M24 绝对数相减。
-- **E/H 已实测**：新实例 `ins-a8qac2ve` 完成 fresh Gate0、E0–E4；NIXL GPU KV `cuda_ipc/cuda`、GPU0–7 两两 NV18。E2 8K 注入 colo−PD max stall +780.98ms（1 vs 2 GPU，仅机制）；E3/E4 同成本：PD 尾部 ITL 更低（对调优后的 colocated 差距缩小、方向不变），但高负载 TTFT/排队和 achieved rate 更差，见 [`notes/m27/results.md`](notes/m27/results.md)。Gate 8 选择跳过可选 E5；P1 profiler 未执行，不声称 compute/communication overlap proven。旧机器中途数据保留但不 pool。
-- **验证与证据**：H20 收口时 `outputs/m27/final_evidence_audit.json` 73/73 PASS、M27 35 PASS、全仓 187 PASS；raw、派生 CSV/图及负结果见 `notes/m27/results.md`。正式执行约 12.44 h ≈ 99.5 GPU·h（整机墙钟 ×8）；之后实例空闲分配至 168 GPU·h 额度耗尽（约 68.5 GPU·h，非实验负载）。
+- **E/H 已实测**：新实例 `ins-a8qac2ve`（单节点 8×H20，Gate 0 核实 GPU0–7 两两 NV18）完成 fresh Gate0、E0–E4；NIXL GPU KV `cuda_ipc/cuda`。**规模边界**：正式实验覆盖 1/2/4 GPU——E0–E3 按 arm 用 1 或 2 GPU，P:D ratio 实验 E4 每 arm 4 GPU；各 arm 顺序执行，最大正式并发 4 GPU；没有 8-GPU P-D / scaling 实验。E2 8K 注入 colo−PD max stall +780.98ms（1 vs 2 GPU，仅机制）；E3/E4 同成本：PD 尾部 ITL 更低（对调优后的 colocated 差距缩小、方向不变），但高负载 TTFT/排队和 achieved rate 更差，见 [`notes/m27/results.md`](notes/m27/results.md)。Gate 8 选择跳过可选 E5；P1 profiler 未执行，不声称 compute/communication overlap proven。旧机器中途数据保留但不 pool。
+- **验证与证据**：H20 收口时 `outputs/m27/final_evidence_audit.json` 73/73 PASS、M27 35 PASS、全仓 187 PASS；raw、派生 CSV/图及负结果见 `notes/m27/results.md`。正式执行约 12.44 h ≈ 99.5 GPU·h（计费口径为整机墙钟 ×8，与正式实验最多同时用 4 GPU 不是一回事）；之后实例空闲分配至 168 GPU·h 额度耗尽（约 68.5 GPU·h，非实验负载）。
 - **Post-hoc 审计与集成（2026-10-06）**：独立审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`（CRITICAL 0 / MAJOR 0 / MINOR 7，见 [`notes/m27/audit/`](notes/m27/audit/)），7 条修正已闭环（[`FINAL_CLOSURE_ADDENDUM.md`](notes/m27/FINAL_CLOSURE_ADDENDUM.md)）；H20 原提交规范化见 [`H20_COMMIT_PROVENANCE.md`](notes/m27/H20_COMMIT_PROVENANCE.md)；11 个 >100MB raw 改为外部证据身份（[`H20_RAW_ARCHIVE_MANIFEST.tsv`](notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv)）；新增离线生成器 `scripts/m27_final_evidence_audit.py`（73/73 重算）。
-- **未做（据实）**：E5 规模确认（可选，跳过）；P1 profiler 时间线（未执行，因此不声称 compute/communication overlap）。
+- **未做（据实）**：E5（冻结设计中的可选 8-GPU P:D 配比确认）未执行；P1 profiler 时间线未执行，因此不声称 compute/communication overlap。M27 以 E0–E4 为最终范围，不再补 8 卡实验。
 
 ## 百亿 / 千亿落地门槛（诚实边界，勿夸大）
 - **单卡可积累（可迁移基础）**：Scheduler/CB、PagedAttention/KV、小模型高并发、压测方法、profiler、量化、spec decode、Triton 单机、TRT-LLM 单机、故障定位与监控。
@@ -497,7 +497,7 @@
 | 8 | CP / Ring Attention / P-D 分离设计与实践 | M24 | ★多卡　✅ T / ✅ DCP E / ⬜ Ring E；P-D E → M27 |
 | 9 | 压缩专题（按岗位深度） | M25 | 单卡起　✅ T（推理岗）/ ⬜ E |
 | 10 | 四大项目组合 + 面试三档表达 | M26 | 无新增 |
-| 11 | P-D 分离 + NIXL KV 传输实测（阶段 K） | M27 | ★多卡　✅ T+E+O+H COMPLETE；E5 可选跳过；P1 未做 |
+| 11 | P-D 分离 + NIXL KV 传输实测（阶段 K） | M27 | ★多卡　✅ T+E+O+H COMPLETE（8×H20 单节点，正式实验最多 4 GPU）；E5 未执行；P1 未做 |
 
 ### M26 第二阶段收口：项目组合 + 掌握标准 + 面试化表达（扩展 M16）　✅　**收口完成（含明示占位）**（2026-08-13）
 - 把 A/B/C/D 四项目 README 化（招聘者 5 分钟看懂：问题/源码路径/环境/基线/瓶颈/改动/性能变化/回归/复现），核心图 ≤5 张；每主题 **30s / 3min / 10min** 三档表达；**明确标注能力边界**（已验证 / 只读源码未获硬件 / 仅理论）——这种区分反而证明系统工程严谨性。
@@ -553,5 +553,5 @@
   **M23 L1 FROZEN**（不扩 L2/L3/kernel profiling）。**M25 T COMPLETE**（不做 E）。**M24 DCP E+O+H COMPLETE**（4×H20 / 1.5B）；**Ring Attention / P-D 仍 ⬜**。
   **M26**：A/C 完整；B 部分占位（PP/DP/EP + Ring/P-D）；D 核心已随 M23 L1 闭合。
   → 下一优先：M22 的 PP/DP/EP（仍需多卡窗口）；或 M13 maintainer review。
-- **当前进度（2026-10-06）**：阶段 K / M27 **T+E+O+H COMPLETE**；同一新实例 fresh Gate0→E4 完整，Gate8 下可选 E5 跳过，P1 未做；旧实例交接仅独立复现参考；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION，修正已闭环。结果见 [`notes/m27/results.md`](notes/m27/results.md)。
+- **当前进度（2026-10-06）**：阶段 K / M27 **T+E+O+H COMPLETE**；8×H20 单节点同一新实例 fresh Gate0→E4 完整，正式实验最多 4 GPU（E4 每 arm 4 GPU）；E5 未执行、P1 未做，E0–E4 为最终范围；旧实例交接仅独立复现参考；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION，修正已闭环。结果见 [`notes/m27/results.md`](notes/m27/results.md)。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。
