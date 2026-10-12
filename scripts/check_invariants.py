@@ -2835,6 +2835,18 @@ def check_m27(rep):
     _m27_final_evidence_audit(rep)
 
 
+def check_m28(rep):
+    """M28：规则全部由 scripts/m28_validate.py 实现（独立重算，不 import vllm）；raw 未执行 → PENDING。"""
+    sd = _p("scripts")
+    if sd not in sys.path:
+        sys.path.insert(0, sd)
+    import m28_validate
+
+    res = m28_validate.validate(_p("outputs/m28/raw"), _p("outputs/m28"))
+    for status, rule, detail in res.rows:
+        {"PASS": rep.ok, "FAIL": rep.fail, "PENDING": rep.pending}[status]("m28", rule, detail)
+
+
 CHECKS = {
     "m0": [check_env],
     "m17": [
@@ -2857,6 +2869,7 @@ CHECKS = {
     "m23": [check_m23],
     "m24": [check_m24],
     "m27": [check_m27],
+    "m28": [check_m28],
 }
 
 

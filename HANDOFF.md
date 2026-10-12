@@ -58,6 +58,7 @@
 | M25 | 压缩（蒸馏/剪枝/低秩） | ✅ | **T COMPLETE**（`notes/m25/compression.md`）；本轮明确不做 E |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
 | **M27** | 阶段 K · P-D 分离 + NIXL KV 传输（M24 P-D 部分转入这里） | ✅ | **T+E+O+H COMPLETE**（8×H20 单节点环境，正式实验 E0–E4 覆盖 1/2/4 GPU、最大 4 GPU；E5 未执行、不在范围内，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION）；见 `notes/m27/README.md` |
+| **M28** | 阶段 L · KV Offloading（原生 OffloadingConnector）+ Serving 可靠性（EngineCore SIGKILL / shutdown_timeout） | 🔄 | **DESIGN FROZEN v1 · CPU_VALIDATED · GPU NOT EXECUTED**：A/B 均未执行，等待 GPU 与故障注入授权；无实测结论。见 `notes/m28/execution_record.md`、`notes/m28/M28_PLAN.md` §11 |
 
 > 每个模块的完整定义（要做什么 / 记什么指标 / 产出什么文件 / 硬件门控）都在 [`ROADMAP.md`](ROADMAP.md) 对应小节，**动手前务必读该小节**，不要凭本表的一句话概括就开工。
 

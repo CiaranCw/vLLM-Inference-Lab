@@ -1,0 +1,10 @@
+[PENDING] m28              a_raw_present                                      A arm ['offload', 'base', 'ref'] 未执行（raw 不存在）；A 未完成，不得记为通过
+[PENDING] m28              b_raw_present                                      B 演练未执行（raw 不存在）；B1/B3 未完成，不得记为通过
+[PENDING] m28              x_lifecycle                                        无 lifecycle 记录（GPU 实验未执行）
+
+合计：192 PASS / 0 FAIL / 3 PENDING（模块：m0, m17, m18, m19, m21, m22, m23, m24, m27, m28）
+
+PENDING（实验尚未执行，**不得记为通过**）：
+  - m28 · a_raw_present: A arm ['offload', 'base', 'ref'] 未执行（raw 不存在）；A 未完成，不得记为通过
+  - m28 · b_raw_present: B 演练未执行（raw 不存在）；B1/B3 未完成，不得记为通过
+  - m28 · x_lifecycle: 无 lifecycle 记录（GPU 实验未执行）

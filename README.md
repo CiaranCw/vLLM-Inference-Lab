@@ -146,6 +146,8 @@
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
 | **M27** P-D 分离 + NIXL（阶段 K） | 测量 P-D 的 KV 传输/编排成本与干扰隔离收益，“没有收益”是允许的结果 | 8×H20 单节点、同实例 Gate0→E4，正式实验最多 4 GPU（E3 每 arm 2 GPU、E4 每 arm 4 GPU）；E2 8K 注入 colo1−PD stall **+780.98ms**（1 vs 2 GPU，机制）；E3/E4 同成本 PD ITL P99 更低但 90% 负载 TTFT P99 与 achieved rate 更差，colo4 TTFT 优于全部 4-GPU PD ratio；**COMPLETE**（范围为 E0–E4，E5 未执行，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION） | 无 | `notes/m27/{results,execution_record,FINAL_CLOSURE_ADDENDUM}.md`、`outputs/m27/h20_formal_e{0,1,2,3,4}_*`、`figures/fig1{6,7,8}_m27_*`；11 个 >100MB raw 在外部 archive（`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`） |
+| **M28** KV Offloading + Serving 可靠性（阶段 L，单卡） | 原生 OffloadingConnector 的 GPU/CPU/重算三路径证明 + EngineCore SIGKILL / SIGTERM × shutdown_timeout 故障演练 | **尚无实测数据**：设计冻结 v1、CPU_VALIDATED（mock 演练 + validator 自检 12/12）；GPU 实验未执行，等待授权 | 无 | `notes/m28/{M28_PLAN,execution_record}.md`、`scripts/m28_*.py` |
+
 ★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
 ---

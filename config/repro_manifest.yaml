@@ -845,3 +845,155 @@ modules:
       - id: p1-profiler
         desc: 可选 P1 torch profiler（D 侧 KV load 与 decode 重叠证据）——未实现；M27 以 E0–E4 为最终范围，不再计划
         status: optional_todo
+
+  m28:
+    title: KV Offloading（原生 OffloadingConnector GPU→CPU）与 Serving 可靠性（EngineCore 故障 / shutdown_timeout）
+    # DESIGN FROZEN v1 + CPU_VALIDATED（2026-10-12）；GPU 未执行。GPU 与故障注入都需所有者逐轮明确授权，
+    # 因此 GPU 步骤一律 formal_only=true（reproduce.py 拒绝自动启动，按 notes/m28/M28_PLAN.md §11 手动执行）。
+    status: in_progress
+    requires_gpu: true
+    runbook: notes/m28/M28_PLAN.md
+    notes:
+      - notes/m28/M28_PLAN.md
+      - notes/m28/source_review.md
+      - notes/m28/execution_record.md
+    readiness: CPU_VALIDATED_GPU_NOT_EXECUTED
+    frozen_config:
+      source_of_truth: scripts/m28_common.py   # notes/m28/M28_PLAN.md §4 冻结块与之逐键相等
+      model: Qwen/Qwen2.5-0.5B-Instruct 本地快照 7ae5576（目录路径启动 + --served-model-name；不走 hub）
+      server: vllm serve（API + VLLM::EngineCore 子进程）/ eager / seed 0 / chunked prefill / no async scheduling
+      env: VLLM_USE_FLASHINFER_SAMPLER=0 / VLLM_ENABLE_V1_MULTIPROCESSING=1（serve 路径，偏离说明见计划 §2）/ HF_HUB_OFFLINE=1
+      a_prefix_lens: [1024, 4096, 8192, 16384]
+      a_gpu_blocks: 1280
+      a_cpu_bytes: 4 GiB（evict arm 256 MiB）
+      warmup: 5
+      measure: 15
+      b_repeats: B1×3 / B3 每档×3（shutdown_timeout 0/2/60）/ B2×1（单独授权）
+    steps:
+      - id: source-audit
+        desc: ../vllm-src 脏文件 AST 语义比对（只读）；证明 M28 路径的 lab 钩子在默认环境下惰性
+        cmd: [python, scripts/m28_source_audit.py]
+        requires_gpu: false
+        creates_engine: false
+        outputs: [outputs/m28/m28_vllm_src_ast_audit.json]
+        status: done
+      - id: dry-run
+        desc: 打印 A/B 冻结矩阵、server 命令与资源预估（不碰 GPU）
+        cmd: [python, scripts/m28_offload.py, --dry-run]
+        requires_gpu: false
+        creates_engine: false
+        status: done
+      - id: mock-rehearsal-a
+        desc: CPU 演练 A（mock server，不是 vLLM；产物只进 /tmp，runner 拒绝写 outputs/m28）
+        cmd: [python, scripts/m28_offload.py, --mock, --mock-fast, --out-dir, /tmp/m28_mock_rehearsal, --port, "18028", --arm, offload, --arm, base, --arm, ref, --arm, evict]
+        requires_gpu: false
+        creates_engine: false
+        status: done
+      - id: mock-rehearsal-b
+        desc: CPU 演练 B（对 mock 自己的进程真实发 SIGKILL/SIGTERM/SIGSTOP/SIGCONT，验证身份核对与兜底清理）
+        cmd: [python, scripts/m28_faults.py, --mock, --out-dir, /tmp/m28_mock_rehearsal, --port, "18028", --drill, b1, --drill, b3, --drill, b2, --authorize-b2]
+        requires_gpu: false
+        creates_engine: false
+        status: done
+      - id: validator-selftest
+        desc: 以 mock 演练产物（/tmp，先 summarize 到同目录）为基准，临时目录逐条注入 12 个反例，要求全部 PASS→FAIL；报告不含实验数据
+        cmd: [python, scripts/m28_validate.py, --selftest, --raw-dir, /tmp/m28_mock_rehearsal, --derived-dir, /tmp/m28_mock_rehearsal]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs: [logs/m28/validator_selftest_cpu.json]
+        status: done
+      - id: a-smoke
+        desc: A 冒烟门禁（offload arm 单 trial；确认 connector 启动、cpu_hit 被指标证实、cudaHostRegister 状态）
+        cmd: [python, scripts/m28_offload.py, --smoke, --i-have-gpu-authorization]
+        requires_gpu: true
+        creates_engine: true
+        formal_only: true
+        outputs: [outputs/m28/raw/m28_a_smoke.jsonl]
+        status: implemented
+      - id: a-formal
+        desc: A 正式（offload → base → ref，各自独立 server 进程）
+        cmd: [python, scripts/m28_offload.py, --i-have-gpu-authorization]
+        requires_gpu: true
+        creates_engine: true
+        formal_only: true
+        outputs:
+          - outputs/m28/raw/m28_a_offload.jsonl
+          - outputs/m28/raw/m28_a_base.jsonl
+          - outputs/m28/raw/m28_a_ref.jsonl
+        status: implemented
+      - id: a-evict
+        desc: A 可选：CPU 层 256 MiB 下的 LRU 淘汰退化
+        cmd: [python, scripts/m28_offload.py, --arm, evict, --i-have-gpu-authorization]
+        requires_gpu: true
+        creates_engine: true
+        formal_only: true
+        outputs: [outputs/m28/raw/m28_a_evict.jsonl]
+        status: optional
+      - id: b1-b3
+        desc: B1 SIGKILL EngineCore（在途）×3；B3 SIGTERM × shutdown_timeout{0,2,60} ×3（需故障注入授权）
+        cmd: [python, scripts/m28_faults.py, --drill, b1, --drill, b3, --i-have-gpu-authorization, --i-have-fault-authorization]
+        requires_gpu: true
+        creates_engine: true
+        formal_only: true
+        outputs: [outputs/m28/raw/m28_b_drills.jsonl]
+        status: implemented
+      - id: b2
+        desc: B2 可选高风险：SIGSTOP EngineCore 10s → SIGCONT（需单独授权）
+        cmd: [python, scripts/m28_faults.py, --drill, b2, --append, --authorize-b2, --i-have-gpu-authorization, --i-have-fault-authorization]
+        requires_gpu: true
+        creates_engine: true
+        formal_only: true
+        status: optional
+      - id: summarize
+        desc: raw → 派生 CSV（缺 raw 打印未执行，不生成伪 CSV）
+        cmd: [python, scripts/m28_summarize.py]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs:
+          - outputs/m28/m28_a_latency.csv
+          - outputs/m28/m28_a_paths.csv
+          - outputs/m28/m28_a_contrasts.csv
+          - outputs/m28/m28_a_correctness.csv
+          - outputs/m28/m28_b_drills.csv
+        status: implemented
+      - id: figures
+        desc: 由派生 CSV 离线出图（缺 CSV 不画）
+        cmd: [python, scripts/m28_figures.py]
+        requires_gpu: false
+        creates_engine: false
+        optional_outputs: [figures/fig_m28_offload_ttft.png, figures/fig_m28_faults.png]
+        status: implemented
+      - id: invariants
+        desc: M28 不变量（静态项本机 PASS；raw 未执行的项 PENDING）
+        cmd: [python, scripts/check_invariants.py, --module, m28]
+        requires_gpu: false
+        creates_engine: false
+        status: done
+
+    invariants:
+      - x_plan_frozen_matches_code
+      - a_path_recheck
+      - a_cached_eq_metrics
+      - a_gate_external_hit
+      - a_load_bytes_consistent
+      - a_prompt_pairing
+      - a_corr_offload_roundtrip
+      - a_corr_ref_determinism
+      - a_corr_offload_cold_vs_ref
+      - a_corr_offload_adds_no_divergence
+      - b_target_identity
+      - b_inflight_before_fault
+      - b_cleanup_clean
+      - b_b3_timeout_precondition
+      - x_no_engine_overlap
+
+    limitations:
+      - 绝对值只适用于单卡 RTX 5080 / sm_120 / WSL2 / Qwen2.5-0.5B / enforce_eager / vllm serve + 串行 HTTP 流式客户端
+      - WSL2 的 pinned memory / DMA 行为可能与原生 Linux 不同；CPU→GPU load 带宽不外推
+      - ../vllm-src 有 22 个脏文件；M28 路径的 lab 钩子在默认环境下惰性（AST 审计），但其固定 Python 开销未单独测量
+      - B 组是行为刻画（每档 3 次），不是性能统计
+
+    open_items:
+      - id: m28-gpu-authorization
+        desc: GPU 实验与 B1/B3 故障注入等待所有者明确授权；B2 需单独授权
+        status: in_progress

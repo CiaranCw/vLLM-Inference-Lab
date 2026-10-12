@@ -1,0 +1,12 @@
+[  ok  ] m28              x_scripts_present           7 个脚本齐全且 py_compile 通过
+[  ok  ] m28              x_plan_frozen_matches_code  计划冻结块 == FROZEN（plan_version=v1）
+[PENDING] m28              a_raw_present               A arm ['offload', 'base', 'ref'] 未执行（raw 不存在）；A 未完成，不得记为通过
+[PENDING] m28              b_raw_present               B 演练未执行（raw 不存在）；B1/B3 未完成，不得记为通过
+[PENDING] m28              x_lifecycle                 无 lifecycle 记录（GPU 实验未执行）
+
+合计：2 PASS / 0 FAIL / 3 PENDING（模块：m28）
+
+PENDING（实验尚未执行，**不得记为通过**）：
+  - m28 · a_raw_present: A arm ['offload', 'base', 'ref'] 未执行（raw 不存在）；A 未完成，不得记为通过
+  - m28 · b_raw_present: B 演练未执行（raw 不存在）；B1/B3 未完成，不得记为通过
+  - m28 · x_lifecycle: 无 lifecycle 记录（GPU 实验未执行）
