@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_validate.py", line 543, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_validate.py", line 538, in main
+    c = print_rep(validate(a.raw_dir, a.derived_dir, a.allow_mock))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_validate.py", line 366, in validate
+    check_b(rep, raw_dir, derived_dir, allow_mock)
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_validate.py", line 286, in check_b
+    t0 = min(q["t_send"] for q in reqs if q.get("t_send"))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: min() iterable argument is empty

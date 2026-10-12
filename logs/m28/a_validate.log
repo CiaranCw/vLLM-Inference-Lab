@@ -1,0 +1,24 @@
+[ PASS  ] x_scripts_present                    7 个脚本齐全且 py_compile 通过
+[ PASS  ] x_plan_frozen_matches_code           计划冻结块 == FROZEN（plan_version=v2）
+[ PASS  ] a_raw_present                        offload/base/ref raw 齐全；evict 也在
+[ PASS  ] a_no_mock                            无 mock 记录
+[ PASS  ] a_counts                             每 (arm, P, path) warmup=5 measure=15，idx 连续
+[ PASS  ] a_measure_all_success                全部 measure 样本 success=True
+[ PASS  ] a_path_recheck                       全部非 filler 样本的路径判据独立重算与 runner 一致
+[ PASS  ] a_cached_eq_metrics                  请求级 cached_tokens 与 Prometheus 增量（两个独立来源）逐条相等
+[ PASS  ] a_gate_external_hit                  每个 P 的 cpu_hit 均 15/15 由指标证实：{1024: 15, 4096: 15, 8192: 15, 16384: 15}
+[ PASS  ] a_load_bytes_consistent              load_bytes/命中 token 恒为 12288.0 B（理论 12288）
+[ PASS  ] a_prompt_pairing                     全部样本 prompt sha == 冻结生成器重算值（跨 arm 同一 (P, idx) 同一 prompt）
+[ PASS  ] a_corr_offload_roundtrip             offload.cpu_hit == offload.gpu_hot：60/60（token 与 logprob 逐位相等）
+[ PASS  ] a_corr_ref_determinism               ref.ref_a == ref.ref_b：60/60（token 相等）
+[ PASS  ] a_corr_offload_cold_vs_ref           offload.cold == ref.ref_a：60/60（token 相等）
+[ PASS  ] a_corr_base_cold_vs_ref              base.cold == ref.ref_a：60/60（token 相等）
+[ PASS  ] a_corr_offload_adds_no_divergence    cpu_hit 与 gpu_hot 相对独立 recompute 的分歧集合相同（各 14 个）
+[ PASS  ] a_csv_matches_raw                    latency CSV 35 行的 n / median 与 raw 重算相等
+[PENDING] b_raw_present                        B 演练未执行（raw 不存在）；B1/B3 未完成，不得记为通过
+[ PASS  ] x_no_engine_overlap                  5 个 server 生命周期互不重叠
+[ PASS  ] a_lifecycle_clean                    5 个 A server：无 error、无残留 PID、端口释放、显存回收
+[ PASS  ] a_env_fingerprint                    VLLM_LAB_* 均未设置；vllm-src HEAD=ee0da84、脏文件数 22；模型 blob sha 符合冻结值
+[ PASS  ] a_connector_log_evidence             connector arm 日志含 OffloadingConnector / CPUOffloadingSpec / CPU tensor 分配三行，非 connector arm 不含；所有 arm 无采样默认值覆盖、无 traceback / EngineDeadError
+
+合计：21 PASS / 0 FAIL / 1 PENDING

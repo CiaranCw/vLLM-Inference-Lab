@@ -1,0 +1,35 @@
+[ PASS  ] x_scripts_present                    7 个脚本齐全且 py_compile 通过
+[ PASS  ] x_plan_frozen_matches_code           计划冻结块 == FROZEN（plan_version=v1）
+[ PASS  ] a_raw_present                        offload/base/ref raw 齐全；evict 也在
+[ PASS  ] a_no_mock                            allow_mock：1090 条 mock（仅自检）
+[ PASS  ] a_counts                             每 (arm, P, path) warmup=5 measure=15，idx 连续
+[ PASS  ] a_measure_all_success                全部 measure 样本 success=True
+[ PASS  ] a_path_recheck                       全部非 filler 样本的路径判据独立重算与 runner 一致
+[ PASS  ] a_cached_eq_metrics                  请求级 cached_tokens 与 Prometheus 增量（两个独立来源）逐条相等
+[ PASS  ] a_gate_external_hit                  每个 P 的 cpu_hit 均 15/15 由指标证实：{1024: 15, 4096: 15, 8192: 15, 16384: 15}
+[ PASS  ] a_load_bytes_consistent              load_bytes/命中 token 恒为 12288.0 B（理论 12288）
+[ PASS  ] a_prompt_pairing                     全部样本 prompt sha == 冻结生成器重算值（跨 arm 同一 (P, idx) 同一 prompt）
+[ PASS  ] a_corr_offload_roundtrip             offload.cpu_hit == offload.gpu_hot：60/60（token 与 logprob 逐位相等）
+[ PASS  ] a_corr_ref_determinism               ref.ref_a == ref.ref_b：60/60（token 相等）
+[ PASS  ] a_corr_offload_cold_vs_ref           offload.cold == ref.ref_a：60/60（token 相等）
+[ PASS  ] a_corr_base_cold_vs_ref              base.cold == ref.ref_a：60/60（token 相等）
+[ PASS  ] a_corr_offload_adds_no_divergence    cpu_hit 与 gpu_hot 相对独立 recompute 的分歧集合相同（各 0 个）
+[ PASS  ] a_csv_matches_raw                    latency CSV 35 行的 n / median 与 raw 重算相等
+[ PASS  ] b_raw_present                        13 条演练记录
+[ PASS  ] b_no_mock                            allow_mock：13 条 mock（仅自检）
+[ PASS  ] b_no_drill_error                     全部演练无 error
+[ PASS  ] b_counts                             B1×3，B3 每档×3，B2×1
+[ PASS  ] b_target_identity                    全部注入目标为本会话进程且角色/ppid/sid 核对通过（B1/B2 = 唯一 VLLM::EngineCore 子进程；B3 = API 进程）
+[ PASS  ] b_inflight_before_fault              注入前 4 条 streaming 均已收到首 token，且 running 指标 == 8
+[ PASS  ] b_all_requests_terminal              每条在途请求都有终态记录
+[ PASS  ] b_cleanup_clean                      每次演练后：无存活的已知 PID、端口释放、/dev/shm 无新增、显存回到基线容差内
+[ PASS  ] b_b3_timeout_precondition            B3 不足档剩余工作 > timeout+1s、充足档校准时长 < timeout-5s（由同进程校准批次实测）
+[ PASS  ] b_b2_resumed                         B2（若执行）均已 SIGCONT
+[ PASS  ] b_b1_restart_ok                      每次 B1 后同配置重启并成功完成 1 个请求
+[ PASS  ] b_csv_matches_raw                    B CSV 13 行与 raw 一一对应
+[ PASS  ] x_no_engine_overlap                  17 个 server 生命周期互不重叠
+[ PASS  ] a_lifecycle_clean                    4 个 A server：无 error、无残留 PID、端口释放、显存回收
+[ PASS  ] a_env_fingerprint                    VLLM_LAB_* 均未设置；vllm-src HEAD=ee0da84、脏文件数 22；模型 blob sha 符合冻结值
+[ PASS  ] a_connector_log_evidence             connector arm 日志含 OffloadingConnector 与 mmap 创建记录（cudaHostRegister 失败次数见 lifecycle）
+
+合计：33 PASS / 0 FAIL / 0 PENDING

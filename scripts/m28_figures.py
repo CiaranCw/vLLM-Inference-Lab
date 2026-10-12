@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """M28 · 从已落盘的派生 CSV 离线生成图（无需 GPU / 模型 / vllm）。
 
-  fig_m28_offload_ttft.png   A：各路径 online TTFT median（误差棒到 p95）vs 前缀长度
-  fig_m28_faults.png         B：B1 / B3 各演练从注入到 health 非 200 / EngineCore 退出 / API 退出 / 端口关闭的时间，
+  fig19_m28_offload_ttft.png   A：各路径 online TTFT median（误差棒到 p95）vs 前缀长度
+  fig20_m28_faults.png         B：B1 / B3 各演练从注入到 health 非 200 / EngineCore 退出 / API 退出 / 端口关闭的时间，
                              以及在途请求完整完成数
 
 复现：python scripts/m28_figures.py [--derived-dir outputs/m28] [--fig-dir figures]
@@ -78,16 +78,29 @@ def fig_b(rows, out):
     ax.axvline(0, color="black", lw=0.8)
     ax.set_yticks(list(ys))
     ax.set_yticklabels([r["label"] for r in rows], fontsize=8)
+    for r, y in zip(rows, ys):
+        if int(r.get("n_pending_at_observe_end") or 0) > 0:
+            ax.text(3.0, y, "API still alive at observe end, requests open -> forced SIGKILL",
+                    va="center", fontsize=7, color="black")
     ax.set_xlabel("seconds after fault injection")
-    ax.set_title("M28-B: observable events after injection")
+    ax.set_title("M28-B: observable events after injection (B3 rows = run 2)")
     ax.grid(alpha=0.3, axis="x")
     ax.legend(fontsize=7, loc="lower right")
-    bx.barh(list(ys), [int(r["n_completed_full"]) for r in rows], color="#2ca02c")
+    done = [int(r["n_completed_full"]) for r in rows]
+    pend = [int(r.get("n_pending_at_observe_end") or 0) for r in rows]
+    other = [int(r["n_inflight"]) - d - p for r, d, p in zip(rows, done, pend)]
+    bx.barh(list(ys), done, color="#2ca02c", label="finished normally")
+    bx.barh(list(ys), other, left=done, color="#ff7f0e", label="error / abort")
+    bx.barh(list(ys), pend, left=[d + o for d, o in zip(done, other)], color="#333333",
+            label="still open at observe end")
     bx.set_xlim(0, max(int(r["n_inflight"]) for r in rows))
-    bx.set_xlabel("in-flight requests fully completed")
+    bx.set_xlabel("in-flight requests (of 8)")
+    bx.legend(fontsize=6, loc="lower right")
     bx.grid(alpha=0.3, axis="x")
+    fig.text(0.01, 0.005, "B3 run 1 (defective pending recording) kept in outputs/m28/raw_old_b3_run1/; "
+             "not pooled here", fontsize=7, color="gray")
     ax.invert_yaxis()
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
     fig.savefig(out, dpi=150)
     plt.close(fig)
     return True
@@ -101,12 +114,12 @@ def main():
     os.makedirs(a.fig_dir, exist_ok=True)
     lat = _read(os.path.join(a.derived_dir, "m28_a_latency.csv"))
     if lat:
-        fig_a(lat, os.path.join(a.fig_dir, "fig_m28_offload_ttft.png"))
+        fig_a(lat, os.path.join(a.fig_dir, "fig19_m28_offload_ttft.png"))
         print("[m28-figures] A 图已生成")
     else:
         print("[m28-figures] 无 A CSV（未执行），不画 A 图")
     b = _read(os.path.join(a.derived_dir, "m28_b_drills.csv"))
-    if b and fig_b(b, os.path.join(a.fig_dir, "fig_m28_faults.png")):
+    if b and fig_b(b, os.path.join(a.fig_dir, "fig20_m28_faults.png")):
         print("[m28-figures] B 图已生成")
     else:
         print("[m28-figures] 无 B CSV（未执行），不画 B 图")

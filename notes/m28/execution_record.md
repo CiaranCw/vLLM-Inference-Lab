@@ -1,7 +1,7 @@
 # M28 执行记录
 
-> **状态：CPU_VALIDATED · GPU NOT EXECUTED**。本文件按时间记录做了什么、看到了什么、改了什么。
-> 截至本次更新**没有启动过任何 vLLM 引擎，没有使用 GPU，没有做故障注入**；下文所有"通过"都是 CPU / mock 层面的，不是实验结论。
+> 本文件按时间记录做了什么、看到了什么、改了什么。§0–§4 是 GPU 授权之前的 CPU / mock 阶段（那些"通过"都不是实验结论）；
+> §5 起是授权之后的 GPU 执行。
 
 ## 0. 环境快照（2026-10-12）
 
@@ -50,8 +50,99 @@ mock 产物只写在 `/tmp/m28_mock_rehearsal`，runner 拒绝把 mock 输出写
 | `check_invariants.py`（全仓） | 192 PASS / 0 FAIL / 3 PENDING（3 个都是 M28 未执行项） | `logs/m28/invariants_full_cpu_validated.log` |
 | `reproduce.py --run --module m28 --only a-smoke` | 拒绝启动（`formal_only`） | — |
 
-## 4. 尚未执行
+§3 的日志已移到 `logs/m28/v1_cpu_validation/`（v1 配置下的结果）；v2 的同类日志在 `logs/m28/` 下重新生成，见 §6。
 
-- A 冒烟、A 正式（offload / base / ref）、A evict（可选）：需要 GPU 授权。
-- B1、B3：需要 GPU 授权 + 一次故障注入授权。B2：需要单独授权。
-- `results.md`、`limitations.md`、面试笔记：等实测数据落盘后再写，现在不写任何性能或行为结论。
+## 4. 授权（2026-10-12，所有者通过结构化问答确认）
+
+- 整卡已有约 4.7–5.0 GiB 显存占用（`nvidia-smi` 不列进程）：所有者确认是自己的 / 系统占用，可以在旁边跑。
+- GPU：授权 A 冒烟 + A 正式 + A evict（可选）。
+- 故障注入：授权 B1 + B3（一次授权覆盖冻结矩阵）。
+- B2：所有者选择不做 → **SKIPPED**。
+
+## 5. v1 冒烟（GPU，第一次启动引擎）
+
+命令 `python scripts/m28_offload.py --smoke --i-have-gpu-authorization`，exit 0，server 就绪 19.06 s，清理后显存回到基线。
+产物原样保存在 `outputs/m28/raw_old_v1_smoke/`、`logs/m28/v1_smoke/`，**不进入任何统计或结论**。
+
+- 按设计成功的部分：cold `cached_tokens=0`；gpu_hot `Δlocal_hits=1040`；两个 filler 之后 cpu_hit `Δext_hits=1040`、
+  `Δload_bytes=12779520`（= 65 block × 196608 B，与理论值一致）；cpu_hit 与 gpu_hot 的 token 与 logprob 逐位相等。
+- 暴露的问题一：server 日志 "Default vLLM sampling parameters have been overridden by the model's `generation_config.json`:
+  `{'repetition_penalty': 1.1, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`"。请求显式设了 temperature / top_p，
+  但 `repetition_penalty=1.1` 仍生效，与计划"贪心"不符。
+- 暴露的问题二：`/dev/shm` 没有出现 `vllm_offload_*.mmap`，日志没有 "Created mmap file"，而是 "Allocating 1 CPU tensors..."。
+  回到源码确认：CPU spec 的 CPU 层是 `torch.zeros(pin_memory=PIN_MEMORY)`，WSL2 上默认非 pinned；mmap + `cudaHostRegister`
+  只属于 tiering spec。v1 源码核查写错了（详见 `source_review.md` 的更正记录）。CPU→GPU 也不走 Triton（cross-layer 布局，page 196608 B ≥ 28 KiB）。
+- 暴露的问题三：runner 的日志标记把自己写的分隔行（含完整命令行）也计入 `OffloadingConnector` 计数；而 mock 数据下
+  `a_connector_log_evidence` 规则被跳过，所以 CPU 验证没发现它与真实日志不匹配。
+
+## 6. v1 → v2 修订（正式 arm 之前）
+
+- `server_common_args` 加 `--generation-config vllm`；`server_env_must_unset` 加 `VLLM_WSL2_ENABLE_PIN_MEMORY`（固定 pageable）。
+  用 vLLM 自己的 parser 在 CPU 上确认 4 个 A arm 与 B 的参数都解析为 `generation_config='vllm'`。
+- `scan_log` 合并进 `m28_common`，跳过 runner 分隔行；A 组标记改为真实日志行（connector / CPUOffloadingSpec / CPU tensor 分配 /
+  采样覆盖 / 推理期 JIT / traceback / EngineDeadError，mmap 与 cudaHostRegister 两项保留但预期为 0）。
+- validator `a_connector_log_evidence` 改为：connector arm 必须有三行初始化日志、非 connector arm 不得有，所有 arm 不得出现采样覆盖 /
+  traceback / EngineDeadError；对 mock 数据同样生效（mock server 输出带 `mock:` 前缀的同名行）。新增 2 个反例。
+- `M28_PLAN.md` 升 v2（§12 修订记录），冻结块由代码重新生成。
+- v2 CPU 复验（mock 产物在 `/tmp/m28_mock_rehearsal_v2`）：A 4 个 arm + B 13 次演练全链路 OK；
+  validator（`--allow-mock`）33 PASS / 0 FAIL；自检 **14/14** 反例检出。日志：`logs/m28/{cpu_dryrun_a,cpu_dryrun_b,mock_rehearsal_validate,validator_selftest_cpu}.log`、
+  `logs/m28/validator_selftest_cpu.json`。
+
+## 7. v2 冒烟（GPU）
+
+exit 0，server 就绪 16.05 s。日志标记：connector 2 / CPUOffloadingSpec 2 / CPU tensor 分配 1 / **采样覆盖 0** / traceback 0 /
+推理期 JIT 1（`_compute_slot_mapping_kernel`，发生在 server_warmup 阶段）/ mmap 0。
+
+| 路径 | success | cached_tokens | Δlocal_hits | Δext_hits | Δload_bytes |
+|---|---|---|---|---|---|
+| cold | True | 0 | 0 | 0 | 无 |
+| gpu_hot | True | 1040 | 1040 | 0 | 无 |
+| cpu_hit | True | 1040 | 0 | 1040 | 12779520 |
+
+cpu_hit 与 gpu_hot 输出 token 与 logprob 逐位相等（G-A-corr-1 成立）；cold 与 gpu_hot 从第 2 个 token 起不同——这属于计划的
+G-A-corr-3（计算形状不同导致的数值分歧），是否被 offload 放大要看正式数据里 ref 对照。冒烟单样本延迟不作结论。
+A 组门禁（connector 能起、cpu_hit 被指标证实、KV 往返不破坏输出）通过 → 进入正式 arm。产物：`outputs/m28/raw/m28_a_smoke.jsonl`、`logs/m28/a_smoke_runner.log`。
+
+## 8. A 正式 + evict（GPU）
+
+- `python scripts/m28_offload.py --i-have-gpu-authorization`：offload → base → ref 顺序执行，exit 0（`logs/m28/a_formal_runner.log`）。
+  就绪 16.05 / 17.05 / 16.04 s；server 生命周期 449 / 444 / 202 s。
+- `python scripts/m28_offload.py --arm evict --i-have-gpu-authorization`：exit 0，就绪 17.05 s，生命周期 125 s（`logs/m28/a_evict_runner.log`）。
+- 每个 arm 日志标记：connector arm 三行初始化日志齐全；全部 arm 采样覆盖 0、traceback 0、EngineDeadError 0；推理期 JIT 各 1 次
+  （`_compute_slot_mapping_kernel`），时间戳早于该 arm 第一个 measure 样本 29 s 以上（发生在 server_warmup 期间）。
+- 显存：就绪后整卡 +1924～+1982 MiB；EngineCore RSS offload 6050.8 MiB / base 1953.7 MiB / evict 2210.8 MiB（`m28_lifecycle.jsonl`）。
+- summarize + validate：A 组 21 PASS / 0 FAIL（当时 B 组 PENDING）。结果见 `results.md` §1。
+
+## 9. B 第一轮（GPU，B1 ×3 + B3 ×9）
+
+命令 `python scripts/m28_faults.py --drill b1 --drill b3 --i-have-gpu-authorization --i-have-fault-authorization`，exit 0，错误演练数 0（`logs/m28/b_runner.log`）。
+
+- B1 ×3 按设计完成（`results.md` §2.1）。这 3 条记录**保留在正式 raw** 里，第二轮没有重跑 B1。
+- B3 有 5 次演练（t0 ×3、t2 r0/r1）在 90 s 观测窗结束时 API 仍存活、在途请求未结束，runner 清理时 SIGKILL（rc −9）。
+- 暴露的 runner 缺陷：
+  1. 挂住的请求被记成 `{"missing": true}`，summarize 在空列表上取 median 抛 `StatisticsError`，validate 在空序列上 `min()` 抛 `ValueError`。
+  2. 强制清理时 API 与 resource_tracker 同时被 SIGKILL，`/dev/shm` 每次留下 1 个 `sem.mp-*`，共 5 个（`oce92guz`、`mjeod_5h`、`uvel949z`、`mt1elx_i`、`3g9tarul`）。
+     **未删除**，等所有者决定。
+- 处理：第一轮 B3 原样保存——`outputs/m28/raw_old_b3_run1/m28_b_drills.jsonl`（含 B1+B3 共 12 行，sha256 `4e01dbd6…`）及其派生 CSV、
+  `logs/m28/b3_run1/`（9 个 B3 server 日志 + 当时的 runner / summarize / validate 日志，后两者含上述崩溃的 traceback）。正式 raw 只保留 B1 的 3 行（与第一轮逐字节相同）。`m28_lifecycle.jsonl` 里第一轮 B3 的 9 条生命周期记录保留未删，
+  `x_no_engine_overlap` 把它们一并核对。
+
+## 10. 执行期修订与 CPU 复验
+
+修订内容见 `M28_PLAN.md` §12「执行期修订」（只改记录 / 清理逻辑，不改冻结块与矩阵）。修订中又发现并修正一个问题：清理后补记的判断
+最初用"线程是否仍在运行"，而清理时线程已随连接断开结束，导致 `requests_after_cleanup` 从未写入。改为按观测窗记录里的 `terminal is False` 判断。
+mock 复验（`/tmp/m28_mock_rehearsal_v3`，A 复制自 v2、B 重新跑 b1/b3/b2，mock t=0 档模拟挂住）：挂住的演练 8 条请求都有清理后终态；
+validator（`--allow-mock`）33 PASS / 0 FAIL；自检 **15/15**（`logs/m28/validator_selftest_cpu.{log,json}`）。
+
+## 11. B3 第二轮（GPU，同一冻结矩阵）
+
+开跑前：整卡 3403 MiB、端口 8028 空闲、无 vLLM 进程、无实验锁；`/dev/shm` 只有第一轮遗留的 5 个 `sem.mp-*`（计入演练前快照，不算新增）。
+命令 `python scripts/m28_faults.py --drill b3 --append --i-have-gpu-authorization --i-have-fault-authorization`，exit 0，错误演练数 0，用时约 17 min（`logs/m28/b3_runner.log`）。
+结束后：无 vLLM 进程、端口空闲、整卡 3434 MiB、`/dev/shm` 无新增。
+
+- 9 次结局见 `results.md` §2.2：t0 r0 8/8 abort（API 30.37 s 退出，等的是故障瞬间探针的 30 s 客户端超时），r1/r2 挂住；
+  t2 r1 500 并退出，r0/r2 挂住；t60 3/3 正常完成。挂住的 4 次清理后补记：非流式 `RemoteDisconnected` ×4、流式 `eof_without_done` ×4。
+- 与第一轮不同（t0 3/3 → 2/3 挂住），两轮不合并。对 12 次 t0/t2 server 日志逐个统计 EngineCore 的 abort / drain / "request processing complete" 与 EngineDeadError，
+  用来解释结局差异（`results.md` §2.3）。
+- summarize → validate：**33 PASS / 0 FAIL / 0 PENDING**（`logs/m28/{summarize,validate}.log`）；figures 离线生成 `fig19_m28_offload_ttft.png`、`fig20_m28_faults.png`；
+  `check_invariants.py --module m28` 33/0/0，全模块 223/0/0（`logs/m28/check_invariants_{m28,all}.log`）。`../vllm-src` 脏文件数仍为 22。

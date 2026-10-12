@@ -1,0 +1,46 @@
+M28-B 冻结矩阵（plan_version=v1）
+B1 cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 4096 --num-gpu-blocks-override 2048 --no-enable-prefix-caching
+B3 t=0 cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 4096 --num-gpu-blocks-override 2048 --no-enable-prefix-caching --shutdown-timeout 0
+B3 t=2 cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 4096 --num-gpu-blocks-override 2048 --no-enable-prefix-caching --shutdown-timeout 2
+B3 t=60 cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 4096 --num-gpu-blocks-override 2048 --no-enable-prefix-caching --shutdown-timeout 60
+{
+  "max_model_len": 4096,
+  "num_gpu_blocks_override": 2048,
+  "prompt_len": 256,
+  "n_stream": 4,
+  "n_nonstream": 4,
+  "health_poll_s": 0.1,
+  "gpu_poll_s": 1.0,
+  "server_ready_timeout_s": 300,
+  "B1": {
+    "max_tokens": 2048,
+    "fault_after_first_token_s": 3.0,
+    "observe_s": 60,
+    "probe_new_request_at_s": [
+      1.0,
+      8.0
+    ],
+    "repeats": 3
+  },
+  "B3": {
+    "shutdown_timeouts": [
+      0,
+      2,
+      60
+    ],
+    "max_tokens": 1024,
+    "fault_after_first_token_s": 1.0,
+    "observe_s": 90,
+    "probe_interval_s": 0.25,
+    "repeats": 3
+  },
+  "B2": {
+    "stop_s": 10,
+    "max_tokens": 2048,
+    "fault_after_first_token_s": 3.0,
+    "observe_s": 40,
+    "repeats": 1,
+    "requires_separate_authorization": true
+  }
+}
+GPU KV 池 384 MiB；在途 4+4 请求 × (prompt 256 + 输出 ≤2048)

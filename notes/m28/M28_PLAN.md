@@ -1,6 +1,7 @@
-# M28 · KV Offloading 与 Serving 可靠性 —— 实验计划（DESIGN FROZEN v1）
+# M28 · KV Offloading 与 Serving 可靠性 —— 实验计划（DESIGN FROZEN v2）
 
-> **状态：DESIGN FROZEN v1（2026-10-12）· CPU_VALIDATED · GPU NOT EXECUTED**。本文没有任何实测数字。
+> **状态：DESIGN FROZEN v2（2026-10-12；v1 → v2 的原因见 §12）· 执行状态 COMPLETE（B2 SKIPPED），见 §10**。本文只放设计，
+> 实测结果见 [`results.md`](results.md)。
 > 冻结配置的唯一来源是 `scripts/m28_common.py` 的 `FROZEN`；§4 的 JSON 块由代码生成，
 > `python scripts/m28_validate.py` 的 `x_plan_frozen_matches_code` 规则逐键核对。
 > 改设计 = 升 `plan_version`，并在 [`execution_record.md`](execution_record.md) 记录原因。不在机时中临场改问题。
@@ -176,7 +177,7 @@
   "model": "Qwen/Qwen2.5-0.5B-Instruct",
   "model_safetensors_blob_sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
   "model_snapshot_commit": "7ae557604adf67be50417f59c2c2f167def9a775",
-  "plan_version": "v1",
+  "plan_version": "v2",
   "port": 8028,
   "server_common_args": [
     "--seed",
@@ -193,13 +194,16 @@
     "--no-async-scheduling",
     "--enable-chunked-prefill",
     "--disable-uvicorn-access-log",
-    "--enable-prompt-tokens-details"
+    "--enable-prompt-tokens-details",
+    "--generation-config",
+    "vllm"
   ],
   "server_env_must_unset": [
     "VLLM_LAB_TRACE",
     "VLLM_LAB_BLOCK",
     "VLLM_LAB_M9_COALESCE",
-    "VLLM_KEEP_ALIVE_ON_ENGINE_DEATH"
+    "VLLM_KEEP_ALIVE_ON_ENGINE_DEATH",
+    "VLLM_WSL2_ENABLE_PIN_MEMORY"
   ],
   "server_env_set": {
     "HF_HUB_OFFLINE": "1",
@@ -233,12 +237,17 @@
 - prompt = 随机 token id（区间 `[1000, 150000)`，由 `(P, idx)` 经 sha256 播种，**所有 arm 同一序列**），后缀 20 个 token，
   `N = P + 20`，`H = ⌊(N−1)/16⌋·16 = P + 16`。同一 trial 内三次请求发送**完全相同的 prompt**，因此可以直接比较输出。
 - 采样：`temperature=0`、`ignore_eos=true`、`max_tokens=16`、`logprobs=1`、`return_tokens_as_token_ids=true`、流式 + `include_usage`。
+  server 加 `--generation-config vllm`，不让模型 `generation_config.json` 的默认值（`repetition_penalty=1.1`、`top_k=20` 等）
+  混进请求未显式设置的采样参数；server 日志不得出现 "Default vLLM sampling parameters have been overridden"（validator 检查）。
 - 每个被测请求之前先等 GPU→CPU store 计数器连续两次不变（`store_quiesce`；无 connector 的 arm 等相同时长），
   避免在途的异步 store 干扰下一次测量。
 - 预热：server 启动后，每个 P 先发 2 个非计量请求，再发 1 个 filler（触发 Triton JIT）；
   然后每个 P 5 个 warmup trial + 15 个 measure trial，trial 内的 P 顺序由 `idx` 播种打乱（避免漂移和顺序混在一起）。
 - **冒烟（smoke）**：正式 arm 之前，offload arm 先跑 1 个 P=1024 的 trial（phase=smoke，单独文件，不计入统计），
-  用来确认 connector 能启动、cpu_hit 能被指标证实、日志里 `cudaHostRegister` 是否失败。
+  用来确认 connector 能启动、cpu_hit 能被指标证实、server 日志里的初始化行与采样配置符合预期。
+- **CPU 层的实际形态**（v1 冒烟后更正，见 §12）：`CPUOffloadingSpec` 在 EngineCore 进程内用 `torch.zeros(pin_memory=PIN_MEMORY)`
+  分配 CPU tensor，不走 `/dev/shm` mmap；WSL2 上 `PIN_MEMORY` 取决于 `VLLM_WSL2_ENABLE_PIN_MEMORY`（默认 0），
+  本计划强制 unset 该变量，即 **pageable（非 pinned）内存**。所有 A 组结论都带这个限定。
 
 ### 5.2 路径证明（逐样本，runner 判一次，validator 独立重算一次）
 
@@ -272,7 +281,7 @@
 
 - 冒烟中 connector 起不来、cpu_hit 无法被指标证实、或 KV 往返破坏输出（G-A-corr-1 失败）→ **停止 A 组**，
   原始日志 + 命令 + 报错落盘，状态记为 `BLOCKED`；**不 patch vLLM**，不换后端绕开。
-- `cudaHostRegister` 失败但功能正常 → 继续执行，结论中把"unpinned DMA"作为限定条件写明。
+- CPU 层为 pageable 内存（本机 WSL2 默认）但功能正常 → 继续执行，结论中把"pageable CPU 层、非 pinned"作为限定条件写明。
 
 ## 6. B 组设计
 
@@ -340,12 +349,12 @@ validator 的检出能力由 `--selftest` 证明：把基准数据集复制到�
 |---|---|---|
 | 单个 server 的 GPU 占用 | 实际约 2–3 GiB（权重约 0.99 GB + KV 240/384 MiB + CUDA 上下文 / 激活）；**上限**是 vLLM 预算 `0.45 × 16 GiB ≈ 7.2 GiB` | 冻结参数；启动时 vLLM 要求预算 ≤ 当前空闲显存 |
 | 整卡峰值 | 现有基线 4708 MiB（Gate 0 读数；授权申请前复核为 4991 MiB；`nvidia-smi` 不列出计算进程，来源需所有者确认）+ 单个 server ≤ 7.2 GiB ≈ **≤ 12.2 GiB / 16 GiB** | 同一时刻只运行一个 server；门禁要求基线 ≤ 6000 MiB |
-| 主机内存 | offload arm：`/dev/shm` 4 GiB + server RSS 约 3–4 GiB ≈ 8 GiB（当前可用 57 GiB；`/dev/shm` 有 32 GiB 空闲） | `free -g`、`df -h /dev/shm` |
+| 主机内存 | offload arm：EngineCore 进程内 CPU tensor 4 GiB + server RSS 约 3–4 GiB ≈ 8 GiB（当前可用 57 GiB） | `free -g` |
 | 时长 | A 组 4 个 arm 约 30–40 min；B1 约 12 min；B3 约 25 min；B2 约 2 min；合计约 1–1.5 h | 请求数见 `m28_offload.py --dry-run`（约 987 个 A 请求） |
 
 ## 9. 风险
 
-- WSL2 pinned memory：`cudaHostRegister` 可能失败，或 load 带宽低于原生 Linux（P-A4）。只报实测，不外推到原生 Linux 或服务器 GPU。
+- WSL2 下 CPU 层为 pageable 内存，load 带宽可能低于 pinned / 原生 Linux（P-A4，v2 更正）。只报实测，不外推到 pinned 配置、原生 Linux 或服务器 GPU。
 - 0.5B 模型、eager 模式下 prefill 本身很快，CPU 命中的收益可能只在长前缀上才能浮出噪声。小前缀上"未观察到收益"是有效结论。
 - B3 `timeout=0` 的结果可能存在竞争（P-B3-1），3 次重复内可能出现不同形态，按次逐条报告。
 - WSL2 下 SIGKILL 后显存归还有延迟（M21 E6 实测），因此显存回收采用轮询（≤240 s）。
@@ -357,10 +366,13 @@ validator 的检出能力由 `--selftest` 证明：把基准数据集复制到�
 
 | 子项 | 当前状态 |
 |---|---|
-| A 冒烟 / A 正式（offload/base/ref） | CPU_VALIDATED（GPU 未执行） |
-| A evict（可选） | CPU_VALIDATED（GPU 未执行） |
-| B1 / B3 | CPU_VALIDATED（GPU 未执行；需故障注入授权） |
-| B2（可选） | CPU_VALIDATED（需单独授权） |
+| A 冒烟 | v1 冒烟暴露 §12 的问题（数据另存 `outputs/m28/raw_old_v1_smoke/`，不计入结论）；**v2 冒烟 COMPLETE** |
+| A 正式（offload/base/ref） | **COMPLETE** |
+| A evict（可选） | **COMPLETE** |
+| B1 | **COMPLETE**（×3） |
+| B3 | **COMPLETE**（第二轮 ×9；第一轮因记录缺陷另存 `outputs/m28/raw_old_b3_run1/`，见 §12） |
+| B2（可选） | SKIPPED（所有者选择不做） |
+| 不变量 | `check_invariants.py --module m28` 33 PASS / 0 FAIL / 0 PENDING → **M28 COMPLETE**（2026-10-12） |
 
 ## 11. 执行顺序与命令
 
@@ -373,3 +385,30 @@ python scripts/m28_faults.py --drill b1 --drill b3 --i-have-gpu-authorization --
 python scripts/m28_faults.py --drill b2 --append --authorize-b2 --i-have-gpu-authorization --i-have-fault-authorization  # 可选
 python scripts/m28_summarize.py && python scripts/m28_validate.py && python scripts/m28_figures.py
 ```
+
+## 12. 修订记录
+
+**v1 → v2（2026-10-12，v1 冒烟之后、任何正式 arm 之前）**。v1 冒烟本身按设计完成：cold / gpu_hot / cpu_hit 三条路径都被指标证实，
+cpu_hit 与 gpu_hot 输出逐位相等，`Δload_bytes = 12779520 B = 65 block × 196608 B`（与理论值一致）。但它暴露了两个设计问题：
+
+1. **隐藏的采样参数**：server 日志 "Default vLLM sampling parameters have been overridden by the model's `generation_config.json`:
+   `{'repetition_penalty': 1.1, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`"。请求显式设了 `temperature=0, top_p=1`，
+   但 `repetition_penalty=1.1` 仍生效——仍是确定性的，但与 §5.1 写的"贪心"不符。v2 加 `--generation-config vllm`。
+2. **CPU 层形态写错**：v1 认为 CPU 层是 `/dev/shm` mmap + `cudaHostRegister`（source_review 把 tiering spec 的路径误当成
+   CPU spec 的）。实测 `/dev/shm` 无新文件，日志是 "Allocating 1 CPU tensors..."。v2 更正文字，把 `VLLM_WSL2_ENABLE_PIN_MEMORY`
+   加入强制 unset 列表（固定 pageable），并把日志证据规则改成匹配真实日志行（runner 写的分隔行不计）。
+
+另：v1 的日志标记把 runner 自己写的分隔行（含完整命令行）也计入了 `OffloadingConnector` 计数，v2 已排除。
+v1 冒烟的 raw / lifecycle / server 日志原样移到 `outputs/m28/raw_old_v1_smoke/` 与 `logs/m28/v1_smoke/`，不删除、不进入统计。
+
+**执行期修订（2026-10-12，B3 第一轮之后；冻结块 §4 与测试矩阵均未改动，`x_plan_frozen_matches_code` 仍 PASS）**。只改 runner 的记录与清理逻辑：
+
+1. **挂住请求的记录**：第一轮 B3 有 5 次演练出现 API 无限期等待连接关闭，runner 把未结束的请求记成 `{"missing": true}`，
+   summarize（空列表 median）与 validate（空序列 `min()`）随之崩溃。修订：请求线程边收边写（`live` 记录，含 `t_last_event`）；
+   观测窗结束时未结束的请求记为 `terminal=false` + `pending_at`；清理后再 join 一次，记到 `requests_after_cleanup`。
+   validator `b_all_requests_terminal` 改为：`missing` 一律 FAIL，`terminal=false` 必须有清理后的终态。新增反例 `_inj_pending_no_after`。
+2. **清理顺序**：第一轮强制清理时 API 与 resource_tracker 被同时 SIGKILL，`/dev/shm` 留下 `sem.mp-*`。修订为：先 SIGTERM API →
+   超时后只 SIGKILL API → 等其余已知子进程最多 10 s 自行退出 → 仍存活的再 SIGKILL。第二轮 `/dev/shm` 0 新增。
+3. summarize 的 `outcome()` 增加 `pending` 与 `eof_without_done`（流式 EOF 但无 `[DONE]`）；B CSV 增加 `n_pending_at_observe_end` 等列；paths CSV 增加 store 列。
+4. 修订后先在 mock 上复验（`/tmp/m28_mock_rehearsal_v3`：validator 33 PASS / 0 FAIL，自检 15/15），然后按同一矩阵重跑 B3（第二轮）。
+   第一轮 raw / CSV / 日志原样保存在 `outputs/m28/raw_old_b3_run1/`、`logs/m28/b3_run1/`，不删除、不与第二轮合并，结果在 `results.md` §2.2 并列报告。

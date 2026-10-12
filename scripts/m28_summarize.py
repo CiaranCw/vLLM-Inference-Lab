@@ -76,6 +76,8 @@ def summarize_a(R, out_dir):
                 lb = [x["load_bytes"] for x in d if x.get("load_bytes")]
                 lt = [x["load_time_s"] for x in d if x.get("load_bytes")]
                 eh = [x["ext_hits"] for x in d if x.get("load_bytes")]
+                sb = [x["store_bytes"] for x in d if x.get("store_bytes") and x.get("store_time_s")]
+                stt = [x["store_time_s"] for x in d if x.get("store_bytes") and x.get("store_time_s")]
                 paths.append({
                     "arm": arm, "p_len": p_len, "path": path, "n_measure": len(ok) + len(bad), "n_path_ok": len(ok),
                     "expected_hit_tokens": C.expected_hit_tokens(p_len + A["suffix_len"]),
@@ -87,6 +89,11 @@ def summarize_a(R, out_dir):
                     "load_time_ms_median": fmt(statistics.median(lt) * 1e3) if lt else None,
                     "load_gbps_median": fmt(statistics.median([b / t / 1e9 for b, t in zip(lb, lt) if t]), 2)
                     if lb else None,
+                    "n_with_store": len(sb),
+                    "store_bytes_median": fmt(statistics.median(sb)) if sb else None,
+                    "store_time_ms_median": fmt(statistics.median(stt) * 1e3) if sb else None,
+                    "store_gbps_median": fmt(statistics.median([b / t / 1e9 for b, t in zip(sb, stt)]), 2)
+                    if sb else None,
                 })
     for name, arm, pa, pb in PAIRED:
         if arm not in R:
@@ -179,6 +186,8 @@ def first_after(tl, t0, pred):
 def outcome(r):
     if r.get("missing"):
         return "missing"
+    if r.get("terminal") is False:
+        return "pending"
     if r.get("exception"):
         return "exception:" + r["exception"].split(":")[0]
     if r.get("error_event"):
@@ -186,6 +195,8 @@ def outcome(r):
         return f"error_event:{code}" if r.get("http_status") == 200 else f"http_{r.get('http_status')}"
     if r.get("http_status") != 200:
         return f"http_{r.get('http_status')}"
+    if r.get("stream") and not r.get("done_marker") and not r.get("finish_reason"):
+        return "eof_without_done"
     return f"finish:{r.get('finish_reason')}"
 
 
@@ -194,10 +205,16 @@ def summarize_b(rows, out_dir):
     for d in rows:
         tl, tf = d.get("timeline") or [], d.get("t_fault")
         reqs = d.get("requests") or []
-        oc = {}
+        oc, oc_after = {}, {}
         for r in reqs:
             k = ("s:" if r.get("stream") else "ns:") + outcome(r)
             oc[k] = oc.get(k, 0) + 1
+        for r, a in zip(reqs, d.get("requests_after_cleanup") or []):
+            if r.get("terminal") is False:
+                k = ("s:" if a.get("stream") else "ns:") + outcome(a)
+                oc_after[k] = oc_after.get(k, 0) + 1
+        s_tok = [r["n_tokens"] for r in reqs if r.get("stream") and r.get("n_tokens") is not None]
+        shm_new = [x for x in d.get("dev_shm_after") or [] if x not in set((d.get("pre") or {}).get("dev_shm") or [])]
         pf = {}
         for p in d.get("probes") or []:
             k = outcome(p)
@@ -210,7 +227,9 @@ def summarize_b(rows, out_dir):
             "label": d["label"], "drill": d["drill"], "shutdown_timeout": d.get("shutdown_timeout"), "rep": d["rep"],
             "error": d.get("error"), "n_inflight": len(reqs), "n_completed_full": complete,
             "outcomes": ";".join(f"{k}={v}" for k, v in sorted(oc.items())),
-            "tokens_stream_median": statistics.median([r["n_tokens"] for r in reqs if r.get("stream")]) if reqs else None,
+            "n_pending_at_observe_end": sum(1 for r in reqs if r.get("terminal") is False),
+            "outcomes_after_cleanup": ";".join(f"{k}={v}" for k, v in sorted(oc_after.items())),
+            "tokens_stream_median": statistics.median(s_tok) if s_tok else None,
             "t_health_non200_s": first_after(tl, tf, lambda s: s["health"] != 200) if tf else None,
             "t_health_503_s": first_after(tl, tf, lambda s: s["health"] == 503) if tf else None,
             "t_engine_exit_s": first_after(tl, tf, lambda s: not s["engine_alive"]) if tf else None,
@@ -220,12 +239,15 @@ def summarize_b(rows, out_dir):
             "calibration_s": fmt(cal), "remaining_work_s": fmt(cal - (tf - min(t_send))) if cal and tf and t_send else None,
             "api_returncode": d.get("api_returncode_before_cleanup"),
             "cleanup_needed": d.get("cleanup_needed"),
+            "api_returncode_final": d.get("api_returncode"),
+            "dev_shm_new": ";".join(shm_new),
             "gpu_reclaim_ok": (d.get("gpu_reclaim") or {}).get("ok"),
             "gpu_reclaim_s": (d.get("gpu_reclaim") or {}).get("waited_s"),
             "restart_ok": (d.get("restart") or {}).get("ok"),
             "restart_ready_s": (d.get("restart") or {}).get("ready_s"),
             "log_aborting": mk.get("engine_aborting"), "log_draining": mk.get("engine_draining"),
             "log_force_killing": mk.get("force_killing"), "log_engine_exited": mk.get("engine_exited_unexpectedly"),
+            "log_engine_dead_error": mk.get("engine_dead_error"),
         })
     if out:
         write_csv(os.path.join(out_dir, "m28_b_drills.csv"), out, list(out[0]))

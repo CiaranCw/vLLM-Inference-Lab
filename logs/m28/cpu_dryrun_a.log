@@ -1,20 +1,20 @@
-M28-A 冻结矩阵（plan_version=v1）
+M28-A 冻结矩阵（plan_version=v2）
 
 [offload] paths=['cold', 'gpu_hot', 'cpu_hit'] lens=[1024, 4096, 8192, 16384] requests≈409
-  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 16640 --num-gpu-blocks-override 1280 --enable-prefix-caching --kv-transfer-config {"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":4294967296}}
+  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --generation-config vllm --max-model-len 16640 --num-gpu-blocks-override 1280 --enable-prefix-caching --kv-transfer-config {"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":4294967296}}
 
 [base] paths=['cold', 'gpu_hot', 'recompute_evicted'] lens=[1024, 4096, 8192, 16384] requests≈409
-  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 16640 --num-gpu-blocks-override 1280 --enable-prefix-caching
+  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --generation-config vllm --max-model-len 16640 --num-gpu-blocks-override 1280 --enable-prefix-caching
 
 [ref] paths=['ref_a', 'ref_b'] lens=[1024, 4096, 8192, 16384] requests≈169
-  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --max-model-len 16640 --num-gpu-blocks-override 1280 --no-enable-prefix-caching
+  cmd: /home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm serve /home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --served-model-name Qwen/Qwen2.5-0.5B-Instruct --host 127.0.0.1 --port 8028 --seed 0 --enforce-eager --dtype auto --gpu-memory-utilization 0.45 --max-num-seqs 16 --max-num-batched-tokens 8192 --no-async-scheduling --enable-chunked-prefill --disable-uvicorn-access-log --enable-prompt-tokens-details --generation-config vllm --max-model-len 16640 --num-gpu-blocks-override 1280 --no-enable-prefix-caching
 
 总请求数≈987
 GPU KV 池 = 1280 blocks × 16 × 12288 B = 240 MiB；filler 总长 24576 tokens > GPU 池 20480 tokens（保证挤出）
-CPU 层 = 4.00 GiB（evict arm 256 MiB），位于 /dev/shm（mmap）
+CPU 层 = 4.00 GiB（evict arm 256 MiB），为 EngineCore 进程内的 CPU tensor（WSL2 下 pin_memory 默认关闭 → pageable 内存）
   P=1024: N=1044 H=1040 理论 load_bytes=12779520
   P=4096: N=4116 H=4112 理论 load_bytes=50528256
   P=8192: N=8212 H=8208 理论 load_bytes=100859904
   P=16384: N=16404 H=16400 理论 load_bytes=201523200
 
-服务端环境： {'VLLM_USE_FLASHINFER_SAMPLER': '0', 'VLLM_ENABLE_V1_MULTIPROCESSING': '1', 'HF_HUB_OFFLINE': '1'} 强制 unset： ['VLLM_LAB_TRACE', 'VLLM_LAB_BLOCK', 'VLLM_LAB_M9_COALESCE', 'VLLM_KEEP_ALIVE_ON_ENGINE_DEATH']
+服务端环境： {'VLLM_USE_FLASHINFER_SAMPLER': '0', 'VLLM_ENABLE_V1_MULTIPROCESSING': '1', 'HF_HUB_OFFLINE': '1'} 强制 unset： ['VLLM_LAB_TRACE', 'VLLM_LAB_BLOCK', 'VLLM_LAB_M9_COALESCE', 'VLLM_KEEP_ALIVE_ON_ENGINE_DEATH', 'VLLM_WSL2_ENABLE_PIN_MEMORY']

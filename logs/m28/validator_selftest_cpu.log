@@ -1,0 +1,20 @@
+== 基准数据集（allow_mock）==
+
+合计：31 PASS / 0 FAIL / 0 PENDING
+  [检出] cpu_hit 的 Δext_hits 改 0（success 保持 True） → a_path_recheck: PASS → FAIL
+  [检出] cpu_hit 的一个输出 token +1               → a_corr_offload_roundtrip: PASS → FAIL
+  [检出] 删掉一条 gpu_hot measure 样本              → a_counts: PASS → FAIL
+  [检出] gpu_hot 的 cached_tokens +16          → a_cached_eq_metrics: PASS → FAIL
+  [检出] 篡改一条 cold 的 prompt sha               → a_prompt_pairing: PASS → FAIL
+  [检出] latency CSV 首行 median +1ms           → a_csv_matches_raw: PASS → FAIL
+  [检出] mock 数据当正式数据校验                       → a_no_mock: PASS → FAIL
+  [检出] B1 目标 cmdline 换成别的进程                 → b_target_identity: PASS → FAIL
+  [检出] 演练后残留一个已知 PID                        → b_cleanup_clean: PASS → FAIL
+  [检出] B3 不足档校准时长改成 1.5s                    → b_b3_timeout_precondition: PASS → FAIL
+  [检出] 一条在途请求终态缺失                           → b_all_requests_terminal: PASS → FAIL
+  [检出] 在途请求挂住但无清理后终态                        → b_all_requests_terminal: PASS → FAIL
+  [检出] 两个 server 生命周期重叠                     → x_no_engine_overlap: PASS → FAIL
+  [检出] offload arm 日志缺 CPUOffloadingSpec 行  → a_connector_log_evidence: PASS → FAIL
+  [检出] base arm 日志出现采样默认值覆盖                 → a_connector_log_evidence: PASS → FAIL
+
+反例检出 15/15

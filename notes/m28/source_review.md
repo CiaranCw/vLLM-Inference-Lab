@@ -39,9 +39,10 @@
 | 配置：`--kv-transfer-config '{"kv_connector":"OffloadingConnector","kv_role":"kv_both","kv_connector_extra_config":{"cpu_bytes_to_use":N}}'`；`cpu_bytes_to_use` 必填，是**所有 worker 合计**字节数 | `docs/features/kv_offloading_usage.md:27-37,70`；`vllm/v1/kv_offload/cpu/spec.py:63-66` |
 | 简写 `--kv-offloading-size <GiB>` 会被展开成同一个 connector（M28 不用简写，直接写 JSON，避免两层转换） | `vllm/config/vllm.py:781-800` |
 | 默认 `spec_name=CPUOffloadingSpec`、`eviction_policy=lru`、`store_threshold=0`、`offload_prompt_only=true`、offload `block_size` = GPU block size | `docs/features/kv_offloading_usage.md:65-79` |
-| CPU 层 = `/dev/shm/vllm_offload_{instance_id}.mmap`（`O_EXCL` 创建 + `ftruncate` + `MADV_POPULATE_WRITE`） | `vllm/v1/kv_offload/cpu/shared_offload_region.py:56-117` |
-| 该 mmap 用 `cudaHostRegister` 注册成 pinned；**失败只打 warning**（"transfers will still work but may be slower (unpinned DMA)"） | `vllm/v1/kv_offload/cpu/gpu_worker.py:126-153` |
-| GPU→CPU 用 `ops.swap_blocks_batch`（DMA）；CPU→GPU 在 page < 28 KiB 且 8B 对齐时用 Triton kernel 直接 `tl.load(cpu_ptr)` | `gpu_worker.py:38-61`；`swap_blocks_triton.py:20`（`THRESHOLD_BYTES = 28*1024`） |
+| **（v2 更正）** `CPUOffloadingSpec.create_handlers` 调 `CpuGpuOffloadingHandlers` 时**不传** `mmap_region`，CPU 层是 EngineCore 进程内的 `torch.zeros((num_cpu_blocks, page), int8, pin_memory=PIN_MEMORY)` | `vllm/v1/kv_offload/cpu/spec.py:134-139`；`vllm/v1/kv_offload/cpu/gpu_worker.py:478-516` |
+| `PIN_MEMORY = is_pin_memory_available()`；CUDA 平台在 WSL2 上返回 `VLLM_WSL2_ENABLE_PIN_MEMORY`（默认 0）→ 本机 CPU 层是 **pageable** 内存 | `vllm/utils/torch_utils.py:71`；`vllm/platforms/cuda.py:285-303`；`vllm/envs.py:264,1855` |
+| `/dev/shm/vllm_offload_{id}.mmap` + `cudaHostRegister` 只在 **tiering** spec 里使用（`SharedOffloadRegion` 只被 `tiering/spec.py` 构造），与 M28 用的 CPU spec 无关 | `vllm/v1/kv_offload/tiering/spec.py:104,170-177`；`shared_offload_region.py:56-117`；`gpu_worker.py:126-153` |
+| GPU→CPU 用 `ops.swap_blocks_batch`；CPU→GPU 只在每个 page < 28 KiB 且 8B 对齐时才用 Triton kernel。本配置是 cross-layer KV 布局（日志 "Allocating a cross layer KV cache of shape (1280, 2, 24, 2, 16, 64)"、"Allocating 1 CPU tensors"），page = 2×24×2×16×64×2 B = **196608 B ≥ 28 KiB** → 两个方向都走 `ops.swap_blocks_batch` | `gpu_worker.py:38-61`；`swap_blocks_triton.py:20`（`THRESHOLD_BYTES = 28*1024`） |
 | 调度：先查本地 prefix cache，再对**剩余部分**问 connector；`connector_prefix_cache_queries = num_tokens − local_hits`，`hits = ext_tokens` | `vllm/v1/core/sched/scheduler.py:860-932` |
 | 请求级 `num_cached_tokens` = local + external（`PrefillStats`），经 `--enable-prompt-tokens-details` 进入 `usage.prompt_tokens_details.cached_tokens` | `vllm/v1/metrics/stats.py:248-264`；`vllm/v1/engine/output_processor.py:628-632`；`entrypoints/openai/completion/serving.py:447-449` |
 | Prometheus：`vllm:prefix_cache_{queries,hits}`、`vllm:external_prefix_cache_{queries,hits}` | `vllm/v1/metrics/loggers.py:558-592` |
@@ -56,7 +57,11 @@
 - P-A1：GPU 被挤出后再发同一 prompt，`Δlocal_hits = 0`、`Δext_hits = H = ⌊(N−1)/16⌋·16`、`Δload_bytes > 0`。
 - P-A2：`Δload_bytes / Δext_hits` 恒等于 `24 层 × 2(K,V) × 2 KV 头 × 64 × 2 B = 12288 B/token`。
 - P-A3：CPU 命中与 GPU 热命中走相同的"缓存前缀 + 只算剩余 token"计算形状，输出 token 与 logprob 应逐位相同（KV 往返无损的强证据）。
-- P-A4：WSL2 上 `cudaHostRegister` 可能失败（WSL2 pinned memory 行为与原生 Linux 不同）；若失败，日志出现 warning，load 仍可工作但可能变慢。**这是 A 组最大的平台风险**，以 smoke 实测为准。
+- P-A4（v2 改写）：本机 CPU 层是 pageable 内存（见上表），load 带宽可能明显低于 pinned 配置；load 仍应正确工作。
+  v1 写的是"`cudaHostRegister` 可能失败"——那条路径不属于 CPU spec，是 v1 核查的错误，v1 冒烟实测（`/dev/shm` 无新文件、日志无 mmap 行）推翻了它。
+
+> **v1 核查错误记录**：v1 把 tiering spec 的 `SharedOffloadRegion`（`/dev/shm` mmap + `cudaHostRegister`）误认为 CPU spec 的 CPU 层，
+> 并按"每层 8 KiB page"推断 CPU→GPU 走 Triton kernel；实际是 cross-layer 布局的单个 196608 B page。两处均在 v1 冒烟后、正式 arm 之前更正。
 
 ## 3. B · 生命周期 / 健康检查 / 停机
 

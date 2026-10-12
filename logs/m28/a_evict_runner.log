@@ -1,0 +1,25 @@
+[m28-A] nvidia-smi: {"ts": 1791809496.0027182, "gpus": [{"index": 0, "name": "NVIDIA GeForce RTX 5080", "mem_used_mib": 4723, "mem_total_mib": 16303, "util_pct": 2}], "compute_apps": []}
+[m28-A] arm=evict start
+[m28-A/evict] trial 1/20 done
+[m28-A/evict] trial 2/20 done
+[m28-A/evict] trial 3/20 done
+[m28-A/evict] trial 4/20 done
+[m28-A/evict] trial 5/20 done
+[m28-A/evict] trial 6/20 done
+[m28-A/evict] trial 7/20 done
+[m28-A/evict] trial 8/20 done
+[m28-A/evict] trial 9/20 done
+[m28-A/evict] trial 10/20 done
+[m28-A/evict] trial 11/20 done
+[m28-A/evict] trial 12/20 done
+[m28-A/evict] trial 13/20 done
+[m28-A/evict] trial 14/20 done
+[m28-A/evict] trial 15/20 done
+[m28-A/evict] trial 16/20 done
+[m28-A/evict] trial 17/20 done
+[m28-A/evict] trial 18/20 done
+[m28-A/evict] trial 19/20 done
+[m28-A/evict] trial 20/20 done
+[m28-A] arm=evict done ready_s=17.05 markers={'offloading_connector': 2, 'cpu_offloading_spec': 2, 'cpu_tensors_allocated': 1, 'sampling_overridden': 0, 'jit_during_inference': 1, 'traceback': 0, 'engine_dead': 0, 'mmap_created': 0, 'cuda_host_register_failed': 0, 'first_lines': {'offloading_connector': '(EngineCore pid=1237688) INFO 10-12 20:51:53 [factory.py:62] Creating v1 connector with name: OffloadingConnector and engine_id: ea7c6148-22a5-4ed1-a91e-a122b1db3226', 'cpu_offloading_spec': '(EngineCore pid=1237688) INFO 10-12 20:51:53 [factory.py:61] Creating offloading spec with name: CPUOffloadingSpec', 'cpu_tensors_allocated': '(EngineCore pid=1237688) INFO 10-12 20:51:53 [gpu_worker.py:486] Allocating 1 CPU tensors...', 'jit_during_inference': '(EngineCore pid=1237688) WARNING 10-12 20:51:56 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.'}}
+[m28-A] 产物目录: /home/ciaran/projects/vllm-inference-lab/outputs/m28/raw
+A evict exit=0

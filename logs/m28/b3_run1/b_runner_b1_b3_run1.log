@@ -1,0 +1,15 @@
+[m28-B] nvidia-smi: {"ts": 1791809682.312529, "gpus": [{"index": 0, "name": "NVIDIA GeForce RTX 5080", "mem_used_mib": 4738, "mem_total_mib": 16303, "util_pct": 2}], "compute_apps": []}
+[m28-B] b1_r0: ok
+[m28-B] b1_r1: ok
+[m28-B] b1_r2: ok
+[m28-B] b3_t0_r0: ok
+[m28-B] b3_t0_r1: ok
+[m28-B] b3_t0_r2: ok
+[m28-B] b3_t2_r0: ok
+[m28-B] b3_t2_r1: ok
+[m28-B] b3_t2_r2: ok
+[m28-B] b3_t60_r0: ok
+[m28-B] b3_t60_r1: ok
+[m28-B] b3_t60_r2: ok
+[m28-B] 产物目录: /home/ciaran/projects/vllm-inference-lab/outputs/m28/raw 错误演练数: 0
+B exit=0

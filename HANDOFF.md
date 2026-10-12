@@ -1,5 +1,7 @@
 # HANDOFF.md —— 项目交接文档（交由 Cursor 继续）
 
+> **2026-10-12 M28 当前状态**：阶段 L 的 M28 **COMPLETE**（单卡 RTX 5080 / WSL2 / 0.5B / eager）——A 组 OffloadingConnector 4 个 arm、B1 ×3、B3 ×9 全部执行，`check_invariants.py --module m28` 33/0/0，全模块 223/0/0；B2 SKIPPED（所有者选择），offload 冷请求额外开销未跑 profiler。B3 第一轮因 runner 记录缺陷另存 `outputs/m28/raw_old_b3_run1/`，修复后按同一矩阵重跑，两轮分开报告。`/dev/shm` 里第一轮遗留 5 个 `sem.mp-*`（未删，等所有者决定）。见 [`notes/m28/results.md`](notes/m28/results.md)、[`notes/m28/execution_record.md`](notes/m28/execution_record.md)。
+
 > **2026-10-06 M27 当前状态**：阶段 K 的 M27 **COMPLETE**——新实例 `ins-a8qac2ve`（与上一台碰巧同 hostname `TENCENT64.site`）完成 fresh Gate0→E4，E0–E4 COMPLETE；E5 经 Gate8 可选跳过（SKIPPED），P1 profiler NOT RUN。规模边界：运行环境是单节点 8×H20，但正式实验只覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，P:D ratio 的 E4 每 arm 4 GPU），最大正式并发 4 GPU，**没有 8-GPU P-D 实验**；M27 以 E0–E4 为最终范围，不再补 8 卡实验。独立 post-hoc 审计 `M27_FINAL_AUDIT_PASS_WITH_DOCUMENTATION_CORRECTION`，文档修正已闭环（[`notes/m27/FINAL_CLOSURE_ADDENDUM.md`](notes/m27/FINAL_CLOSURE_ADDENDUM.md)）。H20 原提交 `884503dc` / `c4db4561` 已规范化重放为 CiaranCw 提交，对应关系见 [`notes/m27/H20_COMMIT_PROVENANCE.md`](notes/m27/H20_COMMIT_PROVENANCE.md)；11 个 >100MB raw 不在 Git 中，身份见 [`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`](notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv)。RQ1–RQ4、负结果和计费见 [`notes/m27/results.md`](notes/m27/results.md) 与 [`notes/m27/execution_record.md`](notes/m27/execution_record.md)。下文早期交接中「M27 未执行 / 下一步上 H20」都是当时的历史状态，不代表当前；M24 冻结计划不改。
 
 > **交接时间**：2026-08-06　**交接自**：Claude Code　**交接至**：Cursor
@@ -58,7 +60,7 @@
 | M25 | 压缩（蒸馏/剪枝/低秩） | ✅ | **T COMPLETE**（`notes/m25/compression.md`）；本轮明确不做 E |
 | M26 | 第二阶段收口 | ✅ | **完成（含明示占位）**：四项目 A–D README 化；**D 核心已随 M23 L1 闭合**；见 `notes/m26/portfolio.md` |
 | **M27** | 阶段 K · P-D 分离 + NIXL KV 传输（M24 P-D 部分转入这里） | ✅ | **T+E+O+H COMPLETE**（8×H20 单节点环境，正式实验 E0–E4 覆盖 1/2/4 GPU、最大 4 GPU；E5 未执行、不在范围内，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION）；见 `notes/m27/README.md` |
-| **M28** | 阶段 L · KV Offloading（原生 OffloadingConnector）+ Serving 可靠性（EngineCore SIGKILL / shutdown_timeout） | 🔄 | **DESIGN FROZEN v1 · CPU_VALIDATED · GPU NOT EXECUTED**：A/B 均未执行，等待 GPU 与故障注入授权；无实测结论。见 `notes/m28/execution_record.md`、`notes/m28/M28_PLAN.md` §11 |
+| **M28** | 阶段 L · KV Offloading（原生 OffloadingConnector）+ Serving 可靠性（EngineCore SIGKILL / shutdown_timeout） | ✅ | **T+E+O COMPLETE**（B2 SKIPPED）：三路径逐样本证实、CPU 往返输出 60/60 一致；cpu_hit 在 P=1024 更慢、P=16384 快 289.6ms；B1 API rc 0 自行退出；B3 t=0/t=2 多数次 API 无限期挂住、t=60 6/6 完成。见 `notes/m28/results.md` |
 
 > 每个模块的完整定义（要做什么 / 记什么指标 / 产出什么文件 / 硬件门控）都在 [`ROADMAP.md`](ROADMAP.md) 对应小节，**动手前务必读该小节**，不要凭本表的一句话概括就开工。
 
@@ -281,7 +283,7 @@ python scripts/m17_figures.py    # -> figures/fig5..6
 | M17 文档数字 | 已对 CSV/JSONL 逐项核对（19/19 通过），含正文叙述句 |
 | PR #51017 | OPEN / MERGEABLE / 无 label / `pre-run-check` 因**新贡献者门禁**失败（非代码问题）/ 无人类 review |
 | GPU | 4132 MiB / 16303 MiB，3% 利用（交接时基本空闲，但**每次跑前仍需自查**） |
-| figures | 交接时 6 张，均可由 `m16_figures.py` + `m17_figures.py` 离线重生成（现已 16 张，见 README 核心图） |
+| figures | 交接时 6 张，均可由 `m16_figures.py` + `m17_figures.py` 离线重生成（现已 20 张 fig1–fig20，见 README 核心图） |
 
 ---
 

@@ -55,7 +55,7 @@
   ——正是 M17 审计暴露的盲区）。三种结论严格区分 **PASS / FAIL / PENDING**，PENDING（实验未执行）**不计为通过**。
   已用变异测试验证其有效性（改文档数字 / 删一个 measure 样本 / 破坏 hit 守恒 → **3/3 均被捕获并非零退出**）。
 - 🔄 待补（据实标记，尚未落地）：
-  - `check_invariants.py` 目前登记了 **m0 / m17 / m18 / m19 / m21 / m22 / m23 / m24 / m27 / m28**（`python scripts/check_invariants.py` → 190 PASS / 0 FAIL / 0 PENDING，2026-10-06 集成后，见 `logs/m27/invariants_final_integration_full.log`；本地没有 11 个外部 M27 raw 时，M27 有 2 项 PENDING，不算通过。2026-10-12 登记 M28 后为 192 PASS / 0 FAIL / 3 PENDING，3 项 PENDING 都是 M28 未执行的 GPU 实验，见 `logs/m28/invariants_full_cpu_validated.log`）；**M1–M16 的逐样本规则仍未迁移**（架构已支持按模块注册，只是没写）。
+  - `check_invariants.py` 目前登记了 **m0 / m17 / m18 / m19 / m21 / m22 / m23 / m24 / m27 / m28**（`python scripts/check_invariants.py` → 190 PASS / 0 FAIL / 0 PENDING，2026-10-06 集成后，见 `logs/m27/invariants_final_integration_full.log`；本地没有 11 个外部 M27 raw 时，M27 有 2 项 PENDING，不算通过。2026-10-12 登记 M28（CPU 阶段）后为 192 PASS / 0 FAIL / 3 PENDING，见 `logs/m28/v1_cpu_validation/invariants_full_cpu_validated.log`；M28 GPU 实验完成后为 **223 PASS / 0 FAIL / 0 PENDING**，见 `logs/m28/check_invariants_all.log`）；**M1–M16 的逐样本规则仍未迁移**（架构已支持按模块注册，只是没写）。
   - 文档溯源目前覆盖 E1 主表 + E3-single 表（反向）与关键结论数字（正向）；**§1.2 斜率、§5 对照表等正文推导值尚未覆盖**（已在脚本输出中如实声明，不当作全覆盖）。
   - `config/repro_manifest.yaml` 目前**只登记 m0 / m17 / m19 / m22 / m27**（m27 为 `not_executed`，H20 步骤 `formal_only`）；**M18 / M20 / M21 / M23 / M24 虽已完成，复现命令仍只写在各自 `notes/mN/results.md` 里**，未收敛进统一入口。
   - `notes/evidence_index.md`（已建）；`contribution_candidates.md`（本地维护、不入库，见"持续维护任务"）。
@@ -463,11 +463,12 @@
 
 ## 阶段 L · 单卡 KV Offloading 与 Serving 可靠性（T+E+O，单卡 RTX 5080）
 
-### M28 KV Offloading & Serving Reliability　🔄 **DESIGN FROZEN v1 · CPU_VALIDATED · GPU NOT EXECUTED**（2026-10-12）
-- **目标**：A = 原生 `OffloadingConnector`（GPU→CPU，`/dev/shm` mmap）三条路径（GPU 热命中 / GPU 未命中但 CPU 命中 / 全量重算）逐样本由指标证明，并与独立重算对照正确性；B = `vllm serve` 生命周期故障：B1 SIGKILL EngineCore 子进程（区别于 M21 E6 杀 API 父进程）、B3 SIGTERM × `--shutdown-timeout ∈ {0,2,60}`、B2 SIGSTOP/SIGCONT（可选，需单独授权）。
-- **T**：源码核查见 [`notes/m28/source_review.md`](notes/m28/source_review.md)（file:line；预测 P-A1..A4、P-B1/B3/B2，均待实测）。
-- **O**：冻结计划 [`notes/m28/M28_PLAN.md`](notes/m28/M28_PLAN.md)；脚本 `scripts/m28_*.py`（`--help` / `--dry-run` / GPU 门禁 / 故障授权门禁）；validator `scripts/m28_validate.py`（自检 12 个反例全部检出）；`check_invariants.py --module m28` 2 PASS / 3 PENDING；manifest 中 GPU 步骤为 `formal_only`。执行记录 [`notes/m28/execution_record.md`](notes/m28/execution_record.md)。
-- **未做（据实）**：A 冒烟 / A 正式 / A evict、B1 / B3 / B2 均**未执行**（等待 GPU 授权与故障注入授权）；没有任何实测数字或结论。mock 演练只证明脚本链路，不是实验数据。
+### M28 KV Offloading & Serving Reliability　✅ **T+E+O COMPLETE**（2026-10-12；B2 SKIPPED）
+- **目标**：A = 原生 `OffloadingConnector`（`CPUOffloadingSpec`，CPU 层为 pageable `torch.zeros`）三条路径（GPU 热命中 / GPU 未命中但 CPU 命中 / 全量重算）逐样本由指标证明，并与独立重算对照正确性；B = `vllm serve` 生命周期故障：B1 SIGKILL EngineCore 子进程（区别于 M21 E6 杀 API 父进程）、B3 SIGTERM × `--shutdown-timeout ∈ {0,2,60}`、B2 SIGSTOP/SIGCONT（可选）。
+- **E**（边界：单卡 RTX 5080 / WSL2 / 0.5B / eager / 串行在线请求 / pageable CPU 层）：三条路径 15/15 被指标证实，load 恒为 12288 B/token；CPU 往返输出与 GPU 命中 60/60 逐位相等。cpu_hit − cold：P=1024 **+0.70 ms**（CI 排除 0，更慢）、P=16384 **−289.6 ms**；开 connector 冷请求 P=8192/16384 多 39/69 ms。B1：API 0.5 s 内把在途请求 500 结束后**自行以 rc 0 退出**；B3：t=60 两轮 6/6 正常完成，t=0 / t=2 分别有 5/6、4/6 次 API **无限期挂住**（uvicorn graceful shutdown 无超时，在途请求收不到结束信号）。见 [`notes/m28/results.md`](notes/m28/results.md)。
+- **T**：源码核查 [`notes/m28/source_review.md`](notes/m28/source_review.md)（预测 vs 实测见 `results.md` §3）。
+- **O**：冻结计划 [`notes/m28/M28_PLAN.md`](notes/m28/M28_PLAN.md)（v2 + 执行期修订）；validator 自检 15/15 反例检出；`check_invariants.py --module m28` **33 PASS / 0 FAIL / 0 PENDING**；执行记录 [`notes/m28/execution_record.md`](notes/m28/execution_record.md)；图 `figures/fig19_m28_offload_ttft.png`、`figures/fig20_m28_faults.png`。
+- **未做（据实）**：B2 SKIPPED（所有者选择）；offload.cold 额外开销**未跑 profiler**（"store 卡在 chunk 之间"只是假设）；pinned CPU 层、并发负载、tiering spec 未做；B3 t=2 档 EngineDeadError 是否传到在途请求的源码级原因未定位。见 [`notes/m28/limitations.md`](notes/m28/limitations.md)。
 
 ## 百亿 / 千亿落地门槛（诚实边界，勿夸大）
 - **单卡可积累（可迁移基础）**：Scheduler/CB、PagedAttention/KV、小模型高并发、压测方法、profiler、量化、spec decode、Triton 单机、TRT-LLM 单机、故障定位与监控。
@@ -562,5 +563,5 @@
   **M26**：A/C 完整；B 部分占位（PP/DP/EP + Ring/P-D）；D 核心已随 M23 L1 闭合。
   → 下一优先：M22 的 PP/DP/EP（仍需多卡窗口）；或 M13 maintainer review。
 - **当前进度（2026-10-06）**：阶段 K / M27 **T+E+O+H COMPLETE**；8×H20 单节点同一新实例 fresh Gate0→E4 完整，正式实验最多 4 GPU（E4 每 arm 4 GPU）；E5 未执行、P1 未做，E0–E4 为最终范围；旧实例交接仅独立复现参考；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION，修正已闭环。结果见 [`notes/m27/results.md`](notes/m27/results.md)。
-- **当前进度（2026-10-12）**：阶段 L / M28 **DESIGN FROZEN v1 · CPU_VALIDATED · GPU NOT EXECUTED**；脚本、mock 演练、validator 自检完成，A/B 实验等待 GPU 与故障注入授权，暂无实测结论。见 [`notes/m28/execution_record.md`](notes/m28/execution_record.md)。
+- **当前进度（2026-10-12）**：阶段 L / M28 **T+E+O COMPLETE**（B2 SKIPPED）；A 组 4 个 arm、B1 ×3、B3 ×9（第二轮；第一轮因记录缺陷另存、不合并）全部执行，不变量 33/0/0。见 [`notes/m28/results.md`](notes/m28/results.md)。
 - **交接（2026-08-06）**：工作已交由 Cursor 继续。接手须先读 **[`HANDOFF.md`](HANDOFF.md)**（进度/下一步/已知坑）与 **[`AGENTS.md`](AGENTS.md)**（硬性规则：诚实性红线、Git 只署 CiaranCw、GPU 防 OOM、必需环境变量）。

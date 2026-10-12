@@ -233,29 +233,23 @@ def run_arm(arm, args, out_dir, log_dir, smoke=False):
     return lc
 
 
+# CPUOffloadingSpec 在 handler 里用 torch.zeros(pin_memory=PIN_MEMORY) 分配 CPU 层，不走 /dev/shm mmap
+# （mmap + cudaHostRegister 只属于 tiering spec）；后两项在本配置下应为 0，留着用于发现意外路径。
 LOG_MARKERS = {
-    "offloading_connector": "OffloadingConnector",
-    "mmap_created": "Created mmap file",
-    "cuda_host_register_failed": "cudaHostRegister failed",
+    "offloading_connector": "Creating v1 connector with name: OffloadingConnector",
+    "cpu_offloading_spec": "Creating offloading spec with name: CPUOffloadingSpec",
+    "cpu_tensors_allocated": " CPU tensors...",
+    "sampling_overridden": "Default vLLM sampling parameters have been overridden",
+    "jit_during_inference": "Triton kernel JIT compilation during inference",
     "traceback": "Traceback (most recent call last)",
     "engine_dead": "EngineDeadError",
+    "mmap_created": "Created mmap file",
+    "cuda_host_register_failed": "cudaHostRegister failed",
 }
 
 
 def scan_log(path):
-    out = {k: 0 for k in LOG_MARKERS}
-    lines = {}
-    try:
-        with open(path, errors="replace") as f:
-            for line in f:
-                for k, pat in LOG_MARKERS.items():
-                    if pat in line:
-                        out[k] += 1
-                        lines.setdefault(k, line.strip()[:300])
-    except OSError as e:
-        out["error"] = str(e)
-    out["first_lines"] = lines
-    return out
+    return C.scan_log(path, LOG_MARKERS)
 
 
 def dry_run(arms):
@@ -277,7 +271,7 @@ def dry_run(arms):
           f"filler 总长 {A['n_fillers'] * A['filler_len']} tokens > GPU 池 "
           f"{A['num_gpu_blocks_override'] * 16} tokens（保证挤出）")
     print(f"CPU 层 = {A['cpu_bytes_to_use'] / C.GIB:.2f} GiB（evict arm {A['evict_cpu_bytes_to_use'] / 2**20:.0f} MiB）"
-          "，位于 /dev/shm（mmap）")
+          "，为 EngineCore 进程内的 CPU tensor（WSL2 下 pin_memory 默认关闭 → pageable 内存）")
     for p in A["prefix_lens"]:
         n = p + A["suffix_len"]
         print(f"  P={p}: N={n} H={C.expected_hit_tokens(n)} 理论 load_bytes={C.expected_hit_tokens(n) * kvb}")

@@ -49,6 +49,7 @@ class State:
         self.engine_dead = False
         self.shutting_down = False
         self.abort_all = threading.Event()
+        self.hang = threading.Event()
         self.shutdown_timeout = shutdown_timeout
         self.child = None
 
@@ -172,7 +173,7 @@ def make_handler(st, server_ref):
                 if not stream:
                     out = []
                     for t in toks:
-                        while self._engine_stopped():
+                        while self._engine_stopped() or st.hang.is_set():
                             time.sleep(0.05)
                         if st.engine_dead:
                             return self._json(500, err)
@@ -190,7 +191,7 @@ def make_handler(st, server_ref):
                 self.send_header("Content-Type", "text/event-stream")
                 self.end_headers()
                 for i, t in enumerate(toks):
-                    while self._engine_stopped():
+                    while self._engine_stopped() or st.hang.is_set():
                         time.sleep(0.05)
                     if st.engine_dead:
                         self.wfile.write(f"data: {json.dumps(err)}\n\n".encode())
@@ -235,6 +236,10 @@ def main():
         cpu_blocks = (1 << 28) // (BLOCK * KV_PER_TOKEN)
     st = State(a.arm, 1280, cpu_blocks, a.shutdown_timeout)
     print(f"mock server arm={a.arm} (NOT vLLM)", flush=True)
+    if st.connector:
+        print("mock: Creating v1 connector with name: OffloadingConnector", flush=True)
+        print("mock: Creating offloading spec with name: CPUOffloadingSpec", flush=True)
+        print("mock: Allocating 1 CPU tensors...", flush=True)
     st.child = subprocess.Popen([sys.executable, os.path.abspath(__file__), "--child"])
     httpd = ThreadingHTTPServer(("127.0.0.1", a.port), make_handler(st, None))
     httpd.daemon_threads = True
@@ -248,11 +253,14 @@ def main():
             httpd.shutdown()
 
     def shutdown():
+        if st.shutting_down:
+            return
         print("[shutdown] API server: shutdown triggered", flush=True)
         st.shutting_down = True
         if st.shutdown_timeout == 0:
-            print("[shutdown] EngineCore: aborting in-flight requests count=%d" % st.running, flush=True)
-            st.abort_all.set()
+            # 模仿 M28 GPU 实测：abort 档强杀 EngineCore 后，在途请求拿不到终态，HTTP 层无限期等待连接关闭
+            print("[shutdown] Process manager: force killing remaining processes count=1", flush=True)
+            st.hang.set()
         else:
             t0 = time.time()
             while st.running and time.time() - t0 < st.shutdown_timeout:
@@ -269,6 +277,10 @@ def main():
     signal.signal(signal.SIGTERM, lambda *_: threading.Thread(target=shutdown, daemon=True).start())
     httpd.serve_forever()
     httpd.server_close()
+    if st.hang.is_set():
+        print("mock: Waiting for connections to close. (CTRL+C to force quit)", flush=True)
+        while True:
+            time.sleep(1)
     if st.child.poll() is None:
         st.child.kill()
         st.child.wait()

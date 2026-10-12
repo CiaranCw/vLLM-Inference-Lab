@@ -45,6 +45,9 @@ LOG_MARKERS = {
     "engine_teardown": "[shutdown] EngineCore: request processing complete",
     "force_killing": "[shutdown] Process manager: force killing remaining processes",
     "engine_signal_received": "[shutdown] EngineCore: trigger received signal=",
+    "engine_rejecting_new": "[shutdown] EngineCore: rejecting new request",
+    "http_waiting_connections": "Waiting for connections to close",
+    "sampling_overridden": "Default vLLM sampling parameters have been overridden",
     "traceback": "Traceback (most recent call last)",
 }
 
@@ -65,23 +68,12 @@ def _on_signal(signum, frame):
 
 
 def scan_log(path):
-    out, first = {k: 0 for k in LOG_MARKERS}, {}
-    try:
-        with open(path, errors="replace") as f:
-            for line in f:
-                for k, pat in LOG_MARKERS.items():
-                    if pat in line:
-                        out[k] += 1
-                        first.setdefault(k, line.strip()[:300])
-    except OSError as e:
-        out["error"] = str(e)
-    out["first_lines"] = first
-    return out
+    return C.scan_log(path, LOG_MARKERS)
 
 
 def summarize_req(r):
     keep = ("stream", "http_status", "finish_reason", "error_event", "exception", "t_send",
-            "t_first_token", "t_end", "done_marker", "sse_tail", "n_sse_events", "max_tokens",
+            "t_first_token", "t_last_event", "t_end", "done_marker", "sse_tail", "n_sse_events", "max_tokens",
             "online_ttft_ms", "e2e_ms", "raw_body")
     d = {k: r.get(k) for k in keep}
     d["n_tokens"] = len(r.get("token_ids") or [])
@@ -96,6 +88,7 @@ class Inflight:
         self.prompts = [C.trial_prompt(B["prompt_len"], 0, suffix_len=0, salt=f"b|{key}|{s}|{k}")
                         for s, k in self.specs]
         self.results = [None] * len(self.specs)
+        self.live = [{} for _ in self.specs]
         self.first_flags = [False] * len(self.specs)
         self.first = threading.Semaphore(0)
         self.threads = []
@@ -108,7 +101,8 @@ class Inflight:
             self.first.release()
 
         self.results[i] = C.completion(self.port, self.prompts[i], self.max_tokens, stream=stream,
-                                       timeout=600, on_first_token=_cb if stream else None)
+                                       timeout=600, on_first_token=_cb if stream else None,
+                                       live=self.live[i])
         if stream and not self.first_flags[i]:
             self.first.release()  # 未拿到首 token 也要唤醒等待方；first_flags 如实为 False
 
@@ -137,11 +131,22 @@ class Inflight:
         return {"stream_first_token_events": got, "running_gauge": running, "n_total": len(self.specs), "unfinished_requests": unfinished,
                 "ok": got == B["n_stream"] and running == len(self.specs) and unfinished == len(self.specs)}
 
-    def join(self, timeout):
+    def join(self, timeout, stage="observe"):
+        """到时仍未返回的请求记为 terminal=False，并带上此刻已收到的部分（挂住本身就是被观测的现象）。"""
         t0 = time.perf_counter()
         for t in self.threads:
             t.join(timeout=max(0.1, timeout - (time.perf_counter() - t0)))
-        return [summarize_req(r) if r else {"missing": True} for r in self.results]
+        out = []
+        for i, r in enumerate(self.results):
+            if r is not None:
+                d = summarize_req(r)
+                d["terminal"] = True
+            else:
+                d = summarize_req(dict(self.live[i]))
+                d.update({"terminal": False, "pending_at": stage, "pending_since_send_s":
+                          (C.now() - self.live[i]["t_send"]) if self.live[i].get("t_send") else None})
+            out.append(d)
+        return out
 
 
 class Observer(threading.Thread):
@@ -281,6 +286,7 @@ def drill(ctx, kind, rep, shutdown_timeout=None):
     base_mib = C.gpu_used_mib(rec["pre"]["gpu"])
     srv = ctx.server(label, shutdown_timeout)
     gpu = C.GpuPoller(B["gpu_poll_s"]) if not ctx.args.mock else None
+    load = None
     try:
         engine_pid = ready_server(ctx, srv, rec)
         rec["engine_pid"] = engine_pid
@@ -342,6 +348,8 @@ def drill(ctx, kind, rep, shutdown_timeout=None):
         rec["api_returncode_before_cleanup"] = srv.returncode()
         rec["alive_known_before_cleanup"] = srv.alive_known()
         post_checks(ctx, srv, rec, base_mib)
+        if load is not None and any(q.get("terminal") is False for q in rec.get("requests") or []):
+            rec["requests_after_cleanup"] = load.join(30, stage="after_cleanup")
     if kind == "b1" and "error" not in rec:
         rec["restart"] = restart_check(ctx, label, base_mib)
     rec["t_end"] = C.now()

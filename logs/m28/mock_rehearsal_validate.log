@@ -1,5 +1,5 @@
 [ PASS  ] x_scripts_present                    7 个脚本齐全且 py_compile 通过
-[ PASS  ] x_plan_frozen_matches_code           计划冻结块 == FROZEN（plan_version=v1）
+[ PASS  ] x_plan_frozen_matches_code           计划冻结块 == FROZEN（plan_version=v2）
 [ PASS  ] a_raw_present                        offload/base/ref raw 齐全；evict 也在
 [ PASS  ] a_no_mock                            allow_mock：1090 条 mock（仅自检）
 [ PASS  ] a_counts                             每 (arm, P, path) warmup=5 measure=15，idx 连续
@@ -21,7 +21,7 @@
 [ PASS  ] b_counts                             B1×3，B3 每档×3，B2×1
 [ PASS  ] b_target_identity                    全部注入目标为本会话进程且角色/ppid/sid 核对通过（B1/B2 = 唯一 VLLM::EngineCore 子进程；B3 = API 进程）
 [ PASS  ] b_inflight_before_fault              注入前 4 条 streaming 均已收到首 token，且 running 指标 == 8
-[ PASS  ] b_all_requests_terminal              每条在途请求都有终态记录
+[ PASS  ] b_all_requests_terminal              每条在途请求都有终态记录（观测窗内终态；或观测窗内挂住且有清理后的终态）
 [ PASS  ] b_cleanup_clean                      每次演练后：无存活的已知 PID、端口释放、/dev/shm 无新增、显存回到基线容差内
 [ PASS  ] b_b3_timeout_precondition            B3 不足档剩余工作 > timeout+1s、充足档校准时长 < timeout-5s（由同进程校准批次实测）
 [ PASS  ] b_b2_resumed                         B2（若执行）均已 SIGCONT
@@ -30,6 +30,6 @@
 [ PASS  ] x_no_engine_overlap                  17 个 server 生命周期互不重叠
 [ PASS  ] a_lifecycle_clean                    4 个 A server：无 error、无残留 PID、端口释放、显存回收
 [ PASS  ] a_env_fingerprint                    VLLM_LAB_* 均未设置；vllm-src HEAD=ee0da84、脏文件数 22；模型 blob sha 符合冻结值
-[ PASS  ] a_connector_log_evidence             connector arm 日志含 OffloadingConnector 与 mmap 创建记录（cudaHostRegister 失败次数见 lifecycle）
+[ PASS  ] a_connector_log_evidence             connector arm 日志含 OffloadingConnector / CPUOffloadingSpec / CPU tensor 分配三行，非 connector arm 不含；所有 arm 无采样默认值覆盖、无 traceback / EngineDeadError
 
 合计：33 PASS / 0 FAIL / 0 PENDING

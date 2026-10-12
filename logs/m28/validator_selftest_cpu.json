@@ -1,5 +1,5 @@
 {
-  "base_raw_dir": "/tmp/m28_mock_rehearsal",
+  "base_raw_dir": "/tmp/m28_mock_rehearsal_v3",
   "base_is_mock": true,
   "note": "反例只在临时目录注入；基准数据为 mock 演练产物，不是实验数据",
   "baseline": [
@@ -111,7 +111,7 @@
     [
       "PASS",
       "b_all_requests_terminal",
-      "每条在途请求都有终态记录"
+      "每条在途请求都有终态记录（观测窗内终态；或观测窗内挂住且有清理后的终态）"
     ],
     [
       "PASS",
@@ -156,7 +156,7 @@
     [
       "PASS",
       "a_connector_log_evidence",
-      "connector arm 日志含 OffloadingConnector 与 mmap 创建记录（cudaHostRegister 失败次数见 lifecycle）"
+      "connector arm 日志含 OffloadingConnector / CPUOffloadingSpec / CPU tensor 分配三行，非 connector arm 不含；所有 arm 无采样默认值覆盖、无 traceback / EngineDeadError"
     ]
   ],
   "injections": [
@@ -238,13 +238,34 @@
       "detected": true
     },
     {
+      "injection": "在途请求挂住但无清理后终态",
+      "rule": "b_all_requests_terminal",
+      "baseline": "PASS",
+      "injected": "FAIL",
+      "detected": true
+    },
+    {
       "injection": "两个 server 生命周期重叠",
       "rule": "x_no_engine_overlap",
+      "baseline": "PASS",
+      "injected": "FAIL",
+      "detected": true
+    },
+    {
+      "injection": "offload arm 日志缺 CPUOffloadingSpec 行",
+      "rule": "a_connector_log_evidence",
+      "baseline": "PASS",
+      "injected": "FAIL",
+      "detected": true
+    },
+    {
+      "injection": "base arm 日志出现采样默认值覆盖",
+      "rule": "a_connector_log_evidence",
       "baseline": "PASS",
       "injected": "FAIL",
       "detected": true
     }
   ],
   "all_detected": true,
-  "lab_head": "4c516a2c4a633a5ca62baea446874941893ec49a"
+  "lab_head": "0e162d59f06b5add01bfa94e14ec317b8a6545ed"
 }

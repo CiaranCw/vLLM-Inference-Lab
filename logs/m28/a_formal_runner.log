@@ -1,0 +1,69 @@
+[m28-A] nvidia-smi: {"ts": 1791808392.4367015, "gpus": [{"index": 0, "name": "NVIDIA GeForce RTX 5080", "mem_used_mib": 4641, "mem_total_mib": 16303, "util_pct": 2}], "compute_apps": []}
+[m28-A] arm=offload start
+[m28-A/offload] trial 1/20 done
+[m28-A/offload] trial 2/20 done
+[m28-A/offload] trial 3/20 done
+[m28-A/offload] trial 4/20 done
+[m28-A/offload] trial 5/20 done
+[m28-A/offload] trial 6/20 done
+[m28-A/offload] trial 7/20 done
+[m28-A/offload] trial 8/20 done
+[m28-A/offload] trial 9/20 done
+[m28-A/offload] trial 10/20 done
+[m28-A/offload] trial 11/20 done
+[m28-A/offload] trial 12/20 done
+[m28-A/offload] trial 13/20 done
+[m28-A/offload] trial 14/20 done
+[m28-A/offload] trial 15/20 done
+[m28-A/offload] trial 16/20 done
+[m28-A/offload] trial 17/20 done
+[m28-A/offload] trial 18/20 done
+[m28-A/offload] trial 19/20 done
+[m28-A/offload] trial 20/20 done
+[m28-A] arm=offload done ready_s=16.05 markers={'offloading_connector': 2, 'cpu_offloading_spec': 2, 'cpu_tensors_allocated': 1, 'sampling_overridden': 0, 'jit_during_inference': 1, 'traceback': 0, 'engine_dead': 0, 'mmap_created': 0, 'cuda_host_register_failed': 0, 'first_lines': {'offloading_connector': '(EngineCore pid=1231947) INFO 10-12 20:33:29 [factory.py:62] Creating v1 connector with name: OffloadingConnector and engine_id: 6a28e85b-33e2-4b82-a419-d6c0b3157b25', 'cpu_offloading_spec': '(EngineCore pid=1231947) INFO 10-12 20:33:29 [factory.py:61] Creating offloading spec with name: CPUOffloadingSpec', 'cpu_tensors_allocated': '(EngineCore pid=1231947) INFO 10-12 20:33:29 [gpu_worker.py:486] Allocating 1 CPU tensors...', 'jit_during_inference': '(EngineCore pid=1231947) WARNING 10-12 20:33:32 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.'}}
+[m28-A] arm=base start
+[m28-A/base] trial 1/20 done
+[m28-A/base] trial 2/20 done
+[m28-A/base] trial 3/20 done
+[m28-A/base] trial 4/20 done
+[m28-A/base] trial 5/20 done
+[m28-A/base] trial 6/20 done
+[m28-A/base] trial 7/20 done
+[m28-A/base] trial 8/20 done
+[m28-A/base] trial 9/20 done
+[m28-A/base] trial 10/20 done
+[m28-A/base] trial 11/20 done
+[m28-A/base] trial 12/20 done
+[m28-A/base] trial 13/20 done
+[m28-A/base] trial 14/20 done
+[m28-A/base] trial 15/20 done
+[m28-A/base] trial 16/20 done
+[m28-A/base] trial 17/20 done
+[m28-A/base] trial 18/20 done
+[m28-A/base] trial 19/20 done
+[m28-A/base] trial 20/20 done
+[m28-A] arm=base done ready_s=17.05 markers={'offloading_connector': 0, 'cpu_offloading_spec': 0, 'cpu_tensors_allocated': 0, 'sampling_overridden': 0, 'jit_during_inference': 1, 'traceback': 0, 'engine_dead': 0, 'mmap_created': 0, 'cuda_host_register_failed': 0, 'first_lines': {'jit_during_inference': '(EngineCore pid=1234301) WARNING 10-12 20:41:05 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.'}}
+[m28-A] arm=ref start
+[m28-A/ref] trial 1/20 done
+[m28-A/ref] trial 2/20 done
+[m28-A/ref] trial 3/20 done
+[m28-A/ref] trial 4/20 done
+[m28-A/ref] trial 5/20 done
+[m28-A/ref] trial 6/20 done
+[m28-A/ref] trial 7/20 done
+[m28-A/ref] trial 8/20 done
+[m28-A/ref] trial 9/20 done
+[m28-A/ref] trial 10/20 done
+[m28-A/ref] trial 11/20 done
+[m28-A/ref] trial 12/20 done
+[m28-A/ref] trial 13/20 done
+[m28-A/ref] trial 14/20 done
+[m28-A/ref] trial 15/20 done
+[m28-A/ref] trial 16/20 done
+[m28-A/ref] trial 17/20 done
+[m28-A/ref] trial 18/20 done
+[m28-A/ref] trial 19/20 done
+[m28-A/ref] trial 20/20 done
+[m28-A] arm=ref done ready_s=16.04 markers={'offloading_connector': 0, 'cpu_offloading_spec': 0, 'cpu_tensors_allocated': 0, 'sampling_overridden': 0, 'jit_during_inference': 1, 'traceback': 0, 'engine_dead': 0, 'mmap_created': 0, 'cuda_host_register_failed': 0, 'first_lines': {'jit_during_inference': '(EngineCore pid=1236513) WARNING 10-12 20:48:31 [jit_monitor.py:106] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.'}}
+[m28-A] 产物目录: /home/ciaran/projects/vllm-inference-lab/outputs/m28/raw
+A formal exit=0

@@ -274,8 +274,20 @@ def check_b(rep, raw_dir, derived_dir, allow_mock):
                 and ev["stream_first_token_events"] == B["n_stream"]):
             infl.append(r["label"])
         reqs = r["requests"]
-        if len(reqs) != B["n_stream"] + B["n_nonstream"] or any(q.get("missing") or not q.get("t_end") for q in reqs):
-            term.append(r["label"])
+        after = r.get("requests_after_cleanup") or []
+        n_req = B["n_stream"] + B["n_nonstream"]
+        bad_q = []
+        for i, q in enumerate(reqs):
+            if q.get("missing"):
+                bad_q.append((i, "记录缺失"))
+            elif q.get("terminal") is False:
+                a = after[i] if i < len(after) else {}
+                if not (a.get("terminal") and a.get("t_end")):
+                    bad_q.append((i, "观测窗内未终态，且缺少清理后的终态"))
+            elif not q.get("t_end"):
+                bad_q.append((i, "无 t_end"))
+        if len(reqs) != n_req or bad_q:
+            term.append((r["label"], len(reqs), bad_q[:3]))
         gr = r.get("gpu_reclaim") or {}
         shm_new = [x for x in r["dev_shm_after"] if x not in r["pre"]["dev_shm"]]
         if r["alive_known_after_cleanup"] or not r["port_free_after"] or shm_new or \
@@ -283,8 +295,8 @@ def check_b(rep, raw_dir, derived_dir, allow_mock):
             clean.append((r["label"], r["alive_known_after_cleanup"], r["port_free_after"], shm_new, gr))
         if r["drill"] == "b3":
             cal = (r.get("calibration") or {}).get("duration_s")
-            t0 = min(q["t_send"] for q in reqs if q.get("t_send"))
-            remaining = cal - (r["t_fault"] - t0) if cal else None
+            sends = [q["t_send"] for q in reqs if q.get("t_send")]
+            remaining = cal - (r["t_fault"] - min(sends)) if cal and sends else None
             t = r["shutdown_timeout"]
             if t > 0 and (remaining is None or (t < 10 and remaining <= t + 1) or (t >= 10 and cal >= t - 5)):
                 b3pre.append((r["label"], round(remaining, 2) if remaining else None, cal))
@@ -296,7 +308,8 @@ def check_b(rep, raw_dir, derived_dir, allow_mock):
               "全部注入目标为本会话进程且角色/ppid/sid 核对通过（B1/B2 = 唯一 VLLM::EngineCore 子进程；B3 = API 进程）")
     rep.check("b_inflight_before_fault", not infl, f"注入前在途证据不足：{infl}",
               f"注入前 {B['n_stream']} 条 streaming 均已收到首 token，且 running 指标 == {B['n_stream'] + B['n_nonstream']}")
-    rep.check("b_all_requests_terminal", not term, f"有在途请求缺少终态记录：{term}", "每条在途请求都有终态记录")
+    rep.check("b_all_requests_terminal", not term, f"有在途请求缺少终态记录：{term}",
+              "每条在途请求都有终态记录（观测窗内终态；或观测窗内挂住且有清理后的终态）")
     rep.check("b_cleanup_clean", not clean, f"演练后资源未清理干净：{clean[:3]}",
               "每次演练后：无存活的已知 PID、端口释放、/dev/shm 无新增、显存回到基线容差内")
     rep.check("b_b3_timeout_precondition", not b3pre,
@@ -335,16 +348,27 @@ def check_lifecycle(rep, raw_dir, allow_mock):
                 and str(fp.get("vllm_src_head", "")).startswith(C.FROZEN["vllm_source_ref"])
                 and (fp.get("model_identity") or {}).get("blob_matches_frozen")):
             env_bad.append(d["arm"])
-        if not d.get("mock") and A["arms"][d["arm"]]["connector"]:
-            m = d.get("log_markers") or {}
-            if not (m.get("offloading_connector", 0) > 0 and m.get("mmap_created", 0) > 0):
-                mk.append((d["arm"], m))
+        m = d.get("log_markers") or {}
+        problems = []
+        if A["arms"][d["arm"]]["connector"]:
+            miss = [k for k in ("offloading_connector", "cpu_offloading_spec", "cpu_tensors_allocated")
+                    if not m.get(k, 0) > 0]
+            if miss:
+                problems.append(f"缺少初始化日志 {miss}")
+        elif m.get("offloading_connector", 0) > 0:
+            problems.append("非 connector arm 的日志里出现了 OffloadingConnector")
+        for k in ("sampling_overridden", "traceback", "engine_dead"):
+            if m.get(k, 0) > 0:
+                problems.append(f"{k}={m[k]}")
+        if problems:
+            mk.append((d["arm"], "smoke" if d.get("smoke") else "formal", problems))
     rep.check("a_lifecycle_clean", not bad, f"A server 生命周期有错误/残留：{bad[:3]}",
               f"{len(a_life)} 个 A server：无 error、无残留 PID、端口释放、显存回收")
     rep.check("a_env_fingerprint", not env_bad, f"环境指纹不符（LAB 钩子变量 / vllm-src HEAD 或脏文件数 / 模型 blob）：{env_bad}",
               "VLLM_LAB_* 均未设置；vllm-src HEAD=ee0da84、脏文件数 22；模型 blob sha 符合冻结值")
-    rep.check("a_connector_log_evidence", not mk, f"connector arm 日志缺少 OffloadingConnector/mmap 证据：{mk}",
-              "connector arm 日志含 OffloadingConnector 与 mmap 创建记录（cudaHostRegister 失败次数见 lifecycle）")
+    rep.check("a_connector_log_evidence", not mk, f"server 日志证据不符：{mk}",
+              "connector arm 日志含 OffloadingConnector / CPUOffloadingSpec / CPU tensor 分配三行，"
+              "非 connector arm 不含；所有 arm 无采样默认值覆盖、无 traceback / EngineDeadError")
 
 
 def validate(raw_dir, derived_dir, allow_mock=False, static=True):
@@ -431,8 +455,26 @@ def _inj_missing_req(rows):
     return rows
 
 
+def _inj_pending_no_after(rows):
+    rows[0]["requests"][0]["terminal"] = False
+    rows[0].pop("requests_after_cleanup", None)
+    return rows
+
+
 def _inj_overlap(rows):
     rows[1]["t_start"] = rows[0]["t_start"] + 1
+    return rows
+
+
+def _inj_no_spec_log(rows):
+    i = _first(rows, lambda r: r.get("exp") == "A" and r.get("arm") == "offload")
+    rows[i]["log_markers"]["cpu_offloading_spec"] = 0
+    return rows
+
+
+def _inj_sampling_override(rows):
+    i = _first(rows, lambda r: r.get("exp") == "A" and r.get("arm") == "base")
+    rows[i]["log_markers"]["sampling_overridden"] = 1
     return rows
 
 
@@ -458,7 +500,12 @@ INJECTIONS = [  # (名字, 目标规则, 文件, 变换, 是否关 allow_mock)
     ("演练后残留一个已知 PID", "b_cleanup_clean", "m28_b_drills.jsonl", _inj_leftover, False),
     ("B3 不足档校准时长改成 1.5s", "b_b3_timeout_precondition", "m28_b_drills.jsonl", _inj_b3_pre, False),
     ("一条在途请求终态缺失", "b_all_requests_terminal", "m28_b_drills.jsonl", _inj_missing_req, False),
+    ("在途请求挂住但无清理后终态", "b_all_requests_terminal", "m28_b_drills.jsonl", _inj_pending_no_after, False),
     ("两个 server 生命周期重叠", "x_no_engine_overlap", "m28_lifecycle.jsonl", _inj_overlap, False),
+    ("offload arm 日志缺 CPUOffloadingSpec 行", "a_connector_log_evidence", "m28_lifecycle.jsonl",
+     _inj_no_spec_log, False),
+    ("base arm 日志出现采样默认值覆盖", "a_connector_log_evidence", "m28_lifecycle.jsonl",
+     _inj_sampling_override, False),
 ]
 
 

@@ -1,0 +1,14 @@
+[m28-summarize] A: 35 latency 行 / 24 contrast 行 / 28 correctness 行
+Traceback (most recent call last):
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_summarize.py", line 255, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_summarize.py", line 248, in main
+    print(f"[m28-summarize] B: {len(summarize_b(b, a.out_dir))} 行")
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/projects/vllm-inference-lab/scripts/m28_summarize.py", line 213, in summarize_b
+    "tokens_stream_median": statistics.median([r["n_tokens"] for r in reqs if r.get("stream")]) if reqs else None,
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ciaran/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/statistics.py", line 617, in median
+    raise StatisticsError("no median for empty data")
+statistics.StatisticsError: no median for empty data

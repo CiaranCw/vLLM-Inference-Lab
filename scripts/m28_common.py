@@ -38,7 +38,7 @@ GIB = 1 << 30
 ENGINE_CORE_TITLE = "VLLM::EngineCore"
 
 FROZEN = {
-    "plan_version": "v1",
+    "plan_version": "v2",
     "model": "Qwen/Qwen2.5-0.5B-Instruct",
     "model_snapshot_commit": "7ae557604adf67be50417f59c2c2f167def9a775",
     "model_safetensors_blob_sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
@@ -53,7 +53,7 @@ FROZEN = {
         "--gpu-memory-utilization", "0.45", "--max-num-seqs", "16",
         "--max-num-batched-tokens", "8192", "--no-async-scheduling",
         "--enable-chunked-prefill", "--disable-uvicorn-access-log",
-        "--enable-prompt-tokens-details",
+        "--enable-prompt-tokens-details", "--generation-config", "vllm",
     ],
     "server_env_set": {
         "VLLM_USE_FLASHINFER_SAMPLER": "0",
@@ -62,7 +62,7 @@ FROZEN = {
     },
     "server_env_must_unset": [
         "VLLM_LAB_TRACE", "VLLM_LAB_BLOCK", "VLLM_LAB_M9_COALESCE",
-        "VLLM_KEEP_ALIVE_ON_ENGINE_DEATH",
+        "VLLM_KEEP_ALIVE_ON_ENGINE_DEATH", "VLLM_WSL2_ENABLE_PIN_MEMORY",
     ],
     "A": {
         "max_model_len": 16640,
@@ -305,6 +305,28 @@ def dev_shm_listing():
         return [f"<error {e}>"]
 
 
+RUNNER_HEADER_PREFIX = "===== "
+
+
+def scan_log(path, markers):
+    """按子串统计 server 日志里的关键行。runner 自己写的分隔行（含完整 cmd）不计，否则 cmd 里的
+    `OffloadingConnector` 等字样会被当成 vLLM 的日志证据。"""
+    out, first = {k: 0 for k in markers}, {}
+    try:
+        with open(path, errors="replace") as f:
+            for line in f:
+                if line.startswith(RUNNER_HEADER_PREFIX):
+                    continue
+                for k, pat in markers.items():
+                    if pat in line:
+                        out[k] += 1
+                        first.setdefault(k, line.strip()[:300])
+    except OSError as e:
+        out["error"] = str(e)
+    out["first_lines"] = first
+    return out
+
+
 def host_mem():
     import psutil
     vm = psutil.virtual_memory()
@@ -451,19 +473,22 @@ def _parse_token_ids(lp):
 
 
 def completion(port, prompt_ids, max_tokens, stream=True, timeout=120, extra=None,
-               on_first_token=None):
-    """/v1/completions；返回逐请求记录（原始错误原样保留，不吞）。"""
+               on_first_token=None, live=None):
+    """/v1/completions；返回逐请求记录（原始错误原样保留，不吞）。
+
+    live：调用方传入的 dict，记录在请求进行中就地更新，请求挂住时调用方仍能读到已收到的部分。"""
     body = {"model": FROZEN["model"], "prompt": prompt_ids, "max_tokens": max_tokens,
             "temperature": 0.0, "top_p": 1.0, "ignore_eos": True, "logprobs": 1,
             "return_tokens_as_token_ids": True, "stream": stream}
     if stream:
         body["stream_options"] = {"include_usage": True}
     body.update(extra or {})
-    rec = {"stream": stream, "n_prompt_tokens": len(prompt_ids), "prompt_sha256": sha_tokens(prompt_ids),
-           "max_tokens": max_tokens, "t_send": None, "t_first_token": None, "t_end": None,
-           "http_status": None, "token_ids": [], "token_logprobs": [], "finish_reason": None,
-           "usage": None, "error_event": None, "exception": None, "n_sse_events": 0,
-           "done_marker": False, "sse_tail": []}
+    rec = live if live is not None else {}
+    rec.update({"stream": stream, "n_prompt_tokens": len(prompt_ids), "prompt_sha256": sha_tokens(prompt_ids),
+                "max_tokens": max_tokens, "t_send": None, "t_first_token": None, "t_end": None,
+                "t_last_event": None, "http_status": None, "token_ids": [], "token_logprobs": [],
+                "finish_reason": None, "usage": None, "error_event": None, "exception": None,
+                "n_sse_events": 0, "done_marker": False, "sse_tail": []})
     conn = None
     try:
         conn = http.client.HTTPConnection(HOST, port, timeout=timeout)
@@ -501,6 +526,7 @@ def completion(port, prompt_ids, max_tokens, stream=True, timeout=120, extra=Non
             if not line.startswith(b"data:"):
                 continue
             data = line[5:].strip().decode(errors="replace")
+            rec["t_last_event"] = now()
             rec["n_sse_events"] += 1
             rec["sse_tail"] = (rec["sse_tail"] + [data[:400]])[-3:]
             if data == "[DONE]":
@@ -720,16 +746,30 @@ class Server:
         self._persist()
         return out
 
-    def cleanup(self, grace_s=30):
-        """兜底清理：先 SIGTERM API（若还活），再对已知且仍属本会话的存活 PID 逐个 SIGKILL。"""
+    def cleanup(self, grace_s=30, child_grace_s=10):
+        """兜底清理：SIGTERM API → 仍不退则只 SIGKILL API → 给子进程 child_grace_s 自行退出 →
+        再对已知且仍属本会话的存活 PID 逐个 SIGKILL。
+        先单独杀 API 是为了让 multiprocessing resource_tracker 在父进程消失后自己 unlink 信号量；
+        与 API 同时 SIGKILL 会把 /dev/shm/sem.mp-* 留下。"""
         import signal as _sig
         actions = self.resume_stopped()
+        self.refresh_tree()
         if self.api_alive():
             actions.append(self.signal(self.pid, _sig.SIGTERM, "api"))
             try:
                 self.proc.wait(timeout=grace_s)
             except subprocess.TimeoutExpired:
                 actions.append({"pid": self.pid, "note": f"SIGTERM 后 {grace_s}s 未退出"})
+                actions.append(self.signal(self.pid, _sig.SIGKILL, "api"))
+                try:
+                    self.proc.wait(timeout=15)
+                except subprocess.TimeoutExpired:
+                    actions.append({"pid": self.pid, "note": "API 进程 SIGKILL 后 15s 仍未回收"})
+            deadline = time.time() + child_grace_s
+            while time.time() < deadline and any(pid_alive(p) for p in self.known if p != self.pid):
+                time.sleep(0.2)
+            actions.append({"note": "子进程自行退出等待结束",
+                            "children_alive": [p for p in self.known if p != self.pid and pid_alive(p)]})
         self.refresh_tree()
         for pid, info in sorted(self.known.items()):
             if not pid_alive(pid):

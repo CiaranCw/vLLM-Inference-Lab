@@ -1,0 +1,13 @@
+label,drill,shutdown_timeout,rep,error,n_inflight,n_completed_full,outcomes,n_pending_at_observe_end,outcomes_after_cleanup,tokens_stream_median,t_health_non200_s,t_health_503_s,t_engine_exit_s,t_api_exit_s,t_port_closed_s,probe_forms,calibration_s,remaining_work_s,api_returncode,cleanup_needed,api_returncode_final,dev_shm_new,gpu_reclaim_ok,gpu_reclaim_s,restart_ok,restart_ready_s,log_aborting,log_draining,log_force_killing,log_engine_exited,log_engine_dead_error
+b1_r0,b1,,0,,8,0,ns:http_500=4;s:error_event:500=4,0,,268.5,0.101,,0.0,0.403,0.101,exception:ConnectionRefusedError=2,,,0,False,0,,True,0.1,True,15.04,0,0,0,1,5
+b1_r1,b1,,1,,8,0,ns:http_500=4;s:error_event:500=4,0,,260.0,0.102,0.102,0.001,0.504,0.202,exception:ConnectionRefusedError=2,,,0,False,0,,True,0.1,True,16.04,0,0,0,1,5
+b1_r2,b1,,2,,8,0,ns:http_500=4;s:error_event:500=4,0,,257.0,0.102,0.102,0.001,0.504,0.203,exception:ConnectionRefusedError=2,,,0,False,0,,True,0.1,True,16.04,0,0,0,1,5
+b3_t0_r0,b3,0,0,,8,0,ns:missing=8,0,,,0.101,,0.101,,0.101,exception:ConnectionRefusedError=3;exception:TimeoutError=1,11.781,,,True,-9,sem.mp-oce92guz,True,0.1,,,0,0,1,0,0
+b3_t0_r1,b3,0,1,,8,0,ns:missing=8,0,,,0.101,,0.101,,0.101,exception:ConnectionRefusedError=3;exception:TimeoutError=1,11.915,,,True,-9,sem.mp-mjeod_5h,True,0.1,,,0,0,1,0,0
+b3_t0_r2,b3,0,2,,8,0,ns:missing=8,0,,,0.101,,0.101,,0.101,exception:ConnectionRefusedError=3;exception:TimeoutError=1,12.235,,,True,-9,sem.mp-uvel949z,True,0.1,,,0,0,1,0,0
+b3_t2_r0,b3,2,0,,8,0,ns:missing=8,0,,,0.101,,2.015,,0.101,exception:ConnectionRefusedError=3;finish:abort=1,11.576,,,True,-9,sem.mp-mt1elx_i,True,0.2,,,0,1,1,0,0
+b3_t2_r1,b3,2,1,,8,0,ns:missing=8,0,,,0.101,,2.013,,0.101,exception:ConnectionRefusedError=3;finish:abort=1,11.548,,,True,-9,sem.mp-3g9tarul,True,0.1,,,0,1,1,0,0
+b3_t2_r2,b3,2,2,,8,0,ns:http_500=4;s:error_event:500=4,0,,262.5,0.102,,2.014,2.416,0.102,exception:ConnectionRefusedError=3;finish:abort=1,11.361,10.322,0,False,0,,True,0.1,,,0,1,1,0,5
+b3_t60_r0,b3,60,0,,8,8,ns:finish:length=4;s:finish:length=4,0,,1024.0,0.101,,12.272,12.473,0.101,exception:ConnectionRefusedError=3;finish:abort=1,11.051,10.009,0,False,0,,True,0.1,,,0,1,0,0,0
+b3_t60_r1,b3,60,1,,8,8,ns:finish:length=4;s:finish:length=4,0,,1024.0,0.103,,11.57,11.872,0.103,exception:ConnectionRefusedError=3;finish:abort=1,10.687,9.64,0,False,0,,True,0.1,,,0,1,0,0,0
+b3_t60_r2,b3,60,2,,8,8,ns:finish:length=4;s:finish:length=4,0,,1024.0,0.103,,12.415,12.717,0.103,exception:ConnectionRefusedError=3;finish:abort=1,11.335,10.289,0,False,0,,True,0.1,,,0,1,0,0,0

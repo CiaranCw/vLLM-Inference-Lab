@@ -848,16 +848,19 @@ modules:
 
   m28:
     title: KV Offloading（原生 OffloadingConnector GPU→CPU）与 Serving 可靠性（EngineCore 故障 / shutdown_timeout）
-    # DESIGN FROZEN v1 + CPU_VALIDATED（2026-10-12）；GPU 未执行。GPU 与故障注入都需所有者逐轮明确授权，
+    # DESIGN FROZEN v2；2026-10-12 GPU 实验完成（B2 SKIPPED），结果见 notes/m28/results.md。GPU 与故障注入都需所有者逐轮明确授权，
     # 因此 GPU 步骤一律 formal_only=true（reproduce.py 拒绝自动启动，按 notes/m28/M28_PLAN.md §11 手动执行）。
-    status: in_progress
+    status: done
     requires_gpu: true
     runbook: notes/m28/M28_PLAN.md
     notes:
       - notes/m28/M28_PLAN.md
       - notes/m28/source_review.md
       - notes/m28/execution_record.md
-    readiness: CPU_VALIDATED_GPU_NOT_EXECUTED
+      - notes/m28/results.md
+      - notes/m28/limitations.md
+      - notes/m28/interview_notes.md
+    readiness: TEO_COMPLETE_B2_SKIPPED
     frozen_config:
       source_of_truth: scripts/m28_common.py   # notes/m28/M28_PLAN.md §4 冻结块与之逐键相等
       model: Qwen/Qwen2.5-0.5B-Instruct 本地快照 7ae5576（目录路径启动 + --served-model-name；不走 hub）
@@ -896,20 +899,20 @@ modules:
         creates_engine: false
         status: done
       - id: validator-selftest
-        desc: 以 mock 演练产物（/tmp，先 summarize 到同目录）为基准，临时目录逐条注入 12 个反例，要求全部 PASS→FAIL；报告不含实验数据
+        desc: 以 mock 演练产物（/tmp，先 summarize 到同目录）为基准，临时目录逐条注入 15 个反例，要求全部 PASS→FAIL；报告不含实验数据
         cmd: [python, scripts/m28_validate.py, --selftest, --raw-dir, /tmp/m28_mock_rehearsal, --derived-dir, /tmp/m28_mock_rehearsal]
         requires_gpu: false
         creates_engine: false
         optional_outputs: [logs/m28/validator_selftest_cpu.json]
         status: done
       - id: a-smoke
-        desc: A 冒烟门禁（offload arm 单 trial；确认 connector 启动、cpu_hit 被指标证实、cudaHostRegister 状态）
+        desc: A 冒烟门禁（offload arm 单 trial；确认 connector 启动、cpu_hit 被指标证实、CPU 层分配日志）
         cmd: [python, scripts/m28_offload.py, --smoke, --i-have-gpu-authorization]
         requires_gpu: true
         creates_engine: true
         formal_only: true
         outputs: [outputs/m28/raw/m28_a_smoke.jsonl]
-        status: implemented
+        status: done   # v2 冒烟；v1 冒烟另存 outputs/m28/raw_old_v1_smoke/
       - id: a-formal
         desc: A 正式（offload → base → ref，各自独立 server 进程）
         cmd: [python, scripts/m28_offload.py, --i-have-gpu-authorization]
@@ -920,7 +923,7 @@ modules:
           - outputs/m28/raw/m28_a_offload.jsonl
           - outputs/m28/raw/m28_a_base.jsonl
           - outputs/m28/raw/m28_a_ref.jsonl
-        status: implemented
+        status: done
       - id: a-evict
         desc: A 可选：CPU 层 256 MiB 下的 LRU 淘汰退化
         cmd: [python, scripts/m28_offload.py, --arm, evict, --i-have-gpu-authorization]
@@ -928,7 +931,7 @@ modules:
         creates_engine: true
         formal_only: true
         outputs: [outputs/m28/raw/m28_a_evict.jsonl]
-        status: optional
+        status: done   # 可选项，已执行
       - id: b1-b3
         desc: B1 SIGKILL EngineCore（在途）×3；B3 SIGTERM × shutdown_timeout{0,2,60} ×3（需故障注入授权）
         cmd: [python, scripts/m28_faults.py, --drill, b1, --drill, b3, --i-have-gpu-authorization, --i-have-fault-authorization]
@@ -936,14 +939,14 @@ modules:
         creates_engine: true
         formal_only: true
         outputs: [outputs/m28/raw/m28_b_drills.jsonl]
-        status: implemented
+        status: done   # B1 来自第一轮；B3 为第二轮（--drill b3 --append 重跑），第一轮另存 outputs/m28/raw_old_b3_run1/
       - id: b2
         desc: B2 可选高风险：SIGSTOP EngineCore 10s → SIGCONT（需单独授权）
         cmd: [python, scripts/m28_faults.py, --drill, b2, --append, --authorize-b2, --i-have-gpu-authorization, --i-have-fault-authorization]
         requires_gpu: true
         creates_engine: true
         formal_only: true
-        status: optional
+        status: skipped_optional   # 所有者选择不做，无 B2 数据
       - id: summarize
         desc: raw → 派生 CSV（缺 raw 打印未执行，不生成伪 CSV）
         cmd: [python, scripts/m28_summarize.py]
@@ -955,16 +958,16 @@ modules:
           - outputs/m28/m28_a_contrasts.csv
           - outputs/m28/m28_a_correctness.csv
           - outputs/m28/m28_b_drills.csv
-        status: implemented
+        status: done
       - id: figures
         desc: 由派生 CSV 离线出图（缺 CSV 不画）
         cmd: [python, scripts/m28_figures.py]
         requires_gpu: false
         creates_engine: false
-        optional_outputs: [figures/fig_m28_offload_ttft.png, figures/fig_m28_faults.png]
-        status: implemented
+        optional_outputs: [figures/fig19_m28_offload_ttft.png, figures/fig20_m28_faults.png]
+        status: done
       - id: invariants
-        desc: M28 不变量（静态项本机 PASS；raw 未执行的项 PENDING）
+        desc: M28 不变量（2026-10-12：33 PASS / 0 FAIL / 0 PENDING）
         cmd: [python, scripts/check_invariants.py, --module, m28]
         requires_gpu: false
         creates_engine: false
@@ -989,11 +992,18 @@ modules:
 
     limitations:
       - 绝对值只适用于单卡 RTX 5080 / sm_120 / WSL2 / Qwen2.5-0.5B / enforce_eager / vllm serve + 串行 HTTP 流式客户端
-      - WSL2 的 pinned memory / DMA 行为可能与原生 Linux 不同；CPU→GPU load 带宽不外推
+      - CPU 层为 pageable 内存（WSL2 默认不 pin，计划 v2 强制 unset VLLM_WSL2_ENABLE_PIN_MEMORY）；load/store 带宽不外推到 pinned / 原生 Linux
+      - offload.cold 额外开销未跑 profiler，归因只是假设
       - ../vllm-src 有 22 个脏文件；M28 路径的 lab 钩子在默认环境下惰性（AST 审计），但其固定 Python 开销未单独测量
-      - B 组是行为刻画（每档 3 次），不是性能统计
+      - B 组是行为刻画（每档每轮 3 次），不估计概率；B3 两轮分开报告，不合并
 
     open_items:
       - id: m28-gpu-authorization
-        desc: GPU 实验与 B1/B3 故障注入等待所有者明确授权；B2 需单独授权
+        desc: GPU 实验与 B1/B3 故障注入已于 2026-10-12 获所有者授权并执行；B2 所有者选择不做
+        status: done
+      - id: m28-dev-shm-leftovers
+        desc: B3 第一轮强制清理在 /dev/shm 遗留 5 个 sem.mp-*（oce92guz/mjeod_5h/uvel949z/mt1elx_i/3g9tarul），未删除，等所有者决定
         status: in_progress
+      - id: m28-profiler
+        desc: offload.cold 在 P≥8192 的额外 39/69 ms 未用 profiler 定位
+        status: optional_todo

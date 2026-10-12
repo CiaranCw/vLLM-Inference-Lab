@@ -1,0 +1,4 @@
+[m28-A] nvidia-smi: {"ts": 1791807489.1857433, "gpus": [{"index": 0, "name": "NVIDIA GeForce RTX 5080", "mem_used_mib": 4866, "mem_total_mib": 16303, "util_pct": 1}], "compute_apps": []}
+[m28-A] arm=offload start
+[m28-A] arm=offload done ready_s=19.06 markers={'offloading_connector': 4, 'mmap_created': 0, 'cuda_host_register_failed': 0, 'traceback': 0, 'engine_dead': 0, 'first_lines': {'offloading_connector': '===== A/offload start 2026-10-12 20:18:12 cmd=["/home/ciaran/projects/vllm-inference-lab/.venv/bin/vllm", "serve", "/home/ciaran/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775", "--served-model-name", "Qwen/Qwen2.5-0.5B-Instruct", "--hos'}}
+[m28-A] 产物目录: /home/ciaran/projects/vllm-inference-lab/outputs/m28/raw
