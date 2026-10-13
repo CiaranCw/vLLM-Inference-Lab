@@ -1002,8 +1002,8 @@ modules:
         desc: GPU 实验与 B1/B3 故障注入已于 2026-10-12 获所有者授权并执行；B2 所有者选择不做
         status: done
       - id: m28-dev-shm-leftovers
-        desc: B3 第一轮强制清理在 /dev/shm 遗留 5 个 sem.mp-*（oce92guz/mjeod_5h/uvel949z/mt1elx_i/3g9tarul），未删除，等所有者决定
-        status: in_progress
+        desc: B3 第一轮强制清理在 /dev/shm 遗留 5 个 sem.mp-*（oce92guz/mjeod_5h/uvel949z/mt1elx_i/3g9tarul）；2026-10-13 经所有者同意、确认无进程映射后按文件名删除
+        status: done
       - id: m28-profiler
         desc: offload.cold 在 P≥8192 的额外 39/69 ms 未用 profiler 定位
         status: optional_todo

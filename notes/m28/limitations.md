@@ -36,5 +36,5 @@
 - `../vllm-src` 有 22 个脏文件（所有者的中文学习注释 + lab 钩子），M28 前后不变。`m28_source_audit.py` 用 AST 比对证明
   M28 路径上的 lab 钩子在默认环境下惰性，但**钩子的固定 Python 开销没有单独测量**，所以绝对延迟不等于上游 wheel 的延迟。
 - 第一轮 B3 的 5 次强制清理（runner 当时先 SIGKILL 了 API 和 resource_tracker）在 `/dev/shm` 留下 5 个 `sem.mp-*` 信号量文件
-  （`oce92guz`、`mjeod_5h`、`uvel949z`、`mt1elx_i`、`3g9tarul`）。修复清理顺序后第二轮 0 新增。这 5 个文件**未删除**，等所有者决定。
+  （`oce92guz`、`mjeod_5h`、`uvel949z`、`mt1elx_i`、`3g9tarul`）。修复清理顺序后第二轮 0 新增。这 5 个文件在 2026-10-13 经所有者同意后删除（删除前确认没有任何进程映射或打开它们）。
 - 每个 A server 首次请求期间都出现一次推理期 Triton JIT（`_compute_slot_mapping_kernel`），发生在 server warmup 阶段，不在 measure 内。

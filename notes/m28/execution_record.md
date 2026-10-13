@@ -122,7 +122,7 @@ A 组门禁（connector 能起、cpu_hit 被指标证实、KV 往返不破坏输
 - 暴露的 runner 缺陷：
   1. 挂住的请求被记成 `{"missing": true}`，summarize 在空列表上取 median 抛 `StatisticsError`，validate 在空序列上 `min()` 抛 `ValueError`。
   2. 强制清理时 API 与 resource_tracker 同时被 SIGKILL，`/dev/shm` 每次留下 1 个 `sem.mp-*`，共 5 个（`oce92guz`、`mjeod_5h`、`uvel949z`、`mt1elx_i`、`3g9tarul`）。
-     **未删除**，等所有者决定。
+     当时未删除；2026-10-13 所有者同意后删除（见 §12）。
 - 处理：第一轮 B3 原样保存——`outputs/m28/raw_old_b3_run1/m28_b_drills.jsonl`（含 B1+B3 共 12 行，sha256 `4e01dbd6…`）及其派生 CSV、
   `logs/m28/b3_run1/`（9 个 B3 server 日志 + 当时的 runner / summarize / validate 日志，后两者含上述崩溃的 traceback）。正式 raw 只保留 B1 的 3 行（与第一轮逐字节相同）。`m28_lifecycle.jsonl` 里第一轮 B3 的 9 条生命周期记录保留未删，
   `x_no_engine_overlap` 把它们一并核对。
@@ -146,3 +146,8 @@ validator（`--allow-mock`）33 PASS / 0 FAIL；自检 **15/15**（`logs/m28/val
   用来解释结局差异（`results.md` §2.3）。
 - summarize → validate：**33 PASS / 0 FAIL / 0 PENDING**（`logs/m28/{summarize,validate}.log`）；figures 离线生成 `fig19_m28_offload_ttft.png`、`fig20_m28_faults.png`；
   `check_invariants.py --module m28` 33/0/0，全模块 223/0/0（`logs/m28/check_invariants_{m28,all}.log`）。`../vllm-src` 脏文件数仍为 22。
+
+## 12. 收尾：/dev/shm 遗留信号量（2026-10-13）
+
+所有者同意删除 §9 记录的 5 个 `sem.mp-*`。删除前核对：5 个文件均存在（32 B，属主 ciaran，时间 20:57–21:11，与第一轮 5 次强制清理对应），
+`/proc/*/fd` 与 `/proc/*/maps` 中没有任何进程打开或映射它们。按确切文件名 `rm` 这 5 个，没有使用通配符。删除后 `/dev/shm` 为空。
