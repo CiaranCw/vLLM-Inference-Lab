@@ -403,7 +403,7 @@ v1 冒烟的 raw / lifecycle / server 日志原样移到 `outputs/m28/raw_old_v1
 
 **执行期修订（2026-10-12，B3 第一轮之后；冻结块 §4 与测试矩阵均未改动，`x_plan_frozen_matches_code` 仍 PASS）**。只改 runner 的记录与清理逻辑：
 
-1. **挂住请求的记录**：第一轮 B3 有 5 次演练出现 API 无限期等待连接关闭，runner 把未结束的请求记成 `{"missing": true}`，
+1. **挂住请求的记录**：第一轮 B3 有 5 次演练在 90 s 观测窗结束时 API 仍在等待连接关闭，runner 把未结束的请求记成 `{"missing": true}`，
    summarize（空列表 median）与 validate（空序列 `min()`）随之崩溃。修订：请求线程边收边写（`live` 记录，含 `t_last_event`）；
    观测窗结束时未结束的请求记为 `terminal=false` + `pending_at`；清理后再 join 一次，记到 `requests_after_cleanup`。
    validator `b_all_requests_terminal` 改为：`missing` 一律 FAIL，`terminal=false` 必须有清理后的终态。新增反例 `_inj_pending_no_after`。

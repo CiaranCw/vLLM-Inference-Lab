@@ -23,12 +23,12 @@
 - **能量化 Decode Context Parallel 的容量/延迟拆分**：4×H20 / 1.5B 上 DCP=2 把 KV token **精确扩成 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）；通信路径是 all-gather + LSE 合并，**不是 Ring Attention**。M24 本身未跑 P-D；P-D 部分转入阶段 K / M27，已在单节点 8×H20 上以最多 4 GPU 的正式配置实测完成（见下文 M27 条）。
 - **能量化 Triton same-runtime overhead**：同镜像对照下高 QPS 的 TTFT 排队税远大于 ITL 差异（M20）。
 - **能证实 H20 P-D/NIXL 的真实取舍（M27）**：在单节点 8×H20 环境的同一新实例上 fresh Gate0→E4；正式实验覆盖 1/2/4 GPU（E0–E3 按 arm 1–2 GPU，P:D ratio 的 E4 每 arm 4 GPU），最大正式并发 4 GPU，没有 8-GPU 正式实验。8K 注入时 E2 colo1−PD decode max stall **+780.98ms**（1 vs 2 GPU，仅机制）；同 GPU 成本 E3/E4 下 PD 的 ITL tail 更低（与调优后的 colocated chunk 相比差距缩小、方向不变），但 90% 负载下 TTFT 排队/achieved rate 明显更差；E1 512→16384 token 的 NIXL bytes 29.36→939.52MB，等效约 4–5 GB/s。旧实例数据独立不 pool；E5 可选跳过、P1 profiler 未做；独立 post-hoc 审计 `PASS_WITH_DOCUMENTATION_CORRECTION`，修正已闭环。详见 [`notes/m27/results.md`](notes/m27/results.md)。
-- **能证明 KV offload 走了哪条路、值不值（M28）**：单卡 RTX 5080 / WSL2 / 0.5B 上，原生 OffloadingConnector 的 GPU 命中 / CPU 命中 / 重算三条路径每个样本都由 Prometheus 计数器与请求级 cached_tokens 两个来源证实，CPU 往返输出 60/60 逐位一致；CPU 命中在 P=1024 反而慢 **0.70ms**、P=16384 快 **289.6ms**（CI 均排除 0）。同模块故障演练发现：`--shutdown-timeout` 为 0 或不足时 SIGTERM 后 API 可能**无限期挂住**（t=0 5/6、t=2 4/6 次），给足时间 6/6 正常完成。详见 [`notes/m28/results.md`](notes/m28/results.md)。
+- **能证明 KV offload 走了哪条路、值不值（M28）**：单卡 RTX 5080 / WSL2 / 0.5B / eager / 串行在线请求 / CPU 层为 pageable 内存，原生 OffloadingConnector 的 GPU 命中 / CPU 命中 / 重算三条路径每个样本都由 Prometheus 计数器与请求级 cached_tokens 两个来源证实，CPU 往返输出 60/60 逐位一致；CPU 命中在 P=1024 反而慢 **0.70ms**、P=16384 快 **289.6ms**（CI 均排除 0）。同模块故障演练发现：`--shutdown-timeout` 为 0 或不足时 SIGTERM 后 API 可能**挂住**（90 s 观测窗结束仍未退出、需外部清理；t=0 5/6、t=2 4/6 次），给足时间 6/6 正常完成。详见 [`notes/m28/results.md`](notes/m28/results.md)。
 - **能把「量化省了多少」说清楚**：W4A16 整体权重 −53.6%(0.5B)/−62.8%(1.5B)，但 `embed`/`lm_head` 不被量化，剔除后可量化部分 **−74.0%**（≈理论值）——**模型越小稀释越狠**；代价是本机 **28 个对照点 0 个变快**（M18，见 §11）。
 - **能做严格的跨引擎对照**：vLLM vs TensorRT-LLM，两侧同一份 token ids、同组冻结配置、都在容器内，按 **2×2 execution-mode** 分两条 lane 报告——`T-E vs V-E` 单请求 **+45.0%**、`T-O vs V-O` **+20.1%**（TRT 更慢，CI 全排除 0）；并纠正了一个过时前提：**上游已移除 TensorRT engine backend**，两者现在同为 PyTorch runtime（M23，见 §12）。
 - **能搭监控并用它定位瓶颈**：Prometheus+Grafana+DCGM+自写 exporter；先证明**指标本身可信**（21 个窗口服务端 counter 与客户端 bench 逐条精确相等），再证明**服务端直方图近似 P99 ≠ 客户端 exact percentile**（中位 +9.7%，最大 +68%，两者测量边界与统计表示都不同）；四类压力源给出可区分的指标签名；**`SIGKILL` API server 不会杀死持有显存的 `EngineCore` 子进程**（`up==0` 但显存 90s 不回收）（M21，见 §10）。
 
-> **招聘者请先看这两个**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md) —— 四个项目（A/B/C/D）按同一模板写成 5 分钟能看懂的形式，并用「🟢已验证 / 🟡只读源码 / ⚪仅理论」三档**明确标注能力边界**（含**未完成项与其阻塞原因**）；[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件。
+> **招聘者请先看这两个**：[`notes/evidence_index.md`](notes/evidence_index.md) —— 每条结论 → 对应证据文件；[`notes/m26/README.md`](notes/m26/README.md) —— 四个项目（A/B/C/D）的完成度与**未完成项的阻塞原因**。各模块一句话成果与证据路径见下文「逐模块成果」表。
 >
 > 完整里程碑与后续扩展路线见 [`ROADMAP.md`](ROADMAP.md)（第一阶段 M0–M16 + 第二阶段 M17–M26 + 阶段 K · M27 + 阶段 L · M28）。
 >
@@ -119,7 +119,7 @@
 
 **M28 · 故障与停机演练**
 ![M28 faults](figures/fig20_m28_faults.png)
-> B1（SIGKILL EngineCore）：在途请求 500，API 0.5s 内自行退出。B3（SIGTERM × shutdown_timeout）：t=60 全部正常完成；t=0 / t=2 多数次 API 在观测窗结束时仍存活、请求未结束（黑），需外部 SIGKILL。B3 行为第二轮，第一轮另存不合并。
+> B1（SIGKILL EngineCore）：在途请求全部报错（非流式 HTTP 500、流式在已返回 200 后经 SSE error event 报错并收到 [DONE]），API 0.5s 内自行退出。B3（SIGTERM × shutdown_timeout）：t=60 全部正常完成；t=0 / t=2 多数次 API 在观测窗结束时仍存活、请求未结束（黑），需外部 SIGKILL。B3 行为第二轮，第一轮另存不合并。
 
 **M20 · Same-runtime：vllm serve vs Triton+vLLM backend**
 ![M20 same-runtime](figures/fig10_m20_same_runtime.png)
@@ -155,7 +155,7 @@
 | **M20** Triton + same-runtime ★ | 同镜像对照 `vllm serve` vs Triton+vLLM backend | QPS32 TTFT **24→719ms**、QPS40 **26→952ms**（CI 排除 0）；ITL 接近；success=1.0；**COMPLETE** | 无 | `notes/m20/results.md`、`outputs/m20/c_same_runtime_*`、`figures/fig10_m20_same_runtime.png` |
 | **M22** Tensor Parallel ★ | 4×H20 上量化「小 batch TP 更慢」与 prefill 侧加速；拆吞吐口径 | D2 稳态 step TP 显著更慢（~+19–24%，CI 排除 0）；D3 P=4096 TP4≈**3.39×**；bs=64 吞吐升主要来自 **first_token** 804→230ms 而非 step；权重≈1/TP；P1 见 custom AR/NCCL；**PP/DP/EP 未做** | 无 | `notes/m22/{results,tensor_parallel}.md`、`outputs/m22/h20_formal_*`、`figures/fig9_m22_tp_scaling_h20_formal.png` |
 | **M27** P-D 分离 + NIXL（阶段 K） | 测量 P-D 的 KV 传输/编排成本与干扰隔离收益，“没有收益”是允许的结果 | 8×H20 单节点、同实例 Gate0→E4，正式实验最多 4 GPU（E3 每 arm 2 GPU、E4 每 arm 4 GPU）；E2 8K 注入 colo1−PD stall **+780.98ms**（1 vs 2 GPU，机制）；E3/E4 同成本 PD ITL P99 更低但 90% 负载 TTFT P99 与 achieved rate 更差，colo4 TTFT 优于全部 4-GPU PD ratio；**COMPLETE**（范围为 E0–E4，E5 未执行，P1 未做；post-hoc 审计 PASS_WITH_DOCUMENTATION_CORRECTION） | 无 | `notes/m27/{results,execution_record,FINAL_CLOSURE_ADDENDUM}.md`、`outputs/m27/h20_formal_e{0,1,2,3,4}_*`、`figures/fig1{6,7,8}_m27_*`；11 个 >100MB raw 在外部 archive（`notes/m27/H20_RAW_ARCHIVE_MANIFEST.tsv`） |
-| **M28** KV Offloading + Serving 可靠性（阶段 L，单卡） | 原生 OffloadingConnector 的 GPU/CPU/重算三路径证明 + EngineCore SIGKILL / SIGTERM × shutdown_timeout 故障演练 | 三路径 15/15 指标证实、CPU 往返输出 60/60 逐位一致；cpu_hit − cold P=1024 **+0.70ms**（更慢）→ P=16384 **−289.6ms**（CI 排除 0）；B1 API 在 0.5s 内以 rc 0 自行退出；B3 t=60 6/6 完成，t=0 / t=2 有 5/6、4/6 次 API 无限期挂住；**COMPLETE**（B2 SKIPPED，未跑 profiler） | 无 | `notes/m28/{results,limitations,execution_record}.md`、`outputs/m28/*`、`figures/fig{19,20}_m28_*`、`scripts/m28_*.py` |
+| **M28** KV Offloading + Serving 可靠性（阶段 L，单卡） | 原生 OffloadingConnector 的 GPU/CPU/重算三路径证明 + EngineCore SIGKILL / SIGTERM × shutdown_timeout 故障演练 | 三路径 15/15 指标证实、CPU 往返输出 60/60 逐位一致；cpu_hit − cold P=1024 **+0.70ms**（更慢）→ P=16384 **−289.6ms**（CI 排除 0）；B1 API 在 0.5s 内以 rc 0 自行退出；B3 t=60 6/6 完成，t=0 / t=2 有 5/6、4/6 次 API 挂住（90 s 观测窗结束仍未退出，需外部清理）；**COMPLETE**（B2 SKIPPED；不变量 33/0/0、validator 自检 15/15；未跑 profiler） | 无 | `notes/m28/{results,limitations,execution_record}.md`、`outputs/m28/*`、`figures/fig{19,20}_m28_*`、`scripts/m28_*.py` |
 
 ★ = 第一阶段核心验收项（M17/M19/M22 属第二阶段）。**第一阶段核心验收线 9/9**（原 M11 双卡 TP 已由 M22 在 4×H20 闭合）。
 
@@ -178,7 +178,7 @@
 13. **容量数字有保质期**：M21 用与 M12 完全相同的配置与 bench 参数，测出最大稳定 QPS 24（M12 是 40）。单变量 A/B 排除了监控开销（≲1%），NVML 排除了降频，单流 ITL 说明机器没整体变慢——差异出在高并发下 TPOT +30%，按 Little's law 把所需并发从 48 推到 62、顶上 `max_num_seqs=64` 的硬闸形成正反馈。**根因未定**（M12 当年没留环境指纹），故如实标注「容量跨会话不稳定 24–32」，既不宣称复现 40，也不宣称 40 是错的。
 14. **开 DCP ≠ Ring Attention，也不等于 decode 变快**：M24 在 4×H20 / 1.5B 上只改 `decode_context_parallel_size`，KV 可服务 token **恰好 2.0×**，但六档稳态 decode 单步全部显著更慢（CI 排除 0）。chrome trace 里的 `AllGather_RING_LL` 是 NCCL 算法名。长上下文在本网格也没有翻盘——**容量口径和 step 延迟口径必须拆开**。
 15. **KV offload 有盈亏点，而且冷请求也要付钱**：M28 用指标逐样本证明三条路径后，CPU 命中在 P=1024 反而比重算慢 0.70ms（CI 排除 0），P=16384 快 289.6ms；开 connector 后冷请求在 P=8192/16384 多 39/69ms（store 量级吻合，未 profiler 定位）。边界：0.5B / WSL2 pageable CPU 层 / 串行请求。
-16. **`--shutdown-timeout` 给 0 或给不够，进程可能永远退不出去**：M28 B3 中 t=0 / t=2 分别有 5/6、4/6 次 SIGTERM 后 EngineCore 已退出、显存已还，但 API 一直 "Waiting for connections to close"——在途请求既没收到 abort 也没收到 EngineDeadError，而 uvicorn graceful shutdown 没有超时。给足时间（t=60）6/6 正常完成。另外 B1 中 EngineCore 被杀后 API 以**退出码 0** 自行退出，不会停在 503。
+16. **`--shutdown-timeout` 给 0 或给不够，进程可能退不出去**：M28 B3 中 t=0 / t=2 分别有 5/6、4/6 次 SIGTERM 后 EngineCore 已退出、显存已还，但 API 一直 "Waiting for connections to close"——在途请求既没收到 abort 也没收到 EngineDeadError，而 uvicorn graceful shutdown 没有超时。给足时间（t=60）6/6 正常完成。另外 B1 中 EngineCore 被杀后 API 以**退出码 0** 自行退出，不会停在 503（对外部监督器的影响只是推断，未实测）。边界：单卡 RTX 5080 / WSL2 / 0.5B / eager / 串行在线请求。
 
 > 完整证据链见 [`notes/evidence_index.md`](notes/evidence_index.md)；每个结论都可回溯到 trace/log/jsonl/csv。
 

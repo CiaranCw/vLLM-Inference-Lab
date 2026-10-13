@@ -52,6 +52,7 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0
 - 图必须由已落盘数据**离线**生成（不需 GPU、不 import vllm）——范例 `scripts/m17_figures.py`。
 - 完成模块后同步更新 `ROADMAP.md` + `notes/evidence_index.md` +（如有核心结论/图）`README.md`。
 - 根目录 `vllm_stage_reading_guide.md`、`study_path*.md`、`study_process_record.md`、`vllm_dev_environment.md`、`contribution_candidates.md`，以及 `notes/m16/interview_and_presentation.md`、`notes/m26/interview_second_stage.md`（面试备考）是个人文档，已 gitignore，不要改动、不要重新入库。
+- **面试话术 / 模拟问答 / 简历 / 求职复盘 / 面试用 portfolio 只留本地**（含 `notes/m26/portfolio.md`、`notes/m28/interview_notes.md`、`notes/**/interview*.md`、`career_private/`）。提交前逐项看 `git diff --cached`，只用显式路径 `git add`；`.gitignore` 不会取消已跟踪文件，需 `git rm --cached`。
 
 ## 沟通
 - **面向所有者的报告用中文**；命令/路径/日志/报错保持原文。给结论 + 依据 + 下一步，不要冗长思考过程。

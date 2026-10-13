@@ -26,6 +26,14 @@ notes/m16/interview_and_presentation.md
 notes/m26/interview_second_stage.md
 *:Zone.Identifier
 
+# 个人求职材料（面试话术 / 模拟问答 / 简历草稿 / 求职复盘 / 面试用 portfolio）只保留本地，不入库。
+# 注意：.gitignore 不会取消已跟踪文件的跟踪；已跟踪的需 `git rm --cached -- <path>`。
+notes/m26/portfolio.md
+notes/m28/interview_notes.md
+notes/**/interview*.md
+career_private/
+**/career_private/
+
 # IDE 本地配置
 .vscode/
 

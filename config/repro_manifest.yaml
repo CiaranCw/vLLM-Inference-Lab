@@ -859,7 +859,6 @@ modules:
       - notes/m28/execution_record.md
       - notes/m28/results.md
       - notes/m28/limitations.md
-      - notes/m28/interview_notes.md
     readiness: TEO_COMPLETE_B2_SKIPPED
     frozen_config:
       source_of_truth: scripts/m28_common.py   # notes/m28/M28_PLAN.md §4 冻结块与之逐键相等

@@ -122,7 +122,7 @@ CPU 层只够放约 1365 个 block（256 MiB / 196608 B），filler 写满后目
 | 清理 | `cleanup_needed=False`（无需 runner 兜底）；无孤儿进程，显存回到基线 |
 | 同配置重启 | 3/3 成功，就绪 15.0 / 16.0 / 16.0 s |
 
-结论：EngineCore 被 SIGKILL 时，API **不会**留下来以 503 继续服务，而是在 0.5 s 内把在途请求全部以 500 结束、然后自己退出。
+结论：EngineCore 被 SIGKILL 时，API **不会**留下来以 503 继续服务，而是在 0.5 s 内结束全部在途请求（非流式 HTTP 500；流式此前已返回 HTTP 200，失败通过 SSE error event 报告并收到 `[DONE]`），然后自己退出。
 与 M21 的对比：M21 杀的是 API 父进程，留下了持有显存的孤儿 EngineCore；这里杀子进程，没有孤儿。
 **运维含义（推断，未在 systemd/k8s 上实测）**：进程以退出码 0 结束，按"非零退出才重启"配置的监督器不会拉起它。需要无条件重启或基于健康检查的重启。
 
@@ -136,8 +136,8 @@ validator 只针对第二轮（正式 raw）。下表两轮逐次列出：
 |---|---|---|---|---|
 | t=0（abort） | 第一轮 | 挂住 | 挂住 | 挂住 |
 | t=0 | 第二轮 | 8/8 `finish_reason=abort`；API 30.37 s 退出（rc 0） | 挂住 | 挂住 |
-| t=2（drain，不足） | 第一轮 | 挂住 | 挂住 | 8/8 500；API 2.42 s 退出 |
-| t=2 | 第二轮 | 挂住 | 8/8 500；API 2.31 s 退出 | 挂住 |
+| t=2（drain，不足） | 第一轮 | 挂住 | 挂住 | 8/8 报错（非流式 HTTP 500、流式 SSE error 500）；API 2.42 s 退出 |
+| t=2 | 第二轮 | 挂住 | 8/8 报错（非流式 HTTP 500、流式 SSE error 500）；API 2.31 s 退出 | 挂住 |
 | t=60（drain，充足） | 第一轮 | 8/8 `length`；API 12.47 s 退出 | 8/8 `length`；11.87 s | 8/8 `length`；12.72 s |
 | t=60 | 第二轮 | 8/8 `length`；10.36 s | 8/8 `length`；10.35 s | 8/8 `length`；10.96 s |
 
@@ -160,7 +160,7 @@ validator 只针对第二轮（正式 raw）。下表两轮逐次列出：
 | 档位 | EngineCore 写出 abort/drain 且 "request processing complete" | API 侧 EngineDeadError | 结局 |
 |---|---|---|---|
 | t=0 | 1/6（第二轮 r0） | 0/6 | 该次 8/8 abort；其余 5 次挂住 |
-| t=2 | 0/6（drain 开始了，但 2 s 内没完成，被 force kill） | 2/6 | 有 EngineDeadError 的 2 次 → 500 并退出；其余 4 次挂住 |
+| t=2 | 0/6（drain 开始了，但 2 s 内没完成，被 force kill） | 2/6 | 有 EngineDeadError 的 2 次 → 在途请求报错（非流式 500、流式 SSE error）并退出；其余 4 次挂住 |
 
 - `shutdown_timeout=0` 时，process manager 对 EngineCore 先 `terminate()`，然后在 deadline 已过的情况下直接 `kill_process_tree`（`vllm/v1/utils.py:603-625`）。
   SIGTERM 与 SIGKILL 几乎同时到达，EngineCore 的 SIGTERM handler 能否先把 abort 发回 API，是一场竞争（源码核查预测 P-B3-1，与实测一致）。
@@ -168,7 +168,7 @@ validator 只针对第二轮（正式 raw）。下表两轮逐次列出：
 - API 侧 shutdown 走完 engine client 之后执行 `server_task.cancel()`（`vllm/entrypoints/launcher.py:128-129`），进入 uvicorn `Server.shutdown`，
   它以 `wait_for(_wait_tasks_to_complete(), timeout=config.timeout_graceful_shutdown)` 等待连接关闭（`uvicorn/server.py:269-304`，uvicorn 0.51.0）。
   `timeout_graceful_shutdown` 默认 `None`（`uvicorn/config.py:230`），而 `ee0da84` 的 vLLM 源码里没有任何地方设置它（`rg timeout_graceful_shutdown vllm/` 无结果）。
-  **所以只要还有一个连接没关，API 就无限期等下去。**
+  **所以只要还有一个连接没关，这一等待在源码层面就没有上限**；实测中挂住的演练在 90 s 观测窗结束时仍未退出，由 runner 外部清理结束（不代表数学意义上永远不会退出，见下条旁证）。
 - 旁证：第二轮 t0_r0 的 8 条请求都已 abort 结束，唯一还开着的是故障瞬间的探针连接；它在 30.03 s 时因客户端超时断开，API 在 30.37 s 退出。
   也就是说"挂多久"由客户端什么时候放弃决定。
 - **未定位**：t=2 档里为什么有 2/6 次 API 侧收到了 EngineDeadError、其余 4 次没有（推测与 output handler 是先观察到进程死亡还是先被 MPClient 关闭有关），没有做源码级确认。
@@ -176,7 +176,7 @@ validator 只针对第二轮（正式 raw）。下表两轮逐次列出：
 结论（边界内，n=3/档/轮）：
 
 1. **`--shutdown-timeout` 足够大（60 s、剩余工作约 10 s）时，SIGTERM 能让在途请求全部正常完成**（两轮 6/6），API 以 rc 0 退出。
-2. **timeout=0 和不足的 timeout=2 都不可靠**：t=0 两轮 6 次中 5 次挂住，t=2 两轮 6 次中 4 次挂住。挂住后进程只能靠外部 SIGKILL 结束，在途客户端收到的是连接断开而不是错误码。
+2. **timeout=0 和不足的 timeout=2 都不可靠**：t=0 两轮 6 次中 5 次挂住，t=2 两轮 6 次中 4 次挂住。挂住的演练在 90 s 观测窗内没有自行退出，由外部 SIGKILL 结束，在途客户端收到的是连接断开而不是错误码。
    哪种结局取决于竞争，3 次重复不足以估计概率，只能说"两种结局都可复现"。
 3. 不管哪个档位，**新连接在 SIGTERM 后约 0.1 s 被拒**。
 
@@ -195,7 +195,7 @@ SIGSTOP / SIGCONT 演练：所有者选择不做 → **SKIPPED**（`b_counts`：
 | P-A3 往返不改输出 | 成立（60/60 逐位） |
 | P-A4（v2 更正）CPU 层为 pageable `torch.zeros` | 成立：日志 "Allocating 1 CPU tensors..."、`/dev/shm` 无 mmap、RSS +4 GiB |
 | P-B1 EngineCore 死亡后在途请求得到错误、`/health` 非 200 | 成立；另发现 API 自行退出（rc 0），没有停在 503 状态 |
-| P-B3-1 timeout=0 存在竞争 | 成立，且竞争的输家会无限期挂住（uvicorn 无 graceful 超时）——这一点源码核查阶段没有预测到 |
+| P-B3-1 timeout=0 存在竞争 | 成立，且竞争的输家在 90 s 观测窗内未退出、需外部清理（uvicorn 无 graceful 超时）——这一点源码核查阶段没有预测到 |
 | P-B3 drain 充足时在途请求完成 | 成立（6/6） |
 
 ## 4. 复现

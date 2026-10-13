@@ -72,6 +72,11 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0 # 引擎在进程内跑，trace 有序
 - 图必须由**已落盘数据离线生成**（`scripts/m16_figures.py`、`scripts/m17_figures.py` 是范例：不需 GPU、不重跑实验、不 import vllm）。
 - 完成模块后要同步更新：`ROADMAP.md`（模块状态 + 未做项）、`notes/evidence_index.md`、`README.md`（若产出核心结论/图）。
 - 根目录 `vllm_stage_reading_guide.md`、`study_path*.md`、`study_process_record.md`、`vllm_dev_environment.md`、`contribution_candidates.md`，以及 `notes/m16/interview_and_presentation.md`、`notes/m26/interview_second_stage.md`（面试备考）是**所有者的个人文档**，已 gitignore；不要改动、不要重新入库。
+- **个人求职材料一律只留本地**：面试话术、模拟问答、简历草稿、个人求职复盘、面试专用 portfolio（如 `notes/m26/portfolio.md`、`notes/m28/interview_notes.md`、`notes/**/interview*.md`、`career_private/`）默认不入库，规则见 `.gitignore`。
+  - 每次提交前检查 staged 文件的**路径和内容**（`git diff --cached --name-status` + `git diff --cached`），只用显式路径 `git add`，不要 `git add -A` / `git add .`。
+  - `.gitignore` **不会**取消已跟踪文件的跟踪；发现已入库的私有文件，用 `git rm --cached -- <path>`（保留本地原件），不要普通 `git rm`。
+  - 公开文档不要链接这些文件，也不要把它们的正文复制进公开文档。
+  - 已进入 Git 历史的内容不会因后续删除而消失；是否重写历史由所有者另行决定，不得擅自 force push。
 
 ## 8. 与所有者的沟通
 
@@ -90,3 +95,4 @@ export VLLM_ENABLE_V1_MULTIPROCESSING=0 # 引擎在进程内跑，trace 有序
 - [ ] `git log -1` 里是 `CiaranCw <1399538830@qq.com>`、没有 AI trailer？
 - [ ] `git -C ../vllm-src status --short | wc -l` 仍是 **22**（基线脏文件数，说明没动产品源码）？
 - [ ] `ROADMAP.md` / `notes/evidence_index.md` 同步了？
+- [ ] staged 里没有面试话术 / 简历 / 求职材料（`git diff --cached --name-status` 逐项看过）？

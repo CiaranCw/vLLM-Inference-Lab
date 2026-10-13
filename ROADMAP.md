@@ -465,7 +465,7 @@
 
 ### M28 KV Offloading & Serving Reliability　✅ **T+E+O COMPLETE**（2026-10-12；B2 SKIPPED）
 - **目标**：A = 原生 `OffloadingConnector`（`CPUOffloadingSpec`，CPU 层为 pageable `torch.zeros`）三条路径（GPU 热命中 / GPU 未命中但 CPU 命中 / 全量重算）逐样本由指标证明，并与独立重算对照正确性；B = `vllm serve` 生命周期故障：B1 SIGKILL EngineCore 子进程（区别于 M21 E6 杀 API 父进程）、B3 SIGTERM × `--shutdown-timeout ∈ {0,2,60}`、B2 SIGSTOP/SIGCONT（可选）。
-- **E**（边界：单卡 RTX 5080 / WSL2 / 0.5B / eager / 串行在线请求 / pageable CPU 层）：三条路径 15/15 被指标证实，load 恒为 12288 B/token；CPU 往返输出与 GPU 命中 60/60 逐位相等。cpu_hit − cold：P=1024 **+0.70 ms**（CI 排除 0，更慢）、P=16384 **−289.6 ms**；开 connector 冷请求 P=8192/16384 多 39/69 ms。B1：API 0.5 s 内把在途请求 500 结束后**自行以 rc 0 退出**；B3：t=60 两轮 6/6 正常完成，t=0 / t=2 分别有 5/6、4/6 次 API **无限期挂住**（uvicorn graceful shutdown 无超时，在途请求收不到结束信号）。见 [`notes/m28/results.md`](notes/m28/results.md)。
+- **E**（边界：单卡 RTX 5080 / WSL2 / 0.5B / eager / 串行在线请求 / pageable CPU 层）：三条路径 15/15 被指标证实，load 恒为 12288 B/token；CPU 往返输出与 GPU 命中 60/60 逐位相等。cpu_hit − cold：P=1024 **+0.70 ms**（CI 排除 0，更慢）、P=16384 **−289.6 ms**；开 connector 冷请求 P=8192/16384 多 39/69 ms。B1：API 0.5 s 内结束在途请求（非流式 HTTP 500、流式在已返回 200 后经 SSE error event 报错并收到 [DONE]）后**自行以 rc 0 退出**；B3：t=60 两轮 6/6 正常完成，t=0 / t=2 分别有 5/6、4/6 次 API **挂住**（90 s 观测窗结束仍未退出，需外部清理）（uvicorn graceful shutdown 无超时，在途请求收不到结束信号）。见 [`notes/m28/results.md`](notes/m28/results.md)。
 - **T**：源码核查 [`notes/m28/source_review.md`](notes/m28/source_review.md)（预测 vs 实测见 `results.md` §3）。
 - **O**：冻结计划 [`notes/m28/M28_PLAN.md`](notes/m28/M28_PLAN.md)（v2 + 执行期修订）；validator 自检 15/15 反例检出；`check_invariants.py --module m28` **33 PASS / 0 FAIL / 0 PENDING**；执行记录 [`notes/m28/execution_record.md`](notes/m28/execution_record.md)；图 `figures/fig19_m28_offload_ttft.png`、`figures/fig20_m28_faults.png`。
 - **未做（据实）**：B2 SKIPPED（所有者选择）；offload.cold 额外开销**未跑 profiler**（"store 卡在 chunk 之间"只是假设）；pinned CPU 层、并发负载、tiering spec 未做；B3 t=2 档 EngineDeadError 是否传到在途请求的源码级原因未定位。见 [`notes/m28/limitations.md`](notes/m28/limitations.md)。
@@ -510,7 +510,7 @@
 
 ### M26 第二阶段收口：项目组合 + 掌握标准 + 面试化表达（扩展 M16）　✅　**收口完成（含明示占位）**（2026-08-13）
 - 把 A/B/C/D 四项目 README 化（招聘者 5 分钟看懂：问题/源码路径/环境/基线/瓶颈/改动/性能变化/回归/复现），核心图 ≤5 张；每主题 **30s / 3min / 10min** 三档表达；**明确标注能力边界**（已验证 / 只读源码未获硬件 / 仅理论）——这种区分反而证明系统工程严谨性。
-- **✅ 产出**：[`notes/m26/portfolio.md`](notes/m26/portfolio.md)（四项目 + 能力边界总表 + 5 张核心图选择理由）；
+- **✅ 产出**：四项目组合稿（个人表达稿，只保留本地、不入库）；公开的完成度与阻塞项见 [`notes/m26/README.md`](notes/m26/README.md)；
   第二阶段三档表达 + 重点题为个人备考文档，已移出仓库。
 - **依赖核查结论（做之前先查的）**：A（第一阶段）与 C（M12+M20+M21）**不依赖 M23–M25，已完整收口**；
   **B 部分占位** —— TP 已在 4×H20 实测，PP/DP/EP **阻塞于多卡机时**（非模块依赖）；
